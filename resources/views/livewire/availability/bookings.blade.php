@@ -230,18 +230,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
             return [];
         }
 
-        $itemIds = $bulkBars
-            ->filter(static fn (GanttDemandBarData $bar): bool => $bar->source_type === 'opportunity_item')
-            ->map(static fn (GanttDemandBarData $bar): int => $bar->source_id)
-            ->unique()
-            ->values()
-            ->all();
-
-        /** @var Collection<int, \App\Models\OpportunityItem> $itemsById */
-        $itemsById = \App\Models\OpportunityItem::query()->whereKey($itemIds)->get()->keyBy('id');
-
-        $opportunityIds = $this->opportunityIdsFromBars($bulkBars, $itemsById);
-        $opportunities = Opportunity::query()->whereKey($opportunityIds)->get()->keyBy('id');
+        $itemsById = $this->opportunityItemsForGantt();
 
         /** @var Collection<string, Collection<int, GanttDemandBarData>> $grouped */
         $grouped = $bulkBars->groupBy(fn (GanttDemandBarData $bar): string => (string) ($this->opportunityIdForBar($bar, $itemsById) ?? 'source-'.$bar->source_type.'-'.$bar->source_id));
@@ -250,8 +239,8 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
         foreach ($grouped as $bars) {
             $first = $bars->first();
-            $opportunityId = $this->opportunityIdForBar($first, $itemsById);
-            $opportunity = $opportunityId !== null ? $opportunities->get($opportunityId) : null;
+            $opportunity = $this->opportunityForBar($first, $itemsById);
+            $opportunityId = $opportunity?->id;
 
             $label = $opportunity !== null
                 ? $this->formatOpportunityLabel($opportunity)
@@ -261,7 +250,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
             $cells = [];
             foreach ($this->windowDays as $day) {
-                $cells[] = $this->cellForOpportunityDay($opportunity, $bars->all(), $day);
+                $cells[] = $this->cellForDemandBars($bars->all(), $day, $itemsById);
             }
 
             $rows[] = [
@@ -278,7 +267,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     }
 
     /**
-     * @return list<array{asset_id: int, label: string, url: string|null, colour: string, cells: list<array{date: string, quantity: int|null, tone: string|null}>}>
+     * @return list<array{asset_id: int, label: string, url: string|null, cells: list<array{date: string, quantity: int|null, tone: string|null, colour: string|null}>}>
      */
     #[Computed]
     public function assetRows(): array
@@ -294,6 +283,8 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
                 ->filter(static fn (GanttDemandBarData $bar): bool => $bar->asset_id !== null)
                 ->groupBy(static fn (GanttDemandBarData $bar): int => (int) $bar->asset_id);
 
+        $itemsById = $this->opportunityItemsForGantt();
+
         $assets = StockLevel::query()
             ->where('product_id', $this->product->id)
             ->where('store_id', $this->storeId)
@@ -307,18 +298,16 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
             /** @var Collection<int, GanttDemandBarData> $bars */
             $bars = $barsByAsset->get($asset->id, collect());
             $label = $asset->asset_number ?? $asset->serial_number ?? __('Asset #:id', ['id' => $asset->id]);
-            $colour = $bars->first()?->colour ?? '#3B82F6';
 
             $cells = [];
             foreach ($this->windowDays as $day) {
-                $cells[] = $this->cellForBars($bars->all(), $day, $colour);
+                $cells[] = $this->cellForDemandBars($bars->all(), $day, $itemsById);
             }
 
             $rows[] = [
                 'asset_id' => $asset->id,
                 'label' => $label,
                 'url' => null,
-                'colour' => $colour,
                 'cells' => $cells,
             ];
         }
@@ -327,10 +316,39 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     }
 
     /**
+     * @return Collection<int, \App\Models\OpportunityItem>
+     */
+    private function opportunityItemsForGantt(): Collection
+    {
+        $gantt = $this->gantt;
+
+        if ($gantt === null) {
+            return collect();
+        }
+
+        $itemIds = collect($gantt->demands)
+            ->filter(static fn (GanttDemandBarData $bar): bool => $bar->source_type === 'opportunity_item')
+            ->map(static fn (GanttDemandBarData $bar): int => $bar->source_id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($itemIds === []) {
+            return collect();
+        }
+
+        return \App\Models\OpportunityItem::query()
+            ->whereKey($itemIds)
+            ->with('opportunity')
+            ->get()
+            ->keyBy('id');
+    }
+
+    /**
      * @param  list<GanttDemandBarData>  $bars
      * @return array{date: string, quantity: int|null, tone: string|null, colour: string|null}
      */
-    private function cellForOpportunityDay(?Opportunity $opportunity, array $bars, string $day): array
+    private function cellForDemandBars(array $bars, string $day, Collection $itemsById): array
     {
         $quantity = 0;
         $tone = null;
@@ -340,18 +358,19 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         $dayEnd = Carbon::parse($day)->endOfDay();
 
         foreach ($bars as $bar) {
+            $opportunity = $this->opportunityForBar($bar, $itemsById);
+            $phaseColour = $opportunity !== null
+                ? $presentation->phaseColour($presentation->phaseForDay($opportunity, $dayStart, $dayEnd))
+                : null;
+
             if ($this->isoOverlapsDay($bar->starts_at, $bar->ends_at, $day)) {
                 $quantity += $bar->quantity;
                 $tone = 'hire';
-                $colour = $opportunity !== null
-                    ? $presentation->phaseColour($presentation->phaseForDay($opportunity, $dayStart, $dayEnd))
-                    : ($bar->colour ?? '#3B82F6');
+                $colour = $phaseColour ?? $presentation->phaseColour('in-use');
             } elseif ($this->isoOverlapsDay($bar->period_start, $bar->buffer_before_end, $day)
                 || $this->isoOverlapsDay($bar->buffer_after_start, $bar->period_end, $day)) {
                 $tone = $tone ?? 'buffer';
-                $colour = $colour ?? ($opportunity !== null
-                    ? $presentation->phaseColour($presentation->phaseForDay($opportunity, $dayStart, $dayEnd))
-                    : ($bar->colour ?? '#3B82F6'));
+                $colour = $colour ?? ($phaseColour ?? $presentation->phaseColour('in-use'));
             }
         }
 
@@ -375,33 +394,15 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     }
 
     /**
-     * @param  list<GanttDemandBarData>  $bars
-     * @return array{date: string, quantity: int|null, tone: string|null, colour: string|null}
+     * @param  Collection<int, \App\Models\OpportunityItem>  $itemsById
      */
-    private function cellForBars(array $bars, string $day, string $defaultColour): array
+    private function opportunityForBar(GanttDemandBarData $bar, Collection $itemsById): ?Opportunity
     {
-        $quantity = 0;
-        $tone = null;
-        $colour = null;
-
-        foreach ($bars as $bar) {
-            if ($this->isoOverlapsDay($bar->starts_at, $bar->ends_at, $day)) {
-                $quantity += $bar->quantity;
-                $tone = 'hire';
-                $colour = $bar->colour ?? $defaultColour;
-            } elseif ($this->isoOverlapsDay($bar->period_start, $bar->buffer_before_end, $day)
-                || $this->isoOverlapsDay($bar->buffer_after_start, $bar->period_end, $day)) {
-                $tone = $tone ?? 'buffer';
-                $colour = $colour ?? ($bar->colour ?? $defaultColour);
-            }
+        if ($bar->source_type !== 'opportunity_item') {
+            return null;
         }
 
-        return [
-            'date' => $day,
-            'quantity' => $quantity > 0 ? $quantity : null,
-            'tone' => $tone,
-            'colour' => $colour,
-        ];
+        return $itemsById->get($bar->source_id)?->opportunity;
     }
 
     private function isoOverlapsDay(string $isoStart, string $isoEnd, string $day): bool
@@ -415,30 +416,11 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     }
 
     /**
-     * @param  Collection<int, GanttDemandBarData>  $bars
-     * @param  Collection<int, \App\Models\OpportunityItem>  $itemsById
-     * @return list<int>
-     */
-    private function opportunityIdsFromBars(Collection $bars, Collection $itemsById): array
-    {
-        return $bars
-            ->map(fn (GanttDemandBarData $bar): ?int => $this->opportunityIdForBar($bar, $itemsById))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    /**
      * @param  Collection<int, \App\Models\OpportunityItem>  $itemsById
      */
     private function opportunityIdForBar(GanttDemandBarData $bar, Collection $itemsById): ?int
     {
-        if ($bar->source_type !== 'opportunity_item') {
-            return null;
-        }
-
-        return $itemsById->get($bar->source_id)?->opportunity_id;
+        return $this->opportunityForBar($bar, $itemsById)?->id;
     }
 
     private function formatOpportunityLabel(Opportunity $opportunity): string
