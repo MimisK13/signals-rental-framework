@@ -17,13 +17,10 @@ uses(RefreshDatabase::class);
 | Job Planner page (C1)
 |--------------------------------------------------------------------------
 |
-| A Gantt / Overlap calendar of OPPORTUNITIES (jobs) across dates. One row per
-| opportunity, bars spanning the job window with Delivery / In-Use / Collection
-| bands + Customer Collecting / Customer Returning badges, coloured by status.
-| Filters: date · view (1w/2w/1m/monthly) · include (Quotation/Order) · store ·
-| search. JOBS / ORDERS / QUOTES count badges. Gated on opportunities.access.
+| Overlap timeline of OPPORTUNITIES (jobs) across dates. Lane-packed bars with
+| Delivery / In-Use / Collection bands + Coll/Ret badges. KPI cards, presets,
+| zoom, filters. Gated on opportunities.access.
 |
-| Tests run under the Phase-3 cadence and executed for this workstream.
 */
 
 beforeEach(function () {
@@ -61,10 +58,17 @@ it('renders the planner page for a user with opportunities.access', function () 
 
     Volt::test('planner.index')
         ->assertSet('viewPeriod', '2w')
-        ->assertSet('mode', 'gantt')
         ->assertSet('storeId', 0)
         ->assertSet('date', '2026-06-20')
         ->assertOk();
+});
+
+it('does not expose a gantt layout toggle', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')
+        ->assertDontSee(__('Gantt'))
+        ->assertDontSee(__('Overlap'));
 });
 
 it('forbids the page for a user without opportunities.access', function () {
@@ -87,7 +91,8 @@ it('shows a job bar for a seeded opportunity in the window', function () {
     expect($rows)->toHaveCount(1)
         ->and($rows[0]['id'])->toBe($job->id)
         ->and($rows[0]['subject'])->toBe('Summer Festival Main Stage')
-        ->and($rows[0]['width'])->toBeGreaterThan(0);
+        ->and($rows[0]['width'])->toBeGreaterThan(0)
+        ->and($rows[0])->toHaveKey('lane');
 });
 
 it('excludes opportunities outside the window', function () {
@@ -102,7 +107,6 @@ it('excludes opportunities outside the window', function () {
 });
 
 it('excludes Draft-state opportunities (only quotations and orders are jobs)', function () {
-    // Default factory state is Draft.
     plannerJob();
 
     $this->actingAs($this->user);
@@ -110,23 +114,34 @@ it('excludes Draft-state opportunities (only quotations and orders are jobs)', f
     expect(Volt::test('planner.index')->get('rows'))->toHaveCount(0);
 });
 
-it('computes JOBS / ORDERS / QUOTES counts for the window', function () {
-    Opportunity::factory()->quotation()->count(2)->create([
+it('computes KPI summary for the window', function () {
+    Opportunity::factory()->quotation()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
         'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+        'charge_total' => 10000,
+    ]);
+    Opportunity::factory()->quotation()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+        'charge_total' => 5000,
     ]);
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-23 08:00:00', 'UTC'),
         'ends_at' => Carbon::parse('2026-06-24 18:00:00', 'UTC'),
+        'charge_total' => 25000,
+        'deal_total' => 20000,
     ]);
 
     $this->actingAs($this->user);
 
-    $counts = Volt::test('planner.index')->get('counts');
+    $summary = Volt::test('planner.index')->get('summary');
 
-    expect($counts['jobs'])->toBe(3)
-        ->and($counts['quotes'])->toBe(2)
-        ->and($counts['orders'])->toBe(1);
+    expect($summary['jobs'])->toBe(3)
+        ->and($summary['quotes'])->toBe(2)
+        ->and($summary['orders'])->toBe(1)
+        ->and($summary['total_value_minor'])->toBe(35000)
+        ->and($summary['peak_count'])->toBeGreaterThan(0)
+        ->and($summary['peak_day_label'])->not->toBeNull();
 });
 
 it('narrows results with the include-quotations / include-orders toggles', function () {
@@ -141,14 +156,12 @@ it('narrows results with the include-quotations / include-orders toggles', funct
 
     $this->actingAs($this->user);
 
-    // Orders only.
     Volt::test('planner.index')
         ->set('includeQuotations', false)
         ->set('includeOrders', true)
         ->assertCount('rows', 1)
-        ->assertSet('counts', fn ($c) => $c['orders'] === 1 && $c['quotes'] === 0);
+        ->assertSet('summary', fn ($s) => $s['orders'] === 1 && $s['quotes'] === 0);
 
-    // Neither included → no rows.
     Volt::test('planner.index')
         ->set('includeQuotations', false)
         ->set('includeOrders', false)
@@ -176,7 +189,7 @@ it('filters by store', function () {
         ->assertCount('rows', 1);
 });
 
-it('searches across subject, number and member name', function () {
+it('searches across subject, number and member name case-insensitively', function () {
     $member = Member::factory()->create(['name' => 'Festival Hire Co']);
 
     Opportunity::factory()->order()->create([
@@ -193,16 +206,12 @@ it('searches across subject, number and member name', function () {
 
     $this->actingAs($this->user);
 
-    // By subject.
     Volt::test('planner.index')->set('search', 'Marquee')->assertCount('rows', 1);
-    // By member name.
-    Volt::test('planner.index')->set('search', 'Festival Hire')->assertCount('rows', 1);
-    // No match.
+    Volt::test('planner.index')->set('search', 'festival hire')->assertCount('rows', 1);
     Volt::test('planner.index')->set('search', 'Nonexistent')->assertCount('rows', 0);
 });
 
-it('toggles between gantt and overlap modes and lane-packs in overlap', function () {
-    // Two overlapping orders → in overlap mode they must occupy different lanes.
+it('lane-packs overlapping jobs into distinct lanes', function () {
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
         'ends_at' => Carbon::parse('2026-06-26 18:00:00', 'UTC'),
@@ -214,19 +223,47 @@ it('toggles between gantt and overlap modes and lane-packs in overlap', function
 
     $this->actingAs($this->user);
 
-    // Gantt mode carries no lane metadata.
-    $ganttRows = Volt::test('planner.index')->set('mode', 'gantt')->get('rows');
-    expect($ganttRows)->toHaveCount(2)
-        ->and($ganttRows[0])->not->toHaveKey('lane');
+    $rows = Volt::test('planner.index')->get('rows');
 
-    // Overlap mode packs the two overlapping jobs into distinct lanes.
-    $overlapRows = Volt::test('planner.index')->set('mode', 'overlap')->get('rows');
-    expect($overlapRows)->toHaveCount(2)
-        ->and($overlapRows[0])->toHaveKey('lane')
-        ->and($overlapRows[0]['lanes'])->toBe(2);
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0])->toHaveKey('lane')
+        ->and($rows[0]['lanes'])->toBe(2);
 
-    $lanes = array_column($overlapRows, 'lane');
+    $lanes = array_column($rows, 'lane');
     expect($lanes)->toEqualCanonicalizing([0, 1]);
+});
+
+it('reports lanes used in the KPI summary', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-26 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-23 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-27 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    expect(Volt::test('planner.index')->get('summary')['lanes_used'])->toBe(2);
+});
+
+it('marks jobs that extend beyond the visible window', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-10 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-07-10 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $rows = Volt::test('planner.index')->get('rows');
+
+    expect($rows[0]['extends_before'])->toBeTrue()
+        ->and($rows[1]['extends_after'])->toBeTrue();
 });
 
 it('builds Delivery / In-Use / Collection sub-bands and customer badges', function () {
@@ -262,10 +299,64 @@ it('steps the window forward, back and home', function () {
     Volt::test('planner.index')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')
-        ->assertSet('date', '2026-07-04') // +14 days
+        ->assertSet('date', '2026-07-04')
         ->call('previousPeriod')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')
         ->call('today')
         ->assertSet('date', '2026-06-20');
+});
+
+it('changes zoom window length', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')
+        ->call('setZoom', '1w')
+        ->assertSet('viewPeriod', '1w')
+        ->assertSet('preset', '')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(7));
+
+    Volt::test('planner.index')
+        ->call('setZoom', '1m')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
+});
+
+it('applies date-range presets', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')
+        ->call('applyPreset', 'next_30_days')
+        ->assertSet('date', '2026-06-20')
+        ->assertSet('preset', 'next_30_days')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
+
+    Volt::test('planner.index')
+        ->call('applyPreset', 'this_month')
+        ->assertSet('date', '2026-06-01')
+        ->assertSet('preset', 'this_month')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
+
+    Volt::test('planner.index')
+        ->call('applyPreset', 'next_month')
+        ->assertSet('date', '2026-07-01')
+        ->assertSet('preset', 'next_month')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(31));
+});
+
+it('counts jobs per calendar day in the header', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-24 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $counts = Volt::test('planner.index')->get('jobCountsPerDay');
+
+    expect($counts['2026-06-22'])->toBe(2)
+        ->and($counts['2026-06-25'])->toBe(1);
 });
