@@ -7,24 +7,22 @@
     $barWidth = (float) $row['width'];
     $gapLeft = (int) ($row['gap_left_px'] ?? 0);
     $gapRight = (int) ($row['gap_right_px'] ?? 0);
-    $statusRowHeight = $statusRowHeight ?? 14;
-    $cardBottomPad = $cardBottomPad ?? 4;
+    $statusRowHeight = $statusRowHeight ?? 16;
     $lineBodyBottomPad = $lineBodyBottomPad ?? 4;
     $phaseColours = $phaseColours ?? [];
     $customerBadgeColours = $customerBadgeColours ?? [];
-    $lineHeight = 12;
-    $textSize = '11px';
+    $lineHeight = 13;
+    $textSize = '12px';
     $tooltip = ($row['number'] ?? ('#'.$row['id']))
         .' · '.$row['state_label'].' · '.$row['status_label']
         .' · '.($row['starts_at']?->format('j M') ?? '')
         .' – '.($row['ends_at']?->format('j M') ?? '');
     $showUrl = route('opportunities.show', $row['id']);
-    $contentHeight = 'calc(100% - '.($statusRowHeight + $cardBottomPad).'px)';
 @endphp
 
 <div class="absolute left-0 right-0" style="top: {{ $top }}px; height: {{ $height }}px;" wire:key="job-{{ $row['id'] }}">
     <a href="{{ $showUrl }}" wire:navigate
-       class="absolute block overflow-hidden rounded-none border-y border-black/10 shadow-sm no-underline text-white hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
+       class="absolute flex flex-col overflow-hidden rounded-none border-y border-black/10 shadow-sm no-underline text-white hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
        style="left: calc({{ $barLeft }}% + {{ $gapLeft }}px); width: calc({{ $barWidth }}% - {{ $gapLeft + $gapRight }}px); top: 0; height: 100%; background: {{ $colour }};"
        title="{{ $tooltip }}"
        aria-label="{{ ($row['number'] ?? ('#'.$row['id'])).($row['subject'] ? ' — '.$row['subject'] : '') }}">
@@ -36,7 +34,7 @@
             <div class="absolute right-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></div>
         @endif
 
-        <div class="relative z-10 flex flex-col gap-0 px-1 pt-1" style="height: {{ $contentHeight }}; padding-bottom: {{ $lineBodyBottomPad }}px;">
+        <div class="relative z-10 flex min-h-0 flex-1 flex-col gap-0 px-1 pt-1" style="padding-bottom: {{ $lineBodyBottomPad }}px;">
             {{-- Line 1: number — subject --}}
             <div class="flex items-center gap-0.5 leading-none" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
                 <flux:icon.document-text class="!size-2 shrink-0 opacity-70" />
@@ -89,8 +87,8 @@
             </div>
         </div>
 
-        {{-- Status row: day columns relative to this job block (same width as body) --}}
-        <div class="absolute left-0 right-0 z-10" style="bottom: {{ $cardBottomPad }}px; height: {{ $statusRowHeight }}px;">
+        {{-- Status row: pinned to card bottom, day columns relative to this job block --}}
+        <div class="relative z-10 mt-auto w-full shrink-0" style="height: {{ $statusRowHeight }}px;">
             @foreach($row['day_segments'] as $segment)
                 @php
                     $segLeft = $barWidth > 0
@@ -109,7 +107,7 @@
                     };
                 @endphp
                 <div wire:key="seg-{{ $row['id'] }}-{{ $segment['day_index'] }}"
-                     class="absolute top-0 box-border flex items-center justify-center overflow-hidden text-[4px] font-semibold uppercase tracking-tight text-white {{ $isLastSegment ? '' : 'border-r border-white/15' }}"
+                     class="absolute top-0 box-border flex items-center justify-center overflow-hidden text-[9px] font-semibold uppercase tracking-tight text-white {{ $isLastSegment ? '' : 'border-r border-white/15' }}"
                      style="left: {{ $segLeft }}%; {{ $isLastSegment ? 'right: 0;' : 'width: '.$segWidth.'%;' }} height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
                      title="{{ $segment['label'] }}">
                     @if($phase !== 'in-use')

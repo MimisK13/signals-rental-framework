@@ -1,5 +1,5 @@
 {{--
-    Planner overlap grid: day headers, heatmap counts, lane-packed job cards.
+    Planner overlap grid: lane-packed job cards (headers live in grid-header partial).
 --}}
 @php
     /** @var list<array<string, mixed>> $rows */
@@ -8,19 +8,16 @@
     $days = $this->dayColumns();
     $dayCount = max(1, count($days));
     $colWidth = 100 / $dayCount;
-    $jobCounts = $this->jobCountsPerDay;
-    $heatmapMax = $this->jobCountHeatmapMax;
     $phaseColours = $this->phaseColours();
     $customerBadgeColours = $this->customerBadgeColours();
-    $statusRowHeight = 14;
+    $statusRowHeight = 16;
     $lineBodyBottomPad = 4;
-    $cardBottomPad = 4;
-    $lineBodyHeight = 4 + (12 * 4) + $lineBodyBottomPad;
+    $lineHeight = 13;
+    $lineBodyHeight = 4 + ($lineHeight * 4) + $lineBodyBottomPad;
     $laneGap = $this->cardGapPx();
-    $laneHeight = $lineBodyHeight + $statusRowHeight + $cardBottomPad;
+    $laneHeight = $lineBodyHeight + $statusRowHeight;
     $laneStride = $laneHeight + $laneGap;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
-    $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";
 @endphp
 
 @if(count($rows) === 0)
@@ -30,55 +27,17 @@
         <x-slot:icon><flux:icon.calendar-days class="!size-7" /></x-slot:icon>
     </x-signals.empty>
 @else
-    <div class="s-panel flex min-h-0 w-full flex-1 flex-col !p-0 overflow-hidden" wire:loading.class="opacity-60">
-        {{-- Sticky day header + heatmap (pinned while scrolling job lanes) --}}
-        <div class="sticky top-0 z-20 shrink-0 bg-[var(--card-bg)] shadow-sm">
-        {{-- Day header row --}}
-        <div class="grid w-full shrink-0 border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
-            @foreach($days as $day)
-                @php
-                    $dateKey = $day->toDateString();
-                    $isToday = $dateKey === $today;
-                    $isWeekend = $day->isWeekend();
-                @endphp
-                <div class="border-r border-[var(--card-border)] py-1 text-center {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/50 ring-1 ring-inset ring-[#ffc107]/70' : '' }}"
-                     wire:key="day-{{ $dateKey }}">
-                    <div class="text-[11px] font-semibold text-[var(--text-primary)]">{{ $day->format('D') }}</div>
-                    <div class="text-[10px] text-[var(--text-muted)]">{{ $day->format('j') }}</div>
-                </div>
-            @endforeach
-        </div>
-
-        {{-- Job-count heatmap row --}}
-        <div class="grid w-full shrink-0 border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
-            @foreach($days as $day)
-                @php
-                    $dateKey = $day->toDateString();
-                    $count = $jobCounts[$dateKey] ?? 0;
-                    $isToday = $dateKey === $today;
-                    $isWeekend = $day->isWeekend();
-                    $intensity = min(1, $count / $heatmapMax);
-                    $heatAlpha = 0.12 + ($intensity * 0.78);
-                @endphp
-                <div class="flex items-center justify-center border-r border-[var(--card-border)] py-1.5 text-[12px] font-bold text-[var(--text-primary)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'ring-1 ring-inset ring-[#ffc107]/50' : '' }}"
-                     style="background-color: rgba(192, 57, 43, {{ $count > 0 ? $heatAlpha : 0 }});"
-                     wire:key="heatmap-{{ $dateKey }}">
-                    {{ $count }}
-                </div>
-            @endforeach
-        </div>
-        </div>
-
-        @php
-            $maxLanes = 1;
-            foreach ($rows as $r) {
-                $maxLanes = max($maxLanes, (int) ($r['lanes'] ?? 1));
-            }
-            $minTrackHeight = $maxLanes > 0
-                ? ($maxLanes * $laneStride - $laneGap)
-                : 0;
-        @endphp
-        <div class="relative min-h-0 w-full flex-1 overflow-y-auto" style="min-height: {{ $minTrackHeight }}px;">
+    @php
+        $maxLanes = 1;
+        foreach ($rows as $r) {
+            $maxLanes = max($maxLanes, (int) ($r['lanes'] ?? 1));
+        }
+        $minTrackHeight = $maxLanes > 0
+            ? ($maxLanes * $laneStride - $laneGap)
+            : 0;
+    @endphp
+    <div class="s-panel w-full !p-0 overflow-hidden border-t-0 !rounded-t-none" wire:loading.class="opacity-60">
+        <div class="relative w-full" style="min-height: {{ $minTrackHeight }}px;">
             @foreach($days as $i => $day)
                 @php
                     $dateKey = $day->toDateString();
@@ -102,7 +61,6 @@
                     'colWidth' => $colWidth,
                     'statusRowHeight' => $statusRowHeight,
                     'lineBodyBottomPad' => $lineBodyBottomPad,
-                    'cardBottomPad' => $cardBottomPad,
                     'phaseColours' => $phaseColours,
                     'customerBadgeColours' => $customerBadgeColours,
                 ])

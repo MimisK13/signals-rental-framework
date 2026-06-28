@@ -618,9 +618,9 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     </x-signals.page-header>
 
     <div class="flex min-h-0 flex-1 flex-col px-6 py-4 max-md:px-5 max-sm:px-3">
-    {{-- Control bar (sticky while scrolling the planner) --}}
-    <div class="sticky top-0 z-30 -mx-6 mb-4 bg-[var(--content-bg)] px-6 pb-1 pt-1 shadow-sm">
-    <div class="s-panel">
+    {{-- Sticky chrome: filters, legend, day header + heatmap --}}
+    <div class="sticky top-0 z-30 -mx-6 bg-[var(--content-bg)] px-6 pb-2 pt-1 shadow-sm">
+    <div class="s-panel mb-3">
         <div class="s-panel-body flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1">
                 <label class="s-field-label" for="planner-date">{{ __('Date') }}</label>
@@ -691,10 +691,9 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             </div>
         </div>
     </div>
-    </div>
 
     {{-- Legend --}}
-    <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
+    <div class="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
         <span class="font-semibold uppercase tracking-wide">{{ __('Key') }}</span>
         @foreach($this->legend as $entry)
             <span class="flex items-center gap-1.5" wire:key="legend-{{ $loop->index }}">
@@ -716,6 +715,11 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     @if($this->jobsTruncated)
         <p class="mb-2 text-[11px] text-[var(--text-muted)]">{{ __('Showing first :count jobs — refine filters to see more.', ['count' => 200]) }}</p>
     @endif
+
+    @if(count($this->rows) > 0)
+        @include('livewire.planner.partials.grid-header')
+    @endif
+    </div>
 
     @include('livewire.planner.partials.grid')
     </div>
