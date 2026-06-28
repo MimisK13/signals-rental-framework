@@ -12,8 +12,8 @@
     $heatmapMax = $this->jobCountHeatmapMax;
     $phaseColours = $this->phaseColours();
     $customerBadgeColours = $this->customerBadgeColours();
-    $statusRowHeight = 20;
-    $laneHeight = 58 + $statusRowHeight;
+    $statusRowHeight = 18;
+    $laneHeight = 50 + $statusRowHeight;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
     $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";
 @endphp

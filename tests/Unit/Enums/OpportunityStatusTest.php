@@ -22,6 +22,12 @@ it('exposes the per-state integer stored in the projection', function () {
         ->and(OpportunityStatus::OrderCancelled->statusValue())->toBe(6);
 });
 
+it('assigns a distinct hex colour to every opportunity status', function () {
+    foreach (OpportunityStatus::cases() as $status) {
+        expect($status->colour())->toMatch('/^#[0-9a-f]{6}$/i');
+    }
+});
+
 it('rebuilds a status from the two persisted columns', function () {
     expect(OpportunityStatus::fromStateAndStatus(OpportunityState::Quotation, 1))
         ->toBe(OpportunityStatus::QuotationReserved)

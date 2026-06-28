@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OpportunityStatus;
 use App\Models\Address;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -58,9 +59,12 @@ it('renders the planner page for a user with opportunities.access', function () 
     $this->actingAs($this->user);
 
     Volt::test('planner.index')
-        ->assertSet('viewPeriod', '2w')
+        ->assertSet('viewPeriod', '1m')
         ->assertSet('storeId', 0)
         ->assertSet('date', '2026-06-20')
+        ->assertSet('includeOrders', true)
+        ->assertSet('includeQuotations', true)
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30))
         ->assertOk();
 });
 
@@ -215,7 +219,7 @@ it('marks jobs that extend beyond the visible window', function () {
     ]);
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
-        'ends_at' => Carbon::parse('2026-07-10 18:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-08-01 18:00:00', 'UTC'),
     ]);
 
     $this->actingAs($this->user);
@@ -263,8 +267,8 @@ it('snaps bar position to whole day columns in the window', function () {
 
     $row = Volt::test('planner.index')->get('rows')[0];
 
-    expect($row['left'])->toBe((2 / 14) * 100)
-        ->and($row['width'])->toBe((3 / 14) * 100);
+    expect($row['left'])->toBe((2 / 30) * 100)
+        ->and($row['width'])->toBe((3 / 30) * 100);
 });
 
 it('adds a visual gap between consecutive touching jobs in the same lane', function () {
@@ -286,6 +290,41 @@ it('adds a visual gap between consecutive touching jobs in the same lane', funct
         ->and($rows[1]['lane'])->toBe(0)
         ->and($rows[0]['gap_right_px'])->toBe(2)
         ->and($rows[1]['gap_left_px'])->toBe(2);
+});
+
+it('colours job cards by opportunity status', function () {
+    Opportunity::factory()->quotation()->create([
+        'status' => OpportunityStatus::QuotationProvisional->statusValue(),
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'status' => OpportunityStatus::OrderOnHire->statusValue(),
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $rows = Volt::test('planner.index')->get('rows');
+
+    expect($rows[0]['colour'])->toBe(OpportunityStatus::QuotationProvisional->colour())
+        ->and($rows[1]['colour'])->toBe(OpportunityStatus::OrderOnHire->colour())
+        ->and($rows[0]['status_label'])->toBe('Provisional')
+        ->and($rows[1]['status_label'])->toBe('On Hire');
+});
+
+it('builds legend swatches from opportunity statuses', function () {
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('planner.index')->get('legend');
+    $provisional = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'Provisional');
+    $onHire = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'On Hire');
+
+    expect($provisional)->not->toBeNull()
+        ->and($onHire)->not->toBeNull()
+        ->and($provisional['colour'])->toBe(OpportunityStatus::QuotationProvisional->colour())
+        ->and($onHire['colour'])->toBe(OpportunityStatus::OrderOnHire->colour());
 });
 
 it('exposes customer badge colours matching the legend key', function () {
@@ -333,7 +372,7 @@ it('steps the window forward, back and home', function () {
     Volt::test('planner.index')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')
-        ->assertSet('date', '2026-07-04')
+        ->assertSet('date', '2026-07-20')
         ->call('previousPeriod')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')

@@ -90,6 +90,30 @@ enum OpportunityStatus: int
     }
 
     /**
+     * Hex colour for UI surfaces (planner cards, legends, badges).
+     *
+     * Each enum case has a distinct swatch; new cases must add a mapping here.
+     */
+    public function colour(): string
+    {
+        return match ($this) {
+            self::DraftOpen => '#64748b',
+            self::QuotationProvisional => '#f59e0b',
+            self::QuotationReserved => '#2563eb',
+            self::QuotationLost => '#71717a',
+            self::QuotationDead => '#52525b',
+            self::QuotationPostponed => '#0891b2',
+            self::OrderActive => '#c0392b',
+            self::OrderDispatched => '#e67e22',
+            self::OrderOnHire => '#d35400',
+            self::OrderReturned => '#3498db',
+            self::OrderChecked => '#1d4ed8',
+            self::OrderComplete => '#27ae60',
+            self::OrderCancelled => '#dc2626',
+        };
+    }
+
+    /**
      * The availability {@see DemandPhase} this status places on the engine.
      *
      * Mapping follows the opportunity-status → demand-phase table in the

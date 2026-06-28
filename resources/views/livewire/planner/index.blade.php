@@ -25,7 +25,7 @@ use Livewire\Volt\Component;
  * Overlap timeline: concurrent jobs are packed into horizontal lanes via
  * {@see EventLaneAllocator}. Each job draws a bar spanning its window with
  * Delivery / In-Use / Collection sub-bands and Customer Collecting / Returning
- * badges, coloured by document state (Order / Quote).
+ * badges, coloured by opportunity status.
  */
 new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Component
 {
@@ -44,7 +44,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
 
     /** View period token: 1w / 2w / 1m. Sets the column count unless a preset is active. */
     #[Url(as: 'view')]
-    public string $viewPeriod = '2w';
+    public string $viewPeriod = '1m';
 
     /** Active date-range preset (next_30_days, this_month, next_month) or empty for custom/zoom. */
     #[Url(as: 'preset')]
@@ -75,7 +75,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         }
 
         if (! array_key_exists($this->viewPeriod, self::VIEW_PERIODS)) {
-            $this->viewPeriod = '2w';
+            $this->viewPeriod = '1m';
         }
     }
 
@@ -343,7 +343,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 'left' => $position['left'],
                 'width' => $position['width'],
                 'day_segments' => $this->daySegmentsFor($job),
-                'colour' => $this->colourForState($state),
+                'colour' => $status->colour(),
                 'status_label' => $status->label(),
                 'state_label' => $state->label(),
                 'customer_collecting' => (bool) $job->customer_collecting,
@@ -531,16 +531,6 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         return $fallback;
     }
 
-    /** Map document state to the bar colour (Order / Quote). */
-    private function colourForState(OpportunityState $state): string
-    {
-        return match ($state) {
-            OpportunityState::Quotation => 'var(--amber, #f39c12)',
-            OpportunityState::Order => '#c0392b',
-            default => 'var(--text-muted, #94a3b8)',
-        };
-    }
-
     /** Phase band colours — shared by the legend and card status row. */
     public function phaseColours(): array
     {
@@ -561,26 +551,51 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     }
 
     /**
+     * Planner-visible opportunity statuses for the legend key (quotation + order axes).
+     *
+     * @return list<array{label: string, colour: string}>
+     */
+    public function statusLegendEntries(): array
+    {
+        $entries = [];
+
+        foreach (OpportunityStatus::cases() as $status) {
+            if ($status->state() === OpportunityState::Draft) {
+                continue;
+            }
+
+            $entries[] = [
+                'label' => $status->label(),
+                'colour' => $status->colour(),
+            ];
+        }
+
+        return $entries;
+    }
+
+    /**
      * Static legend entries for the overlap timeline.
      *
-     * @return list<array{label: string, colour: string, icon: ?string}>
+     * @return list<array{label: string, colour: string, icon: ?string, border?: bool, narrow?: bool}>
      */
     #[Computed]
     public function legend(): array
     {
         $colours = $this->phaseColours();
+        $statusEntries = $this->statusLegendEntries();
 
-        return [
-            ['label' => __('Order'), 'colour' => '#c0392b', 'icon' => null],
-            ['label' => __('Quote'), 'colour' => 'var(--amber, #f39c12)', 'icon' => null],
-            ['label' => __('Collecting'), 'colour' => '#27ae60', 'icon' => 'truck'],
-            ['label' => __('Returning'), 'colour' => '#17a2b8', 'icon' => 'truck'],
-            ['label' => __('Delivery'), 'colour' => $colours['delivery'], 'icon' => null],
-            ['label' => __('In Use'), 'colour' => $colours['in-use'], 'icon' => null],
-            ['label' => __('Collection'), 'colour' => $colours['collection'], 'icon' => null],
-            ['label' => __('Today'), 'colour' => '#ffc107', 'icon' => null, 'border' => true],
-            ['label' => __('Extends beyond view'), 'colour' => 'var(--violet, #8b5cf6)', 'icon' => null, 'narrow' => true],
-        ];
+        return array_merge(
+            $statusEntries,
+            [
+                ['label' => __('Collecting'), 'colour' => '#27ae60', 'icon' => 'truck'],
+                ['label' => __('Returning'), 'colour' => '#17a2b8', 'icon' => 'truck'],
+                ['label' => __('Delivery'), 'colour' => $colours['delivery'], 'icon' => null],
+                ['label' => __('In Use'), 'colour' => $colours['in-use'], 'icon' => null],
+                ['label' => __('Collection'), 'colour' => $colours['collection'], 'icon' => null],
+                ['label' => __('Today'), 'colour' => '#ffc107', 'icon' => null, 'border' => true],
+                ['label' => __('Extends beyond view'), 'colour' => 'var(--violet, #8b5cf6)', 'icon' => null, 'narrow' => true],
+            ],
+        );
     }
 }; ?>
 
