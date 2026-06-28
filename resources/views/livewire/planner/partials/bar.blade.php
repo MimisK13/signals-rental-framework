@@ -8,6 +8,8 @@
     $gapLeft = (int) ($row['gap_left_px'] ?? 0);
     $gapRight = (int) ($row['gap_right_px'] ?? 0);
     $statusRowHeight = $statusRowHeight ?? 14;
+    $cardBottomPad = $cardBottomPad ?? 4;
+    $lineBodyBottomPad = $lineBodyBottomPad ?? 4;
     $phaseColours = $phaseColours ?? [];
     $customerBadgeColours = $customerBadgeColours ?? [];
     $lineHeight = 12;
@@ -17,7 +19,7 @@
         .' · '.($row['starts_at']?->format('j M') ?? '')
         .' – '.($row['ends_at']?->format('j M') ?? '');
     $showUrl = route('opportunities.show', $row['id']);
-    $contentHeight = 'calc(100% - '.$statusRowHeight.'px)';
+    $contentHeight = 'calc(100% - '.($statusRowHeight + $cardBottomPad).'px)';
 @endphp
 
 <div class="absolute left-0 right-0" style="top: {{ $top }}px; height: {{ $height }}px;" wire:key="job-{{ $row['id'] }}">
@@ -34,10 +36,10 @@
             <div class="absolute right-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></div>
         @endif
 
-        <div class="relative z-10 flex flex-col gap-0 px-1 pt-1 pb-0.5" style="height: {{ $contentHeight }};">
+        <div class="relative z-10 flex flex-col gap-0 px-1 pt-1" style="height: {{ $contentHeight }}; padding-bottom: {{ $lineBodyBottomPad }}px;">
             {{-- Line 1: number — subject --}}
             <div class="flex items-center gap-0.5 leading-none" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
-                <flux:icon.document-text class="!size-3 shrink-0 opacity-70" />
+                <flux:icon.document-text class="!size-2 shrink-0 opacity-70" />
                 <span class="truncate font-semibold leading-none">
                     {{ $row['number'] ?? ('#'.$row['id']) }}
                     @if($row['subject'])
@@ -48,26 +50,26 @@
 
             {{-- Line 2: datetime range --}}
             <div class="flex items-center gap-0.5 truncate leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
-                <flux:icon.clock class="!size-3 shrink-0 opacity-70" />
+                <flux:icon.clock class="!size-2 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['datetime_range'] }}</span>
             </div>
 
             {{-- Line 3: address --}}
             <div class="flex items-center gap-0.5 truncate leading-none opacity-90" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
-                <flux:icon.map-pin class="!size-3 shrink-0 opacity-70" />
+                <flux:icon.map-pin class="!size-2 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['address'] }}</span>
             </div>
 
             {{-- Line 4: status + Coll/Ret badges --}}
             <div class="flex items-center justify-between gap-1 leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
                 <span class="flex min-w-0 items-center gap-0.5 truncate leading-none">
-                    <flux:icon.tag class="!size-3 shrink-0 opacity-70" />
+                    <flux:icon.tag class="!size-2 shrink-0 opacity-70" />
                     <span class="truncate">{{ $row['status_label'] }}</span>
                 </span>
                 @if($row['customer_collecting'] || $row['customer_returning'])
-                    <span class="flex shrink-0 items-center gap-0.5">
+                    <span class="flex shrink-0 items-center gap-0.5 px-0.5 pb-0.5">
                         @if($row['customer_collecting'])
-                            <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[7px] font-medium leading-none text-white"
+                            <span class="inline-flex items-center gap-px rounded-sm px-1 py-0.5 text-[7px] font-medium leading-none text-white"
                                   style="background: {{ $customerBadgeColours['collecting'] ?? '#27ae60' }};"
                                   title="{{ __('Customer collecting') }}">
                                 <flux:icon.truck class="!size-1.5 shrink-0" />
@@ -75,7 +77,7 @@
                             </span>
                         @endif
                         @if($row['customer_returning'])
-                            <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[7px] font-medium leading-none text-white"
+                            <span class="inline-flex items-center gap-px rounded-sm px-1 py-0.5 text-[7px] font-medium leading-none text-white"
                                   style="background: {{ $customerBadgeColours['returning'] ?? '#17a2b8' }};"
                                   title="{{ __('Customer returning') }}">
                                 <flux:icon.truck class="!size-1.5 shrink-0" />
@@ -88,7 +90,7 @@
         </div>
 
         {{-- Status row: day columns relative to this job block (same width as body) --}}
-        <div class="absolute bottom-0 left-0 right-0 z-10" style="height: {{ $statusRowHeight }}px;">
+        <div class="absolute left-0 right-0 z-10" style="bottom: {{ $cardBottomPad }}px; height: {{ $statusRowHeight }}px;">
             @foreach($row['day_segments'] as $segment)
                 @php
                     $segLeft = $barWidth > 0

@@ -618,8 +618,9 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     </x-signals.page-header>
 
     <div class="flex min-h-0 flex-1 flex-col px-6 py-4 max-md:px-5 max-sm:px-3">
-    {{-- Control bar --}}
-    <div class="s-panel mb-4">
+    {{-- Control bar (sticky while scrolling the planner) --}}
+    <div class="sticky top-0 z-30 -mx-6 mb-4 bg-[var(--content-bg)] px-6 pb-1 pt-1 shadow-sm">
+    <div class="s-panel">
         <div class="s-panel-body flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1">
                 <label class="s-field-label" for="planner-date">{{ __('Date') }}</label>
@@ -689,6 +690,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                        placeholder="{{ __('Subject, number or member') }}" class="s-input" />
             </div>
         </div>
+    </div>
     </div>
 
     {{-- Legend --}}

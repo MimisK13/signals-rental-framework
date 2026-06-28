@@ -13,9 +13,11 @@
     $phaseColours = $this->phaseColours();
     $customerBadgeColours = $this->customerBadgeColours();
     $statusRowHeight = 14;
-    $lineBodyHeight = 4 + (12 * 4) + 2;
+    $lineBodyBottomPad = 4;
+    $cardBottomPad = 4;
+    $lineBodyHeight = 4 + (12 * 4) + $lineBodyBottomPad;
     $laneGap = $this->cardGapPx();
-    $laneHeight = $lineBodyHeight + $statusRowHeight;
+    $laneHeight = $lineBodyHeight + $statusRowHeight + $cardBottomPad;
     $laneStride = $laneHeight + $laneGap;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
     $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";
@@ -29,6 +31,8 @@
     </x-signals.empty>
 @else
     <div class="s-panel flex min-h-0 w-full flex-1 flex-col !p-0 overflow-hidden" wire:loading.class="opacity-60">
+        {{-- Sticky day header + heatmap (pinned while scrolling job lanes) --}}
+        <div class="sticky top-0 z-20 shrink-0 bg-[var(--card-bg)] shadow-sm">
         {{-- Day header row --}}
         <div class="grid w-full shrink-0 border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
             @foreach($days as $day)
@@ -63,6 +67,7 @@
                 </div>
             @endforeach
         </div>
+        </div>
 
         @php
             $maxLanes = 1;
@@ -73,7 +78,7 @@
                 ? ($maxLanes * $laneStride - $laneGap)
                 : 0;
         @endphp
-        <div class="relative min-h-0 w-full flex-1" style="min-height: {{ $minTrackHeight }}px;">
+        <div class="relative min-h-0 w-full flex-1 overflow-y-auto" style="min-height: {{ $minTrackHeight }}px;">
             @foreach($days as $i => $day)
                 @php
                     $dateKey = $day->toDateString();
@@ -96,6 +101,8 @@
                     'height' => $laneHeight,
                     'colWidth' => $colWidth,
                     'statusRowHeight' => $statusRowHeight,
+                    'lineBodyBottomPad' => $lineBodyBottomPad,
+                    'cardBottomPad' => $cardBottomPad,
                     'phaseColours' => $phaseColours,
                     'customerBadgeColours' => $customerBadgeColours,
                 ])
