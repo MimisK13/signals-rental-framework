@@ -846,6 +846,10 @@
   z-index: 200;
 }
 
+.s-planning-filter-tag-input .s-tag-input-suggestions {
+  min-width: 100%;
+}
+
 .s-planning-day-header-col {
   padding: 4px 1px;
   text-align: center;
