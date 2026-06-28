@@ -11,10 +11,11 @@
     $jobCounts = $this->jobCountsPerDay;
     $heatmapMax = $this->jobCountHeatmapMax;
     $phaseColours = $this->phaseColours();
+    $customerBadgeColours = $this->customerBadgeColours();
     $statusRowHeight = 20;
-    $laneHeight = 78 + $statusRowHeight;
+    $laneHeight = 58 + $statusRowHeight;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
-    $gridStyle = "grid-template-columns: repeat({$dayCount}, 1fr)";
+    $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";
 @endphp
 
 @if(count($rows) === 0)
@@ -24,11 +25,11 @@
         <x-slot:icon><flux:icon.calendar-days class="!size-7" /></x-slot:icon>
     </x-signals.empty>
 @else
-    <div class="s-panel overflow-x-auto" wire:loading.class="opacity-60">
-        <div class="s-panel-body !p-0" style="min-width: {{ max(720, $dayCount * 48) }}px;">
-            <div class="border-l border-[var(--card-border)]">
+    <div class="s-panel w-full" wire:loading.class="opacity-60">
+        <div class="s-panel-body !p-0 w-full">
+            <div class="w-full border-l border-[var(--card-border)]">
                 {{-- Day header row --}}
-                <div class="grid border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
+                <div class="grid w-full border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
                     @foreach($days as $day)
                         @php
                             $dateKey = $day->toDateString();
@@ -44,7 +45,7 @@
                 </div>
 
                 {{-- Job-count heatmap row --}}
-                <div class="grid border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
+                <div class="grid w-full border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
                     @foreach($days as $day)
                         @php
                             $dateKey = $day->toDateString();
@@ -69,7 +70,7 @@
                     }
                     $trackHeight = $maxLanes * $laneHeight;
                 @endphp
-                <div class="relative" style="height: {{ $trackHeight }}px;">
+                <div class="relative w-full" style="height: {{ $trackHeight }}px;">
                     @foreach($days as $i => $day)
                         @php
                             $dateKey = $day->toDateString();
@@ -94,6 +95,7 @@
                                 'colWidth' => $colWidth,
                                 'statusRowHeight' => $statusRowHeight,
                                 'phaseColours' => $phaseColours,
+                                'customerBadgeColours' => $customerBadgeColours,
                             ])
                         </div>
                     @endforeach

@@ -355,10 +355,51 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 'extends_after' => $end->gt($windowEnd),
                 'start_min' => (int) round($windowStart->diffInSeconds($start, false) / 60),
                 'end_min' => (int) round($windowStart->diffInSeconds($end, false) / 60),
+                'gap_left_px' => 0,
+                'gap_right_px' => 0,
             ];
         }
 
-        return app(EventLaneAllocator::class)->allocate($rows);
+        $rows = app(EventLaneAllocator::class)->allocate($rows);
+
+        return $this->applyAdjacentBarGaps($rows);
+    }
+
+    /**
+     * Add a small visual gap between consecutive jobs in the same lane that touch
+     * at a day boundary (so adjacent cards do not visually merge).
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function applyAdjacentBarGaps(array $rows): array
+    {
+        $grouped = collect($rows)->groupBy('lane');
+
+        foreach ($grouped as $laneRows) {
+            $sorted = $laneRows->sortBy('start_min')->values()->all();
+
+            for ($i = 1; $i < count($sorted); $i++) {
+                $previous = $sorted[$i - 1];
+                $current = $sorted[$i];
+
+                if ($previous['end_min'] > $current['start_min']) {
+                    continue;
+                }
+
+                foreach ($rows as &$row) {
+                    if ($row['id'] === $previous['id']) {
+                        $row['gap_right_px'] = 2;
+                    }
+                    if ($row['id'] === $current['id']) {
+                        $row['gap_left_px'] = 2;
+                    }
+                }
+                unset($row);
+            }
+        }
+
+        return $rows;
     }
 
     /**
@@ -507,6 +548,15 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             'delivery' => '#3498db',
             'in-use' => '#f39c12',
             'collection' => '#27ae60',
+        ];
+    }
+
+    /** Customer Collecting / Returning badge colours — match the legend key. */
+    public function customerBadgeColours(): array
+    {
+        return [
+            'collecting' => '#27ae60',
+            'returning' => '#17a2b8',
         ];
     }
 

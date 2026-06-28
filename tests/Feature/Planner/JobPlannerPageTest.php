@@ -267,6 +267,43 @@ it('snaps bar position to whole day columns in the window', function () {
         ->and($row['width'])->toBe((3 / 14) * 100);
 });
 
+it('adds a visual gap between consecutive touching jobs in the same lane', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-23 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-24 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-26 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $rows = Volt::test('planner.index')->get('rows');
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0]['lane'])->toBe(0)
+        ->and($rows[1]['lane'])->toBe(0)
+        ->and($rows[0]['gap_right_px'])->toBe(2)
+        ->and($rows[1]['gap_left_px'])->toBe(2);
+});
+
+it('exposes customer badge colours matching the legend key', function () {
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('planner.index')->get('legend');
+
+    $collecting = collect($legend)->first(fn (array $entry): bool => $entry['label'] === __('Collecting'));
+    $returning = collect($legend)->first(fn (array $entry): bool => $entry['label'] === __('Returning'));
+
+    expect($collecting)->not->toBeNull()
+        ->and($returning)->not->toBeNull()
+        ->and($collecting['colour'])->toBe('#27ae60')
+        ->and($returning['colour'])->toBe('#17a2b8')
+        ->and($collecting['icon'])->toBe('truck')
+        ->and($returning['icon'])->toBe('truck');
+});
+
 it('surfaces venue address on each row with member name fallback', function () {
     $venue = Member::factory()->organisation()->create(['name' => 'Town Hall']);
     Address::factory()->create([
