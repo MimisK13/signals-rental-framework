@@ -442,11 +442,12 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     /**
      * Per-day phase segments snapped to window day columns (delivery / in-use / collection).
      *
-     * @return list<array{day_index: int, phase: string, label: string}>
+     * @return list<array{day_index: int, left: float, width: float, phase: string, label: string}>
      */
     private function daySegmentsFor(Opportunity $job): array
     {
         $segments = [];
+        $dayCount = max(1, count($this->dayColumns()));
 
         foreach ($this->dayColumns() as $index => $day) {
             $dayStart = $day->copy()->startOfDay();
@@ -460,6 +461,8 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
 
             $segments[] = [
                 'day_index' => $index,
+                'left' => ($index / $dayCount) * 100,
+                'width' => (1 / $dayCount) * 100,
                 'phase' => $phase,
                 'label' => match ($phase) {
                     'delivery' => __('Delivery'),

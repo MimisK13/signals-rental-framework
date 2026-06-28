@@ -343,6 +343,20 @@ it('exposes customer badge colours matching the legend key', function () {
         ->and($returning['icon'])->toBe('truck');
 });
 
+it('snaps day segment positions to track day columns', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-24 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $segment = Volt::test('planner.index')->get('rows')[0]['day_segments'][0];
+
+    expect($segment['left'])->toBe((2 / 30) * 100)
+        ->and($segment['width'])->toBe((1 / 30) * 100);
+});
+
 it('surfaces venue address on each row with member name fallback', function () {
     $venue = Member::factory()->organisation()->create(['name' => 'Town Hall']);
     Address::factory()->create([

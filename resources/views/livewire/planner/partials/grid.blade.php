@@ -13,7 +13,9 @@
     $phaseColours = $this->phaseColours();
     $customerBadgeColours = $this->customerBadgeColours();
     $statusRowHeight = 18;
+    $laneGap = 4;
     $laneHeight = 50 + $statusRowHeight;
+    $laneStride = $laneHeight + $laneGap;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
     $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";
 @endphp
@@ -68,7 +70,9 @@
                     foreach ($rows as $r) {
                         $maxLanes = max($maxLanes, (int) ($r['lanes'] ?? 1));
                     }
-                    $trackHeight = $maxLanes * $laneHeight;
+                    $trackHeight = $maxLanes > 0
+                        ? ($maxLanes * $laneStride - $laneGap)
+                        : 0;
                 @endphp
                 <div class="relative w-full" style="height: {{ $trackHeight }}px;">
                     @foreach($days as $i => $day)
@@ -85,19 +89,17 @@
                     @foreach($rows as $row)
                         @php
                             $lane = (int) ($row['lane'] ?? 0);
-                            $top = $lane * $laneHeight;
+                            $top = $lane * $laneStride;
                         @endphp
-                        <div wire:key="job-{{ $row['id'] }}" class="absolute left-0 right-0">
-                            @include('livewire.planner.partials.bar', [
-                                'row' => $row,
-                                'top' => $top,
-                                'height' => $laneHeight,
-                                'colWidth' => $colWidth,
-                                'statusRowHeight' => $statusRowHeight,
-                                'phaseColours' => $phaseColours,
-                                'customerBadgeColours' => $customerBadgeColours,
-                            ])
-                        </div>
+                        @include('livewire.planner.partials.bar', [
+                            'row' => $row,
+                            'top' => $top,
+                            'height' => $laneHeight,
+                            'colWidth' => $colWidth,
+                            'statusRowHeight' => $statusRowHeight,
+                            'phaseColours' => $phaseColours,
+                            'customerBadgeColours' => $customerBadgeColours,
+                        ])
                     @endforeach
                 </div>
             </div>
