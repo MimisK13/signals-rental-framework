@@ -36,15 +36,15 @@
             ? ($maxLanes * $laneStride - $laneGap)
             : 0;
     @endphp
-    <div class="s-panel w-full !p-0 overflow-hidden border-t-0 !rounded-t-none" wire:loading.class="opacity-60">
-        <div class="relative w-full" style="min-height: {{ $minTrackHeight }}px;">
+    <div class="s-panel relative w-full !p-0 overflow-hidden border-t-0 !rounded-t-none">
+        <div class="relative z-0 w-full" style="min-height: {{ $minTrackHeight }}px;">
             @foreach($days as $i => $day)
                 @php
                     $dateKey = $day->toDateString();
                     $isToday = $dateKey === $today;
                     $isWeekend = $day->isWeekend();
                 @endphp
-                <div class="absolute top-0 bottom-0 border-r border-[var(--card-border)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/25 ring-1 ring-inset ring-[#ffc107]/40' : '' }}"
+                <div class="pointer-events-none absolute top-0 bottom-0 border-r border-[var(--card-border)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/25 ring-1 ring-inset ring-[#ffc107]/40' : '' }}"
                      style="left: {{ $i * $colWidth }}%; width: {{ $colWidth }}%;"
                      wire:key="grid-{{ $dateKey }}"></div>
             @endforeach

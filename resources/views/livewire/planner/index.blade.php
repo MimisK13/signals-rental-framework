@@ -619,8 +619,8 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
 
     <div class="flex min-h-0 flex-1 flex-col px-6 py-4 max-md:px-5 max-sm:px-3">
     {{-- Sticky chrome: filters, legend, day header + heatmap --}}
-    <div class="sticky top-0 z-30 -mx-6 bg-[var(--content-bg)] px-6 pb-2 pt-1 shadow-sm">
-    <div class="s-panel mb-3">
+    <div class="pointer-events-none sticky top-0 z-30 -mx-6 bg-[var(--content-bg)] px-6 pb-2 pt-1 shadow-sm">
+    <div class="pointer-events-auto s-panel mb-3">
         <div class="s-panel-body flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1">
                 <label class="s-field-label" for="planner-date">{{ __('Date') }}</label>

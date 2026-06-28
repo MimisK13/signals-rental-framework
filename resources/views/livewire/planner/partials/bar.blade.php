@@ -18,25 +18,26 @@
         .' · '.($row['starts_at']?->format('j M') ?? '')
         .' – '.($row['ends_at']?->format('j M') ?? '');
     $showUrl = route('opportunities.show', $row['id']);
+    $contentHeight = 'calc(100% - '.$statusRowHeight.'px)';
 @endphp
 
-<div class="absolute left-0 right-0" style="top: {{ $top }}px; height: {{ $height }}px;" wire:key="job-{{ $row['id'] }}">
+<div class="pointer-events-none absolute left-0 right-0 z-[1]" style="top: {{ $top }}px; height: {{ $height }}px;" wire:key="job-{{ $row['id'] }}">
     <a href="{{ $showUrl }}" wire:navigate
-       class="absolute flex flex-col overflow-hidden rounded-none border-y border-black/10 shadow-sm no-underline text-white hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
-       style="left: calc({{ $barLeft }}% + {{ $gapLeft }}px); width: calc({{ $barWidth }}% - {{ $gapLeft + $gapRight }}px); top: 0; height: 100%; background: {{ $colour }};"
+       class="pointer-events-auto absolute inset-y-0 block overflow-hidden rounded-none border-y border-black/10 shadow-sm no-underline text-white transition-[filter] duration-150 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
+       style="left: calc({{ $barLeft }}% + {{ $gapLeft }}px); width: calc({{ $barWidth }}% - {{ $gapLeft + $gapRight }}px); background: {{ $colour }};"
        title="{{ $tooltip }}"
        aria-label="{{ ($row['number'] ?? ('#'.$row['id'])).($row['subject'] ? ' — '.$row['subject'] : '') }}">
 
         @if($row['extends_before'])
-            <div class="absolute left-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></div>
+            <span class="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></span>
         @endif
         @if($row['extends_after'])
-            <div class="absolute right-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></div>
+            <span class="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></span>
         @endif
 
-        <div class="relative z-10 flex min-h-0 flex-1 flex-col gap-0 px-1 pt-1" style="padding-bottom: {{ $lineBodyBottomPad }}px;">
+        <span class="pointer-events-none relative z-10 block px-1 pt-1" style="height: {{ $contentHeight }}; padding-bottom: {{ $lineBodyBottomPad }}px;">
             {{-- Line 1: number — subject --}}
-            <div class="flex items-center gap-0.5 leading-none" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
+            <span class="flex items-center gap-0.5 leading-none" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
                 <flux:icon.document-text class="!size-2 shrink-0 opacity-70" />
                 <span class="truncate font-semibold leading-none">
                     {{ $row['number'] ?? ('#'.$row['id']) }}
@@ -44,22 +45,22 @@
                         <span class="font-medium opacity-95"> — {{ $row['subject'] }}</span>
                     @endif
                 </span>
-            </div>
+            </span>
 
             {{-- Line 2: datetime range --}}
-            <div class="flex items-center gap-0.5 truncate leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
+            <span class="flex items-center gap-0.5 truncate leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
                 <flux:icon.clock class="!size-2 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['datetime_range'] }}</span>
-            </div>
+            </span>
 
             {{-- Line 3: address --}}
-            <div class="flex items-center gap-0.5 truncate leading-none opacity-90" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
+            <span class="flex items-center gap-0.5 truncate leading-none opacity-90" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
                 <flux:icon.map-pin class="!size-2 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['address'] }}</span>
-            </div>
+            </span>
 
             {{-- Line 4: status + Coll/Ret badges --}}
-            <div class="flex items-center justify-between gap-1 leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
+            <span class="flex items-center justify-between gap-1 leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
                 <span class="flex min-w-0 items-center gap-0.5 truncate leading-none">
                     <flux:icon.tag class="!size-2 shrink-0 opacity-70" />
                     <span class="truncate">{{ $row['status_label'] }}</span>
@@ -84,11 +85,11 @@
                         @endif
                     </span>
                 @endif
-            </div>
-        </div>
+            </span>
+        </span>
 
-        {{-- Status row: pinned to card bottom, day columns relative to this job block --}}
-        <div class="relative z-10 mt-auto w-full shrink-0" style="height: {{ $statusRowHeight }}px;">
+        {{-- Status row: pinned to card bottom --}}
+        <span class="pointer-events-none absolute bottom-0 left-0 right-0 z-10 block" style="height: {{ $statusRowHeight }}px;">
             @foreach($row['day_segments'] as $segment)
                 @php
                     $segLeft = $barWidth > 0
@@ -106,15 +107,14 @@
                         default => __('Use'),
                     };
                 @endphp
-                <div wire:key="seg-{{ $row['id'] }}-{{ $segment['day_index'] }}"
-                     class="absolute top-0 box-border flex items-center justify-center overflow-hidden text-[9px] font-semibold uppercase tracking-tight text-white {{ $isLastSegment ? '' : 'border-r border-white/15' }}"
-                     style="left: {{ $segLeft }}%; {{ $isLastSegment ? 'right: 0;' : 'width: '.$segWidth.'%;' }} height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
-                     title="{{ $segment['label'] }}">
+                <span class="absolute top-0 box-border flex items-center justify-center overflow-hidden text-[9px] font-semibold uppercase tracking-tight text-white {{ $isLastSegment ? '' : 'border-r border-white/15' }}"
+                      style="left: {{ $segLeft }}%; {{ $isLastSegment ? 'right: 0;' : 'width: '.$segWidth.'%;' }} height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
+                      title="{{ $segment['label'] }}">
                     @if($phase !== 'in-use')
                         <span class="max-w-full truncate leading-none">{{ $segmentLabel }}</span>
                     @endif
-                </div>
+                </span>
             @endforeach
-        </div>
+        </span>
     </a>
 </div>
