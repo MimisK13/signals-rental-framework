@@ -13,8 +13,8 @@
     $phaseColours = $this->phaseColours();
     $customerBadgeColours = $this->customerBadgeColours();
     $statusRowHeight = 18;
-    $laneGap = 4;
-    $laneHeight = 50 + $statusRowHeight;
+    $laneGap = $this->cardGapPx();
+    $laneHeight = 58 + $statusRowHeight;
     $laneStride = $laneHeight + $laneGap;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
     $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";

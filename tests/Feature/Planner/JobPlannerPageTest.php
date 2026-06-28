@@ -271,7 +271,7 @@ it('snaps bar position to whole day columns in the window', function () {
         ->and($row['width'])->toBe((3 / 30) * 100);
 });
 
-it('adds a visual gap between consecutive touching jobs in the same lane', function () {
+it('adds a symmetric visual gap between consecutive touching jobs in the same lane', function () {
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
         'ends_at' => Carbon::parse('2026-06-23 18:00:00', 'UTC'),
@@ -283,13 +283,15 @@ it('adds a visual gap between consecutive touching jobs in the same lane', funct
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('planner.index')->get('rows');
+    $component = Volt::test('planner.index');
+    $rows = $component->get('rows');
+    $halfGap = 2;
 
     expect($rows)->toHaveCount(2)
         ->and($rows[0]['lane'])->toBe(0)
         ->and($rows[1]['lane'])->toBe(0)
-        ->and($rows[0]['gap_right_px'])->toBe(2)
-        ->and($rows[1]['gap_left_px'])->toBe(2);
+        ->and($rows[0]['gap_right_px'])->toBe($halfGap)
+        ->and($rows[1]['gap_left_px'])->toBe($halfGap);
 });
 
 it('colours job cards by opportunity status', function () {

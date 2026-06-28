@@ -1,6 +1,5 @@
 {{--
-    A single overlap job card, positioned across the window track.
-    Status-row segments use track-relative % (same column math as the grid).
+    A single overlap job card: body + status row share one inset block aligned to day columns.
 --}}
 @php
     $colour = $row['colour'];
@@ -19,10 +18,10 @@
     $contentHeight = 'calc(100% - '.$statusRowHeight.'px)';
 @endphp
 
-<div class="absolute left-0 right-0" style="top: {{ $top }}px; height: {{ $height }}px;">
+<div class="absolute left-0 right-0" style="top: {{ $top }}px; height: {{ $height }}px;" wire:key="job-{{ $row['id'] }}">
     <a href="{{ $showUrl }}" wire:navigate
        class="absolute block overflow-hidden rounded-none border-y border-black/10 shadow-sm no-underline text-white hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
-       style="left: calc({{ $barLeft }}% + {{ $gapLeft }}px); width: calc({{ $barWidth }}% - {{ $gapLeft + $gapRight }}px); top: 0; height: {{ $contentHeight }}; background: {{ $colour }};"
+       style="left: calc({{ $barLeft }}% + {{ $gapLeft }}px); width: calc({{ $barWidth }}% - {{ $gapLeft + $gapRight }}px); top: 0; height: 100%; background: {{ $colour }};"
        title="{{ $tooltip }}"
        aria-label="{{ ($row['number'] ?? ('#'.$row['id'])).($row['subject'] ? ' — '.$row['subject'] : '') }}">
 
@@ -33,8 +32,8 @@
             <div class="absolute right-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></div>
         @endif
 
-        <div class="relative z-10 px-1 pt-1">
-            {{-- Line 1: number — subject + status / badges --}}
+        <div class="relative z-10 px-1 pt-1" style="height: {{ $contentHeight }};">
+            {{-- Line 1: number — subject + Coll/Ret badges --}}
             <div class="flex min-h-[11px] items-start justify-between gap-0.5 leading-none">
                 <span class="flex min-w-0 items-center gap-0.5">
                     <flux:icon.document-text class="!size-2.5 shrink-0 opacity-70" />
@@ -46,9 +45,6 @@
                     </span>
                 </span>
                 <span class="flex shrink-0 items-center gap-0.5">
-                    <span class="rounded-sm bg-black/30 px-px py-px text-[6px] font-semibold uppercase tracking-tight leading-none text-white">
-                        {{ $row['status_label'] }}
-                    </span>
                     @if($row['customer_collecting'])
                         <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[6px] font-semibold uppercase tracking-tight leading-none text-white"
                               style="background: {{ $customerBadgeColours['collecting'] ?? '#27ae60' }};"
@@ -79,29 +75,41 @@
                 <flux:icon.map-pin class="!size-2.5 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['address'] }}</span>
             </div>
+
+            {{-- Line 4: status label (plain text, card colour conveys status) --}}
+            <div class="flex min-h-[11px] items-center gap-0.5 truncate text-[10px] leading-none opacity-95">
+                <flux:icon.tag class="!size-2.5 shrink-0 opacity-70" />
+                <span class="truncate">{{ $row['status_label'] }}</span>
+            </div>
+        </div>
+
+        {{-- Status row: day columns relative to this job block (same width as body) --}}
+        <div class="absolute bottom-0 left-0 right-0 z-10" style="height: {{ $statusRowHeight }}px;">
+            @foreach($row['day_segments'] as $segment)
+                @php
+                    $segLeft = $barWidth > 0
+                        ? (($segment['left'] - $barLeft) / $barWidth) * 100
+                        : 0;
+                    $segWidth = $barWidth > 0
+                        ? ($segment['width'] / $barWidth) * 100
+                        : 0;
+                    $phase = $segment['phase'];
+                    $phaseColour = $phaseColours[$phase] ?? 'rgba(255,255,255,0.35)';
+                    $segmentLabel = match ($phase) {
+                        'delivery' => __('Del'),
+                        'collection' => __('Coll'),
+                        default => __('Use'),
+                    };
+                @endphp
+                <div wire:key="seg-{{ $row['id'] }}-{{ $segment['day_index'] }}"
+                     class="absolute top-0 box-border flex items-center justify-center overflow-hidden border-r border-white/15 text-[6px] font-semibold uppercase tracking-tight text-white"
+                     style="left: {{ $segLeft }}%; width: {{ $segWidth }}%; height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
+                     title="{{ $segment['label'] }}">
+                    @if($phase !== 'in-use')
+                        <span class="max-w-full truncate px-px leading-none">{{ $segmentLabel }}</span>
+                    @endif
+                </div>
+            @endforeach
         </div>
     </a>
-
-    {{-- Status row: snapped to track day columns (not card inset) --}}
-    @foreach($row['day_segments'] as $segment)
-        @php
-            $segLeft = (float) $segment['left'];
-            $segWidth = (float) $segment['width'];
-            $phase = $segment['phase'];
-            $phaseColour = $phaseColours[$phase] ?? 'rgba(255,255,255,0.35)';
-            $segmentLabel = match ($phase) {
-                'delivery' => __('Del'),
-                'collection' => __('Coll'),
-                default => __('Use'),
-            };
-        @endphp
-        <div wire:key="seg-{{ $row['id'] }}-{{ $segment['day_index'] }}"
-             class="absolute bottom-0 z-10 box-border flex items-center justify-center overflow-hidden border-r border-white/15 text-[6px] font-semibold uppercase tracking-tight text-white"
-             style="left: {{ $segLeft }}%; width: {{ $segWidth }}%; height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
-             title="{{ $segment['label'] }}">
-            @if($phase !== 'in-use')
-                <span class="max-w-full truncate px-px leading-none">{{ $segmentLabel }}</span>
-            @endif
-        </div>
-    @endforeach
 </div>

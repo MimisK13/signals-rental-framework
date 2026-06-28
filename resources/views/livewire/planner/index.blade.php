@@ -31,6 +31,9 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
 {
     private const int JOBS_LIMIT = 200;
 
+    /** Gap between adjacent jobs (horizontal) and lanes (vertical), in px. */
+    private const int CARD_GAP_PX = 4;
+
     /** Selectable view-period lengths, in days, keyed by the URL token. */
     private const VIEW_PERIODS = [
         '1w' => 7,
@@ -374,6 +377,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
      */
     private function applyAdjacentBarGaps(array $rows): array
     {
+        $halfGap = (int) (self::CARD_GAP_PX / 2);
         $grouped = collect($rows)->groupBy('lane');
 
         foreach ($grouped as $laneRows) {
@@ -389,10 +393,10 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
 
                 foreach ($rows as &$row) {
                     if ($row['id'] === $previous['id']) {
-                        $row['gap_right_px'] = 2;
+                        $row['gap_right_px'] = $halfGap;
                     }
                     if ($row['id'] === $current['id']) {
-                        $row['gap_left_px'] = 2;
+                        $row['gap_left_px'] = $halfGap;
                     }
                 }
                 unset($row);
@@ -400,6 +404,11 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         }
 
         return $rows;
+    }
+
+    public function cardGapPx(): int
+    {
+        return self::CARD_GAP_PX;
     }
 
     /**
