@@ -439,13 +439,14 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
 @php
     $dayList = $this->windowDays;
-    $stores = \App\Models\Store::query()->orderBy('name')->get(['id', 'name']);
+    $stores = \App\Models\Store::query()->inDefaultQueries()->orderBy('name')->get(['id', 'name']);
     $availabilityIndexUrl = route('availability.index', array_filter([
-        'store' => $storeId ?: null,
+        'stores' => $storeId ? [$storeId] : null,
         'from' => $from !== '' ? $from : null,
         'days' => $days,
         'group' => $product->product_group_id,
     ]));
+    $bookingsLoadingTargets = 'storeId,from,days,previousPeriod,nextPeriod';
 @endphp
 
 <section class="w-full s-avail-grid-page s-avail-grid-page--bookings">
@@ -462,48 +463,43 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         </x-signals.page-header>
 
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
-            <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Product') }}</label>
-                    <div class="s-select-display min-w-52" title="{{ $product->name }}">
-                        <span class="s-select-display-text">{{ $product->name }}</span>
-                        <a href="{{ route('products.show', $product) }}"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="s-select-display-action"
-                           title="{{ __('Product details') }}">
-                            <flux:icon.information-circle class="!size-3.5" />
-                        </a>
+            <div class="s-panel">
+                <div class="s-panel-body flex flex-wrap items-end gap-3">
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Product') }}</span>
+                        <div class="s-select-display min-w-52" title="{{ $product->name }}">
+                            <span class="s-select-display-text">{{ $product->name }}</span>
+                            <a href="{{ route('products.show', $product) }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="s-select-display-action"
+                               title="{{ __('Product details') }}">
+                                <flux:icon.information-circle class="!size-3.5" />
+                            </a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Store') }}</label>
-                    <select wire:model.live="storeId" class="s-select min-w-44" aria-label="{{ __('Store') }}">
-                        @foreach($stores as $store)
-                            <option value="{{ $store->id }}">{{ $store->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    @include('livewire.partials.filter-store-combobox', ['stores' => $stores, 'storeId' => $storeId])
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Start date') }}</label>
-                    <x-signals.datepicker
-                        wire:key="bookings-from-{{ $from }}"
-                        :value="$from !== '' ? $from : null"
-                        placeholder="{{ __('Pick a date') }}"
-                        class="s-avail-filter-datepicker min-w-[9.5rem]"
-                        x-on:input="$wire.set('from', $event.detail)"
-                    />
-                </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Start date') }}</span>
+                        <x-signals.datepicker
+                            wire:key="bookings-from-{{ $from }}"
+                            :value="$from !== '' ? $from : null"
+                            placeholder="{{ __('Pick a date') }}"
+                            class="s-avail-filter-datepicker min-w-[9.5rem]"
+                            x-on:input="$wire.set('from', $event.detail)"
+                        />
+                    </div>
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Days period') }}</label>
-                    <select wire:model.live="days" class="s-select min-w-[9.5rem]" aria-label="{{ __('Days period') }}">
-                        @foreach($this->periodOptions() as $option)
-                            <option value="{{ $option }}">{{ $option }} {{ __('days') }}</option>
-                        @endforeach
-                    </select>
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Days') }}</span>
+                        <select wire:model.live="days" class="s-select min-w-[9.5rem]" aria-label="{{ __('Days period') }}">
+                            @foreach($this->periodOptions() as $option)
+                                <option value="{{ $option }}">{{ $option }} {{ __('days') }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -519,13 +515,18 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         </div>
     @else
         <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">
-            @include('livewire.availability.partials.bookings-grid')
-            @include('livewire.availability.partials.grid-legend')
-            <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
-                <span class="font-semibold uppercase tracking-wide">{{ __('Opportunity phases') }}</span>
-                @include('livewire.availability.partials.opportunity-phase-legend', [
-                    'entries' => $this->opportunityPhaseLegend,
-                ])
+            <div wire:loading.remove wire:target="{{ $bookingsLoadingTargets }}">
+                @include('livewire.availability.partials.bookings-grid')
+                @include('livewire.availability.partials.grid-legend')
+                <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
+                    <span class="font-semibold uppercase tracking-wide">{{ __('Opportunity phases') }}</span>
+                    @include('livewire.availability.partials.opportunity-phase-legend', [
+                        'entries' => $this->opportunityPhaseLegend,
+                    ])
+                </div>
+            </div>
+            <div wire:loading.flex wire:target="{{ $bookingsLoadingTargets }}" class="w-full">
+                @include('livewire.availability.partials.grid-skeleton')
             </div>
         </div>
     @endif

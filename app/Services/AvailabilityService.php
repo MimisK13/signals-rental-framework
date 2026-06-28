@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\Availability\AvailabilityData;
 use App\Data\Availability\AvailabilityRangeData;
 use App\Data\Availability\AvailabilitySlotData;
+use App\Data\Availability\CalendarDayData;
 use App\Data\Availability\CalendarProductData;
 use App\Data\Availability\GanttData;
 use App\Data\Availability\GanttDemandBarData;
@@ -586,6 +587,123 @@ class AvailabilityService
             ->values();
 
         return $calendar;
+    }
+
+    /**
+     * Calendar grid for several stores with per-day availability summed company-wide.
+     *
+     * When `$storeIds` is empty, {@see Store::scopeInDefaultQueries()} stores are
+     * used. Availability, shortage flags, and pending check-in counts are aggregated
+     * per product per day across the resolved stores.
+     *
+     * @param  list<int>  $storeIds
+     * @param  list<int>  $productIds
+     * @return SupportCollection<int, CalendarProductData>
+     */
+    public function getCalendarForStores(array $storeIds, Carbon $from, Carbon $to, array $productIds = []): SupportCollection
+    {
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+
+        if ($resolvedStoreIds === []) {
+            return collect();
+        }
+
+        /** @var array<int, array<string, array{available: int, has_shortage: bool, pending_checkin: int}>> $byProductDay */
+        $byProductDay = [];
+        $productNames = [];
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $calendar = $this->getCalendar($storeId, $from, $to, $productIds);
+
+            foreach ($calendar as $productRow) {
+                $productId = $productRow->product_id;
+                $productNames[$productId] = $productRow->product_name;
+
+                foreach ($productRow->days as $day) {
+                    if (! isset($byProductDay[$productId][$day->date])) {
+                        $byProductDay[$productId][$day->date] = [
+                            'available' => 0,
+                            'has_shortage' => false,
+                            'pending_checkin' => 0,
+                        ];
+                    }
+
+                    $byProductDay[$productId][$day->date]['available'] += $day->available;
+                    $byProductDay[$productId][$day->date]['has_shortage'] = $byProductDay[$productId][$day->date]['has_shortage'] || $day->has_shortage;
+                    $byProductDay[$productId][$day->date]['pending_checkin'] += $day->pending_checkin;
+                }
+            }
+        }
+
+        /** @var SupportCollection<int, CalendarProductData> $result */
+        $result = collect($byProductDay)
+            ->map(function (array $days, int $productId) use ($productNames): CalendarProductData {
+                ksort($days);
+
+                $dayRows = [];
+                foreach ($days as $date => $aggregated) {
+                    $dayRows[] = new CalendarDayData(
+                        date: $date,
+                        available: $aggregated['available'],
+                        has_shortage: $aggregated['has_shortage'] || $aggregated['available'] < 0,
+                        pending_checkin: $aggregated['pending_checkin'],
+                    );
+                }
+
+                return new CalendarProductData(
+                    product_id: $productId,
+                    product_name: $productNames[$productId] ?? null,
+                    days: $dayRows,
+                );
+            })
+            ->values();
+
+        return $result;
+    }
+
+    /**
+     * Total sellable stock summed across several stores, keyed by product id.
+     *
+     * @param  list<int>  $productIds
+     * @param  list<int>  $storeIds  explicit stores; empty = default-query stores
+     * @return array<int, int>
+     */
+    public function productTotalStockForStores(array $productIds, array $storeIds): array
+    {
+        $normalised = array_values(array_unique(array_map(intval(...), $productIds)));
+
+        if ($normalised === []) {
+            return [];
+        }
+
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+        $totals = array_fill_keys($normalised, 0);
+
+        foreach ($resolvedStoreIds as $storeId) {
+            foreach ($this->productTotalStock($normalised, $storeId) as $productId => $stock) {
+                $totals[$productId] = ($totals[$productId] ?? 0) + $stock;
+            }
+        }
+
+        return $totals;
+    }
+
+    /**
+     * @param  list<int>  $storeIds
+     * @return list<int>
+     */
+    private function resolveDefaultQueryStoreIds(array $storeIds): array
+    {
+        if ($storeIds !== []) {
+            return array_values(array_unique(array_map(intval(...), $storeIds)));
+        }
+
+        return Store::query()
+            ->inDefaultQueries()
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
     }
 
     /**

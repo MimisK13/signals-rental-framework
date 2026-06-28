@@ -10,15 +10,10 @@
     $paginator = $grid['paginator'];
     $dayList = $this->groupDays;
     $fromDate = $this->from !== '' ? $this->from : \Illuminate\Support\Carbon::today('UTC')->toDateString();
+    $bookingsStoreId = $this->primaryStoreId();
 @endphp
 
-@if($storeId === 0)
-    <x-signals.empty
-        title="{{ __('No store selected') }}"
-        description="{{ __('Choose a store to view availability.') }}">
-        <x-slot:icon><flux:icon.building-storefront class="!size-7" /></x-slot:icon>
-    </x-signals.empty>
-@elseif($groupId === null)
+@if($groupId === null)
     <x-signals.empty
         title="{{ __('Select a product group') }}"
         description="{{ __('Choose a product group to view the availability of its products over the period.') }}">
@@ -46,7 +41,7 @@
                             'productName' => $row['product_name'] ?? __('Product #:id', ['id' => $row['product_id']]),
                             'fromDate' => $fromDate,
                             'daysPeriod' => $this->daysPeriod,
-                            'storeId' => $storeId,
+                            'storeId' => $bookingsStoreId,
                         ])->render(),
                     ])
                     @foreach($row['cells'] as $cell)
@@ -59,7 +54,7 @@
                                 'product' => $row['product_id'],
                                 'from' => $fromDate,
                                 'days' => $this->daysPeriod,
-                                'store' => $storeId,
+                                'store' => $bookingsStoreId,
                             ]),
                         ])
                     @endforeach

@@ -77,12 +77,19 @@ function seedGroupProduct(ProductGroup $group, Store $store, string $name, int $
     return $product;
 }
 
-it('defaults to a 30-day period', function () {
+it('defaults to a 30-day period and all stores', function () {
     $this->actingAs($this->user);
 
     Volt::test('availability.index')
         ->assertSet('daysPeriod', 30)
-        ->assertSet('storeId', $this->store->id);
+        ->assertSet('storeIds', []);
+});
+
+it('defaults to today when from is empty on mount', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')
+        ->assertSet('from', '2026-06-20');
 });
 
 it('forbids the page for a user without availability.view', function () {
@@ -216,6 +223,55 @@ it('shifts the date window from the grid header navigation', function () {
         ->assertSet('from', '2026-06-20')
         ->assertSeeHtml('wire:click="previousPeriod"')
         ->assertSeeHtml('wire:click="nextPeriod"');
+});
+
+it('sums availability across multiple selected stores', function () {
+    $otherStore = Store::factory()->create(['name' => 'North Depot', 'timezone' => 'UTC']);
+
+    $product = Product::factory()->create([
+        'name' => 'Multi Store Speaker',
+        'product_group_id' => $this->group->id,
+    ]);
+
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 10,
+    ]);
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $otherStore->id,
+        'quantity_held' => 6,
+    ]);
+
+    AvailabilityDailySummary::factory()
+        ->day(Carbon::parse('2026-06-20', 'UTC'), 4, 4)
+        ->create(['product_id' => $product->id, 'store_id' => $this->store->id]);
+    AvailabilityDailySummary::factory()
+        ->day(Carbon::parse('2026-06-20', 'UTC'), 2, 2)
+        ->create(['product_id' => $product->id, 'store_id' => $otherStore->id]);
+
+    $this->actingAs($this->user);
+
+    // available=6 across stores, held = (10+6) - 6 = 10.
+    Volt::test('availability.index')
+        ->set('groupId', $this->group->id)
+        ->set('storeIds', [$this->store->id, $otherStore->id])
+        ->assertSee('Multi Store Speaker')
+        ->assertSeeHtml('(10)');
+});
+
+it('renders toggle switches and grid skeleton markup', function () {
+    seedGroupProduct($this->group, $this->store, 'Toggle Speaker', stock: 10, available: 4);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')
+        ->set('groupId', $this->group->id)
+        ->assertSeeHtml('s-toggle')
+        ->assertSeeHtml('s-tag-input')
+        ->assertSeeHtml('wire:loading.flex')
+        ->assertSeeHtml('avail-skeleton-row');
 });
 
 it('renders the RMS-style quantity key legend', function () {

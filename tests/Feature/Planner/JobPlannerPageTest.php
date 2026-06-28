@@ -60,7 +60,7 @@ it('renders the planner page for a user with opportunities.access', function () 
 
     Volt::test('planner.index')
         ->assertSet('viewPeriod', '1m')
-        ->assertSet('storeId', 0)
+        ->assertSet('storeIds', [])
         ->assertSet('date', '2026-06-20')
         ->assertSet('includeOrders', true)
         ->assertSet('includeQuotations', true)
@@ -164,8 +164,40 @@ it('filters by store', function () {
     $this->actingAs($this->user);
 
     Volt::test('planner.index')
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->assertCount('rows', 1);
+});
+
+it('filters by multiple stores via storeIds array', function () {
+    $other = Store::factory()->create(['name' => 'Depot']);
+
+    Opportunity::factory()->order()->create([
+        'store_id' => $this->store->id,
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'store_id' => $other->id,
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')
+        ->set('storeIds', [$this->store->id, $other->id])
+        ->assertCount('rows', 2);
+});
+
+it('renders store tag-input, datepicker, toggles, and grid skeleton markup', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')
+        ->assertSeeHtml('s-tag-input')
+        ->assertSeeHtml('s-avail-filter-datepicker')
+        ->assertSeeHtml('s-toggle')
+        ->assertSeeHtml('wire:loading.remove')
+        ->assertSeeHtml('planner-skeleton-lane');
 });
 
 it('searches across subject, number and member name case-insensitively', function () {

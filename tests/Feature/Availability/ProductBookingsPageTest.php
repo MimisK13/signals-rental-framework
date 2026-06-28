@@ -69,7 +69,8 @@ it('renders the product bookings page for a user with availability.view', functi
         ->assertSee('Available')
         ->assertSeeHtml('s-avail-group-table-scroll')
         ->assertSeeHtml('s-avail-grid-sticky-chrome')
-        ->assertSee('quantity on sub-rent');
+        ->assertSeeHtml('s-combobox')
+        ->assertSeeHtml('avail-skeleton-row');
 });
 
 it('shifts the bookings date window from the grid header navigation', function () {
@@ -115,7 +116,7 @@ it('links back to the main availability page preserving filters', function () {
     $this->actingAs($this->user);
 
     $backUrl = route('availability.index', [
-        'store' => $this->store->id,
+        'stores' => [$this->store->id],
         'from' => '2026-06-28',
         'days' => 28,
         'group' => $group->id,
@@ -363,7 +364,7 @@ it('links from the group grid day cells to the bookings page using the view star
 
     Volt::test('availability.index')
         ->set('groupId', $group->id)
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->set('from', '2026-06-28')
         ->assertSeeHtml('href="'.e($cellUrl).'"')
         ->assertSeeHtml('s-avail-group-cell-link');
@@ -398,7 +399,7 @@ it('links from the group grid product name to the bookings page', function () {
 
     Volt::test('availability.index')
         ->set('groupId', $group->id)
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->set('from', '2026-06-28')
         ->assertSeeHtml('href="'.e($expectedUrl).'"')
         ->assertSeeHtml('href="'.e(route('products.show', $product)).'"')

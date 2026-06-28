@@ -48,11 +48,11 @@ it('forbids the page for a user without availability.view', function () {
     Volt::test('availability.index')->assertForbidden();
 });
 
-it('defaults to the default store, today, and a 30-day period', function () {
+it('defaults to today, all stores, and a 30-day period', function () {
     $this->actingAs($this->user);
 
     Volt::test('availability.index')
-        ->assertSet('storeId', $this->store->id)
+        ->assertSet('storeIds', [])
         ->assertSet('from', '2026-06-20')
         ->assertSet('daysPeriod', 30);
 });

@@ -2,9 +2,9 @@
 
 use App\Enums\OpportunityState;
 use App\Models\Opportunity;
-use App\Models\Store;
 use App\Services\Calendar\EventLaneAllocator;
 use App\Services\Opportunities\OpportunityPresentation;
+use App\Services\Planning\PlanningStoreFilter;
 use App\Models\Member;
 use App\Support\Formatter;
 use Illuminate\Database\Eloquent\Builder;
@@ -60,9 +60,9 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     #[Url(as: 'orders')]
     public bool $includeOrders = true;
 
-    /** Store filter (0 = all stores). */
-    #[Url(as: 'store')]
-    public int $storeId = 0;
+    /** Store filter (empty = all default-query stores). */
+    #[Url(as: 'stores')]
+    public array $storeIds = [];
 
     /** Free-text search across subject / number / member name. */
     #[Url(as: 'q')]
@@ -84,6 +84,21 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     public function rendering(View $view): void
     {
         $view->title(__('Job Planner'));
+    }
+
+    public function syncStoreIdsFromTags(array $tagNames): void
+    {
+        $this->storeIds = app(PlanningStoreFilter::class)->storeIdsFromTags($tagNames);
+    }
+
+    public function selectedStoreTags(): array
+    {
+        return app(PlanningStoreFilter::class)->selectedStoreTags($this->storeIds);
+    }
+
+    public function storeNameSuggestions(): array
+    {
+        return app(PlanningStoreFilter::class)->storeNameSuggestions();
     }
 
     /** The inclusive number of days the window spans. */
@@ -198,13 +213,6 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         return $days;
     }
 
-    /** Stores for the filter dropdown. */
-    #[Computed]
-    public function stores(): Collection
-    {
-        return Store::query()->orderBy('name')->get(['id', 'name']);
-    }
-
     /**
      * Base query for opportunities overlapping the window (filters applied).
      */
@@ -234,7 +242,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             ->whereNotNull('ends_at')
             ->where('starts_at', '<=', $to)
             ->where('ends_at', '>=', $from)
-            ->when($this->storeId > 0, fn (Builder $q) => $q->where('store_id', $this->storeId))
+            ->when($this->storeIds !== [], fn (Builder $q) => $q->whereIn('store_id', $this->storeIds))
             ->when($this->search !== '', function (Builder $q): void {
                 $term = '%'.mb_strtolower($this->search).'%';
                 $q->where(function (Builder $inner) use ($term): void {
@@ -542,12 +550,20 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     <div class="pointer-events-none sticky top-0 z-30 -mx-6 bg-[var(--content-bg)] px-6 pb-2 pt-1 shadow-sm">
     <div class="pointer-events-auto s-panel mb-3">
         <div class="s-panel-body flex flex-wrap items-end gap-3">
+            @include('livewire.partials.filter-store-tags')
+
             <div class="flex flex-col gap-1">
-                <label class="s-field-label" for="planner-date">{{ __('Date') }}</label>
-                <input id="planner-date" type="date" wire:model.live="date" class="s-input" />
+                <span class="s-field-label">{{ __('Start date') }}</span>
+                <x-signals.datepicker
+                    wire:key="planner-date-{{ $date }}"
+                    :value="$date !== '' ? $date : null"
+                    placeholder="{{ __('Pick a date') }}"
+                    class="s-avail-filter-datepicker min-w-[9.5rem]"
+                    x-on:input="$wire.set('date', $event.detail)"
+                />
             </div>
 
-            <div class="flex items-end gap-1">
+            <div class="flex items-end gap-1 pb-0.5">
                 <button type="button" wire:click="previousPeriod" class="s-btn s-btn-sm s-btn-ghost" aria-label="{{ __('Previous period') }}">
                     <flux:icon.chevron-left class="!size-4" />
                 </button>
@@ -580,32 +596,21 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 </div>
             </div>
 
-            <div class="flex flex-col gap-1">
-                <label class="s-field-label" for="planner-store">{{ __('Store') }}</label>
-                <select id="planner-store" wire:model.live="storeId" class="s-select">
-                    <option value="0">{{ __('All stores') }}</option>
-                    @foreach($this->stores as $store)
-                        <option value="{{ $store->id }}" wire:key="store-{{ $store->id }}">{{ $store->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <span class="s-field-label">{{ __('Include') }}</span>
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-1.5 text-[12px]">
-                        <input type="checkbox" wire:model.live="includeOrders" class="s-checkbox" />
-                        <span class="s-badge text-white" style="background: #c0392b;">{{ __('Orders') }}</span>
-                    </label>
-                    <label class="flex items-center gap-1.5 text-[12px]">
-                        <input type="checkbox" wire:model.live="includeQuotations" class="s-checkbox" />
-                        <span class="s-badge text-white" style="background: var(--amber, #f39c12);">{{ __('Quotes') }}</span>
-                    </label>
-                </div>
+            <div class="ml-auto flex flex-wrap items-center justify-end gap-4 pb-1.5">
+                <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                    <input type="checkbox" wire:model.live="includeOrders" class="sr-only" />
+                    <x-signals.toggle :on="$includeOrders" />
+                    <span class="s-badge text-white" style="background: #c0392b;">{{ __('Orders') }}</span>
+                </label>
+                <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                    <input type="checkbox" wire:model.live="includeQuotations" class="sr-only" />
+                    <x-signals.toggle :on="$includeQuotations" />
+                    <span class="s-badge text-white" style="background: var(--amber, #f39c12);">{{ __('Quotes') }}</span>
+                </label>
             </div>
 
             <div class="flex flex-1 flex-col gap-1" style="min-width: 180px;">
-                <label class="s-field-label" for="planner-search">{{ __('Search') }}</label>
+                <span class="s-field-label">{{ __('Search') }}</span>
                 <input id="planner-search" type="search" wire:model.live.debounce.300ms="search"
                        placeholder="{{ __('Subject, number or member') }}" class="s-input" />
             </div>
@@ -641,6 +646,14 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     @endif
     </div>
 
-    @include('livewire.planner.partials.grid')
+    @php
+        $plannerLoadingTargets = 'storeIds,date,includeQuotations,includeOrders,search,viewPeriod,preset,syncStoreIdsFromTags,previousPeriod,nextPeriod,today,setZoom,applyPreset';
+    @endphp
+    <div wire:loading.remove wire:target="{{ $plannerLoadingTargets }}">
+        @include('livewire.planner.partials.grid')
+    </div>
+    <div wire:loading.flex wire:target="{{ $plannerLoadingTargets }}" class="w-full">
+        @include('livewire.planner.partials.grid-skeleton')
+    </div>
     </div>
 </section>

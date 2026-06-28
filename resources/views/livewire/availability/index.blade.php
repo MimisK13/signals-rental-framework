@@ -3,8 +3,8 @@
 use App\Data\Availability\CalendarProductData;
 use App\Enums\ProductType;
 use App\Models\Product;
+use App\Services\Planning\PlanningStoreFilter;
 use App\Models\ProductGroup;
-use App\Models\Store;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -39,8 +39,8 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     /** The selectable period lengths (in days) for the product-group grid. */
     private const PERIOD_OPTIONS = [7, 14, 28, 30, 60];
 
-    #[Url(as: 'store')]
-    public int $storeId = 0;
+    #[Url(as: 'stores')]
+    public array $storeIds = [];
 
     #[Url(as: 'from')]
     public string $from = '';
@@ -77,12 +77,6 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     {
         Gate::authorize('availability.view');
 
-        if ($this->storeId === 0) {
-            $this->storeId = (int) (Store::query()->where('is_default', true)->value('id')
-                ?? Store::query()->orderBy('id')->value('id')
-                ?? 0);
-        }
-
         if ($this->from === '') {
             $this->from = Carbon::today('UTC')->toDateString();
         }
@@ -98,9 +92,34 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
      */
     public function updated(string $property): void
     {
-        if (in_array($property, ['groupId', 'productType', 'shortagesOnly', 'warningsOnly', 'includeQuotes', 'daysPeriod', 'storeId', 'from'], true)) {
+        if (in_array($property, ['groupId', 'productType', 'shortagesOnly', 'warningsOnly', 'includeQuotes', 'daysPeriod', 'storeIds', 'from'], true)) {
             $this->resetPage();
         }
+    }
+
+    public function syncStoreIdsFromTags(array $tagNames): void
+    {
+        $this->storeIds = app(PlanningStoreFilter::class)->storeIdsFromTags($tagNames);
+    }
+
+    public function selectedStoreTags(): array
+    {
+        return app(PlanningStoreFilter::class)->selectedStoreTags($this->storeIds);
+    }
+
+    public function storeNameSuggestions(): array
+    {
+        return app(PlanningStoreFilter::class)->storeNameSuggestions();
+    }
+
+    public function resolvedStoreIds(): array
+    {
+        return app(PlanningStoreFilter::class)->resolvedStoreIds($this->storeIds);
+    }
+
+    public function primaryStoreId(): int
+    {
+        return app(PlanningStoreFilter::class)->primaryStoreId($this->storeIds);
     }
 
     /**
@@ -121,9 +140,13 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
      */
     public function getListeners(): array
     {
-        return [
-            'echo-private:availability.store.'.$this->storeId.',.availability.changed' => 'onStoreAvailabilityChanged',
-        ];
+        $listeners = [];
+
+        foreach ($this->resolvedStoreIds() as $storeId) {
+            $listeners['echo-private:availability.store.'.$storeId.',.availability.changed'] = 'onStoreAvailabilityChanged';
+        }
+
+        return $listeners;
     }
 
     public function onStoreAvailabilityChanged(): void
@@ -181,7 +204,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     {
         $empty = ['rows' => [], 'paginator' => Product::query()->whereRaw('1 = 0')->paginate(20)];
 
-        if ($this->storeId === 0 || $this->groupId === null) {
+        if ($this->groupId === null) {
             return $empty;
         }
 
@@ -215,8 +238,8 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         $from = Carbon::parse($this->fromDate());
         $to = Carbon::parse($this->groupTo());
 
-        $calendar = $service->getCalendar($this->storeId, $from, $to, $productIds)->keyBy('product_id');
-        $totalStock = $service->productTotalStock($productIds, $this->storeId);
+        $calendar = $service->getCalendarForStores($this->storeIds, $from, $to, $productIds)->keyBy('product_id');
+        $totalStock = $service->productTotalStockForStores($productIds, $this->storeIds);
         $days = $this->groupDays();
 
         $rows = [];
@@ -307,7 +330,6 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     public function with(): array
     {
         return [
-            'stores' => Store::query()->inDefaultQueries()->orderBy('name')->get(['id', 'name']),
             'productGroups' => ProductGroup::query()->ordered()->orderBy('name')->get(['id', 'name']),
             'productTypeOptions' => [
                 ProductType::Rental->value => ProductType::Rental->label(),
@@ -332,79 +354,82 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         </x-signals.page-header>
 
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
-            <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Product Group') }}</label>
-                    <select wire:model.live="groupId" class="s-select min-w-52" aria-label="{{ __('Product group') }}">
-                        <option value="">{{ __('Select a group…') }}</option>
-                        @foreach($productGroups as $group)
-                            <option value="{{ $group->id }}">{{ $group->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="s-panel">
+                <div class="s-panel-body flex flex-wrap items-end gap-3">
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Product Group') }}</span>
+                        <select wire:model.live="groupId" class="s-select min-w-52" aria-label="{{ __('Product group') }}">
+                            <option value="">{{ __('Select a group…') }}</option>
+                            @foreach($productGroups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Store') }}</label>
-                    <select wire:model.live="storeId" class="s-select min-w-44" aria-label="{{ __('Store') }}">
-                        @foreach($stores as $store)
-                            <option value="{{ $store->id }}">{{ $store->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    @include('livewire.partials.filter-store-tags')
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Product type') }}</label>
-                    <select wire:model.live="productType" class="s-select min-w-32" aria-label="{{ __('Product type') }}">
-                        <option value="">{{ __('All') }}</option>
-                        @foreach($productTypeOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Product type') }}</span>
+                        <select wire:model.live="productType" class="s-select min-w-32" aria-label="{{ __('Product type') }}">
+                            <option value="">{{ __('All') }}</option>
+                            @foreach($productTypeOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Start date') }}</label>
-                    <x-signals.datepicker
-                        wire:key="avail-from-{{ $from }}"
-                        :value="$from !== '' ? $from : null"
-                        placeholder="{{ __('Pick a date') }}"
-                        class="s-avail-filter-datepicker min-w-[9.5rem]"
-                        x-on:input="$wire.set('from', $event.detail)"
-                    />
-                </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Start date') }}</span>
+                        <x-signals.datepicker
+                            wire:key="avail-from-{{ $from }}"
+                            :value="$from !== '' ? $from : null"
+                            placeholder="{{ __('Pick a date') }}"
+                            class="s-avail-filter-datepicker min-w-[9.5rem]"
+                            x-on:input="$wire.set('from', $event.detail)"
+                        />
+                    </div>
 
-                <div class="flex flex-col gap-1">
-                    <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Days') }}</label>
-                    <select wire:model.live="daysPeriod" class="s-select min-w-[9.5rem]" aria-label="{{ __('Days period') }}">
-                        @foreach($periodOptions as $option)
-                            <option value="{{ $option }}">{{ $option }} {{ __('days') }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="s-field-label">{{ __('Days') }}</span>
+                        <select wire:model.live="daysPeriod" class="s-select min-w-[9.5rem]" aria-label="{{ __('Days period') }}">
+                            @foreach($periodOptions as $option)
+                                <option value="{{ $option }}">{{ $option }} {{ __('days') }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="ml-auto flex flex-wrap items-center justify-end gap-4 pb-1.5">
-                    <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
-                        <input type="checkbox" wire:model.live="shortagesOnly" class="sr-only" />
-                        <x-signals.checkbox :checked="$shortagesOnly" />
-                        <span>{{ __('Shortages only') }}</span>
-                    </label>
-                    <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
-                        <input type="checkbox" wire:model.live="warningsOnly" class="sr-only" />
-                        <x-signals.checkbox :checked="$warningsOnly" />
-                        <span>{{ __('Warnings only') }}</span>
-                    </label>
-                    <label class="inline-flex cursor-not-allowed items-center gap-2 text-[12px] opacity-50"
-                           title="{{ __('Coming in a future update — the read model does not yet support a quote-phase filter.') }}">
-                        <input type="checkbox" wire:model.live="includeQuotes" class="sr-only" disabled />
-                        <x-signals.checkbox :checked="$includeQuotes" />
-                        <span>{{ __('Include quotes') }}</span>
-                    </label>
+                    <div class="ml-auto flex flex-wrap items-center justify-end gap-4 pb-1.5">
+                        <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                            <input type="checkbox" wire:model.live="shortagesOnly" class="sr-only" />
+                            <x-signals.toggle :on="$shortagesOnly" />
+                            <span>{{ __('Shortages only') }}</span>
+                        </label>
+                        <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                            <input type="checkbox" wire:model.live="warningsOnly" class="sr-only" />
+                            <x-signals.toggle :on="$warningsOnly" />
+                            <span>{{ __('Warnings only') }}</span>
+                        </label>
+                        <label class="inline-flex cursor-not-allowed items-center gap-2 text-[12px] opacity-50"
+                               title="{{ __('Coming in a future update — the read model does not yet support a quote-phase filter.') }}">
+                            <input type="checkbox" wire:model.live="includeQuotes" class="sr-only" disabled />
+                            <x-signals.toggle :on="$includeQuotes" />
+                            <span>{{ __('Include quotes') }}</span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    @php
+        $availLoadingTargets = 'storeIds,from,groupId,productType,shortagesOnly,warningsOnly,includeQuotes,daysPeriod,syncStoreIdsFromTags,previousPeriod,nextPeriod';
+    @endphp
     <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">
-        @include('livewire.availability.partials.group')
+        <div wire:loading.remove wire:target="{{ $availLoadingTargets }}">
+            @include('livewire.availability.partials.group')
+        </div>
+        <div wire:loading.flex wire:target="{{ $availLoadingTargets }}" class="w-full">
+            @include('livewire.availability.partials.grid-skeleton')
+        </div>
     </div>
 </section>

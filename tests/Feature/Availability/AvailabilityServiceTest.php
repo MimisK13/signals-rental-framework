@@ -3,6 +3,7 @@
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
+use App\Models\AvailabilityDailySummary;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Product;
@@ -282,5 +283,47 @@ describe('deferred methods', function () {
         expect($range->slots)->toHaveCount(1)
             ->and($range->slots[0]->available)->toBe(3)
             ->and($range->min_available)->toBe(3);
+    });
+});
+
+describe('getCalendarForStores', function () {
+    it('sums per-day availability across the requested stores', function () {
+        $storeA = Store::factory()->create(['timezone' => 'UTC']);
+        $storeB = Store::factory()->create(['timezone' => 'UTC']);
+        $product = Product::factory()->bulk()->create();
+
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $storeA->id,
+            'quantity_held' => 10,
+        ]);
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $storeB->id,
+            'quantity_held' => 6,
+        ]);
+
+        AvailabilityDailySummary::factory()
+            ->day(Carbon::parse('2026-06-20', 'UTC'), 4, 4)
+            ->create(['product_id' => $product->id, 'store_id' => $storeA->id]);
+        AvailabilityDailySummary::factory()
+            ->day(Carbon::parse('2026-06-20', 'UTC'), 2, 2)
+            ->create(['product_id' => $product->id, 'store_id' => $storeB->id]);
+
+        $calendar = $this->service->getCalendarForStores(
+            [$storeA->id, $storeB->id],
+            Carbon::parse('2026-06-20', 'UTC'),
+            Carbon::parse('2026-06-20', 'UTC'),
+            [$product->id],
+        );
+
+        $row = $calendar->first();
+
+        expect($row)->not->toBeNull()
+            ->and($row->days[0]->available)->toBe(6);
+
+        $stockTotals = $this->service->productTotalStockForStores([$product->id], [$storeA->id, $storeB->id]);
+
+        expect($stockTotals[$product->id])->toBe(16);
     });
 });
