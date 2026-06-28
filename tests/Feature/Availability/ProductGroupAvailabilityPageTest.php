@@ -298,3 +298,46 @@ it('marks month-start day columns with a thick border class', function () {
         ->set('daysPeriod', 30)
         ->assertSeeHtml('s-planning-month-start');
 });
+
+it('syncs storeIds from store tag names', function () {
+    $depot = Store::factory()->create(['name' => 'North Depot', 'timezone' => 'UTC', 'include_in_default_queries' => true]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')->call('initializeGrid')
+        ->call('syncStoreIdsFromTags', ['North Depot'])
+        ->assertSet('storeIds', [$depot->id]);
+});
+
+it('subscribes to reverb channels for each resolved store via availability change handler', function () {
+    $otherStore = Store::factory()->create(['name' => 'East Depot', 'timezone' => 'UTC', 'include_in_default_queries' => true]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')->call('initializeGrid')
+        ->set('storeIds', [$this->store->id, $otherStore->id])
+        ->call('onStoreAvailabilityChanged')
+        ->assertSet('storeIds', [$this->store->id, $otherStore->id]);
+});
+
+it('colours shortage and warning cells on the group grid', function () {
+    seedGroupProduct($this->group, $this->store, 'Short Speaker', stock: 2, available: -1, shortage: true);
+    seedGroupProduct($this->group, $this->store, 'Low Speaker', stock: 5, available: 2, shortage: false);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')->call('initializeGrid')
+        ->set('groupId', $this->group->id)
+        ->assertSee('s-avail-group-cell--shortage', false)
+        ->assertSee('s-avail-group-cell--warning', false);
+});
+
+it('returns empty rows for an unknown product group id', function () {
+    $this->actingAs($this->user);
+
+    $grid = Volt::test('availability.index')->call('initializeGrid')
+        ->set('groupId', 99999)
+        ->get('groupRows');
+
+    expect($grid['rows'])->toBe([]);
+});

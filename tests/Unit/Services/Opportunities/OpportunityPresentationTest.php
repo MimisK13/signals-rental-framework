@@ -73,3 +73,45 @@ it('resolves delivery, in-use, and collection phases for a day', function () {
         ->and($this->presentation->phaseForDay($opportunity, $collectionDay->startOfDay(), $collectionDay->copy()->endOfDay()))->toBe('collection')
         ->and($this->presentation->phaseColour('delivery'))->toBe('#3498db');
 });
+
+it('falls back to in-use colour and label for unknown phase keys', function () {
+    expect($this->presentation->phaseColour('unknown-phase'))->toBe('#8e95a6')
+        ->and($this->presentation->phaseLabel('unknown-phase'))->toBe(__('In Use'))
+        ->and($this->presentation->phaseLabel('collection'))->toBe(__('Collection'));
+});
+
+it('builds phase definitions and phase-only legend entries', function () {
+    $definitions = $this->presentation->phaseDefinitions();
+    $legend = $this->presentation->phaseLegendEntries();
+
+    expect($definitions['delivery']['label'])->toBe(__('Delivery'))
+        ->and($definitions['in-use']['colour'])->toBe('#8e95a6')
+        ->and($legend)->toHaveCount(3)
+        ->and(collect($legend)->pluck('label')->all())->toBe([__('Delivery'), __('In Use'), __('Collection')]);
+});
+
+it('excludes draft statuses from the status legend', function () {
+    $entries = $this->presentation->statusLegendEntries();
+
+    expect(collect($entries)->pluck('label'))->not->toContain('Open')
+        ->and(collect($entries)->pluck('label'))->toContain('Provisional', 'Active');
+});
+
+it('uses delivery and collection fallbacks when lifecycle bands are sparse', function () {
+    $opportunity = Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-20 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-28 18:00:00', 'UTC'),
+        'deliver_starts_at' => null,
+        'deliver_ends_at' => null,
+        'show_starts_at' => Carbon::parse('2026-06-22 09:00:00', 'UTC'),
+        'show_ends_at' => Carbon::parse('2026-06-24 17:00:00', 'UTC'),
+        'collect_starts_at' => null,
+        'collect_ends_at' => null,
+    ]);
+
+    $preShowDay = Carbon::parse('2026-06-21', 'UTC');
+    $postShowDay = Carbon::parse('2026-06-27', 'UTC');
+
+    expect($this->presentation->phaseForDay($opportunity, $preShowDay->startOfDay(), $preShowDay->copy()->endOfDay()))->toBe('delivery')
+        ->and($this->presentation->phaseForDay($opportunity, $postShowDay->startOfDay(), $postShowDay->copy()->endOfDay()))->toBe('collection');
+});

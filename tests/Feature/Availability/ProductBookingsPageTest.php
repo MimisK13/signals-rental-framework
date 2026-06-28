@@ -440,3 +440,115 @@ it('links from the group grid product name to the bookings page', function () {
         ->assertSeeHtml('href="'.e(route('products.show', $product)).'"')
         ->assertSeeHtml('target="_blank"');
 });
+
+it('syncs storeIds from store tag names and redirects when stores change', function () {
+    $depot = Store::factory()->create(['name' => 'Depot', 'timezone' => 'UTC', 'include_in_default_queries' => true]);
+    $product = Product::factory()->create(['name' => 'Tagged Product']);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.bookings', [
+        'product' => $product,
+        'from' => '2026-06-28',
+        'days' => 7,
+    ])
+        ->call('syncStoreIdsFromTags', ['Depot'])
+        ->assertSet('storeIds', [$depot->id])
+        ->set('storeIds', [$this->store->id])
+        ->assertRedirect(route('availability.bookings', [
+            'product' => $product->id,
+            'from' => '2026-06-28',
+            'days' => 7,
+            'stores' => [$this->store->id],
+        ]));
+});
+
+it('defaults invalid day counts to thirty on mount', function () {
+    $product = Product::factory()->create();
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.bookings', [
+        'product' => $product,
+        'from' => '2026-06-28',
+        'days' => 99,
+    ])->assertSet('days', 30);
+});
+
+it('colours summary availability cells consistently with the group grid', function () {
+    $product = Product::factory()->create();
+
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 5,
+    ]);
+
+    AvailabilityDailySummary::factory()
+        ->day(Carbon::parse('2026-06-28', 'UTC'), -1, -1)
+        ->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+        ]);
+    AvailabilityDailySummary::factory()
+        ->day(Carbon::parse('2026-06-29', 'UTC'), 1, 1)
+        ->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+        ]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.bookings', [
+        'product' => $product,
+        'from' => '2026-06-28',
+        'days' => 2,
+    ])
+        ->call('initializeGrid')
+        ->assertSee('s-avail-group-cell--shortage', false)
+        ->assertSee('s-avail-group-cell--warning', false);
+});
+
+it('aggregates gantt data across multiple selected stores', function () {
+    $otherStore = Store::factory()->create(['timezone' => 'UTC', 'include_in_default_queries' => true]);
+    $product = Product::factory()->create(['name' => 'Multi-store Product']);
+
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 4,
+    ]);
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $otherStore->id,
+        'quantity_held' => 3,
+    ]);
+
+    $this->actingAs($this->user);
+
+    $gantt = Volt::test('availability.bookings', [
+        'product' => $product,
+        'from' => '2026-06-28',
+        'days' => 7,
+    ])
+        ->set('storeIds', [$this->store->id, $otherStore->id])
+        ->call('initializeGrid')
+        ->get('gantt');
+
+    expect($gantt)->not->toBeNull()
+        ->and($gantt->total_stock)->toBe(7);
+});
+
+it('exposes opportunity phase legend entries on the bookings grid', function () {
+    $product = Product::factory()->create();
+
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('availability.bookings', [
+        'product' => $product,
+        'from' => '2026-06-28',
+        'days' => 7,
+    ])->call('initializeGrid')->get('opportunityPhaseLegend');
+
+    expect(collect($legend)->pluck('label')->all())->toBe([__('Delivery'), __('In Use'), __('Collection')]);
+});

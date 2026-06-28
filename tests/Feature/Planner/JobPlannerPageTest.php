@@ -519,3 +519,48 @@ it('marks month-start day columns with a thick border class', function () {
         ->set('viewPeriod', '1m')
         ->assertSeeHtml('s-planning-month-start');
 });
+
+it('syncs storeIds from store tag names', function () {
+    $depot = Store::factory()->create(['name' => 'Depot', 'include_in_default_queries' => true]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('syncStoreIdsFromTags', ['Main', 'Depot'])
+        ->assertSet('storeIds', [$this->store->id, $depot->id])
+        ->tap(fn ($v) => expect($v->instance()->selectedStoreTags())->toBe(['Main', 'Depot']));
+});
+
+it('ignores invalid zoom tokens and clears preset when the date changes', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'next_30_days')
+        ->call('setZoom', 'invalid')
+        ->assertSet('viewPeriod', '1m')
+        ->set('date', '2026-06-21')
+        ->assertSet('preset', '');
+});
+
+it('ignores unknown date-range presets', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'not-a-preset')
+        ->assertSet('date', '2026-06-20')
+        ->assertSet('preset', '');
+});
+
+it('reports when the job list is truncated at the limit', function () {
+    Opportunity::factory()->order()->count(201)->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $component = Volt::test('planner.index')->call('initializeGrid');
+
+    expect($component->get('jobsTruncated'))->toBeTrue()
+        ->and($component->get('rows'))->toHaveCount(200);
+});
