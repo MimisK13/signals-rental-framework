@@ -124,7 +124,7 @@ test('getSearchIndex returns entries with content for all pages and changelog', 
 
     $changelogEntry = collect($index)->firstWhere('section', 'Changelog');
     expect($changelogEntry)->not->toBeNull()
-        ->and($changelogEntry['title'])->toContain('0.5.0');
+        ->and($changelogEntry['title'])->toContain('0.5.1');
 });
 
 test('last page has null next', function () {
@@ -142,16 +142,16 @@ test('getChangelog returns entries sorted newest first', function () {
     expect($entries)->toBeArray()
         ->and(count($entries))->toBeGreaterThan(0)
         ->and($entries[0])->toHaveKeys(['version', 'date', 'title', 'html'])
-        ->and($entries[0]['version'])->toBe('0.5.0');
+        ->and($entries[0]['version'])->toBe('0.5.1');
 });
 
 test('getChangelog extracts frontmatter correctly', function () {
     $service = app(DocsService::class);
     $entries = $service->getChangelog();
 
-    expect($entries[0]['version'])->toBe('0.5.0')
-        ->and($entries[0]['date'])->toBe('2026-06-26')
-        ->and($entries[0]['title'])->toBe('Opportunities, Availability Engine, Shortage Resolution & Quote Versioning');
+    expect($entries[0]['version'])->toBe('0.5.1')
+        ->and($entries[0]['date'])->toBe('2026-06-28')
+        ->and($entries[0]['title'])->toBe('Planning Interface Polish — Overlap Planner, Multi-Store Availability & Product Bookings');
 });
 
 test('getChangelog renders markdown to html', function () {
