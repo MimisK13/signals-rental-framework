@@ -1,5 +1,5 @@
 {{--
-    Planner overlap grid: date axis with per-day counts plus lane-packed job bars.
+    Planner overlap grid: day headers, heatmap counts, lane-packed job cards.
 --}}
 @php
     /** @var list<array<string, mixed>> $rows */
@@ -9,7 +9,8 @@
     $dayCount = max(1, count($days));
     $colWidth = 100 / $dayCount;
     $jobCounts = $this->jobCountsPerDay;
-    $laneHeight = 80;
+    $heatmapMax = $this->jobCountHeatmapMax;
+    $laneHeight = 108;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
 @endphp
 
@@ -22,19 +23,38 @@
 @else
     <div class="s-panel overflow-x-auto" wire:loading.class="opacity-60">
         <div class="s-panel-body" style="min-width: 720px;">
-            {{-- Date axis with per-day counts --}}
-            <div class="relative mb-2 flex border-b border-[var(--card-border)] pb-1">
+            {{-- Day header row --}}
+            <div class="relative mb-0 flex border-b border-[var(--card-border)]">
+                @foreach($days as $day)
+                    @php
+                        $dateKey = $day->toDateString();
+                        $isToday = $dateKey === $today;
+                        $isWeekend = $day->isWeekend();
+                    @endphp
+                    <div class="shrink-0 py-1 text-center text-[10px] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'ring-1 ring-inset ring-[#ffc107]/70 bg-[#fff3cd]/50' : '' }}"
+                         style="width: {{ $colWidth }}%;"
+                         wire:key="day-{{ $dateKey }}">
+                        <div class="font-semibold text-[var(--text-primary)]">{{ $day->format('D') }}</div>
+                        <div class="text-[var(--text-muted)]">{{ $day->format('j') }}</div>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Job-count heatmap row --}}
+            <div class="relative mb-2 flex border-b border-[var(--card-border)]">
                 @foreach($days as $day)
                     @php
                         $dateKey = $day->toDateString();
                         $count = $jobCounts[$dateKey] ?? 0;
                         $isToday = $dateKey === $today;
+                        $isWeekend = $day->isWeekend();
+                        $intensity = min(1, $count / $heatmapMax);
+                        $heatAlpha = 0.12 + ($intensity * 0.78);
                     @endphp
-                    <div class="shrink-0 text-center text-[10px] {{ $day->isWeekend() ? 'text-[var(--text-muted)]' : 'text-[var(--text-secondary,var(--text-muted))]' }} {{ $isToday ? 'rounded-sm bg-[#fff3cd] ring-1 ring-[#ffc107]/60' : '' }}"
-                         style="width: {{ $colWidth }}%;"
-                         wire:key="day-{{ $dateKey }}">
-                        <div class="font-semibold">{{ $day->format('D') }} {{ $day->format('j') }}</div>
-                        <div class="text-[9px] font-medium opacity-80">{{ $count }}</div>
+                    <div class="flex shrink-0 items-center justify-center py-1.5 text-[11px] font-bold text-[var(--text-primary)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'ring-1 ring-inset ring-[#ffc107]/50' : '' }}"
+                         style="width: {{ $colWidth }}%; background-color: rgba(192, 57, 43, {{ $count > 0 ? $heatAlpha : 0 }});"
+                         wire:key="heatmap-{{ $dateKey }}">
+                        {{ $count }}
                     </div>
                 @endforeach
             </div>
@@ -51,8 +71,9 @@
                     @php
                         $dateKey = $day->toDateString();
                         $isToday = $dateKey === $today;
+                        $isWeekend = $day->isWeekend();
                     @endphp
-                    <div class="absolute top-0 bottom-0 border-l {{ $isToday ? 'border-[#ffc107]/50 bg-[#fff3cd]/30' : 'border-[var(--card-border)] opacity-40' }}"
+                    <div class="absolute top-0 bottom-0 border-l border-[var(--card-border)]/60 {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/25 ring-1 ring-inset ring-[#ffc107]/40' : '' }}"
                          style="left: {{ $i * $colWidth }}%; width: {{ $colWidth }}%;"
                          wire:key="grid-{{ $dateKey }}"></div>
                 @endforeach
@@ -63,7 +84,12 @@
                         $top = $lane * $laneHeight + 4;
                     @endphp
                     <div wire:key="job-{{ $row['id'] }}" class="absolute left-0 right-0">
-                        @include('livewire.planner.partials.bar', ['row' => $row, 'top' => $top, 'height' => $laneHeight - 8, 'withLabel' => true])
+                        @include('livewire.planner.partials.bar', [
+                            'row' => $row,
+                            'top' => $top,
+                            'height' => $laneHeight - 8,
+                            'colWidth' => $colWidth,
+                        ])
                     </div>
                 @endforeach
             </div>

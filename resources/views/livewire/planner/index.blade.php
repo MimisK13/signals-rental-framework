@@ -5,6 +5,7 @@ use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Services\Calendar\EventLaneAllocator;
+use App\Models\Member;
 use App\Support\Formatter;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\CarbonInterface;
@@ -219,7 +220,13 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         $to = $this->windowEnd();
 
         return Opportunity::query()
-            ->with(['member:id,name', 'store:id,name', 'venue:id,name'])
+            ->with([
+                'member:id,name',
+                'member.addresses' => fn ($q) => $q->orderByDesc('is_primary'),
+                'venue:id,name',
+                'venue.addresses' => fn ($q) => $q->orderByDesc('is_primary'),
+                'store:id,name',
+            ])
             ->whereIn('state', $states)
             ->whereNotNull('starts_at')
             ->whereNotNull('ends_at')
@@ -293,59 +300,11 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         return $counts;
     }
 
-    /**
-     * KPI summary: jobs, value, orders/quotes, peak day, lanes used.
-     *
-     * @return array{
-     *     jobs: int,
-     *     orders: int,
-     *     quotes: int,
-     *     total_value_minor: int,
-     *     total_value_currency: string,
-     *     peak_day_label: ?string,
-     *     peak_count: int,
-     *     lanes_used: int,
-     * }
-     */
+    /** Maximum per-day job count in the window (for heatmap intensity scaling). */
     #[Computed]
-    public function summary(): array
+    public function jobCountHeatmapMax(): int
     {
-        $orders = $this->jobs->where('state', OpportunityState::Order)->count();
-        $quotes = $this->jobs->where('state', OpportunityState::Quotation)->count();
-
-        $totalValueMinor = (int) $this->jobs->sum(fn (Opportunity $job): int => $job->deal_total ?? $job->charge_total);
-
-        $currencies = $this->jobs->pluck('currency_code')->filter()->unique();
-        $valueCurrency = $currencies->count() === 1
-            ? (string) $currencies->first()
-            : settings('company.base_currency', 'GBP');
-
-        $peakDate = null;
-        $peakCount = 0;
-        foreach ($this->jobCountsPerDay as $date => $count) {
-            if ($count > $peakCount) {
-                $peakCount = $count;
-                $peakDate = $date;
-            }
-        }
-
-        $lanesUsed = 0;
-        foreach ($this->rows as $row) {
-            $lanesUsed = max($lanesUsed, (int) ($row['lane'] ?? 0) + 1);
-        }
-
-        return [
-            'jobs' => $this->jobs->count(),
-            'orders' => $orders,
-            'quotes' => $quotes,
-            'total_value_minor' => $totalValueMinor,
-            'total_value_currency' => is_string($valueCurrency) && $valueCurrency !== '' ? $valueCurrency : 'GBP',
-            'peak_day_label' => $peakDate !== null
-                ? Carbon::parse($peakDate, 'UTC')->format('D j M')
-                : null,
-            'peak_count' => $peakCount,
-            'lanes_used' => $lanesUsed,
-        ];
+        return max(1, max($this->jobCountsPerDay));
     }
 
     /**
@@ -356,6 +315,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     #[Computed]
     public function rows(): array
     {
+        $formatter = app(Formatter::class);
         $windowStart = $this->windowStart();
         $windowEnd = $this->windowEnd();
         $windowSeconds = max(1, $windowStart->diffInSeconds($windowEnd));
@@ -384,17 +344,16 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             $status = $job->statusEnum();
             $state = $job->state;
 
-            $bands = $this->bandsFor($job, $left, $width, $pct);
-
             $rows[] = [
                 'id' => $job->id,
                 'subject' => $job->subject,
                 'number' => $job->number,
                 'member' => $job->member?->name,
-                'venue' => $job->venue?->name ?? $job->store?->name,
+                'location_label' => $job->venue?->name ?? $job->member?->name ?? $job->store?->name,
+                'address' => $this->locationAddressFor($job),
                 'left' => $left,
                 'width' => $width,
-                'bands' => $bands,
+                'day_segments' => $this->daySegmentsFor($job),
                 'colour' => $this->colourForState($state),
                 'status_label' => $status->label(),
                 'state_label' => $state->label(),
@@ -402,7 +361,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 'customer_returning' => (bool) $job->customer_returning,
                 'starts_at' => $start,
                 'ends_at' => $end,
-                'date_range' => $start->format('j M').' – '.$end->format('j M'),
+                'datetime_range' => $formatter->dateTime($start).' – '.$formatter->dateTime($end),
                 'extends_before' => $start->lt($windowStart),
                 'extends_after' => $end->gt($windowEnd),
                 'start_min' => (int) round($windowStart->diffInSeconds($start, false) / 60),
@@ -414,46 +373,89 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     }
 
     /**
-     * Derive the Delivery / In-Use / Collection sub-bands for a job.
+     * Per-day phase segments snapped to window day columns (delivery / in-use / collection).
      *
-     * @param  callable(?CarbonInterface): float  $pct
-     * @return list<array{key: string, label: string, left: float, width: float}>
+     * @return list<array{day_index: int, phase: string, label: string}>
      */
-    private function bandsFor(Opportunity $job, float $barLeft, float $barWidth, callable $pct): array
+    private function daySegmentsFor(Opportunity $job): array
     {
-        $bands = [];
+        $segments = [];
 
-        $relative = function (?CarbonInterface $from, ?CarbonInterface $to) use ($barLeft, $barWidth, $pct): ?array {
-            if ($from === null || $to === null || $barWidth <= 0) {
-                return null;
+        foreach ($this->dayColumns() as $index => $day) {
+            $dayStart = $day->copy()->startOfDay();
+            $dayEnd = $day->copy()->endOfDay();
+
+            if ($job->starts_at > $dayEnd || $job->ends_at < $dayStart) {
+                continue;
             }
 
-            $left = (($pct($from) - $barLeft) / $barWidth) * 100;
-            $right = (($pct($to) - $barLeft) / $barWidth) * 100;
+            $phase = $this->phaseForDay($job, $dayStart, $dayEnd);
 
-            return [
-                'left' => max(0.0, min(100.0, $left)),
-                'width' => max(0.0, min(100.0, $right) - max(0.0, $left)),
+            $segments[] = [
+                'day_index' => $index,
+                'phase' => $phase,
+                'label' => match ($phase) {
+                    'delivery' => __('Delivery'),
+                    'collection' => __('Collection'),
+                    default => __('In Use'),
+                },
             ];
+        }
+
+        return $segments;
+    }
+
+    private function phaseForDay(Opportunity $job, Carbon $dayStart, Carbon $dayEnd): string
+    {
+        $overlaps = function (?CarbonInterface $from, ?CarbonInterface $to) use ($dayStart, $dayEnd): bool {
+            if ($from === null || $to === null) {
+                return false;
+            }
+
+            return $from <= $dayEnd && $to >= $dayStart;
         };
 
-        $delivery = $relative($job->deliver_starts_at, $job->deliver_ends_at);
-        if ($delivery !== null && $delivery['width'] > 0) {
-            $bands[] = ['key' => 'delivery', 'label' => __('Delivery')] + $delivery;
+        if ($overlaps($job->deliver_starts_at, $job->deliver_ends_at)) {
+            return 'delivery';
         }
 
-        $inUse = $relative($job->show_starts_at, $job->show_ends_at)
-            ?? $relative($job->starts_at, $job->ends_at);
-        if ($inUse !== null && $inUse['width'] > 0) {
-            $bands[] = ['key' => 'in-use', 'label' => __('In Use')] + $inUse;
+        if ($overlaps($job->show_starts_at, $job->show_ends_at)) {
+            return 'in-use';
         }
 
-        $collection = $relative($job->collect_starts_at, $job->collect_ends_at);
-        if ($collection !== null && $collection['width'] > 0) {
-            $bands[] = ['key' => 'collection', 'label' => __('Collection')] + $collection;
+        if ($overlaps($job->collect_starts_at, $job->collect_ends_at)) {
+            return 'collection';
         }
 
-        return $bands;
+        if ($overlaps($job->starts_at, $job->ends_at)) {
+            return 'in-use';
+        }
+
+        return 'in-use';
+    }
+
+    /** Venue (or member) address line, falling back to the location name. */
+    private function locationAddressFor(Opportunity $job): string
+    {
+        $entity = $job->venue ?? $job->member;
+        $fallback = $job->venue?->name ?? $job->member?->name ?? $job->store?->name ?? '';
+
+        if ($entity instanceof Member) {
+            $address = $entity->addresses->firstWhere('is_primary', true)
+                ?? $entity->addresses->first();
+
+            if ($address !== null) {
+                $line = collect([$address->street, $address->city, $address->postcode])
+                    ->filter(fn (?string $part): bool => $part !== null && $part !== '')
+                    ->implode(', ');
+
+                if ($line !== '') {
+                    return $line;
+                }
+            }
+        }
+
+        return $fallback;
     }
 
     /** Map document state to the bar colour (Order / Quote). */
@@ -488,64 +490,13 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     }
 }; ?>
 
-@php
-    $formatter = app(Formatter::class);
-    $summary = $this->summary;
-@endphp
-
-<div class="s-page">
+<section class="w-full">
     <x-signals.page-header title="{{ __('Job Planner') }}">
         <x-slot:icon><flux:icon.calendar-days class="!size-5" /></x-slot:icon>
         <x-slot:meta>{{ __('Schedule of quotes & orders across the planning window') }}</x-slot:meta>
     </x-signals.page-header>
 
-    {{-- KPI summary cards --}}
-    <div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" wire:loading.class="opacity-60">
-        <div class="s-panel">
-            <div class="s-panel-body py-3">
-                <div class="text-[11px] text-[var(--text-muted)]">{{ __('Total Jobs') }}</div>
-                <div class="text-xl font-semibold text-[var(--text-primary)]">{{ $summary['jobs'] }}</div>
-            </div>
-        </div>
-        <div class="s-panel">
-            <div class="s-panel-body py-3">
-                <div class="text-[11px] text-[var(--text-muted)]">{{ __('Total Value') }}</div>
-                <div class="text-xl font-semibold text-[var(--text-primary)]">
-                    {{ $formatter->money($summary['total_value_minor'], $summary['total_value_currency']) }}
-                </div>
-            </div>
-        </div>
-        <div class="s-panel">
-            <div class="s-panel-body py-3">
-                <div class="text-[11px] text-[var(--text-muted)]">{{ __('Orders / Quotes') }}</div>
-                <div class="text-xl font-semibold">
-                    <span class="text-[#c0392b]">{{ $summary['orders'] }}</span>
-                    <span class="text-[var(--text-muted)]">/</span>
-                    <span class="text-[var(--amber,#f39c12)]">{{ $summary['quotes'] }}</span>
-                </div>
-            </div>
-        </div>
-        <div class="s-panel">
-            <div class="s-panel-body py-3">
-                <div class="text-[11px] text-[var(--text-muted)]">{{ __('Peak Day') }}</div>
-                <div class="text-base font-semibold text-[var(--text-primary)]">
-                    @if($summary['peak_day_label'])
-                        {{ $summary['peak_day_label'] }}
-                        <span class="s-badge s-badge-red ml-1">{{ $summary['peak_count'] }}</span>
-                    @else
-                        —
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="s-panel">
-            <div class="s-panel-body py-3">
-                <div class="text-[11px] text-[var(--text-muted)]">{{ __('Lanes Used') }}</div>
-                <div class="text-xl font-semibold text-[var(--text-primary)]">{{ $summary['lanes_used'] }}</div>
-            </div>
-        </div>
-    </div>
-
+    <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
     {{-- Control bar --}}
     <div class="s-panel mb-4">
         <div class="s-panel-body flex flex-wrap items-end gap-3">
@@ -644,4 +595,5 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     @endif
 
     @include('livewire.planner.partials.grid')
-</div>
+    </div>
+</section>
