@@ -318,17 +318,8 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         $formatter = app(Formatter::class);
         $windowStart = $this->windowStart();
         $windowEnd = $this->windowEnd();
-        $windowSeconds = max(1, $windowStart->diffInSeconds($windowEnd));
-
-        $pct = function (?CarbonInterface $at) use ($windowStart, $windowSeconds): float {
-            if ($at === null) {
-                return 0.0;
-            }
-
-            $offset = $windowStart->diffInSeconds($at, false);
-
-            return max(0.0, min(100.0, ($offset / $windowSeconds) * 100));
-        };
+        $days = $this->dayColumns();
+        $dayCount = max(1, count($days));
 
         /** @var list<array<string, mixed>> $rows */
         $rows = [];
@@ -337,9 +328,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             $start = $job->starts_at;
             $end = $job->ends_at;
 
-            $left = $pct($start);
-            $right = $pct($end);
-            $width = max(1.5, $right - $left);
+            $position = $this->barPositionFor($job, $days, $dayCount);
 
             $status = $job->statusEnum();
             $state = $job->state;
@@ -351,8 +340,8 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 'member' => $job->member?->name,
                 'location_label' => $job->venue?->name ?? $job->member?->name ?? $job->store?->name,
                 'address' => $this->locationAddressFor($job),
-                'left' => $left,
-                'width' => $width,
+                'left' => $position['left'],
+                'width' => $position['width'],
                 'day_segments' => $this->daySegmentsFor($job),
                 'colour' => $this->colourForState($state),
                 'status_label' => $status->label(),
@@ -370,6 +359,43 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         }
 
         return app(EventLaneAllocator::class)->allocate($rows);
+    }
+
+    /**
+     * Snap bar left/width to whole day columns in the window grid.
+     *
+     * @param  list<Carbon>  $days
+     * @return array{left: float, width: float}
+     */
+    private function barPositionFor(Opportunity $job, array $days, int $dayCount): array
+    {
+        $windowStartDay = $this->windowStart()->copy()->startOfDay();
+        $windowEndDay = $this->windowEnd()->copy()->startOfDay();
+        $jobStartDay = $job->starts_at->copy()->startOfDay();
+        $jobEndDay = $job->ends_at->copy()->startOfDay();
+
+        $visibleStart = $jobStartDay->greaterThan($windowStartDay) ? $jobStartDay : $windowStartDay;
+        $visibleEnd = $jobEndDay->lessThan($windowEndDay) ? $jobEndDay : $windowEndDay;
+
+        $startIndex = 0;
+        $endIndex = $dayCount - 1;
+
+        foreach ($days as $index => $day) {
+            $dayStart = $day->copy()->startOfDay();
+            if ($dayStart->equalTo($visibleStart)) {
+                $startIndex = $index;
+            }
+            if ($dayStart->equalTo($visibleEnd)) {
+                $endIndex = $index;
+            }
+        }
+
+        $span = max(1, $endIndex - $startIndex + 1);
+
+        return [
+            'left' => ($startIndex / $dayCount) * 100,
+            'width' => ($span / $dayCount) * 100,
+        ];
     }
 
     /**
@@ -419,16 +445,22 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             return 'delivery';
         }
 
-        if ($overlaps($job->show_starts_at, $job->show_ends_at)) {
-            return 'in-use';
-        }
-
         if ($overlaps($job->collect_starts_at, $job->collect_ends_at)) {
             return 'collection';
         }
 
-        if ($overlaps($job->starts_at, $job->ends_at)) {
+        if ($overlaps($job->show_starts_at, $job->show_ends_at)) {
             return 'in-use';
+        }
+
+        if ($job->show_starts_at !== null && $dayEnd < $job->show_starts_at
+            && $overlaps($job->starts_at, $job->show_starts_at)) {
+            return 'delivery';
+        }
+
+        if ($job->show_ends_at !== null && $dayStart > $job->show_ends_at
+            && $overlaps($job->show_ends_at, $job->ends_at)) {
+            return 'collection';
         }
 
         return 'in-use';
@@ -468,6 +500,16 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         };
     }
 
+    /** Phase band colours — shared by the legend and card status row. */
+    public function phaseColours(): array
+    {
+        return [
+            'delivery' => '#3498db',
+            'in-use' => '#f39c12',
+            'collection' => '#27ae60',
+        ];
+    }
+
     /**
      * Static legend entries for the overlap timeline.
      *
@@ -476,14 +518,16 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     #[Computed]
     public function legend(): array
     {
+        $colours = $this->phaseColours();
+
         return [
             ['label' => __('Order'), 'colour' => '#c0392b', 'icon' => null],
             ['label' => __('Quote'), 'colour' => 'var(--amber, #f39c12)', 'icon' => null],
             ['label' => __('Collecting'), 'colour' => '#27ae60', 'icon' => 'truck'],
             ['label' => __('Returning'), 'colour' => '#17a2b8', 'icon' => 'truck'],
-            ['label' => __('Delivery'), 'colour' => '#3498db', 'icon' => null],
-            ['label' => __('In Use'), 'colour' => '#f39c12', 'icon' => null],
-            ['label' => __('Collection'), 'colour' => '#27ae60', 'icon' => null],
+            ['label' => __('Delivery'), 'colour' => $colours['delivery'], 'icon' => null],
+            ['label' => __('In Use'), 'colour' => $colours['in-use'], 'icon' => null],
+            ['label' => __('Collection'), 'colour' => $colours['collection'], 'icon' => null],
             ['label' => __('Today'), 'colour' => '#ffc107', 'icon' => null, 'border' => true],
             ['label' => __('Extends beyond view'), 'colour' => 'var(--violet, #8b5cf6)', 'icon' => null, 'narrow' => true],
         ];

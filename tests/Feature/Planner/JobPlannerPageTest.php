@@ -253,6 +253,20 @@ it('builds day-snapped Delivery / In-Use / Collection segments and customer badg
         ->and($row['customer_returning'])->toBeTrue();
 });
 
+it('snaps bar position to whole day columns in the window', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 09:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-24 17:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $row = Volt::test('planner.index')->get('rows')[0];
+
+    expect($row['left'])->toBe((2 / 14) * 100)
+        ->and($row['width'])->toBe((3 / 14) * 100);
+});
+
 it('surfaces venue address on each row with member name fallback', function () {
     $venue = Member::factory()->organisation()->create(['name' => 'Town Hall']);
     Address::factory()->create([
