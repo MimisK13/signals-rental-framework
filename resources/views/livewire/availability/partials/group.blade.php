@@ -50,16 +50,16 @@
         <x-slot:icon><flux:icon.calendar class="!size-7" /></x-slot:icon>
     </x-signals.empty>
 @else
-    <div class="s-table-wrap overflow-x-auto" wire:loading.class="opacity-60">
-        <table class="s-table s-table-compact s-table-bordered min-w-max">
+    <div class="s-table-wrap" wire:loading.class="opacity-60">
+        <table class="s-table s-table-compact s-table-bordered s-avail-group-table">
             <thead>
                 <tr>
                     <th class="sticky left-0 z-10 bg-[var(--card-bg)] text-left">{{ __('Product') }}</th>
                     @foreach($dayList as $day)
                         @php $carbonDay = \Illuminate\Support\Carbon::parse($day); @endphp
-                        <th wire:key="ghead-{{ $day }}" class="px-2 text-center whitespace-nowrap {{ $carbonDay->isWeekend() ? 'bg-[var(--content-bg)]' : '' }}">
-                            <div class="text-[10px] font-semibold uppercase text-[var(--text-muted)]">{{ $carbonDay->format('D') }}</div>
-                            <div class="text-[12px]">{{ $carbonDay->format('j M') }}</div>
+                        <th wire:key="ghead-{{ $day }}" class="px-0.5 py-1 text-center {{ $carbonDay->isWeekend() ? 'bg-[var(--content-bg)]' : '' }}">
+                            <div class="s-avail-group-day font-semibold uppercase text-[var(--text-muted)]">{{ $carbonDay->format('D') }}</div>
+                            <div class="s-avail-group-date text-[var(--text-primary)]">{{ $carbonDay->format('j') }}</div>
                         </th>
                     @endforeach
                 </tr>
@@ -67,22 +67,22 @@
             <tbody>
                 @foreach($rows as $row)
                     <tr wire:key="grow-{{ $row['product_id'] }}">
-                        <td class="sticky left-0 z-10 bg-[var(--card-bg)]">
-                            <div class="flex items-center gap-1.5">
+                        <td class="sticky left-0 z-10 bg-[var(--card-bg)] py-1.5">
+                            <div class="flex items-center gap-1">
                                 <button type="button" wire:click="showGantt({{ $row['product_id'] }})"
-                                        class="s-cell-link text-left font-medium text-[var(--blue)] hover:underline"
+                                        class="s-cell-link truncate text-left font-medium text-[var(--blue)] hover:underline"
                                         title="{{ __('Open timeline') }}">
                                     {{ $row['product_name'] ?? __('Product #:id', ['id' => $row['product_id']]) }}
                                 </button>
-                                <flux:icon.information-circle class="!size-3.5 shrink-0 text-[var(--text-muted)]"
+                                <flux:icon.information-circle class="!size-3 shrink-0 text-[var(--text-muted)]"
                                     title="{{ __('Cells show available (held). Open the timeline for the demand breakdown.') }}" />
                             </div>
                         </td>
                         @foreach($row['cells'] as $cell)
                             <td wire:key="gcell-{{ $row['product_id'] }}-{{ $cell['date'] }}"
-                                class="px-2 py-1 text-center align-middle">
+                                class="px-0.5 py-0.5 text-center align-middle">
                                 @if(! $cell['present'])
-                                    <span class="text-[11px] text-[var(--text-muted)]">&middot;</span>
+                                    <span class="text-[9px] text-[var(--text-muted)]">&middot;</span>
                                 @else
                                     <span class="s-badge {{ $stateBadge[$cell['state']] ?? 's-badge-zinc' }}"
                                           title="{{ __(':available available, :held held', ['available' => $cell['available'], 'held' => $cell['held']]) }}">

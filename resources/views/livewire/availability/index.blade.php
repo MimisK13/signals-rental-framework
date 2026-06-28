@@ -571,21 +571,26 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
             <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Job Planning</span>
         </x-slot:meta>
         <x-slot:actions>
-            <div class="flex items-center gap-1">
-                <button type="button" wire:click="showGroup"
-                        class="s-btn s-btn-sm {{ $viewMode === 'group' ? 's-btn-primary' : 's-btn-outline-blue' }}">
-                    <flux:icon.squares-2x2 class="!size-3.5" /> By Group
-                </button>
-                <button type="button" wire:click="showCalendar"
-                        class="s-btn s-btn-sm {{ $viewMode === 'calendar' ? 's-btn-primary' : 's-btn-outline-blue' }}">
-                    <flux:icon.table-cells class="!size-3.5" /> Calendar
-                </button>
-                <button type="button"
-                        @if($ganttProductId === null) disabled @endif
-                        wire:click="$set('viewMode', 'gantt')"
-                        class="s-btn s-btn-sm {{ $viewMode === 'gantt' ? 's-btn-primary' : 's-btn-outline-blue' }} {{ $ganttProductId === null ? 'opacity-50' : '' }}">
-                    <flux:icon.chart-bar-square class="!size-3.5" /> Timeline
-                </button>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1">
+                    <button type="button" wire:click="showGroup"
+                            class="s-btn s-btn-sm {{ $viewMode === 'group' ? 's-btn-primary' : 's-btn-outline-blue' }}">
+                        <flux:icon.squares-2x2 class="!size-3.5" /> By Group
+                    </button>
+                    <button type="button" wire:click="showCalendar"
+                            class="s-btn s-btn-sm {{ $viewMode === 'calendar' ? 's-btn-primary' : 's-btn-outline-blue' }}">
+                        <flux:icon.table-cells class="!size-3.5" /> Calendar
+                    </button>
+                    <button type="button"
+                            @if($ganttProductId === null) disabled @endif
+                            wire:click="$set('viewMode', 'gantt')"
+                            class="s-btn s-btn-sm {{ $viewMode === 'gantt' ? 's-btn-primary' : 's-btn-outline-blue' }} {{ $ganttProductId === null ? 'opacity-50' : '' }}">
+                        <flux:icon.chart-bar-square class="!size-3.5" /> Timeline
+                    </button>
+                </div>
+                @if($viewMode === 'group')
+                    <span class="s-badge s-badge-zinc s-badge-outline" title="{{ __('Availability resolution') }}">{{ $resolution->label() }}</span>
+                @endif
             </div>
         </x-slot:actions>
     </x-signals.page-header>
@@ -595,7 +600,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         {{-- ============================================================ --}}
         {{--  Toolbar (by-group): group / store / type / flags / period   --}}
         {{-- ============================================================ --}}
-        <div class="s-toolbar mb-4 flex flex-wrap items-end gap-3">
+        <div class="mb-4 flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1">
                 <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Product Group') }}</label>
                 <select wire:model.live="groupId" class="s-select min-w-52" aria-label="{{ __('Product group') }}">
@@ -639,21 +644,23 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
                 </select>
             </div>
 
-            <div class="flex items-center gap-4 pb-1.5">
-                <label class="flex items-center gap-1.5 text-[12px]">
-                    <input type="checkbox" wire:model.live="shortagesOnly" class="s-checkbox" /> {{ __('Shortages only') }}
+            <div class="flex flex-wrap items-center gap-4 pb-1.5">
+                <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                    <input type="checkbox" wire:model.live="shortagesOnly" class="sr-only" />
+                    <x-signals.checkbox :checked="$shortagesOnly" />
+                    <span>{{ __('Shortages only') }}</span>
                 </label>
-                <label class="flex items-center gap-1.5 text-[12px]">
-                    <input type="checkbox" wire:model.live="warningsOnly" class="s-checkbox" /> {{ __('Warnings only') }}
+                <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                    <input type="checkbox" wire:model.live="warningsOnly" class="sr-only" />
+                    <x-signals.checkbox :checked="$warningsOnly" />
+                    <span>{{ __('Warnings only') }}</span>
                 </label>
-                <label class="flex items-center gap-1.5 text-[12px] opacity-50 cursor-not-allowed"
+                <label class="inline-flex cursor-not-allowed items-center gap-2 text-[12px] opacity-50"
                        title="{{ __('Coming in a future update — the read model does not yet support a quote-phase filter.') }}">
-                    <input type="checkbox" wire:model.live="includeQuotes" class="s-checkbox" disabled /> {{ __('Include quotes') }}
+                    <input type="checkbox" wire:model.live="includeQuotes" class="sr-only" disabled />
+                    <x-signals.checkbox :checked="$includeQuotes" />
+                    <span>{{ __('Include quotes') }}</span>
                 </label>
-            </div>
-
-            <div class="ml-auto flex items-center gap-2 pb-0.5" wire:loading.class="opacity-50">
-                <span class="s-badge s-badge-zinc s-badge-outline" title="{{ __('Availability resolution') }}">{{ $resolution->label() }}</span>
             </div>
         </div>
 
@@ -662,7 +669,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         {{-- ============================================================ --}}
         {{--  Toolbar: store / date-range / product filter                --}}
         {{-- ============================================================ --}}
-        <div class="s-toolbar mb-4 flex flex-wrap items-end gap-3">
+        <div class="mb-4 flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1">
                 <label class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Store</label>
                 <select wire:model.live="storeId" class="s-select min-w-44" aria-label="{{ __('Store') }}">

@@ -538,6 +538,58 @@
 .s-table-compact th { padding: 6px 10px; font-size: 8px; }
 .s-table-compact td { padding: 6px 10px; font-size: 12px; }
 
+/* By-group availability grid: fit 30 day columns without horizontal clip */
+.s-avail-group-table {
+  table-layout: fixed;
+  width: 100%;
+  font-family: var(--font-sans);
+}
+
+.s-avail-group-table th {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  padding: 4px 1px;
+}
+
+.s-avail-group-table td {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 2px 1px;
+}
+
+.s-avail-group-table th:first-child,
+.s-avail-group-table td:first-child {
+  width: 8.5rem;
+}
+
+.s-avail-group-table th:not(:first-child),
+.s-avail-group-table td:not(:first-child) {
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+.s-avail-group-table .s-cell-link {
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.s-avail-group-table .s-avail-group-day {
+  font-size: 8px;
+  line-height: 1.1;
+}
+
+.s-avail-group-table .s-avail-group-date {
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.s-avail-group-table .s-badge {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  padding: 1px 3px;
+  line-height: 1.2;
+}
+
 .s-table-bordered td { border-right: 1px solid var(--s-border-sub); }
 .s-table-bordered td:last-child { border-right: none; }
 .s-table-bordered th { border-right: 1px solid var(--card-border); }
