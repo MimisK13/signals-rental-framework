@@ -12,9 +12,10 @@
     $heatmapMax = $this->jobCountHeatmapMax;
     $phaseColours = $this->phaseColours();
     $customerBadgeColours = $this->customerBadgeColours();
-    $statusRowHeight = 18;
+    $statusRowHeight = 14;
+    $lineBodyHeight = 11 * 4 + 4;
     $laneGap = $this->cardGapPx();
-    $laneHeight = 58 + $statusRowHeight;
+    $laneHeight = $lineBodyHeight + $statusRowHeight;
     $laneStride = $laneHeight + $laneGap;
     $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
     $gridStyle = "grid-template-columns: repeat({$dayCount}, minmax(0, 1fr))";

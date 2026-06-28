@@ -7,9 +7,10 @@
     $barWidth = (float) $row['width'];
     $gapLeft = (int) ($row['gap_left_px'] ?? 0);
     $gapRight = (int) ($row['gap_right_px'] ?? 0);
-    $statusRowHeight = $statusRowHeight ?? 18;
+    $statusRowHeight = $statusRowHeight ?? 14;
     $phaseColours = $phaseColours ?? [];
     $customerBadgeColours = $customerBadgeColours ?? [];
+    $lineHeight = 11;
     $tooltip = ($row['number'] ?? ('#'.$row['id']))
         .' · '.$row['state_label'].' · '.$row['status_label']
         .' · '.($row['starts_at']?->format('j M') ?? '')
@@ -32,54 +33,56 @@
             <div class="absolute right-0 top-0 bottom-0 z-20 w-1 bg-[var(--violet,#8b5cf6)]" title="{{ __('Extends beyond view') }}"></div>
         @endif
 
-        <div class="relative z-10 px-1 pt-1" style="height: {{ $contentHeight }};">
-            {{-- Line 1: number — subject + Coll/Ret badges --}}
-            <div class="flex min-h-[11px] items-start justify-between gap-0.5 leading-none">
-                <span class="flex min-w-0 items-center gap-0.5">
-                    <flux:icon.document-text class="!size-2.5 shrink-0 opacity-70" />
-                    <span class="truncate text-[10px] font-semibold leading-none">
-                        {{ $row['number'] ?? ('#'.$row['id']) }}
-                        @if($row['subject'])
-                            <span class="font-medium opacity-95"> — {{ $row['subject'] }}</span>
-                        @endif
-                    </span>
-                </span>
-                <span class="flex shrink-0 items-center gap-0.5">
-                    @if($row['customer_collecting'])
-                        <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[6px] font-semibold uppercase tracking-tight leading-none text-white"
-                              style="background: {{ $customerBadgeColours['collecting'] ?? '#27ae60' }};"
-                              title="{{ __('Customer collecting') }}">
-                            <flux:icon.truck class="!size-1.5 shrink-0" />
-                            {{ __('Coll') }}
-                        </span>
-                    @endif
-                    @if($row['customer_returning'])
-                        <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[6px] font-semibold uppercase tracking-tight leading-none text-white"
-                              style="background: {{ $customerBadgeColours['returning'] ?? '#17a2b8' }};"
-                              title="{{ __('Customer returning') }}">
-                            <flux:icon.truck class="!size-1.5 shrink-0" />
-                            {{ __('Ret') }}
-                        </span>
+        <div class="relative z-10 flex flex-col gap-0 px-1 pt-1" style="height: {{ $contentHeight }};">
+            {{-- Line 1: number — subject --}}
+            <div class="flex items-center gap-0.5 leading-none" style="height: {{ $lineHeight }}px;">
+                <flux:icon.document-text class="!size-2.5 shrink-0 opacity-70" />
+                <span class="truncate text-[10px] font-semibold leading-none">
+                    {{ $row['number'] ?? ('#'.$row['id']) }}
+                    @if($row['subject'])
+                        <span class="font-medium opacity-95"> — {{ $row['subject'] }}</span>
                     @endif
                 </span>
             </div>
 
             {{-- Line 2: datetime range --}}
-            <div class="flex min-h-[11px] items-center gap-0.5 truncate text-[10px] leading-none opacity-95">
+            <div class="flex items-center gap-0.5 truncate text-[10px] leading-none opacity-95" style="height: {{ $lineHeight }}px;">
                 <flux:icon.clock class="!size-2.5 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['datetime_range'] }}</span>
             </div>
 
             {{-- Line 3: address --}}
-            <div class="flex min-h-[11px] items-center gap-0.5 truncate text-[10px] leading-none opacity-90">
+            <div class="flex items-center gap-0.5 truncate text-[10px] leading-none opacity-90" style="height: {{ $lineHeight }}px;">
                 <flux:icon.map-pin class="!size-2.5 shrink-0 opacity-70" />
                 <span class="truncate">{{ $row['address'] }}</span>
             </div>
 
-            {{-- Line 4: status label (plain text, card colour conveys status) --}}
-            <div class="flex min-h-[11px] items-center gap-0.5 truncate text-[10px] leading-none opacity-95">
-                <flux:icon.tag class="!size-2.5 shrink-0 opacity-70" />
-                <span class="truncate">{{ $row['status_label'] }}</span>
+            {{-- Line 4: status + Coll/Ret badges --}}
+            <div class="flex items-center justify-between gap-1 leading-none opacity-95" style="height: {{ $lineHeight }}px;">
+                <span class="flex min-w-0 items-center gap-0.5 truncate text-[10px] leading-none">
+                    <flux:icon.tag class="!size-2.5 shrink-0 opacity-70" />
+                    <span class="truncate">{{ $row['status_label'] }}</span>
+                </span>
+                @if($row['customer_collecting'] || $row['customer_returning'])
+                    <span class="flex shrink-0 items-center gap-0.5">
+                        @if($row['customer_collecting'])
+                            <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[10px] font-medium leading-none text-white"
+                                  style="background: {{ $customerBadgeColours['collecting'] ?? '#27ae60' }};"
+                                  title="{{ __('Customer collecting') }}">
+                                <flux:icon.truck class="!size-2 shrink-0" />
+                                {{ __('Coll') }}
+                            </span>
+                        @endif
+                        @if($row['customer_returning'])
+                            <span class="inline-flex items-center gap-px rounded-sm px-px py-px text-[10px] font-medium leading-none text-white"
+                                  style="background: {{ $customerBadgeColours['returning'] ?? '#17a2b8' }};"
+                                  title="{{ __('Customer returning') }}">
+                                <flux:icon.truck class="!size-2 shrink-0" />
+                                {{ __('Ret') }}
+                            </span>
+                        @endif
+                    </span>
+                @endif
             </div>
         </div>
 
@@ -93,6 +96,7 @@
                     $segWidth = $barWidth > 0
                         ? ($segment['width'] / $barWidth) * 100
                         : 0;
+                    $isLastSegment = $loop->last;
                     $phase = $segment['phase'];
                     $phaseColour = $phaseColours[$phase] ?? 'rgba(255,255,255,0.35)';
                     $segmentLabel = match ($phase) {
@@ -102,11 +106,11 @@
                     };
                 @endphp
                 <div wire:key="seg-{{ $row['id'] }}-{{ $segment['day_index'] }}"
-                     class="absolute top-0 box-border flex items-center justify-center overflow-hidden border-r border-white/15 text-[6px] font-semibold uppercase tracking-tight text-white"
-                     style="left: {{ $segLeft }}%; width: {{ $segWidth }}%; height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
+                     class="absolute top-0 box-border flex items-center justify-center overflow-hidden text-[4px] font-semibold uppercase tracking-tight text-white {{ $isLastSegment ? '' : 'border-r border-white/15' }}"
+                     style="left: {{ $segLeft }}%; {{ $isLastSegment ? 'right: 0;' : 'width: '.$segWidth.'%;' }} height: {{ $statusRowHeight }}px; background-color: {{ $phaseColour }};"
                      title="{{ $segment['label'] }}">
                     @if($phase !== 'in-use')
-                        <span class="max-w-full truncate px-px leading-none">{{ $segmentLabel }}</span>
+                        <span class="max-w-full truncate leading-none">{{ $segmentLabel }}</span>
                     @endif
                 </div>
             @endforeach
