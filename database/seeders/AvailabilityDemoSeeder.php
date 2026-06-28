@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Opportunities\AllocateAsset;
+use App\Data\Opportunities\AllocateAssetData;
+use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -10,11 +13,13 @@ use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\StockLevel;
 use App\Models\Store;
+use App\Models\User;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
 
 /**
@@ -32,6 +37,13 @@ class AvailabilityDemoSeeder extends Seeder
         'Demo - Moving Head Beam 230W' => 12,
         'Robe Esprite' => 8,
         'Martin MAC Aura XB' => 6,
+    ];
+
+    /** Moving-head products that receive serialised asset allocations in demo data. */
+    private const MOVING_HEAD_PRODUCTS = [
+        'Demo - Moving Head Beam 230W',
+        'Robe Esprite',
+        'Martin MAC Aura XB',
     ];
 
     public function run(): void
@@ -117,11 +129,25 @@ class AvailabilityDemoSeeder extends Seeder
         $resolver = app(OpportunityItemDemandResolver::class);
         $opportunityCount = 0;
         $lineItemCount = 0;
+        $allocationCount = 0;
+
+        $owner = User::query()->first();
+        if ($owner !== null) {
+            Auth::setUser($owner);
+        }
+
+        /** @var array<int, true> $allocatedStockLevelIds */
+        $allocatedStockLevelIds = [];
 
         foreach ($bookings as $index => $booking) {
             $product = $products->get($booking['product']);
             $start = Carbon::parse($booking['start'].' 09:00:00', 'UTC');
             $end = Carbon::parse($booking['end'].' 17:00:00', 'UTC');
+            $showStart = $start->copy()->addDay()->setTime(9, 0);
+            $showEnd = $end->copy()->subDay()->setTime(17, 0);
+            if ($showEnd->lessThan($showStart)) {
+                $showEnd = $showStart->copy();
+            }
 
             $state = $booking['status']->state();
             $factory = $state->value === 2
@@ -136,8 +162,12 @@ class AvailabilityDemoSeeder extends Seeder
                 'subject' => sprintf('%s hire — demo %d', $product->name, $index + 1),
                 'starts_at' => $start,
                 'ends_at' => $end,
-                'show_starts_at' => $start->copy()->addDay(),
-                'show_ends_at' => $end->copy()->subDay(),
+                'deliver_starts_at' => $start->copy(),
+                'deliver_ends_at' => $start->copy()->setTime(12, 0),
+                'show_starts_at' => $showStart,
+                'show_ends_at' => $showEnd,
+                'collect_starts_at' => $end->copy()->setTime(9, 0),
+                'collect_ends_at' => $end->copy(),
                 'tag_list' => [self::TAG],
             ]);
 
@@ -150,9 +180,23 @@ class AvailabilityDemoSeeder extends Seeder
 
             $resolver->syncDemands($item);
 
+            if ($owner !== null
+                && in_array($booking['product'], self::MOVING_HEAD_PRODUCTS, true)
+                && $booking['status']->phase() !== DemandPhase::Void) {
+                $allocationCount += $this->allocateDemoAssets(
+                    $item,
+                    $store->id,
+                    (int) $product->id,
+                    min(2, $booking['quantity']),
+                    $allocatedStockLevelIds,
+                );
+            }
+
             $opportunityCount++;
             $lineItemCount++;
         }
+
+        Auth::forgetUser();
 
         $pipeline = app(RecalculationPipeline::class);
 
@@ -167,15 +211,58 @@ class AvailabilityDemoSeeder extends Seeder
 
         if ($this->command !== null) {
             $this->command->info(sprintf(
-                'Availability demo: %d opportunities, %d line items, %d products at %s (%s → %s).',
+                'Availability demo: %d opportunities, %d line items, %d asset allocations, %d products at %s (%s → %s).',
                 $opportunityCount,
                 $lineItemCount,
+                $allocationCount,
                 $products->count(),
                 $store->name,
                 $rangeStart->toDateString(),
                 $rangeEnd->toDateString(),
             ));
         }
+    }
+
+    /**
+     * Allocate up to {@see $limit} serialised assets to one demo line item.
+     *
+     * @param  array<int, true>  $allocatedStockLevelIds
+     */
+    private function allocateDemoAssets(
+        OpportunityItem $item,
+        int $storeId,
+        int $productId,
+        int $limit,
+        array &$allocatedStockLevelIds,
+    ): int {
+        if ($limit <= 0) {
+            return 0;
+        }
+
+        $assets = StockLevel::query()
+            ->where('product_id', $productId)
+            ->where('store_id', $storeId)
+            ->whereNotNull('asset_number')
+            ->whereNotIn('id', array_keys($allocatedStockLevelIds))
+            ->orderBy('asset_number')
+            ->limit($limit)
+            ->get();
+
+        $created = 0;
+
+        foreach ($assets as $asset) {
+            try {
+                (new AllocateAsset)($item->refresh(), AllocateAssetData::from([
+                    'stock_level_id' => $asset->id,
+                ]));
+                $allocatedStockLevelIds[$asset->id] = true;
+                $created++;
+            } catch (\Throwable) {
+                // Skip assets that fail availability guards (overlapping windows).
+            }
+        }
+
+        return $created;
     }
 
     private function purgeAvailabilityDemoData(): void

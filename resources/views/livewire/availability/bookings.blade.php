@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\AvailabilityService;
+use App\Services\Opportunities\OpportunityPresentation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -211,7 +212,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     }
 
     /**
-     * @return list<array{opportunity_id: int, label: string, url: string, colour: string, cells: list<array{date: string, quantity: int|null, tone: string|null}>}>
+     * @return list<array{opportunity_id: int, label: string, url: string, cells: list<array{date: string, quantity: int|null, tone: string|null, colour: string|null}>}>
      */
     #[Computed]
     public function opportunityRows(): array
@@ -251,7 +252,6 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
             $first = $bars->first();
             $opportunityId = $this->opportunityIdForBar($first, $itemsById);
             $opportunity = $opportunityId !== null ? $opportunities->get($opportunityId) : null;
-            $colour = $first->colour ?? '#3B82F6';
 
             $label = $opportunity !== null
                 ? $this->formatOpportunityLabel($opportunity)
@@ -261,14 +261,13 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
             $cells = [];
             foreach ($this->windowDays as $day) {
-                $cells[] = $this->cellForBars($bars->all(), $day, $colour);
+                $cells[] = $this->cellForOpportunityDay($opportunity, $bars->all(), $day);
             }
 
             $rows[] = [
                 'opportunity_id' => $opportunityId ?? 0,
                 'label' => $label,
                 'url' => $url,
-                'colour' => $colour,
                 'cells' => $cells,
             ];
         }
@@ -325,6 +324,54 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  list<GanttDemandBarData>  $bars
+     * @return array{date: string, quantity: int|null, tone: string|null, colour: string|null}
+     */
+    private function cellForOpportunityDay(?Opportunity $opportunity, array $bars, string $day): array
+    {
+        $quantity = 0;
+        $tone = null;
+        $colour = null;
+        $presentation = app(OpportunityPresentation::class);
+        $dayStart = Carbon::parse($day)->startOfDay();
+        $dayEnd = Carbon::parse($day)->endOfDay();
+
+        foreach ($bars as $bar) {
+            if ($this->isoOverlapsDay($bar->starts_at, $bar->ends_at, $day)) {
+                $quantity += $bar->quantity;
+                $tone = 'hire';
+                $colour = $opportunity !== null
+                    ? $presentation->phaseColour($presentation->phaseForDay($opportunity, $dayStart, $dayEnd))
+                    : ($bar->colour ?? '#3B82F6');
+            } elseif ($this->isoOverlapsDay($bar->period_start, $bar->buffer_before_end, $day)
+                || $this->isoOverlapsDay($bar->buffer_after_start, $bar->period_end, $day)) {
+                $tone = $tone ?? 'buffer';
+                $colour = $colour ?? ($opportunity !== null
+                    ? $presentation->phaseColour($presentation->phaseForDay($opportunity, $dayStart, $dayEnd))
+                    : ($bar->colour ?? '#3B82F6'));
+            }
+        }
+
+        return [
+            'date' => $day,
+            'quantity' => $quantity > 0 ? $quantity : null,
+            'tone' => $tone,
+            'colour' => $colour,
+        ];
+    }
+
+    /**
+     * Opportunity phase legend entries for the bookings grid key.
+     *
+     * @return list<array{label: string, colour: string, icon: null}>
+     */
+    #[Computed]
+    public function opportunityPhaseLegend(): array
+    {
+        return app(OpportunityPresentation::class)->phaseLegendEntries();
     }
 
     /**
@@ -492,6 +539,12 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">
             @include('livewire.availability.partials.bookings-grid')
             @include('livewire.availability.partials.grid-legend')
+            <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
+                <span class="font-semibold uppercase tracking-wide">{{ __('Opportunity phases') }}</span>
+                @include('livewire.availability.partials.opportunity-phase-legend', [
+                    'entries' => $this->opportunityPhaseLegend,
+                ])
+            </div>
         </div>
     @endif
 </section>

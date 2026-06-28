@@ -1,14 +1,13 @@
 <?php
 
 use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Services\Calendar\EventLaneAllocator;
+use App\Services\Opportunities\OpportunityPresentation;
 use App\Models\Member;
 use App\Support\Formatter;
 use Illuminate\Database\Eloquent\Builder;
-use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -319,6 +318,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     public function rows(): array
     {
         $formatter = app(Formatter::class);
+        $presentation = app(OpportunityPresentation::class);
         $windowStart = $this->windowStart();
         $windowEnd = $this->windowEnd();
         $days = $this->dayColumns();
@@ -346,8 +346,8 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 'left' => $position['left'],
                 'width' => $position['width'],
                 'day_segments' => $this->daySegmentsFor($job),
-                'colour' => $status->colour(),
-                'status_label' => $status->label(),
+                'colour' => $presentation->statusColour($status),
+                'status_label' => $presentation->statusLabel($status),
                 'state_label' => $state->label(),
                 'tags' => array_values($job->tag_list ?? []),
                 'customer_collecting' => (bool) $job->customer_collecting,
@@ -458,6 +458,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     {
         $segments = [];
         $dayCount = max(1, count($this->dayColumns()));
+        $presentation = app(OpportunityPresentation::class);
 
         foreach ($this->dayColumns() as $index => $day) {
             $dayStart = $day->copy()->startOfDay();
@@ -467,57 +468,18 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 continue;
             }
 
-            $phase = $this->phaseForDay($job, $dayStart, $dayEnd);
+            $phase = $presentation->phaseForDay($job, $dayStart, $dayEnd);
 
             $segments[] = [
                 'day_index' => $index,
                 'left' => ($index / $dayCount) * 100,
                 'width' => (1 / $dayCount) * 100,
                 'phase' => $phase,
-                'label' => match ($phase) {
-                    'delivery' => __('Delivery'),
-                    'collection' => __('Collection'),
-                    default => __('In Use'),
-                },
+                'label' => $presentation->phaseLabel($phase),
             ];
         }
 
         return $segments;
-    }
-
-    private function phaseForDay(Opportunity $job, Carbon $dayStart, Carbon $dayEnd): string
-    {
-        $overlaps = function (?CarbonInterface $from, ?CarbonInterface $to) use ($dayStart, $dayEnd): bool {
-            if ($from === null || $to === null) {
-                return false;
-            }
-
-            return $from <= $dayEnd && $to >= $dayStart;
-        };
-
-        if ($overlaps($job->deliver_starts_at, $job->deliver_ends_at)) {
-            return 'delivery';
-        }
-
-        if ($overlaps($job->collect_starts_at, $job->collect_ends_at)) {
-            return 'collection';
-        }
-
-        if ($overlaps($job->show_starts_at, $job->show_ends_at)) {
-            return 'in-use';
-        }
-
-        if ($job->show_starts_at !== null && $dayEnd < $job->show_starts_at
-            && $overlaps($job->starts_at, $job->show_starts_at)) {
-            return 'delivery';
-        }
-
-        if ($job->show_ends_at !== null && $dayStart > $job->show_ends_at
-            && $overlaps($job->show_ends_at, $job->ends_at)) {
-            return 'collection';
-        }
-
-        return 'in-use';
     }
 
     /** Venue (or member) address line, falling back to the location name. */
@@ -544,46 +506,16 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         return $fallback;
     }
 
-    /** Phase band colours — shared by the legend and card status row. */
+    /** Phase band colours — delegated to {@see OpportunityPresentation}. */
     public function phaseColours(): array
     {
-        return [
-            'delivery' => '#3498db',
-            'in-use' => '#8e95a6',
-            'collection' => '#27ae60',
-        ];
+        return app(OpportunityPresentation::class)->phaseColours();
     }
 
-    /** Customer Collecting / Returning badge colours — match the legend key. */
+    /** Customer Collecting / Returning badge colours — delegated to {@see OpportunityPresentation}. */
     public function customerBadgeColours(): array
     {
-        return [
-            'collecting' => '#27ae60',
-            'returning' => '#17a2b8',
-        ];
-    }
-
-    /**
-     * Planner-visible opportunity statuses for the legend key (quotation + order axes).
-     *
-     * @return list<array{label: string, colour: string}>
-     */
-    public function statusLegendEntries(): array
-    {
-        $entries = [];
-
-        foreach (OpportunityStatus::cases() as $status) {
-            if ($status->state() === OpportunityState::Draft) {
-                continue;
-            }
-
-            $entries[] = [
-                'label' => $status->label(),
-                'colour' => $status->colour(),
-            ];
-        }
-
-        return $entries;
+        return app(OpportunityPresentation::class)->customerBadgeColours();
     }
 
     /**
@@ -594,21 +526,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     #[Computed]
     public function legend(): array
     {
-        $colours = $this->phaseColours();
-        $statusEntries = $this->statusLegendEntries();
-
-        return array_merge(
-            $statusEntries,
-            [
-                ['label' => __('Collecting'), 'colour' => '#27ae60', 'icon' => 'truck'],
-                ['label' => __('Returning'), 'colour' => '#17a2b8', 'icon' => 'truck'],
-                ['label' => __('Delivery'), 'colour' => $colours['delivery'], 'icon' => null],
-                ['label' => __('In Use'), 'colour' => $colours['in-use'], 'icon' => null],
-                ['label' => __('Collection'), 'colour' => $colours['collection'], 'icon' => null],
-                ['label' => __('Today'), 'colour' => '#ffc107', 'icon' => null, 'border' => true],
-                ['label' => __('Extends beyond view'), 'colour' => 'var(--violet, #8b5cf6)', 'icon' => null, 'narrow' => true],
-            ],
-        );
+        return app(OpportunityPresentation::class)->legend();
     }
 }; ?>
 
