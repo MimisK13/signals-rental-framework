@@ -548,7 +548,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     {
         return [
             'delivery' => '#3498db',
-            'in-use' => '#9333ea',
+            'in-use' => '#8e95a6',
             'collection' => '#27ae60',
         ];
     }

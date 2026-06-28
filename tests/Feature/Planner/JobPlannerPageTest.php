@@ -389,7 +389,7 @@ it('uses a distinct in-use phase colour separate from quotation status', functio
     $inUse = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'In Use');
 
     expect($inUse)->not->toBeNull()
-        ->and($inUse['colour'])->toBe('#9333ea')
+        ->and($inUse['colour'])->toBe('#8e95a6')
         ->and($inUse['colour'])->not->toBe(OpportunityStatus::QuotationProvisional->colour());
 });
 
