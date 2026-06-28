@@ -77,11 +77,10 @@ function seedGroupProduct(ProductGroup $group, Store $store, string $name, int $
     return $product;
 }
 
-it('defaults to the by-group view with a 30-day period', function () {
+it('defaults to a 30-day period', function () {
     $this->actingAs($this->user);
 
     Volt::test('availability.index')
-        ->assertSet('viewMode', 'group')
         ->assertSet('daysPeriod', 30)
         ->assertSet('storeId', $this->store->id);
 });
@@ -97,13 +96,15 @@ it('renders a group product row with available and held figures', function () {
 
     $this->actingAs($this->user);
 
-    // available=4, held = total stock (10) - available (4) = 6, rendered "4 (6)".
+    // available=4, held = total stock (10) - available (4) = 6.
     Volt::test('availability.index')
         ->set('groupId', $this->group->id)
         ->assertOk()
         ->assertSee('JBL EON615')
         ->assertSee('gcell-', false)
-        ->assertSeeHtml('(6)');
+        ->assertSeeHtml('(6)')
+        ->assertSeeHtml('s-avail-group-table-scroll')
+        ->assertSeeHtml('s-avail-grid-sticky-chrome');
 });
 
 it('shows nothing until a group is selected', function () {
@@ -178,13 +179,54 @@ it('honours the days-period in the rendered column count', function () {
 });
 
 it('colours a fully-booked cell as booked (teal) not shortage', function () {
-    // available exactly 0, no shortage -> booked (cyan badge), held = full stock.
+    // available exactly 0, no shortage -> booked (cyan cell), held = full stock.
     seedGroupProduct($this->group, $this->store, 'Booked Speaker', stock: 5, available: 0, shortage: false);
 
     $this->actingAs($this->user);
 
     Volt::test('availability.index')
         ->set('groupId', $this->group->id)
-        ->assertSee('s-badge-cyan', false)
+        ->assertSee('s-avail-group-cell--booked', false)
         ->assertDontSee('Select a product group');
+});
+
+it('renders a usage fill percentage on cells with held stock', function () {
+    // available=4, held=6, stock=10 → 60% used.
+    seedGroupProduct($this->group, $this->store, 'Fill Speaker', stock: 10, available: 4);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')
+        ->set('groupId', $this->group->id)
+        ->assertSee('--used-pct: 60%', false);
+});
+
+it('shifts the date window from the grid header navigation', function () {
+    seedGroupProduct($this->group, $this->store, 'Nav Speaker', stock: 10, available: 4);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')
+        ->set('groupId', $this->group->id)
+        ->set('from', '2026-06-20')
+        ->set('daysPeriod', 7)
+        ->call('nextPeriod')
+        ->assertSet('from', '2026-06-27')
+        ->call('previousPeriod')
+        ->assertSet('from', '2026-06-20')
+        ->assertSeeHtml('wire:click="previousPeriod"')
+        ->assertSeeHtml('wire:click="nextPeriod"');
+});
+
+it('renders the RMS-style quantity key legend', function () {
+    seedGroupProduct($this->group, $this->store, 'Key Speaker', stock: 10, available: 4);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')
+        ->set('groupId', $this->group->id)
+        ->assertSee('Key')
+        ->assertSee('quantity available')
+        ->assertSee('quantity held')
+        ->assertSee('quantity on sub-rent');
 });
