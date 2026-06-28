@@ -505,3 +505,17 @@ it('counts jobs per calendar day for the heatmap row', function () {
         ->and($component->get('jobCountsPerDay')['2026-06-25'])->toBe(1)
         ->and($component->get('jobCountHeatmapMax'))->toBe(2);
 });
+
+it('marks month-start day columns with a thick border class', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-07-05 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->set('date', '2026-06-28')
+        ->set('viewPeriod', '1m')
+        ->assertSeeHtml('s-planning-month-start');
+});

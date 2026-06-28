@@ -286,3 +286,15 @@ it('renders the RMS-style quantity key legend', function () {
         ->assertSee('quantity held')
         ->assertSee('quantity on sub-rent');
 });
+
+it('marks month-start day columns with a thick border class', function () {
+    seedGroupProduct($this->group, $this->store, 'Month Border Speaker', stock: 10, available: 4);
+
+    $this->actingAs($this->user);
+
+    Volt::test('availability.index')->call('initializeGrid')
+        ->set('groupId', $this->group->id)
+        ->set('from', '2026-06-28')
+        ->set('daysPeriod', 30)
+        ->assertSeeHtml('s-planning-month-start');
+});

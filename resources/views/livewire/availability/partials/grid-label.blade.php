@@ -8,6 +8,9 @@
     $labelClass = $muted
         ? 'text-[12px] font-medium text-[var(--text-muted)]'
         : '';
+    $labelTextClass = $muted
+        ? 's-cell-link s-avail-group-row-label-text text-[var(--text-muted)]'
+        : 's-cell-link s-avail-group-row-label-text text-[var(--blue)]';
     $labelTitle = $labelTitle ?? ($label ?? null);
 @endphp
 
@@ -19,10 +22,10 @@
             @if(! empty($url))
                 <a href="{{ $url }}"
                    @if($navigate ?? true) wire:navigate @endif
-                   class="s-cell-link s-avail-group-row-label-text text-[var(--blue)] hover:underline"
+                   class="{{ $labelTextClass }} hover:underline"
                    @if($labelTitle) title="{{ $labelTitle }}" @endif>{{ $label }}</a>
             @else
-                <span class="s-cell-link s-avail-group-row-label-text text-[var(--blue)]"
+                <span class="{{ $labelTextClass }}"
                       @if($labelTitle) title="{{ $labelTitle }}" @endif>{{ $label ?? '' }}</span>
             @endif
         </div>

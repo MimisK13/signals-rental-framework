@@ -7,12 +7,14 @@
     'rangeEnd' => null,
     'showTime' => false,
     'time' => null,
+    'floating' => false,
 ])
 
 <div
     {{ $attributes->merge(['class' => 's-datepicker']) }}
     x-data="{
         open: false,
+        floating: @js($floating),
         value: @js($value),
         rangeMode: @js($range),
         rangeStart: @js($rangeStart),
@@ -34,6 +36,27 @@
             let str = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
             if (this.showTime) str += ' ' + this.time;
             return str;
+        },
+        positionDropdown() {
+            if (!this.floating) {
+                return;
+            }
+
+            const el = this.$refs.dropdown;
+            if (!el || !this.$refs.trigger) {
+                return;
+            }
+
+            const rect = this.$refs.trigger.getBoundingClientRect();
+            el.style.top = (rect.bottom + 4) + 'px';
+            el.style.left = rect.left + 'px';
+            el.style.minWidth = rect.width + 'px';
+        },
+        toggleOpen() {
+            this.open = !this.open;
+            if (this.open) {
+                this.$nextTick(() => this.positionDropdown());
+            }
         },
         selectDate(e) {
             this.value = e.detail.date;
@@ -58,11 +81,20 @@
             this.rangeEnd = null;
             this.$dispatch('input', null);
         },
+        init() {
+            this.$watch('open', value => {
+                if (value) {
+                    this.$nextTick(() => this.positionDropdown());
+                }
+            });
+        },
     }"
     x-on:date-selected.stop="selectDate"
     x-on:range-selected.stop="selectRange"
+    x-on:resize.window="if (open && floating) positionDropdown()"
+    x-on:scroll.window="if (open && floating) positionDropdown()"
 >
-    <div class="s-datepicker-input" x-on:click="open = !open">
+    <div class="s-datepicker-input" x-ref="trigger" x-on:click="toggleOpen()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="0"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <input type="text" readonly x-bind:value="display" placeholder="{{ $placeholder }}">
         <template x-if="value || rangeStart">
@@ -71,7 +103,16 @@
             </button>
         </template>
     </div>
-    <div class="s-datepicker-dropdown" x-show="open" x-on:click.outside="open = false" x-cloak>
+    <div
+        x-ref="dropdown"
+        @class([
+            's-datepicker-dropdown',
+            's-datepicker-dropdown-floating' => $floating,
+        ])
+        x-show="open"
+        x-on:click.outside="open = false"
+        x-cloak
+    >
         @if($range)
             <x-signals.calendar :range-start="$rangeStart" :range-end="$rangeEnd" />
         @else

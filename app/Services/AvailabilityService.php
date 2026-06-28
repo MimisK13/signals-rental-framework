@@ -830,6 +830,63 @@ class AvailabilityService
     }
 
     /**
+     * Gantt read model aggregated across several stores for one product.
+     *
+     * When `$storeIds` is empty, {@see Store::scopeInDefaultQueries()} stores are
+     * used. Demand bars are merged; shortages per day take the worst severity.
+     *
+     * @param  list<int>  $storeIds
+     * @param  list<int>  $assetIds
+     */
+    public function getGanttForStores(int $productId, array $storeIds, Carbon $from, Carbon $to, array $assetIds = []): GanttData
+    {
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+
+        if ($resolvedStoreIds === []) {
+            return GanttData::make($productId, 0, $from, $to, 0, [], []);
+        }
+
+        $allBars = [];
+        $totalStock = 0;
+        /** @var array<string, array{severity: int, in_buffer_zone: bool}> $shortagesByDay */
+        $shortagesByDay = [];
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $gantt = $this->getGantt($productId, $storeId, $from, $to, $assetIds);
+            $totalStock += $gantt->total_stock;
+            $allBars = array_merge($allBars, $gantt->demands);
+
+            foreach ($gantt->shortages as $shortage) {
+                $day = $shortage->from;
+
+                if (! isset($shortagesByDay[$day])) {
+                    $shortagesByDay[$day] = ['severity' => 0, 'in_buffer_zone' => true];
+                }
+
+                $shortagesByDay[$day]['severity'] = max($shortagesByDay[$day]['severity'], $shortage->severity);
+                $shortagesByDay[$day]['in_buffer_zone'] = $shortagesByDay[$day]['in_buffer_zone'] && $shortage->in_buffer_zone;
+            }
+        }
+
+        ksort($shortagesByDay);
+
+        $shortages = [];
+        foreach ($shortagesByDay as $day => $data) {
+            if ($data['severity'] === 0) {
+                continue;
+            }
+
+            $shortages[] = GanttShortageData::make(
+                Carbon::parse($day),
+                -$data['severity'],
+                $data['in_buffer_zone'],
+            );
+        }
+
+        return GanttData::make($productId, $resolvedStoreIds[0], $from, $to, $totalStock, $allBars, $shortages);
+    }
+
+    /**
      * Bulk-fetch the parent opportunities referenced by `opportunity_item`
      * demands (via `metadata.opportunity_id`), keyed by id, so the Gantt bar
      * mapping resolves source names without an N+1 lookup per bar.

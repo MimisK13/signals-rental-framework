@@ -564,7 +564,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
 }; ?>
 
 <section class="w-full s-avail-grid-page">
-    <div class="s-avail-grid-sticky-chrome pointer-events-none sticky top-0 z-30 bg-[var(--content-bg)] shadow-sm">
+    <div class="s-avail-grid-sticky-chrome pointer-events-none sticky top-0 bg-[var(--content-bg)] shadow-sm">
         <div class="pointer-events-auto">
             <x-signals.page-header title="Job Planner">
                 <x-slot:meta>
@@ -583,6 +583,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                                 wire:key="planner-date-{{ $date }}"
                                 :value="$date !== '' ? $date : null"
                                 placeholder="{{ __('Pick a date') }}"
+                                floating
                                 class="s-avail-filter-datepicker min-w-[9.5rem]"
                                 x-on:input="$wire.set('date', $event.detail)"
                             />

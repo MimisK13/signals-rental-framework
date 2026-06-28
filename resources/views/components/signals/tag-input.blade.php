@@ -3,6 +3,7 @@
     'value' => [],
     'placeholder' => 'Add tag...',
     'suggestions' => [],
+    'floatSuggestions' => false,
 ])
 
 <div
@@ -12,9 +13,45 @@
         tags: @js($value),
         input: '',
         suggestions: @js($suggestions),
+        floatSuggestions: @js($floatSuggestions),
         filtered: [],
         showSuggestions: false,
         activeIndex: -1,
+        availableSuggestions() {
+            return this.suggestions.filter(s => !this.tags.includes(s));
+        },
+        positionSuggestions() {
+            if (!this.floatSuggestions) {
+                return;
+            }
+
+            const el = this.$refs.suggestions;
+            if (!el) {
+                return;
+            }
+
+            const rect = this.$el.getBoundingClientRect();
+            el.style.top = (rect.bottom + 4) + 'px';
+            el.style.left = rect.left + 'px';
+            el.style.width = rect.width + 'px';
+        },
+        openSuggestions() {
+            const pool = this.availableSuggestions();
+
+            if (!this.input) {
+                this.filtered = pool;
+            } else {
+                const query = this.input.toLowerCase();
+                this.filtered = pool.filter(s => s.toLowerCase().includes(query));
+            }
+
+            this.showSuggestions = this.filtered.length > 0;
+            this.activeIndex = -1;
+
+            if (this.showSuggestions && this.floatSuggestions) {
+                this.$nextTick(() => this.positionSuggestions());
+            }
+        },
         addTag(tag) {
             tag = tag.trim();
             if (tag && !this.tags.includes(tag)) {
@@ -22,18 +59,15 @@
                 $dispatch('tags-changed', this.tags);
             }
             this.input = '';
-            this.showSuggestions = false;
-            this.activeIndex = -1;
+            this.openSuggestions();
         },
         removeTag(index) {
             this.tags.splice(index, 1);
             $dispatch('tags-changed', this.tags);
+            this.openSuggestions();
         },
         filter() {
-            if (!this.input) { this.filtered = []; this.showSuggestions = false; return; }
-            this.filtered = this.suggestions.filter(s => s.toLowerCase().includes(this.input.toLowerCase()) && !this.tags.includes(s));
-            this.showSuggestions = this.filtered.length > 0;
-            this.activeIndex = -1;
+            this.openSuggestions();
         },
         onKeydown(e) {
             if (e.key === 'Enter') { e.preventDefault(); if (this.activeIndex >= 0 && this.filtered[this.activeIndex]) { this.addTag(this.filtered[this.activeIndex]); } else if (this.input) { this.addTag(this.input); } }
@@ -41,9 +75,18 @@
             else if (e.key === 'ArrowDown' && this.showSuggestions) { e.preventDefault(); this.activeIndex = Math.min(this.activeIndex + 1, this.filtered.length - 1); }
             else if (e.key === 'ArrowUp' && this.showSuggestions) { e.preventDefault(); this.activeIndex = Math.max(this.activeIndex - 1, 0); }
             else if (e.key === 'Escape') { this.showSuggestions = false; }
-        }
+        },
+        init() {
+            this.$watch('showSuggestions', value => {
+                if (value && this.floatSuggestions) {
+                    this.$nextTick(() => this.positionSuggestions());
+                }
+            });
+        },
     }"
-    x-on:click="$refs.field.focus()"
+    x-on:click="$refs.field.focus(); openSuggestions()"
+    x-on:resize.window="if (showSuggestions && floatSuggestions) positionSuggestions()"
+    x-on:scroll.window="if (showSuggestions && floatSuggestions) positionSuggestions()"
 >
     @if($name)
         <template x-for="(tag, i) in tags" :key="i">
@@ -66,12 +109,18 @@
         type="text"
         x-model="input"
         x-on:input="filter()"
+        x-on:focus="openSuggestions()"
         x-on:keydown="onKeydown($event)"
         x-on:blur="setTimeout(() => showSuggestions = false, 150)"
         placeholder="{{ $placeholder }}"
     >
 
-    <div class="s-tag-input-suggestions" x-show="showSuggestions" x-cloak>
+    <div
+        x-ref="suggestions"
+        x-show="showSuggestions"
+        x-cloak
+        x-bind:class="floatSuggestions ? 's-tag-input-suggestions s-tag-input-suggestions-floating' : 's-tag-input-suggestions'"
+    >
         <template x-for="(s, i) in filtered" :key="s">
             <button type="button" x-text="s" x-on:mousedown.prevent="addTag(s)" x-bind:class="{ 'active': i === activeIndex }"></button>
         </template>

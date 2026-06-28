@@ -10,7 +10,7 @@
     $paginator = $grid['paginator'];
     $dayList = $this->groupDays;
     $fromDate = $this->from !== '' ? $this->from : \Illuminate\Support\Carbon::today('UTC')->toDateString();
-    $bookingsStoreId = $this->primaryStoreId();
+    $bookingsStoreIds = $this->storeIds;
 @endphp
 
 @if($groupId === null)
@@ -41,7 +41,7 @@
                             'productName' => $row['product_name'] ?? __('Product #:id', ['id' => $row['product_id']]),
                             'fromDate' => $fromDate,
                             'daysPeriod' => $this->daysPeriod,
-                            'storeId' => $bookingsStoreId,
+                            'storeIds' => $bookingsStoreIds,
                         ])->render(),
                     ])
                     @foreach($row['cells'] as $cell)
@@ -50,12 +50,12 @@
                             'date' => $cell['date'],
                             'cell' => $cell,
                             'wireKey' => 'gcell-'.$row['product_id'].'-'.$cell['date'],
-                            'bookingsUrl' => route('availability.bookings', [
+                            'bookingsUrl' => route('availability.bookings', array_filter([
                                 'product' => $row['product_id'],
                                 'from' => $fromDate,
                                 'days' => $this->daysPeriod,
-                                'store' => $bookingsStoreId,
-                            ]),
+                                'stores' => $bookingsStoreIds !== [] ? $bookingsStoreIds : null,
+                            ], static fn (mixed $value): bool => $value !== null)),
                         ])
                     @endforeach
                     @include('livewire.availability.partials.grid-nav-spacer')

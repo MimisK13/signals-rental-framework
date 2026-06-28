@@ -6,7 +6,12 @@
     $summary = $this->summaryRows;
     $opportunityRows = $this->opportunityRows;
     $assetRows = $this->assetRows;
-    $colspan = count($dayList) + 2;
+    $emptyDemandCell = static fn (string $day): array => [
+        'date' => $day,
+        'quantity' => null,
+        'tone' => null,
+        'colour' => null,
+    ];
 @endphp
 
 @include('livewire.availability.partials.grid-shell-open')
@@ -83,8 +88,20 @@
                 @include('livewire.availability.partials.grid-nav-spacer')
             </tr>
         @empty
-            <tr wire:key="opp-empty">
-                <td colspan="{{ $colspan }}" class="px-3 py-2 text-[12px] text-[var(--text-muted)]">{{ __('No opportunity bookings in this window.') }}</td>
+            <tr wire:key="opp-empty" class="s-avail-group-row--demand">
+                @include('livewire.availability.partials.grid-label', [
+                    'label' => __('No opportunity bookings in this window.'),
+                    'muted' => true,
+                ])
+                @foreach($dayList as $day)
+                    @include('livewire.availability.partials.grid-day-cell', [
+                        'mode' => 'demand',
+                        'date' => $day,
+                        'cell' => $emptyDemandCell($day),
+                        'wireKey' => 'opp-empty-'.$day,
+                    ])
+                @endforeach
+                @include('livewire.availability.partials.grid-nav-spacer')
             </tr>
         @endforelse
 
@@ -109,8 +126,20 @@
                 @include('livewire.availability.partials.grid-nav-spacer')
             </tr>
         @empty
-            <tr wire:key="asset-empty">
-                <td colspan="{{ $colspan }}" class="px-3 py-2 text-[12px] text-[var(--text-muted)]">{{ __('No serialised assets at this store.') }}</td>
+            <tr wire:key="asset-empty" class="s-avail-group-row--demand">
+                @include('livewire.availability.partials.grid-label', [
+                    'label' => __('No serialised assets at this store.'),
+                    'muted' => true,
+                ])
+                @foreach($dayList as $day)
+                    @include('livewire.availability.partials.grid-day-cell', [
+                        'mode' => 'demand',
+                        'date' => $day,
+                        'cell' => $emptyDemandCell($day),
+                        'wireKey' => 'asset-empty-'.$day,
+                    ])
+                @endforeach
+                @include('livewire.availability.partials.grid-nav-spacer')
             </tr>
         @endforelse
     </tbody>

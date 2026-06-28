@@ -43,8 +43,9 @@
                     $dateKey = $day->toDateString();
                     $isToday = $dateKey === $today;
                     $isWeekend = $day->isWeekend();
+                    $isMonthStart = $day->day === 1;
                 @endphp
-                <div class="pointer-events-none absolute top-0 bottom-0 border-r border-[var(--card-border)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/25 ring-1 ring-inset ring-[#ffc107]/40' : '' }}"
+                <div class="pointer-events-none absolute top-0 bottom-0 border-r border-[var(--card-border)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/25 ring-1 ring-inset ring-[#ffc107]/40' : '' }} {{ $isMonthStart ? 's-planning-month-start' : '' }}"
                      style="left: {{ $i * $colWidth }}%; width: {{ $colWidth }}%;"
                      wire:key="grid-{{ $dateKey }}"></div>
             @endforeach

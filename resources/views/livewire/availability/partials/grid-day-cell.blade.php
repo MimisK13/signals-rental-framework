@@ -11,7 +11,8 @@
     $mode = $mode ?? 'availability';
     $carbonDay = \Illuminate\Support\Carbon::parse($date);
     $weekendClass = $carbonDay->isWeekend() ? 's-avail-group-weekend' : '';
-    $tdClass = trim('s-avail-group-td '.$weekendClass.' '.($tdClass ?? ''));
+    $monthStartClass = $carbonDay->day === 1 ? 's-planning-month-start' : '';
+    $tdClass = trim('s-avail-group-td '.$weekendClass.' '.$monthStartClass.' '.($tdClass ?? ''));
 @endphp
 
 <td wire:key="{{ $wireKey }}" class="{{ $tdClass }}">

@@ -1,5 +1,10 @@
 <div class="flex w-full items-center gap-2">
-    <a href="{{ route('availability.bookings', ['product' => $productId, 'from' => $fromDate, 'days' => $daysPeriod, 'store' => $storeId]) }}"
+    <a href="{{ route('availability.bookings', array_filter([
+        'product' => $productId,
+        'from' => $fromDate,
+        'days' => $daysPeriod,
+        'stores' => ($storeIds ?? []) !== [] ? $storeIds : null,
+    ], static fn (mixed $value): bool => $value !== null)) }}"
        wire:navigate
        class="min-w-0 flex-1 truncate font-medium text-[var(--blue)] hover:underline">
         {{ $productName }}

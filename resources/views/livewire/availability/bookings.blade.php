@@ -4,8 +4,8 @@ use App\Data\Availability\GanttDemandBarData;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\StockLevel;
-use App\Models\Store;
 use App\Services\AvailabilityService;
+use App\Services\Planning\PlanningStoreFilter;
 use App\Services\Opportunities\OpportunityPresentation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -37,8 +37,8 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
     public int $days;
 
-    #[Url(as: 'store')]
-    public int $storeId = 0;
+    #[Url(as: 'stores')]
+    public array $storeIds = [];
 
     /** Whether the grid body has completed its deferred first paint. */
     public bool $gridReady = false;
@@ -50,12 +50,6 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         $this->product = $product;
         $this->from = $from;
         $this->days = in_array($days, self::PERIOD_OPTIONS, true) ? $days : 30;
-
-        if ($this->storeId === 0) {
-            $this->storeId = (int) (Store::query()->where('is_default', true)->value('id')
-                ?? Store::query()->orderBy('id')->value('id')
-                ?? 0);
-        }
     }
 
     /** Flip the grid-ready flag after the initial skeleton paint (wire:init). */
@@ -66,9 +60,37 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['from', 'days', 'storeId'], true)) {
+        if (in_array($property, ['from', 'days'], true)) {
             $this->redirectToBookings();
         }
+    }
+
+    public function updatedStoreIds(): void
+    {
+        $this->redirectToBookings();
+    }
+
+    public function syncStoreIdsFromTags(array $tagNames): void
+    {
+        $this->storeIds = app(PlanningStoreFilter::class)->storeIdsFromTags($tagNames);
+    }
+
+    public function selectedStoreTags(): array
+    {
+        return app(PlanningStoreFilter::class)->selectedStoreTags($this->storeIds);
+    }
+
+    public function storeNameSuggestions(): array
+    {
+        return app(PlanningStoreFilter::class)->storeNameSuggestions();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function resolvedStoreIds(): array
+    {
+        return app(PlanningStoreFilter::class)->resolvedStoreIds($this->storeIds);
     }
 
     public function rendering(View $view): void
@@ -86,12 +108,12 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
     public function redirectToBookings(): void
     {
-        $this->redirectRoute('availability.bookings', [
+        $this->redirectRoute('availability.bookings', array_filter([
             'product' => $this->product->id,
             'from' => $this->fromDate(),
             'days' => $this->days,
-            'store' => $this->storeId,
-        ], navigate: true);
+            'stores' => $this->storeIds !== [] ? $this->storeIds : null,
+        ], static fn (mixed $value): bool => $value !== null), navigate: true);
     }
 
     public function previousPeriod(): void
@@ -136,13 +158,13 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     #[Computed]
     public function gantt(): ?\App\Data\Availability\GanttData
     {
-        if (! $this->gridReady || $this->storeId === 0) {
+        if (! $this->gridReady || $this->resolvedStoreIds() === []) {
             return null;
         }
 
-        return app(AvailabilityService::class)->getGantt(
+        return app(AvailabilityService::class)->getGanttForStores(
             $this->product->id,
-            $this->storeId,
+            $this->storeIds,
             Carbon::parse($this->fromDate()),
             Carbon::parse($this->windowTo()),
         );
@@ -156,7 +178,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     {
         $empty = ['available' => [], 'held' => [], 'post_rent' => [], 'total_stock' => 0];
 
-        if (! $this->gridReady || $this->storeId === 0) {
+        if (! $this->gridReady || $this->resolvedStoreIds() === []) {
             return $empty;
         }
 
@@ -164,35 +186,50 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         $from = Carbon::parse($this->fromDate());
         $to = Carbon::parse($this->windowTo());
 
-        $calendar = $service->getCalendar($this->storeId, $from, $to, [$this->product->id]);
-        $productRow = $calendar[0] ?? null;
-        $stockByProduct = $service->productTotalStock([$this->product->id], $this->storeId);
+        $calendar = $service->getCalendarForStores($this->storeIds, $from, $to, [$this->product->id]);
+        $productRow = $calendar->first();
+        $stockByProduct = $service->productTotalStockForStores([$this->product->id], $this->storeIds);
         $totalStock = $stockByProduct[$this->product->id] ?? 0;
+
+        $daysByDate = $productRow !== null
+            ? collect($productRow->days)->keyBy('date')
+            : collect();
 
         $available = [];
         $held = [];
         $postRent = [];
 
-        if ($productRow !== null) {
-            foreach ($productRow->days as $day) {
-                $availableQty = $day->available;
-                $heldQty = max(0, $totalStock - $availableQty);
-                $state = $this->classifyCell($availableQty, $day->has_shortage);
+        foreach ($this->windowDays as $day) {
+            $dayData = $daysByDate->get($day);
 
+            if ($dayData === null) {
                 $available[] = [
-                    'date' => $day->date,
-                    'present' => true,
-                    'available' => $availableQty,
-                    'held' => $heldQty,
-                    'stock' => $totalStock,
-                    'used_pct' => $totalStock > 0
-                        ? min(100, max(0, (int) round(($heldQty / $totalStock) * 100)))
-                        : ($heldQty > 0 ? 100 : 0),
-                    'state' => $state,
+                    'date' => $day,
+                    'present' => false,
                 ];
-                $held[] = ['date' => $day->date, 'value' => $heldQty];
-                $postRent[] = ['date' => $day->date, 'value' => $day->pending_checkin];
+                $held[] = ['date' => $day, 'value' => ''];
+                $postRent[] = ['date' => $day, 'value' => ''];
+
+                continue;
             }
+
+            $availableQty = $dayData->available;
+            $heldQty = max(0, $totalStock - $availableQty);
+            $state = $this->classifyCell($availableQty, $dayData->has_shortage);
+
+            $available[] = [
+                'date' => $day,
+                'present' => true,
+                'available' => $availableQty,
+                'held' => $heldQty,
+                'stock' => $totalStock,
+                'used_pct' => $totalStock > 0
+                    ? min(100, max(0, (int) round(($heldQty / $totalStock) * 100)))
+                    : ($heldQty > 0 ? 100 : 0),
+                'state' => $state,
+            ];
+            $held[] = ['date' => $day, 'value' => $heldQty];
+            $postRent[] = ['date' => $day, 'value' => $dayData->pending_checkin];
         }
 
         return [
@@ -285,7 +322,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     #[Computed]
     public function assetRows(): array
     {
-        if (! $this->gridReady || $this->storeId === 0) {
+        if (! $this->gridReady || $this->resolvedStoreIds() === []) {
             return [];
         }
 
@@ -300,7 +337,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
         $assets = StockLevel::query()
             ->where('product_id', $this->product->id)
-            ->where('store_id', $this->storeId)
+            ->whereIn('store_id', $this->resolvedStoreIds())
             ->whereNotNull('asset_number')
             ->orderBy('asset_number')
             ->get(['id', 'asset_number', 'serial_number']);
@@ -452,9 +489,8 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
 @php
     $dayList = $this->windowDays;
-    $stores = \App\Models\Store::query()->inDefaultQueries()->orderBy('name')->get(['id', 'name']);
     $availabilityIndexUrl = route('availability.index', array_filter([
-        'stores' => $storeId ? [$storeId] : null,
+        'stores' => $storeIds !== [] ? $storeIds : null,
         'from' => $from !== '' ? $from : null,
         'days' => $days,
         'group' => $product->product_group_id,
@@ -462,7 +498,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 @endphp
 
 <section class="w-full s-avail-grid-page s-avail-grid-page--bookings">
-    <div class="s-avail-grid-sticky-chrome sticky top-0 z-30 bg-[var(--content-bg)] shadow-sm">
+    <div class="s-avail-grid-sticky-chrome sticky top-0 bg-[var(--content-bg)] shadow-sm">
         <x-signals.page-header title="{{ __('Product Bookings') }}">
             <x-slot:meta>
                 <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">{{ __('Job Planning') }}</span>
@@ -477,6 +513,8 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
             <div class="s-panel s-planning-filter-panel">
                 <div class="s-panel-body flex flex-wrap items-end gap-3">
+                    @include('livewire.partials.filter-store-tags')
+
                     <div class="flex flex-col gap-1">
                         <span class="s-field-label">{{ __('Product') }}</span>
                         <div class="s-select-display min-w-52" title="{{ $product->name }}">
@@ -491,14 +529,13 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
                         </div>
                     </div>
 
-                    @include('livewire.partials.filter-store-combobox', ['stores' => $stores, 'storeId' => $storeId])
-
                     <div class="flex flex-col gap-1">
                         <span class="s-field-label">{{ __('Start date') }}</span>
                         <x-signals.datepicker
                             wire:key="bookings-from-{{ $from }}"
                             :value="$from !== '' ? $from : null"
                             placeholder="{{ __('Pick a date') }}"
+                            floating
                             class="s-avail-filter-datepicker min-w-[9.5rem]"
                             x-on:input="$wire.set('from', $event.detail)"
                         />
@@ -517,11 +554,11 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         </div>
     </div>
 
-    @if($storeId === 0)
+    @if($this->resolvedStoreIds() === [])
         <div class="px-6 max-md:px-5 max-sm:px-3">
             <x-signals.empty
-                title="{{ __('No store selected') }}"
-                description="{{ __('Choose a store to view bookings.') }}">
+                title="{{ __('No stores available') }}"
+                description="{{ __('Add a store to view bookings.') }}">
                 <x-slot:icon><flux:icon.building-storefront class="!size-7" /></x-slot:icon>
             </x-signals.empty>
         </div>

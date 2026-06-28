@@ -58,7 +58,7 @@ it('renders the product bookings page for a user with availability.view', functi
         'from' => '2026-06-28',
         'days' => 28,
     ])
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->call('initializeGrid')
         ->assertOk()
         ->assertSee('Product Bookings')
@@ -70,7 +70,7 @@ it('renders the product bookings page for a user with availability.view', functi
         ->assertSee('Available')
         ->assertSeeHtml('s-avail-group-table-scroll')
         ->assertSeeHtml('s-avail-grid-sticky-chrome')
-        ->assertSeeHtml('s-combobox')
+        ->assertSeeHtml('s-tag-input')
         ->assertSeeHtml('wire:init="initializeGrid"')
         ->assertSeeHtml('avail-skeleton-row');
 });
@@ -98,14 +98,14 @@ it('shifts the bookings date window from the grid header navigation', function (
         'from' => '2026-06-28',
         'days' => 7,
     ])
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->call('initializeGrid')
         ->call('nextPeriod')
         ->assertRedirect(route('availability.bookings', [
             'product' => $product->id,
             'from' => '2026-07-05',
             'days' => 7,
-            'store' => $this->store->id,
+            'stores' => [$this->store->id],
         ]));
 });
 
@@ -130,7 +130,7 @@ it('links back to the main availability page preserving filters', function () {
         'from' => '2026-06-28',
         'days' => 28,
     ])
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->call('initializeGrid')
         ->assertSeeHtml('href="'.e($backUrl).'"');
 });
@@ -145,6 +145,33 @@ it('forbids the product bookings page without availability.view', function () {
         'from' => '2026-06-28',
         'days' => 28,
     ])->assertForbidden();
+});
+
+it('builds the full day grid when no availability or booking data exists', function () {
+    $product = Product::factory()->create(['name' => 'Empty Window Product']);
+
+    $this->actingAs($this->user);
+
+    $component = Volt::test('availability.bookings', [
+        'product' => $product,
+        'from' => '2026-10-26',
+        'days' => 30,
+    ])
+        ->set('storeIds', [$this->store->id])
+        ->call('initializeGrid');
+
+    $summary = $component->get('summaryRows');
+
+    expect($summary['available'])->toHaveCount(30)
+        ->and($summary['held'])->toHaveCount(30)
+        ->and($summary['post_rent'])->toHaveCount(30)
+        ->and($summary['available'][0]['date'])->toBe('2026-10-26')
+        ->and($summary['available'][0]['present'])->toBeFalse();
+
+    $component
+        ->assertSee('No opportunity bookings in this window.')
+        ->assertSeeHtml('wire:key="opp-empty-2026-10-26"')
+        ->assertSeeHtml('wire:key="asset-empty-2026-10-26"');
 });
 
 it('shows opportunity rows for bulk demands in the window', function () {
@@ -183,7 +210,7 @@ it('shows opportunity rows for bulk demands in the window', function () {
         'from' => '2026-06-28',
         'days' => 28,
     ])
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->call('initializeGrid')
         ->assertSee('Ballet Boyz Tour')
         ->assertSee('J-019371');
@@ -240,7 +267,7 @@ it('colours bulk opportunity rows by delivery in-use and collection phases', fun
         'from' => '2026-07-01',
         'days' => 7,
     ])
-        ->set('storeId', $this->store->id)
+        ->set('storeIds', [$this->store->id])
         ->call('initializeGrid')
         ->get('opportunityRows');
 
@@ -320,7 +347,7 @@ it('colours registry-labelled booking rows and asset rows from the parent opport
         'product' => $product,
         'from' => '2026-07-01',
         'days' => 7,
-    ])->set('storeId', $this->store->id)->call('initializeGrid');
+    ])->set('storeIds', [$this->store->id])->call('initializeGrid');
 
     $gantt = $component->get('gantt');
     $bookingRow = collect($component->get('opportunityRows'))->first();
@@ -365,7 +392,7 @@ it('links from the group grid day cells to the bookings page using the view star
         'product' => $product->id,
         'from' => '2026-06-28',
         'days' => 30,
-        'store' => $this->store->id,
+        'stores' => [$this->store->id],
     ]);
 
     Volt::test('availability.index')
@@ -401,7 +428,7 @@ it('links from the group grid product name to the bookings page', function () {
         'product' => $product->id,
         'from' => '2026-06-28',
         'days' => 30,
-        'store' => $this->store->id,
+        'stores' => [$this->store->id],
     ]);
 
     Volt::test('availability.index')

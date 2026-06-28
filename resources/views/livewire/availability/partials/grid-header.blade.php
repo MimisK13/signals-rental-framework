@@ -28,9 +28,12 @@
             @endif
         </th>
         @foreach($dayList as $day)
-            @php $carbonDay = \Illuminate\Support\Carbon::parse($day); @endphp
+            @php
+                $carbonDay = \Illuminate\Support\Carbon::parse($day);
+                $isMonthStart = $carbonDay->day === 1;
+            @endphp
             <th wire:key="{{ $keyPrefix }}-{{ $day }}"
-                class="s-avail-group-day-col s-avail-group-head {{ $carbonDay->isWeekend() ? 's-avail-group-weekend' : '' }}">
+                class="s-avail-group-day-col s-avail-group-head {{ $carbonDay->isWeekend() ? 's-avail-group-weekend' : '' }} {{ $isMonthStart ? 's-planning-month-start' : '' }}">
                 <div class="s-avail-group-day">{{ $carbonDay->format('D') }}</div>
                 <div class="s-avail-group-date">{{ $carbonDay->format('j M') }}</div>
             </th>

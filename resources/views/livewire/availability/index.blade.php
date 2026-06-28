@@ -359,7 +359,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
 }; ?>
 
 <section class="w-full s-avail-grid-page s-avail-grid-page--index">
-    <div class="s-avail-grid-sticky-chrome sticky top-0 z-30 bg-[var(--content-bg)] shadow-sm">
+    <div class="s-avail-grid-sticky-chrome sticky top-0 bg-[var(--content-bg)] shadow-sm">
         <x-signals.page-header title="Equipment Availability">
             <x-slot:meta>
                 <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Job Planning</span>
@@ -369,6 +369,8 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
             <div class="s-panel s-planning-filter-panel">
                 <div class="s-panel-body flex flex-wrap items-end gap-3">
+                    @include('livewire.partials.filter-store-tags')
+
                     <div class="flex flex-col gap-1">
                         <span class="s-field-label">{{ __('Product Group') }}</span>
                         <select wire:model.live="groupId" class="s-select min-w-52" aria-label="{{ __('Product group') }}">
@@ -378,8 +380,6 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
                             @endforeach
                         </select>
                     </div>
-
-                    @include('livewire.partials.filter-store-tags')
 
                     <div class="flex flex-col gap-1">
                         <span class="s-field-label">{{ __('Product type') }}</span>
@@ -397,6 +397,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
                             wire:key="avail-from-{{ $from }}"
                             :value="$from !== '' ? $from : null"
                             placeholder="{{ __('Pick a date') }}"
+                            floating
                             class="s-avail-filter-datepicker min-w-[9.5rem]"
                             x-on:input="$wire.set('from', $event.detail)"
                         />

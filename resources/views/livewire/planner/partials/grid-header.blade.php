@@ -12,18 +12,19 @@
 @endphp
 
 <div class="overflow-hidden rounded-t-sm border border-b-0 border-[var(--card-border)] bg-[var(--card-bg)]">
-    {{-- Day header row --}}
+    {{-- Day header row — matches availability/bookings date header styling --}}
     <div class="grid w-full shrink-0 border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
         @foreach($days as $day)
             @php
                 $dateKey = $day->toDateString();
                 $isToday = $dateKey === $today;
                 $isWeekend = $day->isWeekend();
+                $isMonthStart = $day->day === 1;
             @endphp
-            <div class="border-r border-[var(--card-border)] py-1 text-center {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/50 ring-1 ring-inset ring-[#ffc107]/70' : '' }}"
+            <div class="s-planning-day-header-col border-r border-[var(--card-border)] {{ $isWeekend ? 's-avail-group-weekend' : '' }} {{ $isToday ? 'bg-[#fff3cd]/50 ring-1 ring-inset ring-[#ffc107]/70' : '' }} {{ $isMonthStart ? 's-planning-month-start' : '' }}"
                  wire:key="day-{{ $dateKey }}">
-                <div class="text-[11px] font-semibold text-[var(--text-primary)]">{{ $day->format('D') }}</div>
-                <div class="text-[10px] text-[var(--text-muted)]">{{ $day->format('j') }}</div>
+                <div class="s-avail-group-day">{{ $day->format('D') }}</div>
+                <div class="s-avail-group-date">{{ $day->format('j M') }}</div>
             </div>
         @endforeach
     </div>
@@ -36,10 +37,11 @@
                 $count = $jobCounts[$dateKey] ?? 0;
                 $isToday = $dateKey === $today;
                 $isWeekend = $day->isWeekend();
+                $isMonthStart = $day->day === 1;
                 $intensity = min(1, $count / $heatmapMax);
                 $heatAlpha = 0.12 + ($intensity * 0.78);
             @endphp
-            <div class="flex items-center justify-center border-r border-[var(--card-border)] py-1.5 text-[12px] font-bold text-[var(--text-primary)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'ring-1 ring-inset ring-[#ffc107]/50' : '' }}"
+            <div class="flex items-center justify-center border-r border-[var(--card-border)] py-1.5 text-[12px] font-bold text-[var(--text-primary)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'ring-1 ring-inset ring-[#ffc107]/50' : '' }} {{ $isMonthStart ? 's-planning-month-start' : '' }}"
                  style="background-color: rgba(192, 57, 43, {{ $count > 0 ? $heatAlpha : 0 }});"
                  wire:key="heatmap-{{ $dateKey }}">
                 {{ $count }}

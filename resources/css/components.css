@@ -549,6 +549,10 @@
   --s-app-topbar: 48px;
 }
 
+.s-avail-grid-sticky-chrome {
+  isolation: isolate;
+}
+
 .s-avail-grid-page--index {
   --s-avail-grid-chrome: 15.5rem;
 }
@@ -688,6 +692,10 @@
   transform: translateY(-50%);
 }
 
+.s-avail-grid-sticky-chrome {
+  overflow: visible;
+}
+
 .s-avail-filter-datepicker .s-datepicker-input {
   box-sizing: border-box;
   min-width: 9.5rem;
@@ -696,6 +704,16 @@
   font-size: 12px;
   font-weight: 600;
   line-height: normal;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.s-avail-filter-datepicker .s-datepicker-input:hover {
+  border-color: var(--green);
+}
+
+.s-avail-filter-datepicker .s-datepicker-input:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-muted);
 }
 
 .s-avail-filter-datepicker .s-datepicker-input input {
@@ -704,38 +722,91 @@
   font-weight: 600;
 }
 
+.s-planning-filter-panel.s-panel {
+  position: relative;
+  z-index: 50;
+  overflow: visible;
+}
+
 .s-planning-filter-panel .s-panel-body {
   overflow: visible;
 }
 
-.s-planning-filter-panel .s-tag-input-suggestions,
-.s-planning-filter-panel .s-datepicker-dropdown {
-  z-index: 120;
+.s-planning-filter-panel .s-tag-input,
+.s-planning-filter-panel .s-datepicker {
+  position: relative;
 }
 
 .s-planning-filter-tag-input.s-tag-input {
   box-sizing: border-box;
+  min-height: 0;
+  padding: 7px 32px 7px 12px;
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
   line-height: normal;
-  padding: 4px 10px;
-  min-height: 0;
   align-items: center;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.s-planning-filter-tag-input.s-tag-input:hover {
+  border-color: var(--green);
+}
+
+.s-planning-filter-tag-input.s-tag-input:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-muted);
+  outline: none;
 }
 
 .s-planning-filter-tag-input .s-tag-input-field {
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
-  padding: 2px 0;
+  line-height: normal;
+  padding: 0;
+  min-width: 4rem;
 }
 
 .s-planning-filter-tag-input .s-tag-input-tag {
   font-family: var(--font-display);
   font-size: 11px;
   font-weight: 600;
-  padding: 1px 6px;
+  line-height: normal;
+  padding: 0 6px;
+}
+
+.s-planning-filter-tag-input .s-tag-input-suggestions button:hover,
+.s-planning-filter-tag-input .s-tag-input-suggestions button.active {
+  background: var(--green-muted);
+  color: var(--text-primary);
+}
+
+.s-tag-input-suggestions-floating {
+  position: fixed;
+  z-index: 9999;
+  top: auto;
+  left: auto;
+  right: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--s-shadow-lg);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.s-avail-grid-sticky-chrome {
+  isolation: isolate;
+  z-index: 40;
+}
+
+.s-planning-grid-stage {
+  position: relative;
+  z-index: 0;
 }
 
 .s-planning-grid-stage,
@@ -769,6 +840,45 @@
 
 .s-avail-group-table td.s-avail-group-weekend {
   background: color-mix(in srgb, var(--text-muted) 10%, var(--card-bg));
+}
+
+.s-planning-filter-panel .s-tag-input-suggestions {
+  z-index: 200;
+}
+
+.s-planning-day-header-col {
+  padding: 4px 1px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.s-planning-day-header-col .s-avail-group-day,
+.s-planning-day-header-col .s-avail-group-date {
+  font-family: var(--font-sans);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.s-planning-day-header-col .s-avail-group-day {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.s-planning-day-header-col .s-avail-group-date {
+  font-size: 9px;
+  color: var(--text-primary);
+}
+
+.s-avail-group-table th.s-planning-month-start,
+.s-avail-group-table td.s-planning-month-start,
+.s-planning-month-start {
+  border-left: 3px solid var(--text-primary);
+}
+
+.s-avail-group-table-scroll thead th.s-planning-month-start {
+  box-shadow: 0 1px 0 var(--card-border);
 }
 
 /* Lighten every state colour in weekend columns (full column, all rows). */
@@ -2327,7 +2437,8 @@
 .s-datepicker-clear { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); display: flex; }
 .s-datepicker-clear:hover { color: var(--text-primary); }
 .s-datepicker-clear svg { width: 14px; height: 14px; }
-.s-datepicker-dropdown { position: absolute; top: calc(100% + 4px); left: 0; z-index: 50; box-shadow: var(--s-shadow-lg); }
+.s-datepicker-dropdown { position: absolute; top: calc(100% + 4px); left: 0; z-index: 50; box-shadow: var(--s-shadow-lg); background: var(--card-bg); border: 1px solid var(--card-border); }
+.s-datepicker-dropdown-floating { position: fixed; z-index: 9999; top: auto; left: auto; right: auto; background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-lg); }
 
 /* ================================================================ */
 /*  76. FIELD                                                        */
@@ -2505,7 +2616,7 @@
 .s-tag-input-tag-remove svg { width: 10px; height: 10px; }
 .s-tag-input-field { border: none; outline: none; background: transparent; font-family: var(--font-sans); font-size: 14px; color: var(--text-primary); flex: 1; min-width: 80px; padding: 3px 0; }
 .s-tag-input-field::placeholder { color: var(--text-muted); }
-.s-tag-input-suggestions { position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-lg); max-height: 180px; overflow-y: auto; }
+.s-tag-input-suggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-lg); max-height: 220px; overflow-y: auto; }
 .s-tag-input-suggestions button { display: block; width: 100%; text-align: left; padding: 6px 12px; border: none; background: none; font-family: var(--font-sans); font-size: 13px; color: var(--text-secondary); cursor: pointer; }
 .s-tag-input-suggestions button:hover,
 .s-tag-input-suggestions button.active { background: var(--s-hover); color: var(--text-primary); }

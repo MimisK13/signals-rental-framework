@@ -8,6 +8,7 @@
         wire:key="store-tags-{{ md5(json_encode($this->selectedStoreTags())) }}"
         :value="$this->selectedStoreTags()"
         :suggestions="$this->storeNameSuggestions()"
+        :float-suggestions="true"
         placeholder="{{ __('All stores') }}"
         class="s-planning-filter-tag-input min-w-52"
         x-on:tags-changed="$wire.syncStoreIdsFromTags($event.detail)"
