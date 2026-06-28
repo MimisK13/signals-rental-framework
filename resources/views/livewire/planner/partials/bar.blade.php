@@ -59,11 +59,19 @@
                 <span class="truncate">{{ $row['address'] }}</span>
             </span>
 
-            {{-- Line 4: status + Coll/Ret badges --}}
+            {{-- Line 4: status, tags + Coll/Ret badges --}}
             <span class="flex items-center justify-between gap-1 leading-none opacity-95" style="height: {{ $lineHeight }}px; font-size: {{ $textSize }};">
-                <span class="flex min-w-0 items-center gap-0.5 truncate leading-none">
+                <span class="flex min-w-0 flex-1 items-center gap-0.5 truncate leading-none">
                     <flux:icon.tag class="!size-2 shrink-0 opacity-70" />
-                    <span class="truncate">{{ $row['status_label'] }}</span>
+                    <span class="shrink-0 truncate">{{ $row['status_label'] }}</span>
+                    @if(! empty($row['tags']))
+                        @foreach(array_slice($row['tags'], 0, 2) as $tag)
+                            <span class="inline-flex shrink-0 items-center rounded-sm border border-white/25 bg-white/15 px-1 py-px text-[7px] font-semibold uppercase leading-none tracking-wide text-white">{{ $tag }}</span>
+                        @endforeach
+                        @if(count($row['tags']) > 2)
+                            <span class="inline-flex shrink-0 items-center rounded-sm border border-white/25 bg-white/15 px-1 py-px text-[7px] font-semibold leading-none text-white">+{{ count($row['tags']) - 2 }}</span>
+                        @endif
+                    @endif
                 </span>
                 @if($row['customer_collecting'] || $row['customer_returning'])
                     <span class="flex shrink-0 items-center gap-0.5 px-0.5 pb-0.5">

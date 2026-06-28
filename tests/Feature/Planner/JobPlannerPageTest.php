@@ -230,6 +230,18 @@ it('marks jobs that extend beyond the visible window', function () {
         ->and($rows[1]['extends_after'])->toBeTrue();
 });
 
+it('includes opportunity tags on planner rows', function () {
+    Opportunity::factory()->order()->create([
+        'tag_list' => ['VIP', 'Festival', 'Outdoor'],
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    expect(Volt::test('planner.index')->get('rows')[0]['tags'])->toBe(['VIP', 'Festival', 'Outdoor']);
+});
+
 it('builds day-snapped Delivery / In-Use / Collection segments and customer badges', function () {
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),

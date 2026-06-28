@@ -349,6 +349,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
                 'colour' => $status->colour(),
                 'status_label' => $status->label(),
                 'state_label' => $state->label(),
+                'tags' => array_values($job->tag_list ?? []),
                 'customer_collecting' => (bool) $job->customer_collecting,
                 'customer_returning' => (bool) $job->customer_returning,
                 'starts_at' => $start,
@@ -611,10 +612,11 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     }
 }; ?>
 
-<section class="flex w-full flex-1 flex-col min-h-0">
-    <x-signals.page-header title="{{ __('Job Planner') }}">
-        <x-slot:icon><flux:icon.calendar-days class="!size-5" /></x-slot:icon>
-        <x-slot:meta>{{ __('Schedule of quotes & orders across the planning window') }}</x-slot:meta>
+<section class="w-full">
+    <x-signals.page-header title="Job Planner">
+        <x-slot:meta>
+            <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Job Planning</span>
+        </x-slot:meta>
     </x-signals.page-header>
 
     <div class="flex min-h-0 flex-1 flex-col px-6 py-4 max-md:px-5 max-sm:px-3">
