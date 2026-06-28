@@ -59,6 +59,7 @@ it('renders the product bookings page for a user with availability.view', functi
         'days' => 28,
     ])
         ->set('storeId', $this->store->id)
+        ->call('initializeGrid')
         ->assertOk()
         ->assertSee('Product Bookings')
         ->assertSee('Equipment Availability')
@@ -70,6 +71,7 @@ it('renders the product bookings page for a user with availability.view', functi
         ->assertSeeHtml('s-avail-group-table-scroll')
         ->assertSeeHtml('s-avail-grid-sticky-chrome')
         ->assertSeeHtml('s-combobox')
+        ->assertSeeHtml('wire:init="initializeGrid"')
         ->assertSeeHtml('avail-skeleton-row');
 });
 
@@ -97,6 +99,7 @@ it('shifts the bookings date window from the grid header navigation', function (
         'days' => 7,
     ])
         ->set('storeId', $this->store->id)
+        ->call('initializeGrid')
         ->call('nextPeriod')
         ->assertRedirect(route('availability.bookings', [
             'product' => $product->id,
@@ -128,6 +131,7 @@ it('links back to the main availability page preserving filters', function () {
         'days' => 28,
     ])
         ->set('storeId', $this->store->id)
+        ->call('initializeGrid')
         ->assertSeeHtml('href="'.e($backUrl).'"');
 });
 
@@ -180,6 +184,7 @@ it('shows opportunity rows for bulk demands in the window', function () {
         'days' => 28,
     ])
         ->set('storeId', $this->store->id)
+        ->call('initializeGrid')
         ->assertSee('Ballet Boyz Tour')
         ->assertSee('J-019371');
 });
@@ -236,6 +241,7 @@ it('colours bulk opportunity rows by delivery in-use and collection phases', fun
         'days' => 7,
     ])
         ->set('storeId', $this->store->id)
+        ->call('initializeGrid')
         ->get('opportunityRows');
 
     $row = collect($rows)->first();
@@ -314,7 +320,7 @@ it('colours registry-labelled booking rows and asset rows from the parent opport
         'product' => $product,
         'from' => '2026-07-01',
         'days' => 7,
-    ])->set('storeId', $this->store->id);
+    ])->set('storeId', $this->store->id)->call('initializeGrid');
 
     $gantt = $component->get('gantt');
     $bookingRow = collect($component->get('opportunityRows'))->first();
@@ -366,6 +372,7 @@ it('links from the group grid day cells to the bookings page using the view star
         ->set('groupId', $group->id)
         ->set('storeIds', [$this->store->id])
         ->set('from', '2026-06-28')
+        ->call('initializeGrid')
         ->assertSeeHtml('href="'.e($cellUrl).'"')
         ->assertSeeHtml('s-avail-group-cell-link');
 });
@@ -401,6 +408,7 @@ it('links from the group grid product name to the bookings page', function () {
         ->set('groupId', $group->id)
         ->set('storeIds', [$this->store->id])
         ->set('from', '2026-06-28')
+        ->call('initializeGrid')
         ->assertSeeHtml('href="'.e($expectedUrl).'"')
         ->assertSeeHtml('href="'.e(route('products.show', $product)).'"')
         ->assertSeeHtml('target="_blank"');

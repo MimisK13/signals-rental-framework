@@ -34,7 +34,7 @@ afterEach(function () {
 it('renders the availability page for a user with availability.view', function () {
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')
+    Volt::test('availability.index')->call('initializeGrid')
         ->assertOk()
         ->assertSee('Equipment Availability')
         ->assertSee('Product Group')
@@ -51,7 +51,7 @@ it('forbids the page for a user without availability.view', function () {
 it('defaults to today, all stores, and a 30-day period', function () {
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')
+    Volt::test('availability.index')->call('initializeGrid')
         ->assertSet('storeIds', [])
         ->assertSet('from', '2026-06-20')
         ->assertSet('daysPeriod', 30);
@@ -69,7 +69,7 @@ it('re-renders without error when the store availability changes', function () {
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('availability.index')->set('groupId', $group->id);
+    $component = Volt::test('availability.index')->call('initializeGrid')->set('groupId', $group->id);
     $component->assertOk();
 
     AvailabilityDailySummary::factory()

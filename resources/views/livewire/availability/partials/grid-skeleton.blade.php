@@ -1,29 +1,34 @@
 {{--
     Availability-grid-shaped loading placeholder (group + bookings views).
+    Uses the same table shell as the live grid so width stays full.
 --}}
-<div class="s-avail-group-table-wrap" aria-hidden="true">
-    <div class="s-panel !p-0 overflow-hidden">
-        <div class="flex border-b border-[var(--card-border)]">
-            <div class="shrink-0 px-3 py-2" style="width: 12rem;">
+@include('livewire.availability.partials.grid-shell-open')
+    <thead>
+        <tr>
+            <th class="s-avail-group-product-col s-avail-group-product-head">
                 <x-signals.skeleton type="rect" width="70%" class="!h-4" />
-            </div>
+            </th>
             @for($i = 0; $i < 7; $i++)
-                <div class="flex flex-1 items-center justify-center border-l border-[var(--card-border)] px-2 py-2" wire:key="avail-skeleton-head-{{ $i }}">
-                    <x-signals.skeleton type="rect" width="60%" class="!h-4" />
-                </div>
+                <th wire:key="avail-skeleton-head-{{ $i }}" class="s-avail-group-day-col s-avail-group-head">
+                    <x-signals.skeleton type="rect" width="60%" class="!mx-auto !h-4" />
+                </th>
             @endfor
-        </div>
+            <th class="s-avail-group-nav-col s-avail-group-nav-head"></th>
+        </tr>
+    </thead>
+    <tbody>
         @for($row = 0; $row < 6; $row++)
-            <div class="flex border-b border-[var(--card-border)]" wire:key="avail-skeleton-row-{{ $row }}">
-                <div class="shrink-0 px-3 py-3" style="width: 12rem;">
+            <tr wire:key="avail-skeleton-row-{{ $row }}">
+                <th class="s-avail-group-product-col">
                     <x-signals.skeleton type="text" :lines="1" width="85%" />
-                </div>
+                </th>
                 @for($i = 0; $i < 7; $i++)
-                    <div class="flex flex-1 items-center justify-center border-l border-[var(--card-border)] p-2" wire:key="avail-skeleton-cell-{{ $row }}-{{ $i }}">
-                        <x-signals.skeleton type="rect" width="100%" class="!h-8" />
-                    </div>
+                    <td wire:key="avail-skeleton-cell-{{ $row }}-{{ $i }}" class="s-avail-group-day-col">
+                        <x-signals.skeleton type="rect" width="100%" class="!mx-auto !h-8" />
+                    </td>
                 @endfor
-            </div>
+                <td class="s-avail-group-nav-col"></td>
+            </tr>
         @endfor
-    </div>
-</div>
+    </tbody>
+@include('livewire.availability.partials.grid-shell-close')

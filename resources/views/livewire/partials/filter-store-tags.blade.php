@@ -9,7 +9,7 @@
         :value="$this->selectedStoreTags()"
         :suggestions="$this->storeNameSuggestions()"
         placeholder="{{ __('All stores') }}"
-        class="min-w-52"
+        class="s-planning-filter-tag-input min-w-52"
         x-on:tags-changed="$wire.syncStoreIdsFromTags($event.detail)"
     />
 </div>

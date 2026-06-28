@@ -704,6 +704,47 @@
   font-weight: 600;
 }
 
+.s-planning-filter-panel .s-panel-body {
+  overflow: visible;
+}
+
+.s-planning-filter-panel .s-tag-input-suggestions,
+.s-planning-filter-panel .s-datepicker-dropdown {
+  z-index: 120;
+}
+
+.s-planning-filter-tag-input.s-tag-input {
+  box-sizing: border-box;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  padding: 4px 10px;
+  min-height: 0;
+  align-items: center;
+}
+
+.s-planning-filter-tag-input .s-tag-input-field {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+.s-planning-filter-tag-input .s-tag-input-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+}
+
+.s-planning-grid-stage,
+.s-planning-grid-content,
+.s-planning-grid-skeleton {
+  width: 100%;
+  min-width: 0;
+}
+
 .s-avail-group-table-scroll thead th {
   position: sticky;
   top: 0;

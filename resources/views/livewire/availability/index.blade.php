@@ -73,6 +73,9 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     #[Url(as: 'days')]
     public int $daysPeriod = 30;
 
+    /** Whether the grid body has completed its deferred first paint. */
+    public bool $gridReady = false;
+
     public function mount(): void
     {
         Gate::authorize('availability.view');
@@ -84,6 +87,12 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         if (! in_array($this->daysPeriod, self::PERIOD_OPTIONS, true)) {
             $this->daysPeriod = 30;
         }
+    }
+
+    /** Flip the grid-ready flag after the initial skeleton paint (wire:init). */
+    public function initializeGrid(): void
+    {
+        $this->gridReady = true;
     }
 
     /**
@@ -203,6 +212,10 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     public function groupRows(): array
     {
         $empty = ['rows' => [], 'paginator' => Product::query()->whereRaw('1 = 0')->paginate(20)];
+
+        if (! $this->gridReady) {
+            return $empty;
+        }
 
         if ($this->groupId === null) {
             return $empty;
@@ -354,7 +367,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         </x-signals.page-header>
 
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
-            <div class="s-panel">
+            <div class="s-panel s-planning-filter-panel">
                 <div class="s-panel-body flex flex-wrap items-end gap-3">
                     <div class="flex flex-col gap-1">
                         <span class="s-field-label">{{ __('Product Group') }}</span>
@@ -398,22 +411,22 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
                         </select>
                     </div>
 
-                    <div class="ml-auto flex flex-wrap items-center justify-end gap-4 pb-1.5">
+                    <div class="flex flex-wrap items-center gap-4 pb-1.5">
                         <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
                             <input type="checkbox" wire:model.live="shortagesOnly" class="sr-only" />
-                            <x-signals.toggle :on="$shortagesOnly" />
                             <span>{{ __('Shortages only') }}</span>
+                            <x-signals.toggle :on="$shortagesOnly" />
                         </label>
                         <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
                             <input type="checkbox" wire:model.live="warningsOnly" class="sr-only" />
-                            <x-signals.toggle :on="$warningsOnly" />
                             <span>{{ __('Warnings only') }}</span>
+                            <x-signals.toggle :on="$warningsOnly" />
                         </label>
                         <label class="inline-flex cursor-not-allowed items-center gap-2 text-[12px] opacity-50"
                                title="{{ __('Coming in a future update — the read model does not yet support a quote-phase filter.') }}">
                             <input type="checkbox" wire:model.live="includeQuotes" class="sr-only" disabled />
-                            <x-signals.toggle :on="$includeQuotes" />
                             <span>{{ __('Include quotes') }}</span>
+                            <x-signals.toggle :on="$includeQuotes" />
                         </label>
                     </div>
                 </div>
@@ -421,15 +434,10 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         </div>
     </div>
 
-    @php
-        $availLoadingTargets = 'storeIds,from,groupId,productType,shortagesOnly,warningsOnly,includeQuotes,daysPeriod,syncStoreIdsFromTags,previousPeriod,nextPeriod';
-    @endphp
     <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">
-        <div wire:loading.remove wire:target="{{ $availLoadingTargets }}">
-            @include('livewire.availability.partials.group')
-        </div>
-        <div wire:loading.flex wire:target="{{ $availLoadingTargets }}" class="w-full">
-            @include('livewire.availability.partials.grid-skeleton')
-        </div>
+        @include('livewire.partials.planning-grid-shell', [
+            'contentView' => 'livewire.availability.partials.group',
+            'skeletonView' => 'livewire.availability.partials.grid-skeleton',
+        ])
     </div>
 </section>

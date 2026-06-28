@@ -40,6 +40,9 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     #[Url(as: 'store')]
     public int $storeId = 0;
 
+    /** Whether the grid body has completed its deferred first paint. */
+    public bool $gridReady = false;
+
     public function mount(Product $product, string $from, int $days): void
     {
         Gate::authorize('availability.view');
@@ -53,6 +56,12 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
                 ?? Store::query()->orderBy('id')->value('id')
                 ?? 0);
         }
+    }
+
+    /** Flip the grid-ready flag after the initial skeleton paint (wire:init). */
+    public function initializeGrid(): void
+    {
+        $this->gridReady = true;
     }
 
     public function updated(string $property): void
@@ -127,7 +136,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     #[Computed]
     public function gantt(): ?\App\Data\Availability\GanttData
     {
-        if ($this->storeId === 0) {
+        if (! $this->gridReady || $this->storeId === 0) {
             return null;
         }
 
@@ -147,7 +156,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     {
         $empty = ['available' => [], 'held' => [], 'post_rent' => [], 'total_stock' => 0];
 
-        if ($this->storeId === 0) {
+        if (! $this->gridReady || $this->storeId === 0) {
             return $empty;
         }
 
@@ -217,6 +226,10 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     #[Computed]
     public function opportunityRows(): array
     {
+        if (! $this->gridReady) {
+            return [];
+        }
+
         $gantt = $this->gantt;
 
         if ($gantt === null) {
@@ -272,7 +285,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
     #[Computed]
     public function assetRows(): array
     {
-        if ($this->storeId === 0) {
+        if (! $this->gridReady || $this->storeId === 0) {
             return [];
         }
 
@@ -446,7 +459,6 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         'days' => $days,
         'group' => $product->product_group_id,
     ]));
-    $bookingsLoadingTargets = 'storeId,from,days,previousPeriod,nextPeriod';
 @endphp
 
 <section class="w-full s-avail-grid-page s-avail-grid-page--bookings">
@@ -463,7 +475,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         </x-signals.page-header>
 
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
-            <div class="s-panel">
+            <div class="s-panel s-planning-filter-panel">
                 <div class="s-panel-body flex flex-wrap items-end gap-3">
                     <div class="flex flex-col gap-1">
                         <span class="s-field-label">{{ __('Product') }}</span>
@@ -515,19 +527,10 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
         </div>
     @else
         <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">
-            <div wire:loading.remove wire:target="{{ $bookingsLoadingTargets }}">
-                @include('livewire.availability.partials.bookings-grid')
-                @include('livewire.availability.partials.grid-legend')
-                <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
-                    <span class="font-semibold uppercase tracking-wide">{{ __('Opportunity phases') }}</span>
-                    @include('livewire.availability.partials.opportunity-phase-legend', [
-                        'entries' => $this->opportunityPhaseLegend,
-                    ])
-                </div>
-            </div>
-            <div wire:loading.flex wire:target="{{ $bookingsLoadingTargets }}" class="w-full">
-                @include('livewire.availability.partials.grid-skeleton')
-            </div>
+            @include('livewire.partials.planning-grid-shell', [
+                'contentView' => 'livewire.availability.partials.bookings-content',
+                'skeletonView' => 'livewire.availability.partials.grid-skeleton',
+            ])
         </div>
     @endif
 </section>
