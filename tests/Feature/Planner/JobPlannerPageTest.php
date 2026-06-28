@@ -382,6 +382,17 @@ it('surfaces venue address on each row with member name fallback', function () {
         ->toBe('1 High Street, Bristol, BS1 1AA');
 });
 
+it('uses a distinct in-use phase colour separate from quotation status', function () {
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('planner.index')->get('legend');
+    $inUse = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'In Use');
+
+    expect($inUse)->not->toBeNull()
+        ->and($inUse['colour'])->toBe('#9333ea')
+        ->and($inUse['colour'])->not->toBe(OpportunityStatus::QuotationProvisional->colour());
+});
+
 it('steps the window forward, back and home', function () {
     $this->actingAs($this->user);
 

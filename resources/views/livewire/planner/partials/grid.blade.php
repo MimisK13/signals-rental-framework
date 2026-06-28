@@ -27,11 +27,11 @@
         <x-slot:icon><flux:icon.calendar-days class="!size-7" /></x-slot:icon>
     </x-signals.empty>
 @else
-    <div class="s-panel w-full" wire:loading.class="opacity-60">
-        <div class="s-panel-body !p-0 w-full">
-            <div class="w-full border-l border-[var(--card-border)]">
+    <div class="s-panel flex min-h-0 w-full flex-1 flex-col" wire:loading.class="opacity-60">
+        <div class="s-panel-body flex min-h-0 w-full flex-1 flex-col !p-0">
+            <div class="flex min-h-0 w-full flex-1 flex-col border border-[var(--card-border)]">
                 {{-- Day header row --}}
-                <div class="grid w-full border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
+                <div class="grid w-full shrink-0 border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
                     @foreach($days as $day)
                         @php
                             $dateKey = $day->toDateString();
@@ -47,7 +47,7 @@
                 </div>
 
                 {{-- Job-count heatmap row --}}
-                <div class="grid w-full border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
+                <div class="grid w-full shrink-0 border-b border-[var(--card-border)]" style="{{ $gridStyle }}">
                     @foreach($days as $day)
                         @php
                             $dateKey = $day->toDateString();
@@ -70,11 +70,11 @@
                     foreach ($rows as $r) {
                         $maxLanes = max($maxLanes, (int) ($r['lanes'] ?? 1));
                     }
-                    $trackHeight = $maxLanes > 0
+                    $minTrackHeight = $maxLanes > 0
                         ? ($maxLanes * $laneStride - $laneGap)
                         : 0;
                 @endphp
-                <div class="relative w-full" style="height: {{ $trackHeight }}px;">
+                <div class="relative min-h-0 w-full flex-1" style="min-height: {{ $minTrackHeight }}px;">
                     @foreach($days as $i => $day)
                         @php
                             $dateKey = $day->toDateString();

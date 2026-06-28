@@ -548,7 +548,7 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     {
         return [
             'delivery' => '#3498db',
-            'in-use' => '#f39c12',
+            'in-use' => '#9333ea',
             'collection' => '#27ae60',
         ];
     }
@@ -611,13 +611,13 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     }
 }; ?>
 
-<section class="w-full">
+<section class="flex w-full flex-1 flex-col min-h-0">
     <x-signals.page-header title="{{ __('Job Planner') }}">
         <x-slot:icon><flux:icon.calendar-days class="!size-5" /></x-slot:icon>
         <x-slot:meta>{{ __('Schedule of quotes & orders across the planning window') }}</x-slot:meta>
     </x-signals.page-header>
 
-    <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
+    <div class="flex min-h-0 flex-1 flex-col px-6 py-4 max-md:px-5 max-sm:px-3">
     {{-- Control bar --}}
     <div class="s-panel mb-4">
         <div class="s-panel-body flex flex-wrap items-end gap-3">
