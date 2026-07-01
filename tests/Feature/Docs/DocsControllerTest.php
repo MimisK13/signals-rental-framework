@@ -117,7 +117,37 @@ test('changelog route returns 200', function () {
 
 test('changelog page displays version numbers', function () {
     get(route('docs.changelog'))
+        ->assertSee('0.5.1')
+        ->assertSee('API Console')
         ->assertSee('0.1.0');
+});
+
+test('resolves the api-console platform documentation page', function () {
+    get(route('docs.show', ['platform', 'api-console']))
+        ->assertOk()
+        ->assertViewIs('docs.show')
+        ->assertSee('API Console')
+        ->assertSee('api.explorer.use');
+});
+
+test('lists api-console in the platform navigation sidebar', function () {
+    get(route('docs.show', ['platform', 'api-console']))
+        ->assertOk()
+        ->assertSee('API Console');
+});
+
+test('resolves the usage API documentation page', function () {
+    get(route('docs.show', ['api', 'usage']))
+        ->assertOk()
+        ->assertViewIs('docs.show')
+        ->assertSee('Usage &amp; Metering API', false)
+        ->assertSee('api-usage:read');
+});
+
+test('lists usage in the API navigation sidebar', function () {
+    get(route('docs.show', ['api', 'usage']))
+        ->assertOk()
+        ->assertSee('Usage &amp; Metering', false);
 });
 
 test('changelog page uses docs layout', function () {

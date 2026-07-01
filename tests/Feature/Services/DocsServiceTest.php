@@ -212,7 +212,42 @@ it('lists the availability page in the API navigation section', function () {
     expect($slugs)->toContain('availability')
         ->toContain('opportunities')
         ->toContain('shortages')
-        ->toContain('containers');
+        ->toContain('containers')
+        ->toContain('usage');
+});
+
+it('resolves the api-console platform documentation page', function () {
+    expect($this->service->pageExists('platform', 'api-console'))->toBeTrue();
+
+    $page = $this->service->getPage('platform', 'api-console');
+
+    expect($page)->not->toBeNull()
+        ->and($page['html'])->toContain('api.explorer.use');
+});
+
+it('lists api-console in the platform navigation section', function () {
+    $nav = $this->service->getNavigation();
+
+    $platformSection = null;
+    foreach ($nav['sections'] as $section) {
+        if (($section['slug'] ?? null) === 'platform') {
+            $platformSection = $section;
+            break;
+        }
+    }
+
+    $slugs = array_map(static fn (array $page): string => $page['slug'], $platformSection['pages']);
+
+    expect($slugs)->toContain('api-console');
+});
+
+it('resolves the usage API documentation page', function () {
+    expect($this->service->pageExists('api', 'usage'))->toBeTrue();
+
+    $page = $this->service->getPage('api', 'usage');
+
+    expect($page)->not->toBeNull()
+        ->and($page['html'])->toContain('api-usage:read');
 });
 
 it('skips changelog entries lacking frontmatter and formats integer dates', function () {

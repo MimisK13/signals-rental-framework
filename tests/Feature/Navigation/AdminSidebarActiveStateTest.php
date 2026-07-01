@@ -42,12 +42,6 @@ describe('first-level group active state (previously broken mappings)', function
 
         assertNavLinkActive($html, 'admin.settings.preferences');
     });
-
-    it('marks the System group active on the webhooks page', function () {
-        $html = $this->get(route('admin.settings.webhooks'))->assertOk()->getContent();
-
-        assertNavLinkActive($html, 'admin.settings.action-log');
-    });
 });
 
 describe('admin overview link', function () {
@@ -74,10 +68,11 @@ describe('second-level item active state', function () {
         assertNavLinkActive($html, 'admin.settings.integrations');
     });
 
-    it('marks the Webhooks item active on the webhooks page', function () {
-        $html = $this->get(route('admin.settings.webhooks'))->assertOk()->getContent();
+    it('does not render a webhooks item in the admin sidebar', function () {
+        $html = $this->get(route('admin.settings.api'))->assertOk()->getContent();
 
-        assertNavLinkActive($html, 'admin.settings.webhooks');
+        expect(preg_match('/s-admin-nav-item[^>]*href="'.preg_quote(route('admin.settings.webhooks'), '/').'"/', $html))
+            ->toBe(0);
     });
 
     it('does not over-match Email when on the Email Templates page', function () {
