@@ -1281,7 +1281,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                         <input
                             type="text"
                             class="s-input w-full"
-                            placeholder="Quick add — &ldquo;6 spiider&rdquo;, or a SKU, then Enter"
+                            placeholder="Quick add — &ldquo;6 spider&rdquo;, or a SKU, then Enter"
                             autocomplete="off"
                             x-model="quickAddQuery"
                             x-ref="quickAddInput"

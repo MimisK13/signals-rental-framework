@@ -2,6 +2,7 @@
     'value' => null,
     'showTime' => true,
     'placeholder' => 'Select date & time',
+    'anchor' => null,
 ])
 
 @php
@@ -18,4 +19,5 @@
     :time="$dateValue ? \Carbon\Carbon::parse($dateValue)->format('H:i') : null"
     :show-time="$showTime"
     :placeholder="$placeholder"
+    :anchor="$anchor"
 />

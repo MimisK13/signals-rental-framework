@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * @property ProductType $product_type
  * @property StockMethod|null $stock_method
  * @property int $buffer_before_minutes
  * @property int $post_rent_unavailability

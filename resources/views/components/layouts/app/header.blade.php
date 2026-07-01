@@ -339,10 +339,9 @@
                     </div>
                 </div>
 
-                {{-- Reports (top-level placeholder; gains reports.* gate when the module ships). --}}
-                <a href="#" class="header-nav-item">
-                    Reports
-                </a>
+                {{-- Reports — hidden until the Reporting module ships. Restore this
+                     link (with a real route + reports.* gate) when it lands; do not
+                     surface a dead "#" placeholder in the meantime. --}}
             </nav>
 
             {{-- Header actions (right side) --}}

@@ -8,6 +8,7 @@
     'showTime' => false,
     'time' => null,
     'floating' => false,
+    'anchor' => null,
 ])
 
 <div
@@ -114,9 +115,9 @@
         x-cloak
     >
         @if($range)
-            <x-signals.calendar :range-start="$rangeStart" :range-end="$rangeEnd" />
+            <x-signals.calendar :range-start="$rangeStart" :range-end="$rangeEnd" :anchor="$anchor" />
         @else
-            <x-signals.calendar :selected="$value" />
+            <x-signals.calendar :selected="$value" :anchor="$anchor" />
         @endif
         @if($showTime)
             <div style="padding: 8px 12px; border-top: 1px solid var(--card-border); display: flex; align-items: center; gap: 8px; background: var(--card-bg);">

@@ -15,6 +15,7 @@ use App\Enums\LineItemTransactionType;
 use App\Enums\MembershipType;
 use App\Enums\OpportunityItemType;
 use App\Enums\ProductType;
+use App\Enums\RateTransactionType;
 use App\Enums\StockMethod;
 use App\Models\Accessory;
 use App\Models\Activity;
@@ -26,6 +27,8 @@ use App\Models\OpportunityItem;
 use App\Models\Phone;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\ProductRate;
+use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -317,7 +320,74 @@ class DemoDataSeeder extends Seeder
             );
         }
 
+        $this->seedDemoProductRates();
         $this->seedDemoProductAccessories();
+    }
+
+    /**
+     * Attach a non-zero {@see ProductRate} to each demo catalogue product so the
+     * rate engine prices demo lines above £0 (without rates the resolver returns
+     * null and every demo line falls back to a £0.00 ad-hoc price, blocking
+     * pricing demos). Rental + service lines use the "Daily Rate" preset; sale
+     * lines use the duration-independent "Fixed Rate" preset. Prices are minor
+     * units (pence) and the rate is store-agnostic (store_id null) at the default
+     * priority, matching the all-stores resolution path.
+     */
+    private function seedDemoProductRates(): void
+    {
+        $dailyRate = RateDefinition::query()->where('preset_slug', 'daily-rate')->first();
+        $fixedRate = RateDefinition::query()->where('preset_slug', 'fixed-rate')->first();
+
+        if ($dailyRate === null || $fixedRate === null) {
+            $this->command->warn('Rate definition presets not found — run RateDefinitionPresetSeeder first; demo products will price at £0.');
+
+            return;
+        }
+
+        // Per-SKU price in minor units: a daily hire rate for rental/service lines,
+        // a flat sale price for sale lines.
+        $rates = [
+            'DEMO-AUD-EW100' => 4500,
+            'DEMO-AUD-XLR5' => 250,
+            'DEMO-LGN-PARRGBW' => 1500,
+            'DEMO-LMH-BEAM230' => 6500,
+            'DEMO-VID-LED55' => 7500,
+            'DEMO-STG-DECK2X1' => 1200,
+            'DEMO-PWR-DISTRO16' => 3500,
+            'DEMO-CON-GAF50' => 900,
+            'DEMO-FUR-CHAIR' => 350,
+            'DEMO-SVC-TECH' => 35000,
+        ];
+
+        foreach ($rates as $sku => $price) {
+            $product = Product::query()->where('sku', $sku)->first();
+
+            if ($product === null) {
+                continue;
+            }
+
+            $transactionType = match ($product->product_type) {
+                ProductType::Sale => RateTransactionType::Sale,
+                ProductType::Service => RateTransactionType::Service,
+                default => RateTransactionType::Rental,
+            };
+
+            $rateDefinition = $product->product_type === ProductType::Sale ? $fixedRate : $dailyRate;
+
+            ProductRate::query()->updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'store_id' => null,
+                    'transaction_type' => $transactionType,
+                ],
+                [
+                    'rate_definition_id' => $rateDefinition->id,
+                    'price' => $price,
+                    'currency' => 'GBP',
+                    'priority' => 0,
+                ],
+            );
+        }
     }
 
     /**

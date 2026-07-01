@@ -6,11 +6,14 @@ use App\Actions\Opportunities\AllocateAsset;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
+use App\Enums\RateTransactionType;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\ProductRate;
+use App\Models\RateDefinition;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
@@ -44,6 +47,13 @@ class AvailabilityDemoSeeder extends Seeder
         'Demo - Moving Head Beam 230W',
         'Robe Esprite',
         'Martin MAC Aura XB',
+    ];
+
+    /** Daily hire rate (minor units) attached to each demo product so it prices > £0. */
+    private const PRODUCT_DAILY_RATE = [
+        'Demo - Moving Head Beam 230W' => 6500,
+        'Robe Esprite' => 12500,
+        'Martin MAC Aura XB' => 9500,
     ];
 
     public function run(): void
@@ -92,6 +102,7 @@ class AvailabilityDemoSeeder extends Seeder
 
         foreach (self::PRODUCT_STOCK as $name => $targetStock) {
             $this->ensureSerialisedStock($products->get($name), $store->id, $targetStock);
+            $this->ensureProductRate($products->get($name));
         }
 
         $member = Member::factory()->organisation()->create([
@@ -274,6 +285,39 @@ class AvailabilityDemoSeeder extends Seeder
         Member::query()
             ->whereJsonContains('tag_list', self::TAG)
             ->each(fn (Member $member) => $member->forceDelete());
+    }
+
+    /**
+     * Ensure the demo product carries a non-zero rental {@see ProductRate} so the
+     * rate engine prices it above £0 (the resolver otherwise returns null and the
+     * line falls back to a £0.00 ad-hoc price). Uses the "Daily Rate" preset, a
+     * store-agnostic all-stores rate at default priority.
+     */
+    private function ensureProductRate(Product $product): void
+    {
+        $dailyRate = RateDefinition::query()->where('preset_slug', 'daily-rate')->first();
+
+        if ($dailyRate === null) {
+            if ($this->command !== null) {
+                $this->command->warn('Rate definition preset "daily-rate" not found — run RateDefinitionPresetSeeder first; demo products will price at £0.');
+            }
+
+            return;
+        }
+
+        ProductRate::query()->updateOrCreate(
+            [
+                'product_id' => $product->id,
+                'store_id' => null,
+                'transaction_type' => RateTransactionType::Rental,
+            ],
+            [
+                'rate_definition_id' => $dailyRate->id,
+                'price' => self::PRODUCT_DAILY_RATE[$product->name] ?? 5000,
+                'currency' => 'GBP',
+                'priority' => 0,
+            ],
+        );
     }
 
     private function ensureSerialisedStock(Product $product, int $storeId, int $targetStock): void
