@@ -190,12 +190,5 @@
             <flux:icon.circle-stack class="s-admin-nav-icon" />
             Database Seeders
         </a>
-        @can('webhooks.manage')
-            <a href="{{ route('admin.settings.webhooks') }}" wire:navigate
-               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.webhooks') ? 'active' : '' }}">
-                <flux:icon.signal class="s-admin-nav-icon" />
-                Webhooks
-            </a>
-        @endcan
     @endif
 </nav>

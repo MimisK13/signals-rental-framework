@@ -8,6 +8,7 @@
     // correct during Livewire updates, not just on full page loads.
     $isAdminArea = ActiveRoute::is('admin.*');
     $isSettingsArea = ActiveRoute::is('settings.*');
+    $isApiArea = ActiveRoute::is('api.*');
     $hasSidebarContent = $isAdminArea || $isSettingsArea;
 @endphp
 
@@ -371,10 +372,12 @@
                                 <flux:icon.puzzle-piece class="mega-item-icon" />
                                 <span class="mega-item-label">Plugin</span>
                             </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.code-bracket class="mega-item-icon" />
-                                <span class="mega-item-label">API</span>
-                            </a>
+                            @can('api.access')
+                                <a href="{{ route('api.index') }}" class="mega-item {{ $isApiArea ? 'active' : '' }}" wire:navigate>
+                                    <flux:icon.code-bracket class="mega-item-icon" />
+                                    <span class="mega-item-label">API</span>
+                                </a>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -641,6 +644,11 @@
 
                 <div class="flex-1"></div>
                 <div class="mx-2 my-1 h-px bg-[var(--sidebar-border)]"></div>
+                @can('api.access')
+                    <a class="sidebar-item {{ $isApiArea ? 'active' : '' }}" href="{{ route('api.index') }}" wire:navigate x-on:click="mobileNav = false">
+                        <flux:icon.code-bracket class="!size-[15px]" /> API
+                    </a>
+                @endcan
                 @if(auth()->user()?->hasAdminAccess())
                     <a class="sidebar-item" href="{{ route('admin.index') }}" wire:navigate x-on:click="mobileNav = false">
                         <flux:icon.wrench-screwdriver class="!size-[15px]" /> Admin

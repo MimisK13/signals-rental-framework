@@ -1368,12 +1368,60 @@
 /*  43. JSON VIEWER                                                  */
 /* ================================================================ */
 
-.s-json-viewer { background: rgba(15, 23, 42, 0.96); padding: 16px 20px; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; color: #e2e8f0; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+.s-json-viewer { background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); font-size: 12px; line-height: 1.6; color: #e2e8f0; overflow: hidden; word-break: break-word; }
+.s-json-viewer:not(.s-json-viewer-compact) .s-json-viewer-content { padding: 16px 20px; white-space: pre-wrap; }
+.s-json-viewer-compact { padding: 0; font-size: 11px; line-height: 1.45; max-height: min(420px, 55vh); display: flex; flex-direction: column; }
+.s-json-viewer-toolbar { display: flex; justify-content: flex-end; padding: 8px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.03); }
+.s-json-viewer-content { margin: 0; padding: 10px 12px; overflow: auto; flex: 1; white-space: pre; word-break: normal; }
+.s-json-viewer-compact .s-json-viewer-content { padding: 8px 10px; font-size: 10px; line-height: 1.4; }
+.s-copy-btn-sm { padding: 4px 8px; font-size: 10px; gap: 4px; }
+.s-copy-btn-sm .s-copy-btn-icon { width: 12px; height: 12px; }
+.s-explorer-url { display: flex; align-items: center; gap: 8px; border: 1px solid var(--card-border); background: var(--s-subtle); padding: 6px 10px; font-family: var(--font-mono); font-size: 11px; line-height: 1.35; }
+.s-explorer-url-path { color: var(--text-primary); word-break: break-all; }
+.s-explorer-url-placeholder { color: var(--text-muted); font-style: italic; }
+.s-explorer-panel-card .s-card-header { align-items: flex-start; gap: 12px; }
+.s-explorer-panel-card .s-card-title { display: flex; align-items: center; min-height: 31px; }
+.s-explorer-panel-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-height: 31px; flex-shrink: 0; }
+.s-response-headers-panel { border: 1px solid var(--card-border); background: var(--s-subtle); padding: 6px 10px; max-height: min(180px, 28vh); overflow: auto; }
+.s-response-headers { margin: 0; font-family: var(--font-mono); font-size: 10px; line-height: 1.35; }
+.s-response-header-row { display: grid; grid-template-columns: minmax(88px, 34%) 1fr; gap: 8px 10px; padding: 3px 0; border-bottom: 1px solid var(--card-border); }
+.s-response-header-row:last-child { border-bottom: none; }
+.s-response-header-name { font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.s-response-header-value { color: var(--text-secondary); word-break: break-all; }
 .s-json-key { color: #7dd3fc; }
 .s-json-string { color: #86efac; }
 .s-json-number { color: #fbbf24; }
 .s-json-bool { color: #c084fc; }
 .s-json-null { color: #94a3b8; }
+
+/* API usage dashboard */
+.s-usage-overview .s-card-body { padding: 12px 16px; }
+.s-usage-overview-grid { display: grid; gap: 14px; }
+.s-usage-overview-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 1024px) {
+  .s-usage-overview-top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); align-items: stretch; }
+}
+.s-usage-metric { border: 1px solid var(--card-border); background: var(--s-subtle); padding: 10px 12px; min-width: 0; }
+.s-usage-metric-label { font-family: var(--font-display); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.s-usage-metric-value { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.s-usage-status-split { border: 1px solid var(--card-border); background: var(--s-subtle); padding: 10px 12px; min-width: 0; grid-column: 1 / -1; }
+@media (min-width: 1024px) { .s-usage-status-split { grid-column: auto; } }
+.s-usage-status-split-label,
+.s-usage-daily-label { font-family: var(--font-display); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+.s-usage-status-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.s-usage-status-item-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.s-usage-status-count { font-size: 12px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.s-usage-status-track { height: 8px; }
+.s-usage-daily-chart { border: none; padding: 0; background: transparent; box-shadow: none; }
+.s-usage-bar-row { margin-bottom: 6px; gap: 10px; }
+.s-usage-bar-row:last-child { margin-bottom: 0; }
+.s-usage-bar-track { height: 18px; }
+.s-usage-bar-row .s-bar-label { min-width: 72px; font-size: 11px; }
+.s-usage-bar-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); min-width: 132px; text-align: right; white-space: nowrap; flex-shrink: 0; }
+.s-usage-table-card .s-card-body { padding: 12px; }
+.s-usage-table-wrap { box-shadow: none; max-height: min(360px, 42vh); overflow: auto; }
+.s-usage-table-wrap .s-table td { word-break: break-word; }
+.s-usage-table-wrap .s-table .font-mono { word-break: break-all; }
 
 /* ================================================================ */
 /*  44. PARSED VIEW                                                  */
