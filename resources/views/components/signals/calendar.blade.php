@@ -4,13 +4,22 @@
     'rangeEnd' => null,
     'events' => [],
     'showAdjacentMonths' => false,
+    'anchor' => null,
 ])
+
+@php
+    // Default visible month/year, in priority order: the selected date, then the
+    // range start, then the `anchor` (e.g. an "ends at" field anchoring to the
+    // chosen "starts at" month while it has no value of its own), then today.
+    $anchorDate = $anchor ? \Carbon\Carbon::parse($anchor)->format('Y-m-d') : null;
+    $monthAnchor = $selected ?: ($rangeStart ?: $anchorDate);
+@endphp
 
 <div
     {{ $attributes->merge(['class' => 's-calendar']) }}
     x-data="{
-        month: {{ $selected ? "new Date('" . $selected . "').getMonth()" : ($rangeStart ? "new Date('" . $rangeStart . "').getMonth()" : 'new Date().getMonth()') }},
-        year: {{ $selected ? "new Date('" . $selected . "').getFullYear()" : ($rangeStart ? "new Date('" . $rangeStart . "').getFullYear()" : 'new Date().getFullYear()') }},
+        month: {{ $monthAnchor ? "new Date('" . $monthAnchor . "').getMonth()" : 'new Date().getMonth()' }},
+        year: {{ $monthAnchor ? "new Date('" . $monthAnchor . "').getFullYear()" : 'new Date().getFullYear()' }},
         selected: {{ $selected ? "'" . $selected . "'" : 'null' }},
         rangeStart: {{ $rangeStart ? "'" . $rangeStart . "'" : 'null' }},
         rangeEnd: {{ $rangeEnd ? "'" . $rangeEnd . "'" : 'null' }},

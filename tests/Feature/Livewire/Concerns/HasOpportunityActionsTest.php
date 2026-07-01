@@ -145,6 +145,29 @@ it('converts to order via the convert modal', function () {
     expect($opportunity->fresh()->state)->toBe(OpportunityState::Order);
 });
 
+it('confirms a conversion exactly once and dispatches the modal close (D2)', function () {
+    $opportunity = covLiveOpportunity($this->owner, $this->store->id, 'Single confirm convert');
+
+    $this->actingAs($this->owner);
+
+    $component = Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+        ->call('openConvertModal', 'convert_to_quotation')
+        ->call('confirmConvert')
+        // The single confirm path applies the change and tells the modal to close.
+        ->assertSet('pendingConvertKey', null)
+        ->assertDispatched('close-modal')
+        ->assertDispatched('toast', type: 'success', message: 'Converted to quotation');
+
+    expect($opportunity->fresh()->state)->toBe(OpportunityState::Quotation);
+
+    // A second confirm with no pending key is a no-op (no double application, no
+    // stray success toast) — the conversion confirms exactly once.
+    $component->call('confirmConvert')
+        ->assertNotDispatched('toast');
+
+    expect($opportunity->fresh()->state)->toBe(OpportunityState::Quotation);
+});
+
 it('confirms reinstate, reopen, revert, and archive transitions via the shared modal', function () {
     $lost = covLiveOpportunity($this->owner, $this->store->id, 'Reinstate modal');
     (new ConvertToQuotation)($lost);

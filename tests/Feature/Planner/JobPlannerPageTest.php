@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\OpportunityStatus;
+use App\Models\Address;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;
@@ -17,13 +19,10 @@ uses(RefreshDatabase::class);
 | Job Planner page (C1)
 |--------------------------------------------------------------------------
 |
-| A Gantt / Overlap calendar of OPPORTUNITIES (jobs) across dates. One row per
-| opportunity, bars spanning the job window with Delivery / In-Use / Collection
-| bands + Customer Collecting / Customer Returning badges, coloured by status.
-| Filters: date · view (1w/2w/1m/monthly) · include (Quotation/Order) · store ·
-| search. JOBS / ORDERS / QUOTES count badges. Gated on opportunities.access.
+| Overlap timeline of OPPORTUNITIES (jobs) across dates. Lane-packed bars with
+| day-snapped Delivery / In-Use / Collection segments + Coll/Ret badges.
+| Presets, zoom, filters. Gated on opportunities.access.
 |
-| Tests run under the Phase-3 cadence and executed for this workstream.
 */
 
 beforeEach(function () {
@@ -59,12 +58,26 @@ function plannerJob(array $attributes = []): Opportunity
 it('renders the planner page for a user with opportunities.access', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')
-        ->assertSet('viewPeriod', '2w')
-        ->assertSet('mode', 'gantt')
-        ->assertSet('storeId', 0)
+    Volt::test('planner.index')->call('initializeGrid')
+        ->assertSet('viewPeriod', '1m')
+        ->assertSet('storeIds', [])
         ->assertSet('date', '2026-06-20')
+        ->assertSet('includeOrders', true)
+        ->assertSet('includeQuotations', true)
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30))
         ->assertOk();
+});
+
+it('does not expose KPI summary cards or a gantt layout toggle', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->assertDontSee(__('Total Jobs'))
+        ->assertDontSee(__('Total Value'))
+        ->assertDontSee(__('Peak Day'))
+        ->assertDontSee(__('Lanes Used'))
+        ->assertDontSee(__('Gantt'))
+        ->assertDontSee(__('Overlap'));
 });
 
 it('forbids the page for a user without opportunities.access', function () {
@@ -82,12 +95,14 @@ it('shows a job bar for a seeded opportunity in the window', function () {
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('planner.index')->get('rows');
+    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
 
     expect($rows)->toHaveCount(1)
         ->and($rows[0]['id'])->toBe($job->id)
         ->and($rows[0]['subject'])->toBe('Summer Festival Main Stage')
-        ->and($rows[0]['width'])->toBeGreaterThan(0);
+        ->and($rows[0]['width'])->toBeGreaterThan(0)
+        ->and($rows[0])->toHaveKey('lane')
+        ->and($rows[0])->toHaveKey('datetime_range');
 });
 
 it('excludes opportunities outside the window', function () {
@@ -98,35 +113,15 @@ it('excludes opportunities outside the window', function () {
 
     $this->actingAs($this->user);
 
-    expect(Volt::test('planner.index')->get('rows'))->toHaveCount(0);
+    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows'))->toHaveCount(0);
 });
 
 it('excludes Draft-state opportunities (only quotations and orders are jobs)', function () {
-    // Default factory state is Draft.
     plannerJob();
 
     $this->actingAs($this->user);
 
-    expect(Volt::test('planner.index')->get('rows'))->toHaveCount(0);
-});
-
-it('computes JOBS / ORDERS / QUOTES counts for the window', function () {
-    Opportunity::factory()->quotation()->count(2)->create([
-        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
-        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
-    ]);
-    Opportunity::factory()->order()->create([
-        'starts_at' => Carbon::parse('2026-06-23 08:00:00', 'UTC'),
-        'ends_at' => Carbon::parse('2026-06-24 18:00:00', 'UTC'),
-    ]);
-
-    $this->actingAs($this->user);
-
-    $counts = Volt::test('planner.index')->get('counts');
-
-    expect($counts['jobs'])->toBe(3)
-        ->and($counts['quotes'])->toBe(2)
-        ->and($counts['orders'])->toBe(1);
+    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows'))->toHaveCount(0);
 });
 
 it('narrows results with the include-quotations / include-orders toggles', function () {
@@ -141,15 +136,12 @@ it('narrows results with the include-quotations / include-orders toggles', funct
 
     $this->actingAs($this->user);
 
-    // Orders only.
-    Volt::test('planner.index')
+    Volt::test('planner.index')->call('initializeGrid')
         ->set('includeQuotations', false)
         ->set('includeOrders', true)
-        ->assertCount('rows', 1)
-        ->assertSet('counts', fn ($c) => $c['orders'] === 1 && $c['quotes'] === 0);
+        ->assertCount('rows', 1);
 
-    // Neither included → no rows.
-    Volt::test('planner.index')
+    Volt::test('planner.index')->call('initializeGrid')
         ->set('includeQuotations', false)
         ->set('includeOrders', false)
         ->assertCount('rows', 0);
@@ -171,12 +163,44 @@ it('filters by store', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')
-        ->set('storeId', $this->store->id)
+    Volt::test('planner.index')->call('initializeGrid')
+        ->set('storeIds', [$this->store->id])
         ->assertCount('rows', 1);
 });
 
-it('searches across subject, number and member name', function () {
+it('filters by multiple stores via storeIds array', function () {
+    $other = Store::factory()->create(['name' => 'Depot']);
+
+    Opportunity::factory()->order()->create([
+        'store_id' => $this->store->id,
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'store_id' => $other->id,
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->set('storeIds', [$this->store->id, $other->id])
+        ->assertCount('rows', 2);
+});
+
+it('renders store tag-input, datepicker, toggles, and grid skeleton markup', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->assertSeeHtml('s-tag-input')
+        ->assertSeeHtml('s-avail-filter-datepicker')
+        ->assertSeeHtml('s-toggle')
+        ->assertSeeHtml('wire:init="initializeGrid"')
+        ->assertSeeHtml('planner-skeleton-lane');
+});
+
+it('searches across subject, number and member name case-insensitively', function () {
     $member = Member::factory()->create(['name' => 'Festival Hire Co']);
 
     Opportunity::factory()->order()->create([
@@ -193,16 +217,12 @@ it('searches across subject, number and member name', function () {
 
     $this->actingAs($this->user);
 
-    // By subject.
-    Volt::test('planner.index')->set('search', 'Marquee')->assertCount('rows', 1);
-    // By member name.
-    Volt::test('planner.index')->set('search', 'Festival Hire')->assertCount('rows', 1);
-    // No match.
-    Volt::test('planner.index')->set('search', 'Nonexistent')->assertCount('rows', 0);
+    Volt::test('planner.index')->call('initializeGrid')->set('search', 'Marquee')->assertCount('rows', 1);
+    Volt::test('planner.index')->call('initializeGrid')->set('search', 'festival hire')->assertCount('rows', 1);
+    Volt::test('planner.index')->call('initializeGrid')->set('search', 'Nonexistent')->assertCount('rows', 0);
 });
 
-it('toggles between gantt and overlap modes and lane-packs in overlap', function () {
-    // Two overlapping orders → in overlap mode they must occupy different lanes.
+it('lane-packs overlapping jobs into distinct lanes', function () {
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
         'ends_at' => Carbon::parse('2026-06-26 18:00:00', 'UTC'),
@@ -214,22 +234,47 @@ it('toggles between gantt and overlap modes and lane-packs in overlap', function
 
     $this->actingAs($this->user);
 
-    // Gantt mode carries no lane metadata.
-    $ganttRows = Volt::test('planner.index')->set('mode', 'gantt')->get('rows');
-    expect($ganttRows)->toHaveCount(2)
-        ->and($ganttRows[0])->not->toHaveKey('lane');
+    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
 
-    // Overlap mode packs the two overlapping jobs into distinct lanes.
-    $overlapRows = Volt::test('planner.index')->set('mode', 'overlap')->get('rows');
-    expect($overlapRows)->toHaveCount(2)
-        ->and($overlapRows[0])->toHaveKey('lane')
-        ->and($overlapRows[0]['lanes'])->toBe(2);
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0])->toHaveKey('lane')
+        ->and($rows[0]['lanes'])->toBe(2);
 
-    $lanes = array_column($overlapRows, 'lane');
+    $lanes = array_column($rows, 'lane');
     expect($lanes)->toEqualCanonicalizing([0, 1]);
 });
 
-it('builds Delivery / In-Use / Collection sub-bands and customer badges', function () {
+it('marks jobs that extend beyond the visible window', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-10 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-08-01 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
+
+    expect($rows[0]['extends_before'])->toBeTrue()
+        ->and($rows[1]['extends_after'])->toBeTrue();
+});
+
+it('includes opportunity tags on planner rows', function () {
+    Opportunity::factory()->order()->create([
+        'tag_list' => ['VIP', 'Festival', 'Outdoor'],
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows')[0]['tags'])->toBe(['VIP', 'Festival', 'Outdoor']);
+});
+
+it('builds day-snapped Delivery / In-Use / Collection segments and customer badges', function () {
     Opportunity::factory()->order()->create([
         'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
         'ends_at' => Carbon::parse('2026-06-26 18:00:00', 'UTC'),
@@ -245,27 +290,277 @@ it('builds Delivery / In-Use / Collection sub-bands and customer badges', functi
 
     $this->actingAs($this->user);
 
-    $row = Volt::test('planner.index')->get('rows')[0];
+    $row = Volt::test('planner.index')->call('initializeGrid')->get('rows')[0];
 
-    $bandKeys = array_column($row['bands'], 'key');
+    $phaseKeys = array_column($row['day_segments'], 'phase');
 
-    expect($bandKeys)->toContain('delivery')
-        ->and($bandKeys)->toContain('in-use')
-        ->and($bandKeys)->toContain('collection')
+    expect($phaseKeys)->toContain('delivery')
+        ->and($phaseKeys)->toContain('in-use')
+        ->and($phaseKeys)->toContain('collection')
         ->and($row['customer_collecting'])->toBeTrue()
         ->and($row['customer_returning'])->toBeTrue();
+});
+
+it('snaps bar position to whole day columns in the window', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 09:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-24 17:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $row = Volt::test('planner.index')->call('initializeGrid')->get('rows')[0];
+
+    expect($row['left'])->toBe((2 / 30) * 100)
+        ->and($row['width'])->toBe((3 / 30) * 100);
+});
+
+it('adds a symmetric visual gap between consecutive touching jobs in the same lane', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-23 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-24 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-26 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $component = Volt::test('planner.index')->call('initializeGrid');
+    $rows = $component->get('rows');
+    $halfGap = 2;
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0]['lane'])->toBe(0)
+        ->and($rows[1]['lane'])->toBe(0)
+        ->and($rows[0]['gap_right_px'])->toBe($halfGap)
+        ->and($rows[1]['gap_left_px'])->toBe($halfGap);
+});
+
+it('colours job cards by opportunity status', function () {
+    Opportunity::factory()->quotation()->create([
+        'status' => OpportunityStatus::QuotationProvisional->statusValue(),
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'status' => OpportunityStatus::OrderOnHire->statusValue(),
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
+
+    expect($rows[0]['colour'])->toBe(OpportunityStatus::QuotationProvisional->colour())
+        ->and($rows[1]['colour'])->toBe(OpportunityStatus::OrderOnHire->colour())
+        ->and($rows[0]['status_label'])->toBe('Provisional')
+        ->and($rows[1]['status_label'])->toBe('On Hire');
+});
+
+it('builds legend swatches from opportunity statuses', function () {
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('planner.index')->call('initializeGrid')->get('legend');
+    $provisional = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'Provisional');
+    $onHire = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'On Hire');
+
+    expect($provisional)->not->toBeNull()
+        ->and($onHire)->not->toBeNull()
+        ->and($provisional['colour'])->toBe(OpportunityStatus::QuotationProvisional->colour())
+        ->and($onHire['colour'])->toBe(OpportunityStatus::OrderOnHire->colour());
+});
+
+it('exposes customer badge colours matching the legend key', function () {
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('planner.index')->call('initializeGrid')->get('legend');
+
+    $collecting = collect($legend)->first(fn (array $entry): bool => $entry['label'] === __('Collecting'));
+    $returning = collect($legend)->first(fn (array $entry): bool => $entry['label'] === __('Returning'));
+
+    expect($collecting)->not->toBeNull()
+        ->and($returning)->not->toBeNull()
+        ->and($collecting['colour'])->toBe('#27ae60')
+        ->and($returning['colour'])->toBe('#17a2b8')
+        ->and($collecting['icon'])->toBe('truck')
+        ->and($returning['icon'])->toBe('truck');
+});
+
+it('snaps day segment positions to track day columns', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-24 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $segment = Volt::test('planner.index')->call('initializeGrid')->get('rows')[0]['day_segments'][0];
+
+    expect($segment['left'])->toBe((2 / 30) * 100)
+        ->and($segment['width'])->toBe((1 / 30) * 100);
+});
+
+it('surfaces venue address on each row with member name fallback', function () {
+    $venue = Member::factory()->organisation()->create(['name' => 'Town Hall']);
+    Address::factory()->create([
+        'addressable_type' => Member::class,
+        'addressable_id' => $venue->id,
+        'street' => '1 High Street',
+        'city' => 'Bristol',
+        'postcode' => 'BS1 1AA',
+        'is_primary' => true,
+    ]);
+
+    Opportunity::factory()->order()->create([
+        'venue_id' => $venue->id,
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows')[0]['address'])
+        ->toBe('1 High Street, Bristol, BS1 1AA');
+});
+
+it('uses a distinct in-use phase colour separate from quotation status', function () {
+    $this->actingAs($this->user);
+
+    $legend = Volt::test('planner.index')->call('initializeGrid')->get('legend');
+    $inUse = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'In Use');
+
+    expect($inUse)->not->toBeNull()
+        ->and($inUse['colour'])->toBe('#8e95a6')
+        ->and($inUse['colour'])->not->toBe(OpportunityStatus::QuotationProvisional->colour());
 });
 
 it('steps the window forward, back and home', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')
+    Volt::test('planner.index')->call('initializeGrid')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')
-        ->assertSet('date', '2026-07-04') // +14 days
+        ->assertSet('date', '2026-07-20')
         ->call('previousPeriod')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')
         ->call('today')
         ->assertSet('date', '2026-06-20');
+});
+
+it('changes zoom window length', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('setZoom', '1w')
+        ->assertSet('viewPeriod', '1w')
+        ->assertSet('preset', '')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(7));
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('setZoom', '1m')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
+});
+
+it('applies date-range presets', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'next_30_days')
+        ->assertSet('date', '2026-06-20')
+        ->assertSet('preset', 'next_30_days')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'this_month')
+        ->assertSet('date', '2026-06-01')
+        ->assertSet('preset', 'this_month')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'next_month')
+        ->assertSet('date', '2026-07-01')
+        ->assertSet('preset', 'next_month')
+        ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(31));
+});
+
+it('counts jobs per calendar day for the heatmap row', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-24 18:00:00', 'UTC'),
+    ]);
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $component = Volt::test('planner.index')->call('initializeGrid');
+
+    expect($component->get('jobCountsPerDay')['2026-06-22'])->toBe(2)
+        ->and($component->get('jobCountsPerDay')['2026-06-25'])->toBe(1)
+        ->and($component->get('jobCountHeatmapMax'))->toBe(2);
+});
+
+it('marks month-start day columns with a thick border class', function () {
+    Opportunity::factory()->order()->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-07-05 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->set('date', '2026-06-28')
+        ->set('viewPeriod', '1m')
+        ->assertSeeHtml('s-planning-month-start');
+});
+
+it('syncs storeIds from store tag names', function () {
+    $depot = Store::factory()->create(['name' => 'Depot', 'include_in_default_queries' => true]);
+
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('syncStoreIdsFromTags', ['Main', 'Depot'])
+        ->assertSet('storeIds', [$this->store->id, $depot->id])
+        ->tap(fn ($v) => expect($v->instance()->selectedStoreTags())->toBe(['Main', 'Depot']));
+});
+
+it('ignores invalid zoom tokens and clears preset when the date changes', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'next_30_days')
+        ->call('setZoom', 'invalid')
+        ->assertSet('viewPeriod', '1m')
+        ->set('date', '2026-06-21')
+        ->assertSet('preset', '');
+});
+
+it('ignores unknown date-range presets', function () {
+    $this->actingAs($this->user);
+
+    Volt::test('planner.index')->call('initializeGrid')
+        ->call('applyPreset', 'not-a-preset')
+        ->assertSet('date', '2026-06-20')
+        ->assertSet('preset', '');
+});
+
+it('reports when the job list is truncated at the limit', function () {
+    Opportunity::factory()->order()->count(201)->create([
+        'starts_at' => Carbon::parse('2026-06-22 08:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-25 18:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $component = Volt::test('planner.index')->call('initializeGrid');
+
+    expect($component->get('jobsTruncated'))->toBeTrue()
+        ->and($component->get('rows'))->toHaveCount(200);
 });

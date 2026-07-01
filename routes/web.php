@@ -162,6 +162,12 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // here.
     Volt::route('availability', 'availability.index')->name('availability.index');
 
+    // Per-product availability / bookings grid (Current RMS "Product Bookings").
+    // Summary rows, opportunity demand bars, then serialised asset rows.
+    Volt::route('availability/bookings/{product}/{from}/{days}', 'availability.bookings')
+        ->name('availability.bookings')
+        ->where(['from' => '[0-9]{4}-[0-9]{2}-[0-9]{2}', 'days' => '[0-9]+']);
+
     // Job Planner
     //
     // A Gantt / Overlap calendar of OPPORTUNITIES (jobs) across dates — one row

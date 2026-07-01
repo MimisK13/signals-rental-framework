@@ -3,6 +3,7 @@
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
+use App\Models\AvailabilityDailySummary;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Product;
@@ -282,5 +283,173 @@ describe('deferred methods', function () {
         expect($range->slots)->toHaveCount(1)
             ->and($range->slots[0]->available)->toBe(3)
             ->and($range->min_available)->toBe(3);
+    });
+});
+
+describe('getCalendarForStores', function () {
+    it('sums per-day availability across the requested stores', function () {
+        $storeA = Store::factory()->create(['timezone' => 'UTC']);
+        $storeB = Store::factory()->create(['timezone' => 'UTC']);
+        $product = Product::factory()->bulk()->create();
+
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $storeA->id,
+            'quantity_held' => 10,
+        ]);
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $storeB->id,
+            'quantity_held' => 6,
+        ]);
+
+        AvailabilityDailySummary::factory()
+            ->day(Carbon::parse('2026-06-20', 'UTC'), 4, 4)
+            ->create(['product_id' => $product->id, 'store_id' => $storeA->id]);
+        AvailabilityDailySummary::factory()
+            ->day(Carbon::parse('2026-06-20', 'UTC'), 2, 2)
+            ->create(['product_id' => $product->id, 'store_id' => $storeB->id]);
+
+        $calendar = $this->service->getCalendarForStores(
+            [$storeA->id, $storeB->id],
+            Carbon::parse('2026-06-20', 'UTC'),
+            Carbon::parse('2026-06-20', 'UTC'),
+            [$product->id],
+        );
+
+        $row = $calendar->first();
+
+        expect($row)->not->toBeNull()
+            ->and($row->days[0]->available)->toBe(6);
+
+        $stockTotals = $this->service->productTotalStockForStores([$product->id], [$storeA->id, $storeB->id]);
+
+        expect($stockTotals[$product->id])->toBe(16);
+    });
+
+    it('uses default-query stores when storeIds is empty', function () {
+        $included = Store::factory()->create(['timezone' => 'UTC', 'include_in_default_queries' => true]);
+        Store::factory()->create(['timezone' => 'UTC', 'include_in_default_queries' => false]);
+        $product = Product::factory()->bulk()->create();
+
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $included->id,
+            'quantity_held' => 4,
+        ]);
+
+        AvailabilityDailySummary::factory()
+            ->day(Carbon::parse('2026-06-20', 'UTC'), 2, 2)
+            ->create(['product_id' => $product->id, 'store_id' => $included->id]);
+
+        $calendar = $this->service->getCalendarForStores(
+            [],
+            Carbon::parse('2026-06-20', 'UTC'),
+            Carbon::parse('2026-06-20', 'UTC'),
+            [$product->id],
+        );
+
+        expect($calendar->first()?->days[0]->available)->toBe(2);
+    });
+
+    it('returns an empty collection when no stores resolve', function () {
+        Store::factory()->create(['include_in_default_queries' => false]);
+
+        $calendar = $this->service->getCalendarForStores(
+            [],
+            Carbon::parse('2026-06-20', 'UTC'),
+            Carbon::parse('2026-06-20', 'UTC'),
+            [Product::factory()->create()->id],
+        );
+
+        expect($calendar)->toBeEmpty();
+    });
+
+    it('flags shortage days when aggregated availability is negative', function () {
+        $store = Store::factory()->create(['timezone' => 'UTC']);
+        $product = Product::factory()->bulk()->create();
+
+        AvailabilityDailySummary::factory()
+            ->day(Carbon::parse('2026-06-20', 'UTC'), -2, -2)
+            ->create([
+                'product_id' => $product->id,
+                'store_id' => $store->id,
+                'has_shortage' => false,
+            ]);
+
+        $row = $this->service->getCalendarForStores(
+            [$store->id],
+            Carbon::parse('2026-06-20', 'UTC'),
+            Carbon::parse('2026-06-20', 'UTC'),
+            [$product->id],
+        )->first();
+
+        expect($row?->days[0]->has_shortage)->toBeTrue();
+    });
+
+    it('returns an empty map when no product ids are requested', function () {
+        expect($this->service->productTotalStockForStores([], [$this->store->id]))->toBe([]);
+    });
+});
+
+describe('getGanttForStores', function () {
+    it('merges demand bars and stock totals across stores', function () {
+        $storeA = Store::factory()->create(['timezone' => 'UTC']);
+        $storeB = Store::factory()->create(['timezone' => 'UTC']);
+        $product = Product::factory()->bulk()->create();
+
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $storeA->id,
+            'quantity_held' => 3,
+        ]);
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $storeB->id,
+            'quantity_held' => 2,
+        ]);
+
+        $from = Carbon::parse('2026-08-10T00:00:00Z');
+        $to = Carbon::parse('2026-08-12T00:00:00Z');
+
+        Demand::factory()
+            ->phase(DemandPhase::Committed)
+            ->window(Carbon::parse('2026-08-10T09:00:00Z'), Carbon::parse('2026-08-11T17:00:00Z'))
+            ->create([
+                'product_id' => $product->id,
+                'store_id' => $storeA->id,
+                'quantity' => 1,
+                'source_type' => 'manual',
+                'source_id' => 1,
+            ]);
+        Demand::factory()
+            ->phase(DemandPhase::Committed)
+            ->window(Carbon::parse('2026-08-10T09:00:00Z'), Carbon::parse('2026-08-11T17:00:00Z'))
+            ->create([
+                'product_id' => $product->id,
+                'store_id' => $storeB->id,
+                'quantity' => 1,
+                'source_type' => 'manual',
+                'source_id' => 2,
+            ]);
+
+        $gantt = $this->service->getGanttForStores($product->id, [$storeA->id, $storeB->id], $from, $to);
+
+        expect($gantt->total_stock)->toBe(5)
+            ->and($gantt->demands)->toHaveCount(2)
+            ->and($gantt->store_id)->toBe($storeA->id);
+    });
+
+    it('returns an empty gantt when no stores resolve', function () {
+        Store::factory()->create(['include_in_default_queries' => false]);
+        $product = Product::factory()->bulk()->create();
+        $from = Carbon::parse('2026-08-10T00:00:00Z');
+        $to = Carbon::parse('2026-08-12T00:00:00Z');
+
+        $gantt = $this->service->getGanttForStores($product->id, [], $from, $to);
+
+        expect($gantt->total_stock)->toBe(0)
+            ->and($gantt->demands)->toBe([])
+            ->and($gantt->shortages)->toBe([]);
     });
 });

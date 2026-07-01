@@ -538,6 +538,578 @@
 .s-table-compact th { padding: 6px 10px; font-size: 8px; }
 .s-table-compact td { padding: 6px 10px; font-size: 12px; }
 
+/* By-group availability grid: fit 30 day columns without horizontal clip */
+.s-avail-group-table-wrap {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-card);
+}
+
+.s-avail-grid-page {
+  --s-app-topbar: 48px;
+}
+
+.s-avail-grid-sticky-chrome {
+  isolation: isolate;
+}
+
+.s-avail-grid-page--index {
+  --s-avail-grid-chrome: 15.5rem;
+}
+
+.s-avail-grid-page--bookings {
+  --s-avail-grid-chrome: 13.5rem;
+}
+
+.s-avail-group-table-scroll {
+  max-height: calc(100dvh - var(--s-app-topbar) - var(--s-avail-grid-chrome));
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.s-avail-group-table thead {
+  position: static;
+}
+
+.s-avail-group-table {
+  table-layout: fixed;
+  width: 100%;
+  font-family: var(--font-sans);
+}
+
+.s-avail-group-table th {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  padding: 4px 1px;
+}
+
+.s-avail-group-table td {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 0;
+  vertical-align: top;
+}
+
+.s-avail-group-table th:first-child,
+.s-avail-group-table td:first-child {
+  width: 16rem;
+}
+
+.s-avail-group-table th:first-child {
+  padding: 6px 12px;
+}
+
+.s-avail-group-table .s-avail-group-product-col {
+  padding: 8px 12px 8px 14px;
+  vertical-align: middle;
+}
+
+.s-avail-group-row-label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.s-avail-group-row-label-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s-avail-group-row--demand .s-avail-group-product-col {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.s-avail-group-row--demand .s-avail-group-row-label {
+  display: flex;
+  align-items: center;
+  min-height: 2.125rem;
+}
+
+.s-avail-group-table .s-avail-group-head {
+  padding: 4px 1px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.s-avail-group-product-head {
+  position: relative;
+}
+
+.s-avail-group-nav-col {
+  width: 1.25rem;
+  min-width: 1.25rem;
+  max-width: 1.25rem;
+  padding: 0;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.s-avail-group-nav-head {
+  position: relative;
+}
+
+.s-avail-group-table-scroll thead th.s-avail-group-nav-col {
+  position: sticky;
+  right: 0;
+  z-index: 25;
+  background: var(--card-bg);
+  box-shadow: -1px 0 0 var(--card-border);
+}
+
+.s-avail-group-table-scroll tbody td.s-avail-group-nav-col {
+  position: sticky;
+  right: 0;
+  z-index: 5;
+  background: var(--card-bg);
+  box-shadow: -1px 0 0 var(--s-border-sub);
+}
+
+.s-avail-grid-period-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.s-avail-grid-period-nav:hover {
+  color: var(--text-primary);
+}
+
+.s-avail-grid-period-nav--prev {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  z-index: 30;
+  transform: translateY(-50%);
+}
+
+.s-avail-grid-sticky-chrome {
+  overflow: visible;
+}
+
+.s-avail-filter-datepicker .s-datepicker-input {
+  box-sizing: border-box;
+  min-width: 9.5rem;
+  padding: 7px 12px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.s-avail-filter-datepicker .s-datepicker-input:hover {
+  border-color: var(--green);
+}
+
+.s-avail-filter-datepicker .s-datepicker-input:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-muted);
+}
+
+.s-avail-filter-datepicker .s-datepicker-input input {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.s-planning-filter-panel.s-panel {
+  position: relative;
+  z-index: 50;
+  overflow: visible;
+}
+
+.s-planning-filter-panel .s-panel-body {
+  overflow: visible;
+}
+
+.s-planning-filter-panel .s-tag-input,
+.s-planning-filter-panel .s-datepicker {
+  position: relative;
+}
+
+.s-planning-filter-tag-input.s-tag-input {
+  box-sizing: border-box;
+  min-height: 0;
+  padding: 7px 32px 7px 12px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  align-items: center;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.s-planning-filter-tag-input.s-tag-input:hover {
+  border-color: var(--green);
+}
+
+.s-planning-filter-tag-input.s-tag-input:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-muted);
+  outline: none;
+}
+
+.s-planning-filter-tag-input .s-tag-input-field {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  padding: 0;
+  min-width: 4rem;
+}
+
+.s-planning-filter-tag-input .s-tag-input-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: normal;
+  padding: 0 6px;
+}
+
+.s-planning-filter-tag-input .s-tag-input-suggestions button:hover,
+.s-planning-filter-tag-input .s-tag-input-suggestions button.active {
+  background: var(--green-muted);
+  color: var(--text-primary);
+}
+
+.s-tag-input-suggestions-floating {
+  position: fixed;
+  z-index: 9999;
+  top: auto;
+  left: auto;
+  right: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--s-shadow-lg);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.s-avail-grid-sticky-chrome {
+  isolation: isolate;
+  z-index: 40;
+}
+
+.s-planning-grid-stage {
+  position: relative;
+  z-index: 0;
+}
+
+.s-planning-grid-stage,
+.s-planning-grid-content,
+.s-planning-grid-skeleton {
+  width: 100%;
+  min-width: 0;
+}
+
+.s-avail-group-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: var(--card-bg);
+  box-shadow: 0 1px 0 var(--card-border);
+}
+
+.s-avail-group-table-scroll thead th.s-avail-group-product-col {
+  left: 0;
+  z-index: 25;
+  box-shadow: 1px 0 0 var(--card-border), 0 1px 0 var(--card-border);
+}
+
+.s-avail-group-table-scroll thead th.s-avail-group-weekend {
+  background: color-mix(in srgb, var(--text-muted) 12%, var(--card-bg));
+}
+
+.s-avail-group-table th.s-avail-group-weekend {
+  background: color-mix(in srgb, var(--text-muted) 12%, var(--card-bg));
+}
+
+.s-avail-group-table td.s-avail-group-weekend {
+  background: color-mix(in srgb, var(--text-muted) 10%, var(--card-bg));
+}
+
+.s-planning-filter-panel .s-tag-input-suggestions {
+  z-index: 200;
+}
+
+.s-planning-filter-tag-input .s-tag-input-suggestions {
+  min-width: 100%;
+}
+
+.s-planning-day-header-col {
+  padding: 4px 1px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.s-planning-day-header-col .s-avail-group-day,
+.s-planning-day-header-col .s-avail-group-date {
+  font-family: var(--font-sans);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.s-planning-day-header-col .s-avail-group-day {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.s-planning-day-header-col .s-avail-group-date {
+  font-size: 9px;
+  color: var(--text-primary);
+}
+
+.s-avail-group-table th.s-planning-month-start,
+.s-avail-group-table td.s-planning-month-start,
+.s-planning-month-start {
+  border-left: 3px solid var(--text-primary);
+}
+
+.s-avail-group-table-scroll thead th.s-planning-month-start {
+  box-shadow: 0 1px 0 var(--card-border);
+}
+
+/* Lighten every state colour in weekend columns (full column, all rows). */
+.s-avail-group-weekend .s-avail-group-cell--available {
+  --avail-cell-light: color-mix(in srgb, white 24%, #4ade80);
+  --avail-cell-dark: color-mix(in srgb, white 24%, #16a34a);
+}
+
+.s-avail-group-weekend .s-avail-group-cell--warning {
+  --avail-cell-light: color-mix(in srgb, white 24%, #fbbf24);
+  --avail-cell-dark: color-mix(in srgb, white 24%, #d97706);
+}
+
+.s-avail-group-weekend .s-avail-group-cell--booked {
+  --avail-cell-light: color-mix(in srgb, white 24%, #22d3ee);
+  --avail-cell-dark: color-mix(in srgb, white 24%, #0891b2);
+}
+
+.s-avail-group-weekend .s-avail-group-cell--shortage {
+  --avail-cell-light: color-mix(in srgb, white 24%, #ef4444);
+  --avail-cell-dark: color-mix(in srgb, white 24%, #dc2626);
+}
+
+.s-avail-group-weekend .s-avail-group-cell--solid {
+  --avail-cell-light: color-mix(in srgb, white 24%, var(--demand-colour, #3B82F6));
+  --avail-cell-dark: color-mix(in srgb, white 24%, var(--demand-colour, #3B82F6));
+}
+
+.s-avail-group-table .s-avail-group-day-col {
+  text-align: center;
+}
+
+.s-avail-group-table th:not(:first-child),
+.s-avail-group-table td:not(:first-child) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.s-avail-group-table .s-avail-group-td {
+  padding: 0;
+  vertical-align: top;
+}
+
+.s-avail-group-table .s-cell-link {
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.s-avail-group-table .s-avail-group-day {
+  font-size: 8px;
+  line-height: 1.1;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.s-avail-group-table .s-avail-group-date {
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+/* CRMS-style availability cell: lighter top, darker bottom fill = % in use */
+.s-avail-group-cell {
+  position: relative;
+  display: flex;
+  min-height: 2.125rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2px 1px;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: #fff;
+  text-align: center;
+}
+
+.s-avail-group-cell::before,
+.s-avail-group-cell::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+}
+
+.s-avail-group-cell::before {
+  inset: 0;
+  background: var(--avail-cell-light);
+}
+
+.s-avail-group-cell::after {
+  bottom: 0;
+  height: var(--used-pct, 0%);
+  background: var(--avail-cell-dark);
+}
+
+.s-avail-group-cell-available,
+.s-avail-group-cell-held,
+.s-avail-group-cell-stock {
+  position: relative;
+  z-index: 1;
+}
+
+.s-avail-group-cell-held,
+.s-avail-group-cell-stock {
+  font-size: 8px;
+  font-weight: 500;
+  opacity: 0.92;
+}
+
+.s-avail-group-cell--available {
+  --avail-cell-light: #4ade80;
+  --avail-cell-dark: #16a34a;
+}
+
+.s-avail-group-cell--warning {
+  --avail-cell-light: #fbbf24;
+  --avail-cell-dark: #d97706;
+}
+
+.s-avail-group-cell--booked {
+  --avail-cell-light: #22d3ee;
+  --avail-cell-dark: #0891b2;
+}
+
+.s-avail-group-cell--shortage {
+  --avail-cell-light: #ef4444;
+  --avail-cell-dark: #dc2626;
+}
+
+.s-avail-group-cell--shortage::after {
+  height: 100%;
+}
+
+/* Solid demand bar (bookings opportunities / assets) — fills the full row height. */
+.s-avail-group-cell--solid {
+  --avail-cell-light: var(--demand-colour, #3B82F6);
+  --avail-cell-dark: var(--demand-colour, #3B82F6);
+}
+
+.s-avail-group-cell--solid::after {
+  height: 100%;
+}
+
+.s-avail-group-cell--buffer {
+  opacity: 0.45;
+}
+
+.s-avail-group-table tr.s-avail-group-row--demand {
+  height: 2.125rem;
+}
+
+.s-avail-group-row--demand .s-avail-group-td {
+  height: 2.125rem;
+  padding: 0;
+  vertical-align: stretch;
+}
+
+.s-avail-group-row--demand .s-avail-group-cell {
+  min-height: 100%;
+  height: 100%;
+}
+
+.s-avail-group-cell--empty {
+  min-height: 2.125rem;
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.s-avail-group-cell--empty::before,
+.s-avail-group-cell--empty::after {
+  display: none;
+}
+
+.s-avail-group-cell-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.s-avail-group-cell-link:hover .s-avail-group-cell {
+  filter: brightness(1.06);
+}
+
+.s-avail-group-legend {
+  display: inline-block;
+  width: 1rem;
+  height: 0.875rem;
+  border-radius: 2px;
+  background: linear-gradient(to top, var(--avail-cell-dark) 55%, var(--avail-cell-light) 55%);
+}
+
+.s-avail-group-table .s-avail-grid-section {
+  border-top: 1px solid var(--card-border);
+  vertical-align: middle;
+}
+
+.s-avail-group-row--summary .s-avail-group-product-col {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.s-avail-grid-summary-wrap {
+  display: flex;
+  min-height: 2.125rem;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 1px;
+}
+
+.s-avail-grid-summary {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--text-primary);
+  text-align: center;
+}
+
 .s-table-bordered td { border-right: 1px solid var(--s-border-sub); }
 .s-table-bordered td:last-child { border-right: none; }
 .s-table-bordered th { border-right: 1px solid var(--card-border); }
@@ -1236,7 +1808,9 @@
 /* ================================================================ */
 
 .s-select {
+  box-sizing: border-box;
   font-family: var(--font-display); font-size: 12px; font-weight: 600;
+  line-height: normal;
   padding: 7px 32px 7px 12px; background: var(--card-bg); border: 1px solid var(--card-border);
   color: var(--text-primary); cursor: pointer; appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -1244,6 +1818,77 @@
 }
 .s-select:hover { border-color: var(--green); }
 .s-select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px var(--green-muted); }
+
+/* Date input sized to match .s-select in filter toolbars. */
+.s-input-date {
+  box-sizing: border-box;
+  width: auto;
+  min-width: 9.5rem;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  padding: 7px 12px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.s-input-date:hover { border-color: var(--green); }
+
+.s-input-date:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-muted);
+}
+
+.s-input-date::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.s-input-date::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Read-only filter value styled like .s-select (e.g. product name on bookings). */
+.s-select-display {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 7px 32px 7px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  color: var(--text-primary);
+}
+
+.s-select-display-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s-select-display-action {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: flex;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.s-select-display-action:hover {
+  color: var(--blue);
+}
 
 /* ================================================================ */
 /*  32. MULTI-PANE                                                   */
@@ -1844,7 +2489,8 @@
 .s-datepicker-clear { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); display: flex; }
 .s-datepicker-clear:hover { color: var(--text-primary); }
 .s-datepicker-clear svg { width: 14px; height: 14px; }
-.s-datepicker-dropdown { position: absolute; top: calc(100% + 4px); left: 0; z-index: 50; box-shadow: var(--s-shadow-lg); }
+.s-datepicker-dropdown { position: absolute; top: calc(100% + 4px); left: 0; z-index: 50; box-shadow: var(--s-shadow-lg); background: var(--card-bg); border: 1px solid var(--card-border); }
+.s-datepicker-dropdown-floating { position: fixed; z-index: 9999; top: auto; left: auto; right: auto; background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-lg); }
 
 /* ================================================================ */
 /*  76. FIELD                                                        */
@@ -2022,7 +2668,7 @@
 .s-tag-input-tag-remove svg { width: 10px; height: 10px; }
 .s-tag-input-field { border: none; outline: none; background: transparent; font-family: var(--font-sans); font-size: 14px; color: var(--text-primary); flex: 1; min-width: 80px; padding: 3px 0; }
 .s-tag-input-field::placeholder { color: var(--text-muted); }
-.s-tag-input-suggestions { position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-lg); max-height: 180px; overflow-y: auto; }
+.s-tag-input-suggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50; background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-lg); max-height: 220px; overflow-y: auto; }
 .s-tag-input-suggestions button { display: block; width: 100%; text-align: left; padding: 6px 12px; border: none; background: none; font-family: var(--font-sans); font-size: 13px; color: var(--text-secondary); cursor: pointer; }
 .s-tag-input-suggestions button:hover,
 .s-tag-input-suggestions button.active { background: var(--s-hover); color: var(--text-primary); }

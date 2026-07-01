@@ -2,12 +2,17 @@
 
 namespace App\Actions\Opportunities;
 
+use App\Actions\Opportunities\Concerns\FormatsOpportunityDates;
 use App\Actions\Opportunities\Concerns\ValidatesOpportunityMember;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\UpdateOpportunityData;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
+use App\Verbs\Events\Opportunities\ItemDatesChanged;
 use App\Verbs\Events\Opportunities\OpportunityUpdated;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Optional;
 
@@ -17,7 +22,7 @@ use Spatie\LaravelData\Optional;
  */
 class UpdateOpportunity
 {
-    use CommitsVerbsEvents, ValidatesOpportunityMember;
+    use CommitsVerbsEvents, FormatsOpportunityDates, ValidatesOpportunityMember;
 
     /**
      * The clearable header fields, modelled as {@see Optional} on the DTO so an
@@ -71,7 +76,16 @@ class UpdateOpportunity
         // address fields actually provided (not their Optional sentinel) are checked.
         $this->assertAddressesBelongToMember($opportunity, $data);
 
-        $this->commitVerbs(function () use ($opportunity, $data, $provided): void {
+        // D7: when the opportunity hire window changes, the line items that still
+        // INHERIT it (their per-item window equals the opportunity's current window —
+        // i.e. they were never given a manual per-item override) must follow the new
+        // window so their charge days/totals and availability demand re-snapshot to
+        // the right dates. Resolve them BEFORE any event fires, while the projection
+        // still holds the pre-update dates; the new window is propagated below.
+        $itemsToReschedule = $this->itemsInheritingHireWindow($opportunity, $data);
+        [$newStartsAtIso, $newEndsAtIso] = $this->resolvedHireWindowIso($opportunity, $data);
+
+        $this->commitVerbs(function () use ($opportunity, $data, $provided, $itemsToReschedule, $newStartsAtIso, $newEndsAtIso): void {
             OpportunityUpdated::fire(
                 opportunity_id: $opportunity->state_id,
                 provided: $provided,
@@ -120,6 +134,19 @@ class UpdateOpportunity
                 is_invoiced: $data->invoiced,
                 tag_list: $this->resolveTagList($data->tag_list),
             );
+
+            // Propagate the new hire window to the inheriting lines in the SAME
+            // commit (one DB transaction) as the header update. ItemDatesChanged
+            // reprices the line + rolls the totals up and re-snapshots the line's
+            // availability demand over the new window. Manual per-item overrides are
+            // excluded by itemsInheritingHireWindow().
+            foreach ($itemsToReschedule as $item) {
+                ItemDatesChanged::fire(
+                    opportunity_item_id: $item->state_id,
+                    starts_at: $newStartsAtIso,
+                    ends_at: $newEndsAtIso,
+                );
+            }
         });
 
         // Custom fields live outside the event stream. Sync only when the caller
@@ -129,6 +156,70 @@ class UpdateOpportunity
         }
 
         return OpportunityData::fromModel($opportunity->refresh()->load('customFieldValues'));
+    }
+
+    /**
+     * The active-version line items whose hire window still equals the
+     * opportunity's CURRENT (pre-update) window — lines that have never had a
+     * per-item date override applied, so they should follow a hire-period change.
+     *
+     * Returns an empty collection when the hire period is not actually changing,
+     * when the opportunity has no resolvable window (a date-less opportunity bakes
+     * a fire-time window onto each line that never matched the header), or when
+     * pricing is frozen (a deal price / FX-tax lock preserves the snapshotted line
+     * totals, so re-pricing on a date change would corrupt the freeze).
+     *
+     * @return Collection<int, OpportunityItem>
+     */
+    private function itemsInheritingHireWindow(Opportunity $opportunity, UpdateOpportunityData $data): Collection
+    {
+        if (! $this->hireWindowChanging($opportunity, $data) || $opportunity->pricingFrozen()) {
+            return collect();
+        }
+
+        $oldStart = $opportunity->starts_at;
+        $oldEnd = $opportunity->ends_at;
+
+        if ($oldStart === null || $oldEnd === null) {
+            return collect();
+        }
+
+        return $opportunity->items()->get()
+            ->filter(fn (OpportunityItem $item): bool => $item->starts_at !== null
+                && $item->ends_at !== null
+                && $item->starts_at->equalTo($oldStart)
+                && $item->ends_at->equalTo($oldEnd))
+            ->values();
+    }
+
+    /**
+     * Whether this update actually moves the opportunity's hire window: a provided
+     * (non-null) start or end that differs from the stored value.
+     */
+    private function hireWindowChanging(Opportunity $opportunity, UpdateOpportunityData $data): bool
+    {
+        $startsChanged = $data->starts_at !== null
+            && ($opportunity->starts_at === null || ! Carbon::parse($data->starts_at)->equalTo($opportunity->starts_at));
+
+        $endsChanged = $data->ends_at !== null
+            && ($opportunity->ends_at === null || ! Carbon::parse($data->ends_at)->equalTo($opportunity->ends_at));
+
+        return $startsChanged || $endsChanged;
+    }
+
+    /**
+     * The post-update hire window as ISO-8601 strings: each bound takes the
+     * provided value when supplied, otherwise the opportunity's unchanged stored
+     * value. Used to propagate the window onto the inheriting line items.
+     *
+     * @return array{0: string|null, 1: string|null}
+     */
+    private function resolvedHireWindowIso(Opportunity $opportunity, UpdateOpportunityData $data): array
+    {
+        $start = $data->starts_at !== null ? Carbon::parse($data->starts_at) : $opportunity->starts_at;
+        $end = $data->ends_at !== null ? Carbon::parse($data->ends_at) : $opportunity->ends_at;
+
+        return [$this->toIso($start), $this->toIso($end)];
     }
 
     /**
