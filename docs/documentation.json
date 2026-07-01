@@ -19,6 +19,7 @@
             "pages": [
                 { "title": "Dashboard", "slug": "dashboard" },
                 { "title": "Admin Panel", "slug": "admin-panel" },
+                { "title": "API Console", "slug": "api-console" },
                 { "title": "Members", "slug": "members" },
                 { "title": "Products", "slug": "products" },
                 { "title": "Product Groups", "slug": "product-groups" },
@@ -61,6 +62,7 @@
                 { "title": "Exchange Rates", "slug": "exchange-rates" },
                 { "title": "Attachments", "slug": "attachments" },
                 { "title": "Webhooks", "slug": "webhooks" },
+                { "title": "Usage & Metering", "slug": "usage" },
                 { "title": "Rate Definitions", "slug": "rate-definitions" },
                 { "title": "Tax Classes", "slug": "tax-classes" },
                 { "title": "Lists", "slug": "lists" },

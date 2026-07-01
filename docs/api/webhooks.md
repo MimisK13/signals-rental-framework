@@ -332,4 +332,51 @@ Re-enable a disabled webhook from the admin panel or by updating it via the API 
 
 ## Delivery Logs
 
-Every delivery attempt is logged. View logs via the API at `GET /api/v1/webhooks/{id}/logs` or from the admin panel by clicking the logs icon on a webhook row.
+Every delivery attempt is logged. View logs via the API at `GET /api/v1/webhooks/{id}/logs` or from the API Console **Webhooks** page by clicking the logs icon on a webhook row. Deliveries also appear in the unified **Request Log** on the `webhook_sent` channel.
+
+## Outbound metering weights
+
+Each outbound event carries a **price weight** (0–4) declared in `WebhookEventRegistry`. Weights default to **1** unless overridden at registration time. On the first delivery attempt of each job run, `DeliverWebhook` records the weight on the `webhook_logs` row and increments the `webhook_sent` daily rollup by the event's weight.
+
+Weight **0** events are still logged but contribute zero **weighted units** toward usage totals.
+
+## Inbound webhook receiver
+
+Signals can accept webhook POSTs from external systems via registered **inbound sources**. Manage sources from the API Console at `/api/webhooks` (Inbound tab) or programmatically when that surface is exposed.
+
+### Receive URL
+
+```
+POST {your-app-url}/webhooks/receive/{slug}
+```
+
+Replace `{slug}` with the source's URL slug. The route is public (no Sanctum token) — authentication is HMAC signature verification only.
+
+### Signature verification
+
+Each source stores a secret, signature algorithm (default `sha256`), and header name (default `X-Signature`). The middleware computes:
+
+```php
+$expected = hash_hmac($source->signature_algo, $requestBody, $source->secret);
+$provided = $request->header($source->signature_header);
+
+$valid = is_string($provided) && hash_equals($expected, $provided);
+```
+
+Send the HMAC digest as a plain string in the configured header (not prefixed with `sha256=`).
+
+### Responses
+
+| Status | Condition | Body |
+|--------|-----------|------|
+| `200` | Valid signature | `{"status":"received"}` — fires `InboundWebhookReceived` |
+| `401` | Missing or invalid signature | `{"message":"Invalid signature"}` — logged with weight 0 |
+| `404` | Unknown slug or inactive source | Laravel 404 page |
+
+### Inbound metering weights
+
+Unlike outbound events (code-defined in `WebhookEventRegistry`), inbound weights are stored per source in `inbound_webhook_sources.price_weight` (0–4, editable in the console). Valid requests meter on the `webhook_received` channel; invalid signatures log detail rows but do not increment weighted units.
+
+### Inbound logs
+
+Receipts are stored in `inbound_webhook_logs` and surfaced in the Request Log (`webhook_received` channel) and the source's logs modal in the API Console.
