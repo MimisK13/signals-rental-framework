@@ -36,6 +36,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(ResolveTenant::class);
 
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/receive/*',
+        ]);
+
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'module' => EnsureModuleEnabled::class,

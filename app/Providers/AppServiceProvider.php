@@ -13,6 +13,12 @@ use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\Stages\AutoApprovalGate;
 use App\Models\User;
 use App\Services\Activities\ActivityTypeList;
+use App\Services\Api\AbilityRegistry;
+use App\Services\Api\ApiEndpointCatalogue;
+use App\Services\Api\CoreAbilityDefinitions;
+use App\Services\Api\PriceWeightResolver;
+use App\Services\Api\UsageRecorder;
+use App\Services\Api\WebhookEventRegistry;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\Availability\DatabaseAvailabilityDataPresence;
 use App\Services\Availability\KitAvailabilityCalculator;
@@ -57,6 +63,7 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -128,6 +135,27 @@ class AppServiceProvider extends ServiceProvider
 
             return $registry;
         });
+
+        $this->app->singleton(AbilityRegistry::class, function (): AbilityRegistry {
+            $registry = new AbilityRegistry;
+            $registry->registerMany(CoreAbilityDefinitions::all());
+
+            return $registry;
+        });
+
+        $this->app->singleton(WebhookEventRegistry::class, function (): WebhookEventRegistry {
+            $registry = new WebhookEventRegistry;
+
+            foreach (WebhookEventRegistry::CORE_EVENT_NAMES as $name) {
+                $registry->register($name);
+            }
+
+            return $registry;
+        });
+
+        $this->app->singleton(PriceWeightResolver::class);
+        $this->app->singleton(ApiEndpointCatalogue::class);
+        $this->app->singleton(UsageRecorder::class);
 
         $this->app->singleton(DemandSourceRegistry::class, function (): DemandSourceRegistry {
             $registry = new DemandSourceRegistry;
@@ -259,6 +287,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerBladeDirectives();
         $this->registerSocialiteProviders();
         $this->registerVerbsMetadata();
+        $this->registerApiCatalogueCacheInvalidation();
 
         // LogAction is auto-discovered by Laravel via its handle(AuditableEvent) type-hint.
         // Manual registration removed to prevent duplicate listener execution.
@@ -288,6 +317,17 @@ class AppServiceProvider extends ServiceProvider
                 'ip_address' => $request?->ip(),
                 'user_agent' => $request?->userAgent(),
             ];
+        });
+    }
+
+    protected function registerApiCatalogueCacheInvalidation(): void
+    {
+        Event::listen(CommandFinished::class, function (CommandFinished $event): void {
+            if ($event->command !== 'route:clear') {
+                return;
+            }
+
+            app(ApiEndpointCatalogue::class)->invalidateAll();
         });
     }
 

@@ -120,6 +120,12 @@ class PermissionSeeder extends Seeder
             'static-data.manage' => ['label' => 'Manage Static Data', 'description' => 'Manage reference data and lookups', 'group' => 'System', 'sub_group' => 'Reference Data', 'layer' => 'action', 'dependencies' => ['static-data.view']],
             'webhooks.manage' => ['label' => 'Manage Webhooks', 'description' => 'Create and manage webhook subscriptions', 'group' => 'System', 'sub_group' => 'Integrations', 'layer' => 'action', 'dependencies' => ['settings.access']],
 
+            // API Console
+            'api.access' => ['label' => 'Access API Console', 'description' => 'Access the API console area', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'area', 'dependencies' => []],
+            'api.explorer.use' => ['label' => 'Use API Explorer', 'description' => 'Execute requests via the API explorer', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'action', 'dependencies' => ['api.access']],
+            'api.logs.view' => ['label' => 'View API Logs', 'description' => 'View API request logs', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'action', 'dependencies' => ['api.access']],
+            'api.usage.view' => ['label' => 'View API Usage', 'description' => 'View API usage aggregates and exports', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'action', 'dependencies' => ['api.access']],
+
             // Global — cost visibility (field-level)
             'costs.view' => ['label' => 'View Costs', 'description' => 'View cost prices, margins, and purchase costs', 'group' => 'Global', 'sub_group' => null, 'layer' => 'field', 'dependencies' => []],
         ];

@@ -6,7 +6,12 @@ use Database\Factories\WebhookLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon|null $delivered_at
+ * @property Carbon|null $next_retry_at
+ */
 class WebhookLog extends Model
 {
     /** @use HasFactory<WebhookLogFactory> */
@@ -22,6 +27,8 @@ class WebhookLog extends Model
         'attempts',
         'delivered_at',
         'next_retry_at',
+        'price_weight',
+        'weighted_units',
     ];
 
     /**
@@ -33,6 +40,8 @@ class WebhookLog extends Model
             'payload' => 'array',
             'response_code' => 'integer',
             'attempts' => 'integer',
+            'price_weight' => 'integer',
+            'weighted_units' => 'integer',
             'delivered_at' => 'datetime',
             'next_retry_at' => 'datetime',
         ];

@@ -22,6 +22,8 @@ Artisan::command('inspire', function () {
 
 Schedule::call(fn () => Cache::put('scheduler:last-run', now(), 300))->everyMinute();
 Schedule::command('action-log:prune')->dailyAt('02:00');
+Schedule::command('api:flush-logs')->everyMinute()->withoutOverlapping();
+Schedule::command('api:prune-logs')->daily();
 Schedule::command('model:prune')->daily();
 
 /**

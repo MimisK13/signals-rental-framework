@@ -2,10 +2,16 @@
 
 use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\Web\DocsController;
+use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\OpportunityLineItemController;
 use App\Http\Controllers\Web\SearchController;
+use App\Http\Middleware\VerifyInboundWebhookSignature;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+
+Route::post('webhooks/receive/{source}', InboundWebhookController::class)
+    ->middleware(VerifyInboundWebhookSignature::class)
+    ->name('webhooks.receive');
 
 Route::get('/', function () {
     if (config('signals.installed') && ! config('signals.setup_complete')) {
@@ -51,6 +57,13 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
 
     // Search
     Route::get('search', SearchController::class)->name('search');
+
+    // API Console
+    Volt::route('api', 'api.index')->name('api.index');
+    Volt::route('api/explorer', 'api.explorer')->name('api.explorer');
+    Volt::route('api/logs', 'api.logs')->name('api.logs');
+    Volt::route('api/usage', 'api.usage')->name('api.usage');
+    Volt::route('api/webhooks', 'api.webhooks')->name('api.webhooks');
 
     // Members
     Volt::route('members', 'members.index')->name('members.index');
@@ -264,8 +277,8 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/infrastructure', 'admin.settings.infrastructure')->name('admin.settings.infrastructure');
     Volt::route('admin/settings/seeders', 'admin.settings.seeders')->name('admin.settings.seeders');
 
-    // Webhooks
-    Volt::route('admin/settings/webhooks', 'admin.settings.webhooks')->name('admin.settings.webhooks');
+    // Webhooks (redirected to API Console)
+    Route::redirect('admin/settings/webhooks', '/api/webhooks')->name('admin.settings.webhooks');
 
     // Data
     Volt::route('admin/settings/custom-field-groups', 'admin.settings.custom-field-groups')->name('admin.settings.custom-field-groups');

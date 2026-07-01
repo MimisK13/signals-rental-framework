@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomFieldController;
 use App\Http\Controllers\Api\V1\CustomFieldGroupController;
 use App\Http\Controllers\Api\V1\CustomViewController;
+use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
 use App\Http\Controllers\Api\V1\ListNameController;
 use App\Http\Controllers\Api\V1\ListValueController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\Api\V1\ProductTaxClassController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;
 use App\Http\Controllers\Api\V1\RateEngineMetaController;
+use App\Http\Controllers\Api\V1\RequestLogController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SchemaController;
 use App\Http\Controllers\Api\V1\SerialisedComponentController;
@@ -40,9 +42,11 @@ use App\Http\Controllers\Api\V1\StockTransactionController;
 use App\Http\Controllers\Api\V1\SystemController;
 use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\TaxRuleController;
+use App\Http\Controllers\Api\V1\UsageController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,7 +60,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth:sanctum', 'signals.active-user'])->group(function (): void {
+Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth:sanctum', LogApiRequest::class, 'signals.active-user'])->group(function (): void {
 
     // System
     Route::get('system/health', [SystemController::class, 'health'])->name('api.v1.system.health');
@@ -79,6 +83,12 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Action Log
     Route::get('actions', [ActionLogController::class, 'index'])->name('api.v1.actions.index');
     Route::post('actions/export', [ActionLogController::class, 'export'])->name('api.v1.actions.export');
+
+    // API Console — usage, request logs, endpoint catalogue
+    Route::get('usage/export', [UsageController::class, 'export'])->name('api.v1.usage.export');
+    Route::get('usage', [UsageController::class, 'index'])->name('api.v1.usage.index');
+    Route::get('request_logs', [RequestLogController::class, 'index'])->name('api.v1.request_logs.index');
+    Route::get('endpoints', [EndpointCatalogueController::class, 'index'])->name('api.v1.endpoints.index');
 
     // Webhooks
     Route::apiResource('webhooks', WebhookController::class)->names('api.v1.webhooks');
