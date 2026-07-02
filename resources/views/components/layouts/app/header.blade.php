@@ -771,7 +771,7 @@
 
             {{-- Main content area --}}
             <main class="app-main">
-                <div class="flex-1">
+                <div class="flex flex-1 flex-col">
                     {{ $slot }}
                 </div>
                 @include('components.layouts.app.footer')
