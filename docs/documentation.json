@@ -30,6 +30,11 @@
                     "title": "Seeders",
                     "slug": "seeders",
                     "description": "What data gets seeded by default and how to run individual seeders."
+                },
+                {
+                    "title": "Licensing",
+                    "slug": "licensing",
+                    "description": "AGPL-3.0-only licence, commercial licensing, the Contributor License Agreement, and trade marks."
                 }
             ]
         },
@@ -68,7 +73,7 @@
                 {
                     "title": "Opportunities",
                     "slug": "opportunities",
-                    "description": "Quote, order, and fulfil rental jobs \u2014 the opportunity lifecycle, line-item editor, quote versioning, and state transitions.",
+                    "description": "Quote, order, and fulfil rental jobs — the opportunity lifecycle, line-item editor, quote versioning, and state transitions.",
                     "urlSection": "platform"
                 },
                 {
@@ -150,7 +155,7 @@
                 {
                     "title": "Multi-Currency & Tax",
                     "slug": "multi-currency",
-                    "description": "Currencies, exchange rates, and the tax resolution engine \u2014 the financial foundation Signals ships in Phase 2.",
+                    "description": "Currencies, exchange rates, and the tax resolution engine — the financial foundation Signals ships in Phase 2.",
                     "urlSection": "platform"
                 },
                 {
@@ -260,7 +265,7 @@
                                 {
                                     "title": "Members",
                                     "slug": "members",
-                                    "description": "CRUD endpoints for managing members \u2014 contacts, organisations, venues, and users.",
+                                    "description": "CRUD endpoints for managing members — contacts, organisations, venues, and users.",
                                     "urlSection": "api"
                                 },
                                 {
@@ -278,7 +283,7 @@
                                 {
                                     "title": "Stock Transactions",
                                     "slug": "stock-transactions",
-                                    "description": "Record stock movements against stock levels \u2014 purchases, sales, write-offs, and other inventory changes.",
+                                    "description": "Record stock movements against stock levels — purchases, sales, write-offs, and other inventory changes.",
                                     "urlSection": "api"
                                 },
                                 {
