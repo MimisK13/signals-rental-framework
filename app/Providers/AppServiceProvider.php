@@ -49,6 +49,7 @@ use App\Services\Documents\ReturnListDataResolver;
 use App\Services\Documents\SandboxedBladeCompiler;
 use App\Services\Documents\SandboxedBladeRenderer;
 use App\Services\Documents\StatementDataResolver;
+use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\NotificationRegistry;
 use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Notifications\CommunicationLogStatusRegistry;
@@ -245,6 +246,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(CommunicationLogStatusRegistry::class);
+        $this->app->singleton(InvoiceStatusRegistry::class);
 
         $this->app->singleton(EventNotificationMapRegistry::class);
 

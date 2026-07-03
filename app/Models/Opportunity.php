@@ -462,6 +462,16 @@ class Opportunity extends Model implements HasSchema
     }
 
     /**
+     * Invoices generated against this opportunity (Phase 4 billing).
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'opportunity_id');
+    }
+
+    /**
      * @return HasMany<OpportunitySurchargeGroup, $this>
      */
     public function surchargeGroups(): HasMany
