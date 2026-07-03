@@ -2,6 +2,8 @@
 
 namespace App\Policies;
 
+use App\Models\Member;
+use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
 
 class MemberPolicy
@@ -31,5 +33,10 @@ class MemberPolicy
     protected function deletePermission(): string
     {
         return 'members.delete';
+    }
+
+    public function sendCommunication(User $user, Member $member): bool
+    {
+        return $user->can('notifications.manage');
     }
 }

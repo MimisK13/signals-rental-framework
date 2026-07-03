@@ -42,6 +42,10 @@ return [
             'label' => 'Clicked',
             'terminal' => false,
         ],
+        'suppressed' => [
+            'label' => 'Suppressed (opted out)',
+            'terminal' => true,
+        ],
     ],
 
     'transitions' => [
@@ -52,6 +56,7 @@ return [
         'failed' => [],
         'bounced' => [],
         'clicked' => [],
+        'suppressed' => [],
     ],
 
 ];

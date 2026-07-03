@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CalendarFeedController;
+use App\Http\Controllers\Web\CommunicationUnsubscribeController;
 use App\Http\Controllers\Web\DocsController;
 use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\PublicDocumentController;
@@ -218,6 +219,19 @@ Route::middleware(['signals.setup-complete'])->group(function () {
     Volt::route('invitation/{user}', 'auth.accept-invitation')
         ->name('invitation.accept')
         ->middleware('signed');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Customer communication unsubscribe (signed URL, no auth required)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['signals.setup-complete', 'signed', 'throttle:'.config('communications.unsubscribe_throttle', '10,1')])->group(function (): void {
+    Route::get('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'show'])
+        ->name('communications.unsubscribe.show');
+    Route::post('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'confirm'])
+        ->name('communications.unsubscribe.confirm');
 });
 
 /*

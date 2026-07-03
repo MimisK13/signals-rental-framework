@@ -15,6 +15,7 @@ use App\Guards\Opportunities\Rules\DispatchShortageRule;
 use App\Guards\Opportunities\Rules\FxTaxLockRule;
 use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\Stages\AutoApprovalGate;
+use App\Listeners\RecordCustomerCommunicationDelivery;
 use App\Models\User;
 use App\Services\Activities\ActivityTypeList;
 use App\Services\Api\AbilityRegistry;
@@ -123,6 +124,7 @@ use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -452,6 +454,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerApiCatalogueCacheInvalidation();
         $this->registerPricingWorkflowTriggers();
         $this->registerDocumentWorkflowTriggers();
+        $this->registerCustomerCommunicationListeners();
 
         // LogAction is auto-discovered by Laravel via its handle(AuditableEvent) type-hint.
         // Manual registration removed to prevent duplicate listener execution.
@@ -482,6 +485,14 @@ class AppServiceProvider extends ServiceProvider
                 'user_agent' => $request?->userAgent(),
             ];
         });
+    }
+
+    protected function registerCustomerCommunicationListeners(): void
+    {
+        Event::listen(
+            NotificationSent::class,
+            [RecordCustomerCommunicationDelivery::class, 'handle'],
+        );
     }
 
     protected function registerApiCatalogueCacheInvalidation(): void
