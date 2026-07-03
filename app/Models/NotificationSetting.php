@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property list<string>|null $channels
+ * @property array<string, mixed>|null $channel_config
  * @property list<array<string, mixed>>|null $recipient_rules
  */
 class NotificationSetting extends Model

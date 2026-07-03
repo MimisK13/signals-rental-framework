@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property list<string> $default_channels
  * @property list<string> $available_channels
  * @property list<array<string, mixed>>|null $default_recipients
+ * @property NotificationAudience $audience
+ * @property array<string, mixed>|null $data_schema
  */
 class NotificationType extends Model
 {

@@ -22,7 +22,7 @@ class TestChannelProvider
      */
     public function __invoke(TestChannelProviderData $data): ChannelTestResultData
     {
-        Gate::authorize('settings.manage');
+        Gate::authorize('notifications.manage');
 
         return $this->registry->test($data);
     }

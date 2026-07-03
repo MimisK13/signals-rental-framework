@@ -292,6 +292,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/email-templates', 'admin.settings.email-templates')->name('admin.settings.email-templates');
     Volt::route('admin/settings/email-templates/{template}/edit', 'admin.settings.email-template-form')->name('admin.settings.email-templates.edit');
     Volt::route('admin/settings/notifications', 'admin.settings.notifications')->name('admin.settings.notifications');
+    Volt::route('admin/settings/communication-templates/{communicationTemplate}/edit', 'admin.settings.communication-template-editor')->name('admin.settings.communication-templates.edit');
     Volt::route('admin/settings/scheduling', 'admin.settings.scheduling')->name('admin.settings.scheduling');
 
     // Integrations

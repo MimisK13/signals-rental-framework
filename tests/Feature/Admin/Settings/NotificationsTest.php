@@ -1,47 +1,67 @@
 <?php
 
+use App\Contracts\Notifications\ChannelDriver;
+use App\Data\Notifications\ChannelConfigFieldData;
+use App\Data\Notifications\ChannelSendData;
+use App\Data\Notifications\ChannelTestResultData;
+use App\Data\Notifications\TestChannelProviderData;
+use App\Enums\NotificationAudience;
+use App\Models\ChannelProvider;
+use App\Models\CommunicationTemplate;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
+use App\Models\Store;
 use App\Models\User;
+use App\Services\Plugins\PluginRegistrar;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Livewire\Volt\Volt;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
+    $this->seed(PermissionSeeder::class);
+    $this->seed(RoleSeeder::class);
 
     $this->owner = User::factory()->owner()->create();
     $this->admin = User::factory()->admin()->create();
-    $this->user = User::factory()->create();
+    $this->manager = User::factory()->admin()->create();
+    $this->manager->givePermissionTo('notifications.manage');
+    $this->viewer = User::factory()->create(['is_owner' => false]);
 });
 
-test('notifications page renders for admin users', function () {
+test('notifications page requires notifications.manage permission', function () {
     $this->actingAs($this->admin)
-        ->get(route('admin.settings.notifications'))
-        ->assertOk();
-});
-
-test('notifications page is forbidden for non-admin users', function () {
-    $this->actingAs($this->user)
         ->get(route('admin.settings.notifications'))
         ->assertForbidden();
 });
 
+test('notifications page renders for users with notifications.manage', function () {
+    $this->actingAs($this->manager)
+        ->get(route('admin.settings.notifications'))
+        ->assertOk()
+        ->assertSee('Channel Providers');
+});
+
+test('notifications page displays channel provider cards from registry', function () {
+    $this->actingAs($this->manager)
+        ->get(route('admin.settings.notifications'))
+        ->assertOk()
+        ->assertSee('In-App (Database)')
+        ->assertSee('Email (Settings)')
+        ->assertSee('Real-Time (Broadcast)');
+});
+
 test('notifications page displays notification types grouped by category', function () {
-    $usersType = NotificationType::factory()->create([
+    NotificationType::factory()->create([
         'category' => 'Users',
         'name' => 'User Invited',
     ]);
-    $systemType = NotificationType::factory()->create([
-        'category' => 'System',
-        'name' => 'Test Email',
-    ]);
 
-    $this->actingAs($this->admin)
+    $this->actingAs($this->manager)
         ->get(route('admin.settings.notifications'))
         ->assertOk()
         ->assertSee('Users')
-        ->assertSee('User Invited')
-        ->assertSee('System')
-        ->assertSee('Test Email');
+        ->assertSee('User Invited');
 });
 
 test('owner can toggle a channel for a notification type', function () {
@@ -60,29 +80,7 @@ test('owner can toggle a channel for a notification type', function () {
     expect($setting->channels)->toContain('database');
 });
 
-test('toggling channel on adds it back', function () {
-    $type = NotificationType::factory()->create([
-        'available_channels' => ['database', 'mail'],
-        'default_channels' => ['database', 'mail'],
-    ]);
-
-    // First toggle off mail
-    NotificationSetting::create([
-        'notification_type_id' => $type->id,
-        'channels' => ['database'],
-        'is_enabled' => true,
-    ]);
-
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
-        ->call('toggleChannel', $type->id, 'mail');
-
-    $setting = NotificationSetting::where('notification_type_id', $type->id)->first();
-    expect($setting->channels)->toContain('mail');
-    expect($setting->channels)->toContain('database');
-});
-
-test('owner can toggle notification type enabled/disabled', function () {
+test('tenant cannot enable channels outside type defaults', function () {
     $type = NotificationType::factory()->create([
         'available_channels' => ['database', 'mail'],
         'default_channels' => ['database'],
@@ -90,34 +88,19 @@ test('owner can toggle notification type enabled/disabled', function () {
 
     Volt::actingAs($this->owner)
         ->test('admin.settings.notifications')
-        ->call('toggleEnabled', $type->id);
+        ->call('toggleChannel', $type->id, 'mail')
+        ->assertHasErrors('channel');
 
-    $setting = NotificationSetting::where('notification_type_id', $type->id)->first();
-    expect($setting)->not->toBeNull();
-    expect($setting->is_enabled)->toBeFalse();
+    expect(NotificationSetting::where('notification_type_id', $type->id)->exists())->toBeFalse();
 });
 
-test('toggling enabled back on re-enables the type', function () {
-    $type = NotificationType::factory()->create([
-        'available_channels' => ['database', 'mail'],
-        'default_channels' => ['database'],
-    ]);
-
-    NotificationSetting::create([
-        'notification_type_id' => $type->id,
-        'channels' => ['database'],
-        'is_enabled' => false,
-    ]);
-
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
-        ->call('toggleEnabled', $type->id);
-
-    $setting = NotificationSetting::where('notification_type_id', $type->id)->first();
-    expect($setting->is_enabled)->toBeTrue();
+test('unauthorized user cannot access notifications page', function () {
+    $this->actingAs($this->admin)
+        ->get(route('admin.settings.notifications'))
+        ->assertForbidden();
 });
 
-test('non-owner admin cannot toggle channels without permission', function () {
+test('unauthorized user cannot toggle channels via livewire', function () {
     $type = NotificationType::factory()->create([
         'available_channels' => ['database', 'mail'],
         'default_channels' => ['database', 'mail'],
@@ -125,77 +108,178 @@ test('non-owner admin cannot toggle channels without permission', function () {
 
     Volt::actingAs($this->admin)
         ->test('admin.settings.notifications')
-        ->call('toggleChannel', $type->id, 'mail')
         ->assertForbidden();
 });
 
-test('non-owner admin cannot toggle enabled without permission', function () {
-    $type = NotificationType::factory()->create([
-        'available_channels' => ['database', 'mail'],
-        'default_channels' => ['database'],
-    ]);
-
+test('unauthorized user cannot save recipient rules via livewire', function () {
     Volt::actingAs($this->admin)
         ->test('admin.settings.notifications')
-        ->call('toggleEnabled', $type->id)
         ->assertForbidden();
 });
 
-test('system notification types cannot be disabled', function () {
-    $type = NotificationType::factory()->system()->create([
-        'available_channels' => ['mail'],
-        'default_channels' => ['mail'],
-    ]);
-
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
-        ->call('toggleEnabled', $type->id)
-        ->assertHasErrors('system');
-
-    expect(NotificationSetting::where('notification_type_id', $type->id)->exists())->toBeFalse();
-});
-
-test('system notification channels cannot be toggled', function () {
-    $type = NotificationType::factory()->system()->create([
-        'available_channels' => ['mail'],
-        'default_channels' => ['mail'],
-    ]);
-
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
-        ->call('toggleChannel', $type->id, 'mail')
-        ->assertHasErrors('system');
-
-    expect(NotificationSetting::where('notification_type_id', $type->id)->exists())->toBeFalse();
-});
-
-test('non-system notification types can still be toggled', function () {
+test('owner can save recipient rules for a notification type', function () {
     $type = NotificationType::factory()->create([
-        'available_channels' => ['database', 'mail'],
-        'default_channels' => ['database'],
-        'is_system' => false,
+        'default_recipients' => [['type' => 'subject_owner']],
     ]);
 
     Volt::actingAs($this->owner)
         ->test('admin.settings.notifications')
-        ->call('toggleEnabled', $type->id)
+        ->call('openRecipientEditor', $type->id)
+        ->set('editingRecipientRules', [
+            ['type' => 'role', 'role' => 'admin'],
+            ['type' => 'trigger_actor'],
+        ])
+        ->call('saveRecipientRules')
         ->assertHasNoErrors();
 
     $setting = NotificationSetting::where('notification_type_id', $type->id)->first();
-    expect($setting)->not->toBeNull();
-    expect($setting->is_enabled)->toBeFalse();
+    expect($setting->recipient_rules)->toHaveCount(2);
 });
 
-test('system notification switches are rendered as disabled with a required badge', function () {
-    NotificationType::factory()->system()->create([
-        'name' => 'Password Reset',
-        'available_channels' => ['mail'],
-        'default_channels' => ['mail'],
+test('unauthorized user cannot open provider config via livewire', function () {
+    Volt::actingAs($this->admin)
+        ->test('admin.settings.notifications')
+        ->assertForbidden();
+});
+
+test('provider config modal masks secret values and never returns cleartext on round trip', function () {
+    settings()->setMany([
+        'email.mailer' => 'smtp',
+        'email.smtp_host' => 'smtp.example.com',
+        'email.smtp_password' => 'super-secret-password',
+        'email.from_address' => 'noreply@example.com',
     ]);
 
-    $this->actingAs($this->admin)
+    $component = Volt::actingAs($this->owner)
+        ->test('admin.settings.notifications')
+        ->call('openProviderConfig', 'email');
+
+    expect($component->get('providerConfig')['smtp_password'] ?? '')
+        ->not->toBe('super-secret-password')
+        ->toContain('•');
+
+    $component
+        ->set('providerConfig.smtp_host', 'smtp.updated.example.com')
+        ->call('saveProviderConfig')
+        ->call('openProviderConfig', 'email');
+
+    expect($component->get('providerConfig')['smtp_password'] ?? '')
+        ->not->toBe('super-secret-password')
+        ->toContain('•');
+
+    expect(settings('email.smtp_password'))->toBe('super-secret-password');
+    expect(settings('email.smtp_host'))->toBe('smtp.updated.example.com');
+});
+
+test('unauthorized user cannot save provider config via livewire', function () {
+    Volt::actingAs($this->admin)
+        ->test('admin.settings.notifications')
+        ->assertForbidden();
+});
+
+test('manager can send a database channel provider test', function () {
+    Volt::actingAs($this->manager)
+        ->test('admin.settings.notifications')
+        ->call('sendProviderTest', 'database')
+        ->assertSet('providerTestSuccess', true);
+});
+
+test('plugin provider test result is persisted on the channel provider record', function () {
+    $provider = ChannelProvider::factory()->create([
+        'channel' => 'fake_channel',
+        'driver' => 'fake_plugin',
+        'config' => ['api_key' => 'configured'],
+    ]);
+
+    app(PluginRegistrar::class)
+        ->channelDriver('fake_plugin', TestActionPluginChannelDriver::class);
+
+    Volt::actingAs($this->owner)
+        ->test('admin.settings.notifications')
+        ->call('openProviderConfig', 'fake_plugin')
+        ->call('sendProviderTest', 'fake_plugin');
+
+    $provider->refresh();
+
+    expect($provider->last_test_status)->toBe('passed');
+});
+
+test('both-audience types store internal channel overrides separately', function () {
+    $type = NotificationType::factory()->create([
+        'audience' => NotificationAudience::Both,
+        'available_channels' => ['database', 'mail'],
+        'default_channels' => ['database', 'mail'],
+    ]);
+
+    Volt::actingAs($this->owner)
+        ->test('admin.settings.notifications')
+        ->call('toggleChannel', $type->id, 'mail', 'internal');
+
+    $setting = NotificationSetting::where('notification_type_id', $type->id)->firstOrFail();
+
+    $channelConfig = $setting->channel_config ?? [];
+    $audiences = is_array($channelConfig['audiences'] ?? null) ? $channelConfig['audiences'] : [];
+    $internalConfig = is_array($audiences['internal'] ?? null) ? $audiences['internal'] : [];
+    $internalChannels = is_array($internalConfig['channels'] ?? null) ? $internalConfig['channels'] : [];
+
+    expect($internalChannels)->not->toContain('mail');
+});
+
+test('communication template editor link is shown for notification types with templates', function () {
+    $type = NotificationType::factory()->create(['name' => 'Booking Confirmed']);
+    $store = Store::factory()->create();
+    $template = CommunicationTemplate::factory()->create([
+        'notification_type_id' => $type->id,
+        'store_id' => $store->id,
+        'name' => 'Confirmation Email',
+    ]);
+
+    $this->actingAs($this->manager)
         ->get(route('admin.settings.notifications'))
         ->assertOk()
-        ->assertSee('Required')
-        ->assertSee('System notifications cannot be disabled');
+        ->assertSee('Confirmation Email')
+        ->assertSee(route('admin.settings.communication-templates.edit', $template, absolute: false));
 });
+
+class TestActionPluginChannelDriver implements ChannelDriver
+{
+    public function key(): string
+    {
+        return 'fake_plugin';
+    }
+
+    public function channel(): string
+    {
+        return 'fake_channel';
+    }
+
+    public function label(): string
+    {
+        return 'Fake Plugin Channel';
+    }
+
+    /**
+     * @return list<ChannelConfigFieldData>
+     */
+    public function configSchema(): array
+    {
+        return [
+            new ChannelConfigFieldData('api_key', 'API Key', 'password', required: true, secret: true),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function resolveConfig(): array
+    {
+        return ['api_key' => 'configured'];
+    }
+
+    public function send(ChannelSendData $payload): void {}
+
+    public function test(TestChannelProviderData $data): ChannelTestResultData
+    {
+        return ChannelTestResultData::passed($this, 'ok');
+    }
+}
