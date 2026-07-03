@@ -26,6 +26,8 @@ class RenderDocumentPreview
 
         Gate::authorize('view', $template);
 
+        $this->assertSourceAccessible($template, $data->source_id);
+
         $renderResult = $this->renderer->render(
             $template,
             $template->resolverType(),
