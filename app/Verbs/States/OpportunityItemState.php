@@ -96,6 +96,18 @@ class OpportunityItemState extends State
     /** Line discount as a decimal-string percentage (null = none). */
     public ?string $discount_percent = null;
 
+    /** True when the operator manually set the discount (blocks category re-apply). */
+    public bool $is_discount_manual = false;
+
+    /** Additional deal-price-derived discount percentage (decimal string). */
+    public ?string $deal_price_discount_percent = null;
+
+    /** Group-level deal price target in minor units (group rows only). */
+    public ?int $deal_price = null;
+
+    /** Scoped charge total before group deal pricing (group rows only). */
+    public ?int $deal_price_original_total = null;
+
     /** Commercial nature of the line (rental/sale/service/sub-rental). */
     public int $transaction_type = LineItemTransactionType::Rental->value;
 

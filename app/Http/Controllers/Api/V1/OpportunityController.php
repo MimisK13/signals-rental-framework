@@ -9,6 +9,7 @@ use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AddOpportunityParticipant;
 use App\Actions\Opportunities\AdjustBulkQuantity;
 use App\Actions\Opportunities\AllocateAsset;
+use App\Actions\Opportunities\ApplyDiscountCategory;
 use App\Actions\Opportunities\ChangeItemDates;
 use App\Actions\Opportunities\ChangeItemQuantity;
 use App\Actions\Opportunities\ChangeOpportunityStatus;
@@ -25,12 +26,12 @@ use App\Actions\Opportunities\DispatchAsset;
 use App\Actions\Opportunities\DispatchBulkQuantity;
 use App\Actions\Opportunities\LockOpportunity;
 use App\Actions\Opportunities\MarkAssetOnHire;
-use App\Actions\Opportunities\OverrideItemPrice;
+use App\Actions\Opportunities\OverrideOpportunityItemSurcharge;
 use App\Actions\Opportunities\PrepareAsset;
 use App\Actions\Opportunities\QuickAllocateAssets;
 use App\Actions\Opportunities\QuickBookOut;
 use App\Actions\Opportunities\QuickCheckIn;
-use App\Actions\Opportunities\QuickPrepareAssets;
+use App\Actions\Opportunities\RecalculateOpportunity;
 use App\Actions\Opportunities\ReinstateOpportunity;
 use App\Actions\Opportunities\RemoveOpportunityCost;
 use App\Actions\Opportunities\RemoveOpportunityItem;
@@ -48,9 +49,11 @@ use App\Actions\Opportunities\RevertToQuotation;
 use App\Actions\Opportunities\SetAssetContainer;
 use App\Actions\Opportunities\SetDealPrice;
 use App\Actions\Opportunities\SetItemDiscount;
+use App\Actions\Opportunities\SetSectionDealPrice;
 use App\Actions\Opportunities\SubstituteAsset;
 use App\Actions\Opportunities\SubstituteItem;
 use App\Actions\Opportunities\ToggleItemOptional;
+use App\Actions\Opportunities\ToggleOpportunitySurchargeGroup;
 use App\Actions\Opportunities\UnlockOpportunity;
 use App\Actions\Opportunities\UpdateOpportunity;
 use App\Actions\Opportunities\UpdateOpportunityCost;
@@ -74,10 +77,11 @@ use App\Data\Opportunities\DispatchAssetData;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Opportunities\OverrideItemPriceData;
+use App\Data\Opportunities\OverrideOpportunityItemSurchargeData;
 use App\Data\Opportunities\QuickAllocateAssetsData;
 use App\Data\Opportunities\QuickBookOutData;
 use App\Data\Opportunities\QuickCheckInData;
-use App\Data\Opportunities\QuickPrepareAssetsData;
+use App\Data\Opportunities\RecalculateOpportunityData;
 use App\Data\Opportunities\RenameOpportunityItemData;
 use App\Data\Opportunities\RestructureOpportunityItemsData;
 use App\Data\Opportunities\ReturnAssetData;
@@ -85,9 +89,11 @@ use App\Data\Opportunities\RevertAssetStatusData;
 use App\Data\Opportunities\SetAssetContainerData;
 use App\Data\Opportunities\SetDealPriceData;
 use App\Data\Opportunities\SetItemDiscountData;
+use App\Data\Opportunities\SetSectionDealPriceData;
 use App\Data\Opportunities\SubstituteAssetData;
 use App\Data\Opportunities\SubstituteItemData;
 use App\Data\Opportunities\ToggleItemOptionalData;
+use App\Data\Opportunities\ToggleOpportunitySurchargeGroupData;
 use App\Data\Opportunities\UpdateOpportunityCostData;
 use App\Data\Opportunities\UpdateOpportunityData;
 use App\Data\Opportunities\UpdateOpportunityParticipantData;
@@ -1282,6 +1288,74 @@ class OpportunityController extends Controller
         $this->authorizeApi('opportunities.edit', 'opportunities:write');
 
         (new ClearDealPrice)($opportunity);
+
+        return $this->respondWithFreshOpportunity($opportunity->id);
+    }
+
+    #[ApiResponse(200, 'Pricing recalculated')]
+    public function recalculatePricing(Request $request, Opportunity $opportunity): JsonResponse
+    {
+        $this->authorizeApi('opportunities.edit', 'opportunities:write');
+
+        $data = RecalculateOpportunityData::from($request->validate(RecalculateOpportunityData::rules()));
+
+        (new RecalculateOpportunity)($opportunity, $data);
+
+        return $this->respondWithFreshOpportunity($opportunity->id);
+    }
+
+    #[ApiResponse(200, 'Section deal price set')]
+    public function setSectionDealPrice(
+        Request $request,
+        Opportunity $opportunity,
+        OpportunityItem $section,
+    ): JsonResponse {
+        $this->authorizeApi('opportunities.edit', 'opportunities:write');
+
+        $data = SetSectionDealPriceData::from($request->validate(SetSectionDealPriceData::rules()));
+
+        (new SetSectionDealPrice)($opportunity, $section, $data);
+
+        return $this->respondWithFreshOpportunity($opportunity->id);
+    }
+
+    /**
+     * Apply (or re-apply) the member's discount category rules to eligible lines.
+     */
+    #[ApiResponse(200, 'Discount category applied')]
+    public function applyDiscountCategory(Request $request, Opportunity $opportunity): JsonResponse
+    {
+        $this->authorizeApi('opportunities.edit', 'opportunities:write');
+
+        $data = ApplyDiscountCategoryData::from($request->validate(ApplyDiscountCategoryData::rules()));
+
+        (new ApplyDiscountCategory)($opportunity, $data);
+
+        return $this->respondWithFreshOpportunity($opportunity->id);
+    }
+
+    #[ApiResponse(200, 'Surcharge group toggled')]
+    public function toggleSurchargeGroup(Request $request, Opportunity $opportunity): JsonResponse
+    {
+        $this->authorizeApi('opportunities.edit', 'opportunities:write');
+
+        $data = ToggleOpportunitySurchargeGroupData::from($request->validate(ToggleOpportunitySurchargeGroupData::rules()));
+
+        (new ToggleOpportunitySurchargeGroup)($opportunity, $data);
+
+        return $this->respondWithFreshOpportunity($opportunity->id);
+    }
+
+    #[ApiResponse(200, 'Line surcharge overridden')]
+    public function overrideItemSurcharge(Request $request, Opportunity $opportunity, OpportunityItem $item): JsonResponse
+    {
+        $this->authorizeApi('opportunities.edit', 'opportunities:write');
+
+        abort_unless((int) $item->opportunity_id === (int) $opportunity->id, 404);
+
+        $data = OverrideOpportunityItemSurchargeData::from($request->validate(OverrideOpportunityItemSurchargeData::rules()));
+
+        (new OverrideOpportunityItemSurcharge)($opportunity, $item, $data);
 
         return $this->respondWithFreshOpportunity($opportunity->id);
     }

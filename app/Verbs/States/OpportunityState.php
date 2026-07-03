@@ -2,6 +2,7 @@
 
 namespace App\Verbs\States;
 
+use App\Enums\DealPriceMode;
 use App\Enums\OpportunityState as StateAxis;
 use App\Enums\OpportunityStatus;
 use Carbon\CarbonImmutable;
@@ -179,9 +180,16 @@ class OpportunityState extends State
 
     /**
      * Optional manual deal-total override in integer minor units; null = use the
-     * engine-computed total. When set, it replaces {@see $charge_total}.
+     * engine-computed total. When set, it replaces {@see $charge_total} in flat
+     * headline mode or drives proportional line distribution.
      */
     public ?int $deal_total = null;
+
+    /** {@see DealPriceMode} backing string. */
+    public string $deal_price_mode = 'flat_headline';
+
+    /** Charge total before deal pricing was applied (minor units). */
+    public ?int $deal_price_original_total = null;
 
     /** Per-transaction-type charge totals (minor units, optional lines excluded). */
     public int $rental_charge_total = 0;

@@ -45,8 +45,13 @@ use Illuminate\Support\Carbon;
  * @property int $unit_price
  * @property ChargePeriod $charge_period
  * @property int $total
+ * @property int $surcharge_total
  * @property string|null $currency_code
  * @property string|null $discount_percent
+ * @property bool $is_discount_manual
+ * @property string|null $deal_price_discount_percent
+ * @property int|null $deal_price
+ * @property int|null $deal_price_original_total
  * @property string|null $tax_rate
  * @property LineItemTransactionType $transaction_type
  * @property Carbon|null $starts_at
@@ -92,8 +97,13 @@ class OpportunityItem extends Model implements HasSchema
         'unit_price',
         'charge_period',
         'total',
+        'surcharge_total',
         'currency_code',
         'discount_percent',
+        'is_discount_manual',
+        'deal_price_discount_percent',
+        'deal_price',
+        'deal_price_original_total',
         'tax_rate',
         'transaction_type',
         'starts_at',
@@ -119,7 +129,12 @@ class OpportunityItem extends Model implements HasSchema
             'unit_price' => 'integer',
             'charge_period' => ChargePeriod::class,
             'total' => 'integer',
+            'surcharge_total' => 'integer',
             'discount_percent' => 'decimal:2',
+            'deal_price_discount_percent' => 'decimal:2',
+            'deal_price' => 'integer',
+            'deal_price_original_total' => 'integer',
+            'is_discount_manual' => 'boolean',
             'tax_rate' => 'decimal:2',
             'transaction_type' => LineItemTransactionType::class,
             'starts_at' => 'datetime',
@@ -211,6 +226,14 @@ class OpportunityItem extends Model implements HasSchema
         $len = strlen((string) $this->path);
 
         return $len > 4 ? substr($this->path, 0, $len - 4) : null;
+    }
+
+    /**
+     * @return HasMany<OpportunityItemSurcharge, $this>
+     */
+    public function itemSurcharges(): HasMany
+    {
+        return $this->hasMany(OpportunityItemSurcharge::class);
     }
 
     /**

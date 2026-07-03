@@ -40,6 +40,8 @@ use Illuminate\Support\Carbon;
  * @property bool $tax_locked
  * @property int $charge_total
  * @property int|null $deal_total
+ * @property string $deal_price_mode
+ * @property int|null $deal_price_original_total
  * @property int $rental_charge_total
  * @property int $sale_charge_total
  * @property int $service_charge_total
@@ -164,6 +166,8 @@ class Opportunity extends Model implements HasSchema
         'tax_locked',
         'charge_total',
         'deal_total',
+        'deal_price_mode',
+        'deal_price_original_total',
         'rental_charge_total',
         'sale_charge_total',
         'service_charge_total',
@@ -458,6 +462,14 @@ class Opportunity extends Model implements HasSchema
     }
 
     /**
+     * @return HasMany<OpportunitySurchargeGroup, $this>
+     */
+    public function surchargeGroups(): HasMany
+    {
+        return $this->hasMany(OpportunitySurchargeGroup::class);
+    }
+
+    /**
      * Members associated with this opportunity, each in a named role. Plain,
      * NON-event-sourced CRM associations (mirrors {@see Activity::participants()}).
      *
@@ -476,6 +488,16 @@ class Opportunity extends Model implements HasSchema
     public function activities(): MorphMany
     {
         return $this->morphMany(Activity::class, 'regarding');
+    }
+
+    /**
+     * Generated documents (quotes, invoices, delivery notes, etc.) for this opportunity.
+     *
+     * @return MorphMany<Document, $this>
+     */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
 
     /**

@@ -2,7 +2,9 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Enums\DealPriceMode;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityState;
@@ -11,8 +13,7 @@ use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;
 
 /**
- * Clears a manual deal-total override, reverting the opportunity's `charge_total`
- * headline to the engine-computed gross total.
+ * Clears opportunity deal pricing and restores pre-deal line discount percentages.
  */
 class DealPriceCleared extends Event
 {
@@ -34,6 +35,8 @@ class DealPriceCleared extends Event
     public function apply(OpportunityState $state): void
     {
         $state->deal_total = null;
+        $state->deal_price_mode = DealPriceMode::FlatHeadline->value;
+        $state->deal_price_original_total = null;
         $state->last_event_at = CarbonImmutable::now();
     }
 
@@ -47,9 +50,21 @@ class DealPriceCleared extends Event
 
         $oldDealTotal = $opportunity->deal_total !== null ? (int) $opportunity->deal_total : null;
 
-        $opportunity->forceFill(['deal_total' => null])->saveQuietly();
+        OpportunityItem::query()
+            ->where('opportunity_id', $opportunity->id)
+            ->whereNotNull('deal_price')
+            ->update([
+                'deal_price' => null,
+                'deal_price_original_total' => null,
+            ]);
 
-        app(OpportunityTotalsCalculator::class)->rollUp($opportunity->refresh());
+        $opportunity->forceFill([
+            'deal_total' => null,
+            'deal_price_mode' => DealPriceMode::FlatHeadline->value,
+            'deal_price_original_total' => null,
+        ])->saveQuietly();
+
+        app(OpportunityTotalsCalculator::class)->repriceOpportunity($opportunity->fresh(['items.item', 'member']));
 
         $opportunity->refresh();
 

@@ -151,8 +151,11 @@ class OpportunityLineItemsTreeBuilder
             'unit_price_display' => $this->formatter->money((int) ($item->unit_price ?? 0), $currencyCode),
             'unit_price_raw' => $item->formatMoneyCost('unit_price'),
             'discount_percent' => $item->discount_percent !== null ? (string) $item->discount_percent : null,
+            'is_discount_manual' => (bool) $item->is_discount_manual,
             'charge_total' => (int) ($item->total ?? 0),
             'charge_total_display' => $this->formatter->money((int) ($item->total ?? 0), $currencyCode),
+            'surcharge_total' => (int) ($item->surcharge_total ?? 0),
+            'surcharge_total_display' => $this->formatter->money((int) ($item->surcharge_total ?? 0), $currencyCode),
             'type_label' => $item->item_type === OpportunityItemType::Group
                 ? null
                 : ($item->item_type === OpportunityItemType::Text
@@ -298,7 +301,7 @@ class OpportunityLineItemsTreeBuilder
 
     /**
      * Per-line charge hover breakdown (CRMS-style). Rental amount is the pre-discount
-     * gross for the chargeable window; surcharge is reserved for future line surcharges.
+     * gross for the chargeable window; surcharge reflects persisted line surcharges.
      *
      * @return array<string, string>|null
      */
@@ -320,7 +323,7 @@ class OpportunityLineItemsTreeBuilder
         $isSale = $item->transaction_type === LineItemTransactionType::Sale;
         $chargeDays = $isSale ? 1 : max(1, $days);
         $rentalMinor = (int) round($quantity * $unitPriceMinor * $chargeDays);
-        $surchargeMinor = 0;
+        $surchargeMinor = (int) ($item->surcharge_total ?? 0);
 
         return [
             'days_line' => sprintf(

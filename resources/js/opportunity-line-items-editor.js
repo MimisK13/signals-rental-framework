@@ -92,6 +92,7 @@ export default function createOpportunityLineItemsEditor(cfg) {
         serverDealTotalMinor:
             resolved.serverDealTotalMinor != null ? Number(resolved.serverDealTotalMinor) : null,
         dealPriceInput: resolved.dealTotalRaw || '',
+        dealPriceMode: resolved.dealPriceMode || 'flat_headline',
         hasDealPrice: !!resolved.hasDealPrice,
         quickAddSelection: null,
         quickAddQuery: '',
@@ -1074,10 +1075,10 @@ export default function createOpportunityLineItemsEditor(cfg) {
                 return;
             }
 
-            await this.$wire.setDealPrice(val);
+            await this.$wire.setDealPrice(val, this.dealPriceMode);
             this.hasDealPrice = true;
-            this.pricingFrozen = true;
-            this.fieldsEditable = false;
+            this.pricingFrozen = this.dealPriceMode === 'flat_headline';
+            this.fieldsEditable = this.dealPriceMode !== 'flat_headline' && this.editable && ! this.priceLocked;
             this.serverDealTotalMinor = Math.round(parseMoney(val) * 100);
             await this.syncTotalsFromServer();
         },
@@ -1093,6 +1094,11 @@ export default function createOpportunityLineItemsEditor(cfg) {
             }
 
             await this.syncTotalsFromServer();
+        },
+
+        async resetItemDiscount(itemId) {
+            await this.$wire.resetItemDiscount(itemId);
+            await this.syncTreeFromServer();
         },
 
         editChain: ['quantity', 'days', 'unit_price', 'discount_percent'],

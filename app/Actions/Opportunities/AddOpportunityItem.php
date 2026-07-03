@@ -13,6 +13,7 @@ use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Services\Opportunities\ItemTreeService;
 use App\Services\Opportunities\OpportunityAutoGroupResolver;
+use App\Services\Pricing\DiscountCategoryApplier;
 use App\Services\SequenceAllocator;
 use App\Services\Shortages\ItemShortageProbe;
 use App\Verbs\Events\Opportunities\ItemAdded;
@@ -58,7 +59,10 @@ class AddOpportunityItem
         // by VersionCreated to target a specific brand-new version).
         $versionId = $data->version_id ?? ($opportunity->active_version_id > 0 ? $opportunity->active_version_id : null);
 
-        $this->commitVerbs(function () use ($opportunity, $data, $startsAt, $endsAt, $versionId, &$itemId): void {
+        $manualDiscount = $data->discount_percent !== null;
+        $accessoryIds = [];
+
+        $this->commitVerbs(function () use ($opportunity, $data, $startsAt, $endsAt, $versionId, $manualDiscount, &$itemId, &$accessoryIds): void {
             // Allocate the replay-stable small PK and bake it into the event so a
             // truncate + Verbs::replay() rebuild reproduces the identical id.
             $itemId = app(SequenceAllocator::class)->next('opportunity_items');
@@ -94,12 +98,13 @@ class AddOpportunityItem
                 is_optional: $data->is_optional,
                 manual_unit_price: $data->unit_price,
                 discount_percent: $data->discount_percent,
+                is_discount_manual: $manualDiscount,
                 custom_fields: $data->custom_fields,
                 notes: $data->notes,
             );
 
             if ($this->shouldMaterializeIncludedAccessories($data)) {
-                $this->materializeIncludedAccessories(
+                $accessoryIds = $this->materializeIncludedAccessories(
                     opportunity: $opportunity,
                     versionId: $versionId,
                     principalPath: $path,
@@ -113,6 +118,14 @@ class AddOpportunityItem
                 );
             }
         });
+
+        if (! $manualDiscount && $itemId !== null) {
+            $this->commitVerbs(function () use ($opportunity): void {
+                app(DiscountCategoryApplier::class)->apply(
+                    opportunity: $opportunity->fresh(['items.item', 'member']),
+                );
+            });
+        }
 
         $fresh = $opportunity->fresh(['items']);
 
@@ -157,6 +170,9 @@ class AddOpportunityItem
         return $revenueGroupId;
     }
 
+    /**
+     * @return list<int>
+     */
     private function materializeIncludedAccessories(
         Opportunity $opportunity,
         ?int $versionId,
@@ -168,7 +184,7 @@ class AddOpportunityItem
         string $startsAt,
         string $endsAt,
         bool $isOptional,
-    ): void {
+    ): array {
         $accessories = Accessory::query()
             ->where('product_id', $productId)
             ->where('included', true)
@@ -177,10 +193,11 @@ class AddOpportunityItem
             ->get();
 
         if ($accessories->isEmpty()) {
-            return;
+            return [];
         }
 
         $index = 0;
+        $createdIds = [];
 
         foreach ($accessories as $accessory) {
             $accessoryProduct = $accessory->accessoryProduct;
@@ -213,6 +230,10 @@ class AddOpportunityItem
                 ends_at: $endsAt,
                 is_optional: $isOptional,
             );
+
+            $createdIds[] = $accessoryId;
         }
+
+        return $createdIds;
     }
 }

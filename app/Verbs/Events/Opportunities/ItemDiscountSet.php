@@ -22,6 +22,7 @@ class ItemDiscountSet extends Event
         #[StateId(OpportunityItemState::class)]
         public int $opportunity_item_id,
         public ?string $discount_percent = null,
+        public bool $is_discount_manual = false,
     ) {}
 
     public function validate(OpportunityItemState $state): void
@@ -32,6 +33,7 @@ class ItemDiscountSet extends Event
     public function apply(OpportunityItemState $state): void
     {
         $state->discount_percent = $this->discount_percent;
+        $state->is_discount_manual = $this->is_discount_manual;
         $state->last_event_at = CarbonImmutable::now();
     }
 
@@ -44,8 +46,12 @@ class ItemDiscountSet extends Event
         }
 
         $oldDiscount = $item->discount_percent !== null ? (string) $item->discount_percent : null;
+        $oldManual = (bool) $item->is_discount_manual;
 
-        $item->forceFill(['discount_percent' => $state->discount_percent])->saveQuietly();
+        $item->forceFill([
+            'discount_percent' => $state->discount_percent,
+            'is_discount_manual' => $state->is_discount_manual,
+        ])->saveQuietly();
 
         $this->repriceAndRollUp($item, $state->manual_unit_price);
 
@@ -60,9 +66,14 @@ class ItemDiscountSet extends Event
                 newValues: [
                     'item_id' => $item->id,
                     'discount_percent' => $item->discount_percent !== null ? (string) $item->discount_percent : null,
+                    'is_discount_manual' => $item->is_discount_manual,
                     'total' => $item->total,
                 ],
-                oldValues: ['item_id' => $item->id, 'discount_percent' => $oldDiscount],
+                oldValues: [
+                    'item_id' => $item->id,
+                    'discount_percent' => $oldDiscount,
+                    'is_discount_manual' => $oldManual,
+                ],
             );
         }
     }
