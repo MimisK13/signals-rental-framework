@@ -11,10 +11,13 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Resolves which {@see ProductRate} applies to a product for a given store,
- * transaction type and date. Matching rates are ranked by priority (highest
- * first), with store-specific rates preferred over all-stores rates at equal
- * priority. Returns null when nothing matches, in which case the caller falls
- * back to the product's default pricing (unit price × duration, no engine logic).
+ * transaction type, optional price category, and date. Matching rates are ranked
+ * by priority (highest first), with store-specific rates preferred over all-stores
+ * rates at equal priority. When a price category is supplied, category-specific
+ * rates are tried first and the resolver falls back to default (null-category)
+ * rates when none match. Returns null when nothing matches, in which case the
+ * caller falls back to the product's default pricing (unit price × duration, no
+ * engine logic).
  *
  * Results are cached per product. Writing a product rate invalidates that
  * product's cache; writing any rate definition invalidates all resolution
@@ -35,18 +38,20 @@ class RateResolver
         RateTransactionType $transactionType,
         ?int $storeId = null,
         ?CarbonInterface $date = null,
+        ?int $priceCategoryId = null,
     ): ?ProductRate {
         $date ??= Carbon::now();
 
         if (! Cache::supportsTags()) {
-            return $this->query($product, $transactionType, $storeId, $date);
+            return $this->query($product, $transactionType, $storeId, $date, $priceCategoryId);
         }
 
         $key = sprintf(
-            'rate-resolve:%d:%s:%s:%s',
+            'rate-resolve:%d:%s:%s:%s:%s',
             $product->id,
             $storeId ?? 'all',
             $transactionType->value,
+            $priceCategoryId ?? 'default',
             $date->toDateString(),
         );
 
@@ -56,7 +61,7 @@ class RateResolver
         $ttl = max(60, min(3600, (int) Carbon::now()->diffInSeconds($date->copy()->endOfDay(), false)));
 
         return Cache::tags([self::RESOLUTION_TAG, self::productTag($product->id)])
-            ->remember($key, $ttl, fn (): ?ProductRate => $this->query($product, $transactionType, $storeId, $date));
+            ->remember($key, $ttl, fn (): ?ProductRate => $this->query($product, $transactionType, $storeId, $date, $priceCategoryId));
     }
 
     /**
@@ -67,6 +72,34 @@ class RateResolver
         RateTransactionType $transactionType,
         ?int $storeId,
         CarbonInterface $date,
+        ?int $priceCategoryId,
+    ): ?ProductRate {
+        if ($priceCategoryId !== null) {
+            $categoryRate = $this->queryForPriceCategory(
+                $product,
+                $transactionType,
+                $storeId,
+                $date,
+                $priceCategoryId,
+            );
+
+            if ($categoryRate !== null) {
+                return $categoryRate;
+            }
+        }
+
+        return $this->queryForPriceCategory($product, $transactionType, $storeId, $date, null);
+    }
+
+    /**
+     * Highest-priority rate scoped to one price category (null = default rates).
+     */
+    private function queryForPriceCategory(
+        Product $product,
+        RateTransactionType $transactionType,
+        ?int $storeId,
+        CarbonInterface $date,
+        ?int $priceCategoryId,
     ): ?ProductRate {
         // valid_from/valid_to are date columns (no time); compare on the calendar
         // date so a rate stays valid for the whole of its final day.
@@ -76,6 +109,11 @@ class RateResolver
             ->with('rateDefinition')
             ->where('product_id', $product->id)
             ->where('transaction_type', $transactionType)
+            ->when(
+                $priceCategoryId === null,
+                fn ($query) => $query->whereNull('price_category_id'),
+                fn ($query) => $query->where('price_category_id', $priceCategoryId),
+            )
             ->where(function ($query) use ($storeId): void {
                 $query->whereNull('store_id');
 

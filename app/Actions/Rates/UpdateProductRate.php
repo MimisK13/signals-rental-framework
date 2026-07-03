@@ -22,6 +22,7 @@ class UpdateProductRate
             $rate->update($data->toArray());
 
             $rate->refresh();
+            $rate->load('priceCategory');
 
             event(new AuditableEvent($rate, 'product_rate.updated'));
 

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property CarbonInterface|null $valid_from
  * @property CarbonInterface|null $valid_to
+ * @property int|null $price_category_id
  */
 class ProductRate extends Model implements HasSchema
 {
@@ -37,6 +38,7 @@ class ProductRate extends Model implements HasSchema
         'product_id',
         'rate_definition_id',
         'store_id',
+        'price_category_id',
         'transaction_type',
         'price',
         'currency',
@@ -55,6 +57,7 @@ class ProductRate extends Model implements HasSchema
             'price' => 'integer',
             'valid_from' => 'date',
             'valid_to' => 'date',
+            'price_category_id' => 'integer',
             'priority' => 'integer',
         ];
     }
@@ -69,6 +72,9 @@ class ProductRate extends Model implements HasSchema
             ->required()->filterable()->sortable();
         $builder->relation('store_id')->label('Store')
             ->relation('store', 'belongsTo', Store::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('price_category_id')->label('Price Category')
+            ->relation('priceCategory', 'belongsTo', PriceCategory::class, 'name')
             ->filterable()->sortable();
         $builder->enum('transaction_type')->label('Transaction Type')->required()->filterable()->sortable()->groupable();
         $builder->integer('price')->label('Price')->required()->sortable();
@@ -102,6 +108,14 @@ class ProductRate extends Model implements HasSchema
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    /**
+     * @return BelongsTo<PriceCategory, $this>
+     */
+    public function priceCategory(): BelongsTo
+    {
+        return $this->belongsTo(PriceCategory::class);
     }
 
     /**
