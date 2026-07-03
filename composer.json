@@ -12,7 +12,7 @@
         "laravel",
         "livewire"
     ],
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "homepage": "https://github.com/signals-rental/framework",
     "support": {
         "issues": "https://github.com/signals-rental/framework/issues",
