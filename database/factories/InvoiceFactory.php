@@ -27,6 +27,7 @@ class InvoiceFactory extends Factory
             'number' => 'INV-'.fake()->unique()->numerify('####'),
             'type' => InvoiceType::Standard->value,
             'status' => 'draft',
+            'is_locked' => false,
             'member_id' => Member::factory()->organisation(),
             'store_id' => Store::factory(),
             'currency_code' => 'GBP',
@@ -55,6 +56,7 @@ class InvoiceFactory extends Factory
     {
         return $this->state(fn (): array => [
             'status' => 'issued',
+            'is_locked' => true,
             'issued_at' => now(),
         ]);
     }

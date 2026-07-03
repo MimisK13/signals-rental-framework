@@ -86,7 +86,11 @@ it('reconstructs invoice projections byte-identically after replay with interlea
     InvoiceItem::query()->delete();
     Invoice::query()->forceDelete();
 
+    $eventCountBeforeReplay = verbEventCount();
+
     Verbs::replay();
+
+    expect(verbEventCount())->toBe($eventCountBeforeReplay);
 
     $invoicesAfter = Invoice::query()->orderBy('id')->get()->map(
         fn (Invoice $invoice): array => $invoice->getAttributes(),

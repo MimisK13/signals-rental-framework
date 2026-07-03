@@ -55,7 +55,11 @@ it('reconstructs invoice with lines and taxes byte-identically after replay', fu
     Invoice::query()->forceDelete();
     Opportunity::query()->whereKey($opportunity->id)->update(['invoiced' => false]);
 
+    $eventCountBeforeReplay = verbEventCount();
+
     Verbs::replay();
+
+    expect(verbEventCount())->toBe($eventCountBeforeReplay);
 
     $invoicesAfter = Invoice::query()->orderBy('id')->get()->map(
         fn (Invoice $row): array => $row->getAttributes(),
@@ -90,7 +94,11 @@ it('keeps P30 draft-only replay green alongside opportunity checkout invoices', 
     InvoiceItem::query()->delete();
     Invoice::query()->forceDelete();
 
+    $eventCountBeforeReplay = verbEventCount();
+
     Verbs::replay();
+
+    expect(verbEventCount())->toBe($eventCountBeforeReplay);
 
     expect(Invoice::query()->orderBy('id')->get()->map(
         fn (Invoice $row): array => $row->getAttributes(),

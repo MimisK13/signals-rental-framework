@@ -145,6 +145,10 @@ class WebhookEventRegistry
         'document_template.restored',
         'document_template.set_as_default',
         'document_sequence.reset',
+        'invoice.created',
+        'invoice.issued',
+        'invoice.voided',
+        'invoice.overdue',
     ];
 
     /**

@@ -26,6 +26,7 @@ Schedule::command('communication-log:prune')->dailyAt('02:30');
 Schedule::command('api:flush-logs')->everyMinute()->withoutOverlapping();
 Schedule::command('api:prune-logs')->daily();
 Schedule::command('model:prune')->daily();
+Schedule::command('invoices:process-overdue')->dailyAt('06:00')->withoutOverlapping();
 
 /**
  * Build a cron expression for the overdue-demand sweep from the configured

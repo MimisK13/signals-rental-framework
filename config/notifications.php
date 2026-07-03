@@ -100,6 +100,18 @@ return [
         'shortage.resolution.confirmed' => [
             ['type' => 'shortage.resolution.confirmed'],
         ],
+
+        'invoice.created' => [
+            ['type' => 'invoice.created'],
+        ],
+
+        'invoice.issued' => [
+            ['type' => 'invoice.created'],
+        ],
+
+        'invoice.overdue' => [
+            ['type' => 'invoice.overdue'],
+        ],
     ],
 
 ];

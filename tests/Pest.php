@@ -3,6 +3,7 @@
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Thunk\Verbs\Models\VerbEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,6 +107,14 @@ function assertActionLogged(string $action, string $auditableType, int $auditabl
     }
 
     \Pest\Laravel\assertDatabaseHas('action_logs', $expected);
+}
+
+/**
+ * Return the current row count in the Verbs event store.
+ */
+function verbEventCount(): int
+{
+    return VerbEvent::query()->count();
 }
 
 /**

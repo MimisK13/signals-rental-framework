@@ -194,6 +194,15 @@ when the event store is rebuilt.
 | `document_template.set_as_default` | A template is marked as the default for its type |
 | `document_sequence.reset` | A document numbering sequence rolls over to a new period |
 
+### Invoices
+
+| Event | Trigger |
+|-------|---------|
+| `invoice.created` | A draft invoice is generated |
+| `invoice.issued` | A draft invoice is issued to the customer |
+| `invoice.voided` | An invoice is voided |
+| `invoice.overdue` | An issued invoice passes its due date with an outstanding balance |
+
 ### Availability
 
 | Event | Trigger |

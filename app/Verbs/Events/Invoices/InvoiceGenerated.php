@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceTax;
 use App\Models\Opportunity;
+use App\Verbs\Events\Invoices\Concerns\RecordsInvoiceAudit;
 use App\Verbs\States\InvoiceState;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
@@ -23,6 +24,8 @@ use Thunk\Verbs\Event;
  */
 class InvoiceGenerated extends Event
 {
+    use RecordsInvoiceAudit;
+
     public function __construct(
         public int $invoice_id,
         #[StateId(InvoiceState::class)]
@@ -86,6 +89,7 @@ class InvoiceGenerated extends Event
                 'number' => $state->number,
                 'type' => $state->type,
                 'status' => $state->status,
+                'is_locked' => $state->is_locked,
                 'member_id' => $state->member_id,
                 'store_id' => $state->store_id,
                 'opportunity_id' => $state->opportunity_id,
@@ -153,5 +157,22 @@ class InvoiceGenerated extends Event
                 ->whereKey($this->opportunity_id)
                 ->update(['invoiced' => true]);
         }
+
+        $invoice = Invoice::query()->whereKey($state->invoice_id)->firstOrFail();
+
+        $this->recordInvoiceAudit(
+            $invoice,
+            'invoice.created',
+            newValues: [
+                'id' => $state->invoice_id,
+                'number' => $state->number,
+                'type' => $state->type,
+                'status' => $state->status,
+                'member_id' => $state->member_id,
+                'store_id' => $state->store_id,
+                'opportunity_id' => $state->opportunity_id,
+                'total' => $state->total,
+            ],
+        );
     }
 }

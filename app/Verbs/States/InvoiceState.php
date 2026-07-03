@@ -59,6 +59,10 @@ class InvoiceState extends State
 
     public bool $is_void = false;
 
+    public bool $is_locked = false;
+
+    public ?CarbonImmutable $voided_at = null;
+
     public ?CarbonImmutable $generated_at = null;
 
     public ?CarbonImmutable $last_event_at = null;

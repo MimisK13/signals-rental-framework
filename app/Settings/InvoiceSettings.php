@@ -34,6 +34,8 @@ class InvoiceSettings extends SettingsDefinition
             ],
             // Optional override when a store has no document_sequences row yet.
             'fallback_number_prefix' => 'INV-',
+            'due_days' => 30,
+            'lock_opportunity_on_issue' => true,
         ];
     }
 
@@ -42,6 +44,8 @@ class InvoiceSettings extends SettingsDefinition
         return [
             'source_states' => ['nullable', 'array'],
             'fallback_number_prefix' => ['required', 'string', 'max:20'],
+            'due_days' => ['required', 'integer', 'min:0', 'max:3650'],
+            'lock_opportunity_on_issue' => ['required', 'boolean'],
         ];
     }
 
@@ -50,6 +54,8 @@ class InvoiceSettings extends SettingsDefinition
         return [
             'source_states' => 'json',
             'fallback_number_prefix' => 'string',
+            'due_days' => 'integer',
+            'lock_opportunity_on_issue' => 'boolean',
         ];
     }
 }
