@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\Membership;
 use App\Models\Store;
 use App\Models\User;
+use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\EmailTemplateSeeder;
@@ -99,6 +100,7 @@ class CompleteSetup
             ]);
 
             app(DocumentTemplateSeeder::class)->seedForStore($store);
+            app(CommunicationTemplateSeeder::class)->seedForStore($store);
 
             return;
         }
@@ -115,6 +117,7 @@ class CompleteSetup
             ]);
 
             app(DocumentTemplateSeeder::class)->seedForStore($store);
+            app(CommunicationTemplateSeeder::class)->seedForStore($store);
         }
     }
 

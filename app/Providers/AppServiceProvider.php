@@ -51,11 +51,15 @@ use App\Services\Documents\StatementDataResolver;
 use App\Services\NotificationRegistry;
 use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Notifications\CommunicationLogStatusRegistry;
+use App\Services\Notifications\CommunicationTemplateRenderer;
+use App\Services\Notifications\CoreMergeFieldFilters;
 use App\Services\Notifications\Drivers\BroadcastDriver;
 use App\Services\Notifications\Drivers\DatabaseDriver;
 use App\Services\Notifications\Drivers\EmailDriver;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
 use App\Services\Notifications\EventNotificationMapRegistry;
+use App\Services\Notifications\MergeFieldFilterRegistry;
+use App\Services\Notifications\MergeFieldRenderer;
 use App\Services\Notifications\NotificationChannelResolver;
 use App\Services\Notifications\RecipientResolverRegistry;
 use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
@@ -257,6 +261,16 @@ class AppServiceProvider extends ServiceProvider
 
             return $registry;
         });
+
+        $this->app->singleton(MergeFieldFilterRegistry::class, function (): MergeFieldFilterRegistry {
+            $registry = new MergeFieldFilterRegistry;
+            CoreMergeFieldFilters::register($registry);
+
+            return $registry;
+        });
+
+        $this->app->singleton(MergeFieldRenderer::class);
+        $this->app->singleton(CommunicationTemplateRenderer::class);
 
         $this->app->singleton(AbilityRegistry::class, function (): AbilityRegistry {
             $registry = new AbilityRegistry;

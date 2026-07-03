@@ -11,6 +11,8 @@ use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentTypeRegistry;
 use App\Services\Documents\PdfDriverManager;
 use App\Services\Notifications\ChannelProviderRegistry;
+use App\Services\Notifications\MergeFieldFilterRegistry;
+use App\Services\Notifications\MergeFieldRenderContext;
 use App\Services\Notifications\RecipientResolverRegistry;
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,6 +32,7 @@ class PluginRegistrar
         private readonly PluginDocumentTemplateSeederRegistry $templateSeeders,
         private readonly ChannelProviderRegistry $channelProviders,
         private readonly RecipientResolverRegistry $recipientResolvers,
+        private readonly MergeFieldFilterRegistry $mergeFieldFilters,
     ) {}
 
     /**
@@ -108,6 +111,18 @@ class PluginRegistrar
     public function recipientResolver(RecipientResolver $resolver): self
     {
         $this->recipientResolvers->register($resolver);
+
+        return $this;
+    }
+
+    /**
+     * Register a custom merge-field filter for communication templates (P26 plugin seam).
+     *
+     * @param  callable(mixed $value, ?string $arg, MergeFieldRenderContext $context): mixed  $filter
+     */
+    public function registerFilter(string $name, callable $filter): self
+    {
+        $this->mergeFieldFilters->register($name, $filter);
 
         return $this;
     }
