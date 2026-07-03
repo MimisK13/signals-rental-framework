@@ -27,6 +27,7 @@ it('registers SettingsRegistry as singleton with all definitions', function () {
     expect($groups)->toContain('security');
     expect($groups)->toContain('action-log');
     expect($groups)->toContain('api');
+    expect($groups)->toContain('pricing');
 });
 
 it('configures SMTP mail settings from stored values', function () {
