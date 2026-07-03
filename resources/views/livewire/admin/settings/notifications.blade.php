@@ -498,6 +498,9 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
 
 <section class="w-full">
     <x-admin.layout group="preferences" title="Notifications" description="Configure channel providers, notification types, recipients, and communication templates.">
+        <x-slot:actions>
+            <a href="{{ route('admin.settings.communication-log') }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm">{{ __('Communication log') }}</a>
+        </x-slot:actions>
         {{-- Channel Providers --}}
         <x-signals.card>
             <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">

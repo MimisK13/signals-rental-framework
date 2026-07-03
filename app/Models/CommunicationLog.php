@@ -6,7 +6,14 @@ use Database\Factories\CommunicationLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon|null $queued_at
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $delivered_at
+ * @property Carbon|null $opened_at
+ */
 class CommunicationLog extends Model
 {
     /** @use HasFactory<CommunicationLogFactory> */

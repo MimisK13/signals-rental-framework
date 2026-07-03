@@ -391,11 +391,8 @@
                 </a>
                 @endcan
 
-                {{-- Notifications --}}
-                <button class="header-icon-btn" title="Notifications" aria-label="Notifications" x-on:click="notificationsOpen = !notificationsOpen" :class="{ 'active': notificationsOpen }">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6a4 4 0 0 1 8 0c0 3 1.5 4.5 2 5H2c.5-.5 2-2 2-5z"/><path d="M6 11v.5a2 2 0 0 0 4 0V11"/></svg>
-                    <span class="notification-badge">12</span>
-                </button>
+                {{-- Notifications bell (pane lives in app-layout) --}}
+                <livewire:notifications.bell />
 
                 {{-- User dropdown --}}
                 @php
@@ -426,6 +423,10 @@
                             <a href="{{ route('settings.profile') }}" class="mega-item" wire:navigate>
                                 <flux:icon.cog-6-tooth class="mega-item-icon" />
                                 <span class="mega-item-label">Settings</span>
+                            </a>
+                            <a href="{{ route('settings.notifications') }}" class="mega-item" wire:navigate>
+                                <flux:icon.bell class="mega-item-icon" />
+                                <span class="mega-item-label">My Notifications</span>
                             </a>
                             @if(auth()->user()?->hasAdminAccess())
                                 <a href="{{ route('admin.index') }}" class="mega-item" wire:navigate>
@@ -525,6 +526,9 @@
                 </a>
                 <a class="sidebar-item {{ ActiveRoute::is('settings.calendar') ? 'active' : '' }}" href="{{ route('settings.calendar') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.calendar-days class="!size-[15px]" /> Calendar
+                </a>
+                <a class="sidebar-item {{ ActiveRoute::is('settings.notifications') ? 'active' : '' }}" href="{{ route('settings.notifications') }}" wire:navigate x-on:click="mobileNav = false">
+                    <flux:icon.bell class="!size-[15px]" /> Notifications
                 </a>
             @else
                 {{-- Normal mobile sidebar --}}
@@ -746,6 +750,11 @@
                         <flux:icon.calendar-days class="!size-[15px]" />
                         <span class="sidebar-label" x-show="sidebarOpen" x-cloak>Calendar</span>
                     </a>
+
+                    <a class="sidebar-item {{ ActiveRoute::is('settings.notifications') ? 'active' : '' }}" href="{{ route('settings.notifications') }}" wire:navigate>
+                        <flux:icon.bell class="!size-[15px]" />
+                        <span class="sidebar-label" x-show="sidebarOpen" x-cloak>Notifications</span>
+                    </a>
                 @else
                     {{-- Normal sidebar (no nav items) --}}
                 @endif
@@ -777,58 +786,8 @@
                 @include('components.layouts.app.footer')
             </main>
 
-            {{-- Notifications pane (right side) --}}
-            <aside class="app-notifications-pane"
-                   :class="{ 'open': notificationsOpen, 'ready': notificationsReady }">
-                <div class="app-notifications-header">
-                    <span class="app-notifications-title">Notifications</span>
-                    <button class="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)]" style="font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em;">Mark all read</button>
-                </div>
-                <div class="app-notifications-body">
-                    <x-signals.event-row name="OpportunityCreated" actor="Sarah Chen" time="2 min ago" border="create">
-                        <x-slot:payload>OPP-2026-0891 "Summer Festival Main Stage" created — £12,450.00</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="PaymentReceived" actor="System" time="15 min ago" border="create">
-                        <x-slot:payload>INV-2026-1284 paid in full — £12,450.00</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="StatusChanged" actor="System" time="28 min ago" border="status">
-                        <x-slot:payload><span class="s-es-payload-key">from:</span> Quotation <span class="s-es-payload-key">to:</span> Confirmed</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="QuoteExpiring" actor="System" time="1 hour ago" border="status">
-                        <x-slot:payload>QUO-2026-0456 expires in 48 hours — £32,000.00</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="ItemAdded" actor="Mike Ross" time="1 hour ago" border="update">
-                        <x-slot:payload>OPP-2026-0891: Added 6x JBL EON615 Speaker</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="StockAlert" actor="System" time="2 hours ago" border="status">
-                        <x-slot:payload>Martin D-28 Guitar below minimum level (2 remaining)</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="InvoiceIssued" actor="Sarah Chen" time="3 hours ago" border="create">
-                        <x-slot:payload>INV-2026-1285 issued for OPP-2026-0834 — £8,200.00</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="MemberCreated" actor="Jane Cooper" time="4 hours ago" border="create">
-                        <x-slot:payload>New organisation: Festival Hire Co</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="OrderDispatched" actor="Warehouse" time="5 hours ago" border="create">
-                        <x-slot:payload>OPP-2026-0834 dispatched — 18 items to ExCeL London</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="DamageReported" actor="Dave S" time="6 hours ago" border="status">
-                        <x-slot:payload>JBL VTX speaker cabinet — dent on rear panel. Quarantined.</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="SubHireConfirmed" actor="System" time="Yesterday" border="update">
-                        <x-slot:payload>20x moving head lights confirmed by Stage Solutions Ltd</x-slot:payload>
-                    </x-signals.event-row>
-                    <x-signals.event-row name="CreditCheckPassed" actor="System" time="Yesterday" border="create">
-                        <x-slot:payload>ExCeL Events Ltd approved for £75,000 credit limit</x-slot:payload>
-                    </x-signals.event-row>
-                </div>
-                <button class="notifications-toggle" x-on:click="notificationsOpen = !notificationsOpen"
-                        :aria-label="notificationsOpen ? 'Collapse notifications' : 'Expand notifications'">
-                    <svg class="sidebar-toggle-icon" :class="{ 'rotate-180': notificationsOpen }" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M6 3l5 5-5 5"/>
-                    </svg>
-                </button>
-            </aside>
+            {{-- Notifications pane (Livewire + Echo) --}}
+            <livewire:notifications.pane />
         </div>
 
         <x-signals.command-palette x-on:open-command-palette.window="toggle()" />

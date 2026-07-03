@@ -60,6 +60,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
     Volt::route('settings/calendar', 'settings.calendar')->name('settings.calendar');
+    Volt::route('settings/notifications', 'settings.notifications')->name('settings.notifications');
 
     // Search
     Route::get('search', SearchController::class)->name('search');
@@ -98,6 +99,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('members/{member}/member-contacts', 'members.member-contacts')->name('members.contacts');
     Volt::route('members/{member}/activities', 'members.activities')->name('members.activities');
     Volt::route('members/{member}/files', 'members.files')->name('members.files');
+    Volt::route('members/{member}/communications', 'members.communications')->name('members.communications');
 
     // Products
     Volt::route('products', 'products.index')->name('products.index');
@@ -155,6 +157,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('opportunities/{opportunity}/activities', 'opportunities.activities')->name('opportunities.activities')->withTrashed();
     Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
     Volt::route('opportunities/{opportunity}/files', 'opportunities.files')->name('opportunities.files')->withTrashed();
+    Volt::route('opportunities/{opportunity}/communications', 'opportunities.communications')->name('opportunities.communications')->withTrashed();
     Volt::route('opportunities/{opportunity}/documents', 'opportunities.documents')->name('opportunities.documents')->withTrashed();
 
     Route::delete('opportunities/{opportunity}/items/{item}', [OpportunityLineItemController::class, 'destroy'])
@@ -292,6 +295,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/email-templates', 'admin.settings.email-templates')->name('admin.settings.email-templates');
     Volt::route('admin/settings/email-templates/{template}/edit', 'admin.settings.email-template-form')->name('admin.settings.email-templates.edit');
     Volt::route('admin/settings/notifications', 'admin.settings.notifications')->name('admin.settings.notifications');
+    Volt::route('admin/settings/communication-log', 'admin.settings.communication-log')->name('admin.settings.communication-log');
     Volt::route('admin/settings/communication-templates/{communicationTemplate}/edit', 'admin.settings.communication-template-editor')->name('admin.settings.communication-templates.edit');
     Volt::route('admin/settings/scheduling', 'admin.settings.scheduling')->name('admin.settings.scheduling');
 

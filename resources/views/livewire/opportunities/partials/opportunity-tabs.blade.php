@@ -58,6 +58,7 @@
         \Illuminate\Support\Facades\Gate::allows('documents.view')
             ? ['name' => 'documents', 'label' => 'Documents', 'route' => route('opportunities.documents', $opportunity), 'count' => $opportunity->documents_count ?? 0]
             : null,
+        ['name' => 'communications', 'label' => 'Communications', 'route' => route('opportunities.communications', $opportunity)],
     ]))"
     :active="$activeTab"
 />
