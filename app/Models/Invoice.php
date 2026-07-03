@@ -32,6 +32,7 @@ use Illuminate\Validation\ValidationException;
  * @property int $total
  * @property int $amount_paid
  * @property int $amount_outstanding
+ * @property int $credited_total
  * @property string $currency_code
  * @property string $exchange_rate
  * @property bool $prices_include_tax
@@ -77,6 +78,7 @@ class Invoice extends Model
         'total',
         'amount_paid',
         'amount_outstanding',
+        'credited_total',
         'currency_code',
         'exchange_rate',
         'prices_include_tax',
@@ -96,6 +98,7 @@ class Invoice extends Model
             'total' => 'integer',
             'amount_paid' => 'integer',
             'amount_outstanding' => 'integer',
+            'credited_total' => 'integer',
             'is_locked' => 'boolean',
             'prices_include_tax' => 'boolean',
             'tag_list' => 'array',
@@ -198,6 +201,22 @@ class Invoice extends Model
     public function taxes(): HasMany
     {
         return $this->hasMany(InvoiceTax::class);
+    }
+
+    /**
+     * Effective balance after payments and credit notes.
+     */
+    public function effectiveOutstanding(): int
+    {
+        return $this->total - $this->amount_paid - $this->credited_total;
+    }
+
+    /**
+     * @return HasMany<CreditNote, $this>
+     */
+    public function creditNotes(): HasMany
+    {
+        return $this->hasMany(CreditNote::class);
     }
 
     /**

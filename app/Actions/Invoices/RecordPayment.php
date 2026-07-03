@@ -41,7 +41,7 @@ class RecordPayment
             ]);
         }
 
-        if (! $isRefund && $signedAmount > $invoice->amount_outstanding) {
+        if (! $isRefund && $signedAmount > max(0, $invoice->amount_outstanding)) {
             throw ValidationException::withMessages([
                 'amount' => ['Payment amount exceeds the outstanding balance on this invoice.'],
             ]);
@@ -49,7 +49,7 @@ class RecordPayment
 
         $receivedAt = CarbonImmutable::now('UTC');
         $newAmountPaid = $invoice->amount_paid + $signedAmount;
-        $newAmountOutstanding = max(0, $invoice->total - $newAmountPaid);
+        $newAmountOutstanding = $invoice->total - $newAmountPaid - $invoice->credited_total;
 
         $resolver = app(InvoiceStatusResolver::class);
         $resolvedStatus = $resolver->resolve(

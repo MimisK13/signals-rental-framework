@@ -38,6 +38,7 @@ class InvoiceFactory extends Factory
             'total' => 0,
             'amount_paid' => 0,
             'amount_outstanding' => 0,
+            'credited_total' => 0,
             'tag_list' => [],
         ];
     }

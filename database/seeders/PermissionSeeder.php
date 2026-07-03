@@ -71,6 +71,7 @@ class PermissionSeeder extends Seeder
             'invoices.delete' => ['label' => 'Delete Invoices', 'description' => 'Delete invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.edit']],
             'invoices.issue' => ['label' => 'Issue Invoices', 'description' => 'Issue invoices to customers', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.edit']],
             'invoices.void' => ['label' => 'Void Invoices', 'description' => 'Void issued invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.issue']],
+            'invoices.credit' => ['label' => 'Issue Credit Notes', 'description' => 'Issue credit notes against invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.issue']],
 
             // Payments
             'payments.record' => ['label' => 'Record Payments', 'description' => 'Record payments and refunds against invoices', 'group' => 'Invoices', 'sub_group' => 'Payments', 'layer' => 'action', 'dependencies' => ['invoices.view']],

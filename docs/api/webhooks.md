@@ -204,6 +204,7 @@ when the event store is rebuilt.
 | `invoice.overdue` | An issued invoice passes its due date with an outstanding balance |
 | `payment.recorded` | A payment is recorded against an invoice |
 | `payment.refunded` | A refund is recorded against an invoice |
+| `credit_note.issued` | A credit note is issued against an invoice |
 
 ### Availability
 

@@ -71,6 +71,7 @@ class InvoiceGenerated extends Event
         $state->total = $this->total;
         $state->amount_paid = 0;
         $state->amount_outstanding = $this->total;
+        $state->credited_total = 0;
         $state->notes = $this->notes;
         $state->reference = $this->reference;
         $state->tag_list = $this->tag_list;
@@ -101,6 +102,7 @@ class InvoiceGenerated extends Event
                 'total' => $state->total,
                 'amount_paid' => $state->amount_paid,
                 'amount_outstanding' => $state->amount_outstanding,
+                'credited_total' => $state->credited_total,
                 'currency_code' => $state->currency_code,
                 'exchange_rate' => $state->exchange_rate,
                 'prices_include_tax' => $state->prices_include_tax,

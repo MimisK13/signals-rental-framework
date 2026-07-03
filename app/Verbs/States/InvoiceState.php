@@ -44,6 +44,8 @@ class InvoiceState extends State
 
     public int $amount_outstanding = 0;
 
+    public int $credited_total = 0;
+
     public string $currency_code = 'GBP';
 
     public string $exchange_rate = '1';

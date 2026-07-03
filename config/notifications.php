@@ -120,6 +120,10 @@ return [
         'payment.refunded' => [
             ['type' => 'invoice.payment_received'],
         ],
+
+        'credit_note.issued' => [
+            ['type' => 'invoice.credit_note'],
+        ],
     ],
 
 ];

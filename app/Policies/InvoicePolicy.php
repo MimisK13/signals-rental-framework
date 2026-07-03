@@ -75,4 +75,13 @@ class InvoicePolicy
 
         return ! in_array($invoice->status, ['draft', 'void', 'credited'], true);
     }
+
+    public function issueCredit(User $user, Invoice $invoice): bool
+    {
+        if (! $user->can('invoices.credit')) {
+            return false;
+        }
+
+        return ! in_array($invoice->status, ['draft', 'void', 'credited'], true);
+    }
 }

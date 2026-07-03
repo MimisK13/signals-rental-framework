@@ -70,6 +70,7 @@ class DispatchWebhookForAuditableEvent
         'invoice.overdue',
         'payment.recorded',
         'payment.refunded',
+        'credit_note.issued',
     ];
 
     /**
