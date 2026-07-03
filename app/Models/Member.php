@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Enums\MembershipType;
+use App\Enums\TaxBuyerType;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasAttachments;
 use App\Models\Traits\HasCustomFields;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 
 /**
  * @property MembershipType $membership_type
@@ -26,7 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Member extends Model implements HasSchema
 {
     /** @use HasFactory<MemberFactory> */
-    use FormatsMoney, HasAttachments, HasCustomFields, HasFactory, SoftDeletes;
+    use FormatsMoney, HasAttachments, HasCustomFields, HasFactory, Notifiable, SoftDeletes;
 
     /** @var list<string> */
     protected $fillable = [
@@ -52,6 +55,9 @@ class Member extends Model implements HasSchema
         // Organisation membership fields
         'account_number',
         'tax_number',
+        'tax_number_validated',
+        'tax_number_validated_at',
+        'tax_number_validation',
         'peppol_id',
         'chamber_of_commerce_number',
         'global_location_number',
@@ -61,11 +67,15 @@ class Member extends Model implements HasSchema
         'owned_by',
         'price_category_id',
         'discount_category_id',
+        'tax_zone_id',
+        'buyer_type',
+        'tax_exempt',
         'invoice_term_id',
         'invoice_term_length',
         // Contact membership fields
         'title',
         'department',
+        'communication_preferences',
     ];
 
     /**
@@ -86,7 +96,13 @@ class Member extends Model implements HasSchema
             'is_on_stop' => 'boolean',
             'rating' => 'integer',
             'invoice_term_length' => 'integer',
+            'buyer_type' => TaxBuyerType::class,
+            'tax_exempt' => 'boolean',
+            'tax_number_validated' => 'boolean',
+            'tax_number_validated_at' => 'datetime',
+            'tax_number_validation' => 'array',
             'tag_list' => 'array',
+            'communication_preferences' => 'array',
         ];
     }
 
@@ -137,6 +153,31 @@ class Member extends Model implements HasSchema
     public function emails(): MorphMany
     {
         return $this->morphMany(Email::class, 'emailable');
+    }
+
+    /**
+     * Resolve the member's primary email address for outbound notifications.
+     *
+     * Prefers the email flagged `is_primary`; otherwise falls back to the first
+     * stored address, matching the member API's primary email convention.
+     */
+    public function primaryEmailAddress(): ?string
+    {
+        $emails = $this->relationLoaded('emails')
+            ? $this->emails
+            : $this->emails()->orderByDesc('is_primary')->orderBy('id')->get();
+
+        $primary = $emails->firstWhere('is_primary', true) ?? $emails->first();
+
+        return $primary?->address;
+    }
+
+    /**
+     * Route mail-channel notifications to the member's primary email address.
+     */
+    public function routeNotificationForMail(?Notification $notification = null): ?string
+    {
+        return $this->primaryEmailAddress();
     }
 
     /**
@@ -193,6 +234,30 @@ class Member extends Model implements HasSchema
     public function invoiceTerm(): BelongsTo
     {
         return $this->belongsTo(ListValue::class, 'invoice_term_id');
+    }
+
+    /**
+     * @return BelongsTo<PriceCategory, $this>
+     */
+    public function priceCategory(): BelongsTo
+    {
+        return $this->belongsTo(PriceCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<DiscountCategory, $this>
+     */
+    public function discountCategory(): BelongsTo
+    {
+        return $this->belongsTo(DiscountCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<TaxZone, $this>
+     */
+    public function taxZone(): BelongsTo
+    {
+        return $this->belongsTo(TaxZone::class);
     }
 
     /**

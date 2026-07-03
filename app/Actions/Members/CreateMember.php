@@ -8,6 +8,7 @@ use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Services\Api\WebhookService;
 use App\Services\CustomFieldValidator;
+use App\Services\Tax\MemberVatValidationService;
 use Illuminate\Support\Facades\Gate;
 
 class CreateMember
@@ -54,6 +55,11 @@ class CreateMember
         ]);
 
         $member->syncCustomFields($data->custom_fields, applyDefaults: true);
+
+        if ($data->tax_number !== null && trim($data->tax_number) !== '') {
+            app(MemberVatValidationService::class)->handleTaxNumberChange($member, null);
+            $member->refresh();
+        }
 
         event(new AuditableEvent($member, 'member.created'));
 

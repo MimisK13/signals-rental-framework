@@ -9,6 +9,7 @@ use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Services\Api\WebhookService;
 use App\Services\CustomFieldValidator;
+use App\Services\Tax\MemberVatValidationService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -40,6 +41,8 @@ class UpdateMember
             }
         }
 
+        $previousTaxNumber = $member->tax_number;
+
         $member->update($attributes);
 
         if ($data->custom_fields !== null) {
@@ -48,6 +51,11 @@ class UpdateMember
         }
 
         $member->refresh();
+
+        if (array_key_exists('tax_number', $attributes)) {
+            app(MemberVatValidationService::class)->handleTaxNumberChange($member, $previousTaxNumber);
+            $member->refresh();
+        }
 
         event(new AuditableEvent($member, 'member.updated'));
 
