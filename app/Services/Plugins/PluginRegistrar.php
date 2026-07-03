@@ -4,10 +4,12 @@ namespace App\Services\Plugins;
 
 use App\Contracts\Documents\DocumentDataResolver;
 use App\Contracts\Documents\PdfDriver;
+use App\Contracts\Notifications\ChannelDriver;
 use App\Models\Store;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentTypeRegistry;
 use App\Services\Documents\PdfDriverManager;
+use App\Services\Notifications\ChannelProviderRegistry;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -24,6 +26,7 @@ class PluginRegistrar
         private readonly DocumentResolverRegistry $resolvers,
         private readonly PdfDriverManager $pdfDrivers,
         private readonly PluginDocumentTemplateSeederRegistry $templateSeeders,
+        private readonly ChannelProviderRegistry $channelProviders,
     ) {}
 
     /**
@@ -80,6 +83,18 @@ class PluginRegistrar
     public function seedDocumentTemplates(callable $seeder): self
     {
         $this->templateSeeders->register($seeder);
+
+        return $this;
+    }
+
+    /**
+     * Register a custom notification channel driver (P23 plugin seam).
+     *
+     * @param  class-string<ChannelDriver>  $driverClass
+     */
+    public function channelDriver(string $key, string $driverClass): self
+    {
+        $this->channelProviders->register($key, $driverClass);
 
         return $this;
     }

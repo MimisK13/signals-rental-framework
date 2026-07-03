@@ -49,6 +49,10 @@ use App\Services\Documents\SandboxedBladeCompiler;
 use App\Services\Documents\SandboxedBladeRenderer;
 use App\Services\Documents\StatementDataResolver;
 use App\Services\NotificationRegistry;
+use App\Services\Notifications\ChannelProviderRegistry;
+use App\Services\Notifications\Drivers\BroadcastDriver;
+use App\Services\Notifications\Drivers\DatabaseDriver;
+use App\Services\Notifications\Drivers\EmailDriver;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
@@ -210,6 +214,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(NotificationRegistry::class, function (): NotificationRegistry {
             $registry = new NotificationRegistry;
             $registry->registerMany(NotificationTypeSeeder::types());
+
+            return $registry;
+        });
+
+        $this->app->singleton(ChannelProviderRegistry::class, function ($app): ChannelProviderRegistry {
+            $registry = new ChannelProviderRegistry($app);
+
+            $registry->register('email', EmailDriver::class);
+            $registry->register('database', DatabaseDriver::class);
+            $registry->register('broadcast', BroadcastDriver::class);
 
             return $registry;
         });
