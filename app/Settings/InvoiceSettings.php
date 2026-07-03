@@ -36,6 +36,9 @@ class InvoiceSettings extends SettingsDefinition
             'fallback_number_prefix' => 'INV-',
             'due_days' => 30,
             'lock_opportunity_on_issue' => true,
+            'auto_email_on_issue' => true,
+            'auto_email_on_credit_note' => true,
+            'auto_email_on_payment' => true,
         ];
     }
 
@@ -46,6 +49,9 @@ class InvoiceSettings extends SettingsDefinition
             'fallback_number_prefix' => ['required', 'string', 'max:20'],
             'due_days' => ['required', 'integer', 'min:0', 'max:3650'],
             'lock_opportunity_on_issue' => ['required', 'boolean'],
+            'auto_email_on_issue' => ['required', 'boolean'],
+            'auto_email_on_credit_note' => ['required', 'boolean'],
+            'auto_email_on_payment' => ['required', 'boolean'],
         ];
     }
 
@@ -56,6 +62,9 @@ class InvoiceSettings extends SettingsDefinition
             'fallback_number_prefix' => 'string',
             'due_days' => 'integer',
             'lock_opportunity_on_issue' => 'boolean',
+            'auto_email_on_issue' => 'boolean',
+            'auto_email_on_credit_note' => 'boolean',
+            'auto_email_on_payment' => 'boolean',
         ];
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Actions\Invoices;
 
+use App\Actions\Notifications\DispatchBillingCustomerCommunication;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Invoices\InvoiceData;
+use App\Enums\BillingCommunicationKind;
 use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\Invoice;
 use App\Models\Opportunity;
@@ -89,6 +91,12 @@ class IssueInvoice
                 auth()->id(),
             );
         }
+
+        app(DispatchBillingCustomerCommunication::class)(
+            BillingCommunicationKind::Invoice,
+            (int) $invoice->id,
+            (int) $invoice->store_id,
+        );
 
         return InvoiceData::fromModel($invoice);
     }

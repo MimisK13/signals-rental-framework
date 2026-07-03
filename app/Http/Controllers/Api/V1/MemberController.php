@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Invoices\SendMemberStatement;
 use App\Actions\Members\AnonymiseMember;
 use App\Actions\Members\CreateMember;
 use App\Actions\Members\DeleteMember;
 use App\Actions\Members\MergeMember;
 use App\Actions\Members\RestoreMember;
 use App\Actions\Members\UpdateMember;
+use App\Data\Invoices\SendMemberStatementData;
 use App\Data\Members\CreateMemberData;
 use App\Data\Members\MemberData;
 use App\Data\Members\MergeMemberData;
@@ -20,6 +22,7 @@ use App\Models\Member;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class MemberController extends Controller
 {
@@ -288,6 +291,27 @@ class MemberController extends Controller
             MemberData::fromModel($anonymised)->toArray(),
             'member',
         );
+    }
+
+    /**
+     * Generate and email an outstanding-balance account statement to the member.
+     */
+    #[ApiResponse(202, 'Statement email queued', type: 'array{message: string}')]
+    public function emailStatement(Request $request, Member $member): JsonResponse
+    {
+        $this->authorizeApi('members.view', 'members:read');
+        Gate::authorize('sendCommunication', $member);
+
+        $dto = SendMemberStatementData::validateAndCreate([
+            'member_id' => $member->id,
+            'store_id' => $request->integer('store_id'),
+        ]);
+
+        app(SendMemberStatement::class)($member, $dto);
+
+        return response()->json([
+            'message' => 'Account statement email has been queued.',
+        ], 202);
     }
 
     /**

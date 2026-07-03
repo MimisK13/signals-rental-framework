@@ -9,6 +9,8 @@ use App\Enums\DocumentStatus;
 use App\Models\CreditNote;
 use App\Models\Document;
 use App\Models\Invoice;
+use App\Models\InvoicePayment;
+use App\Models\Member;
 use App\Services\Documents\DocumentEventDispatcher;
 use App\Services\Documents\DocumentNumberGenerator;
 use App\Services\Documents\DocumentTemplateResolver;
@@ -58,6 +60,31 @@ class GenerateBillingIssueDocument
         );
     }
 
+    public function forReceipt(InvoicePayment $payment, ?int $generatedByUserId = null): DocumentData
+    {
+        $payment->loadMissing('invoice');
+
+        return $this->generate(
+            documentType: 'receipt',
+            resolverType: 'receipt',
+            source: $payment,
+            storeId: (int) $payment->invoice->store_id,
+            generatedByUserId: $generatedByUserId,
+        );
+    }
+
+    public function forStatement(Member $member, int $storeId, ?int $generatedByUserId = null): DocumentData
+    {
+        return $this->generate(
+            documentType: 'statement',
+            resolverType: 'statement',
+            source: $member,
+            storeId: $storeId,
+            generatedByUserId: $generatedByUserId,
+            allowExisting: false,
+        );
+    }
+
     private function documentTypeForInvoice(Invoice $invoice): string
     {
         return $invoice->typeEnum()->documentType();
@@ -69,18 +96,21 @@ class GenerateBillingIssueDocument
         Model $source,
         int $storeId,
         ?int $generatedByUserId,
+        bool $allowExisting = true,
     ): DocumentData {
-        $existing = Document::query()
-            ->where('documentable_type', $source->getMorphClass())
-            ->where('documentable_id', $source->getKey())
-            ->where('document_type', $documentType)
-            ->where('status', '!=', DocumentStatus::Void)
-            ->whereNotNull('pdf_path')
-            ->latest('id')
-            ->first();
+        if ($allowExisting) {
+            $existing = Document::query()
+                ->where('documentable_type', $source->getMorphClass())
+                ->where('documentable_id', $source->getKey())
+                ->where('document_type', $documentType)
+                ->where('status', '!=', DocumentStatus::Void)
+                ->whereNotNull('pdf_path')
+                ->latest('id')
+                ->first();
 
-        if ($existing !== null) {
-            return DocumentData::fromModel($existing, includeDownloadUrl: true);
+            if ($existing !== null) {
+                return DocumentData::fromModel($existing, includeDownloadUrl: true);
+            }
         }
 
         $template = $this->templateResolver->resolveForGeneration(
@@ -151,6 +181,20 @@ class GenerateBillingIssueDocument
         if ($source instanceof CreditNote) {
             return $source->currency_code !== ''
                 ? $source->currency_code
+                : (string) settings('company.base_currency', 'GBP');
+        }
+
+        if ($source instanceof InvoicePayment) {
+            $source->loadMissing('invoice');
+
+            return $source->invoice->currency_code !== ''
+                ? $source->invoice->currency_code
+                : (string) settings('company.base_currency', 'GBP');
+        }
+
+        if ($source instanceof Member) {
+            return $source->default_currency_code !== null && $source->default_currency_code !== ''
+                ? $source->default_currency_code
                 : (string) settings('company.base_currency', 'GBP');
         }
 

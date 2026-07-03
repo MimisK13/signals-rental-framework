@@ -137,6 +137,7 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('members', MemberController::class)->names('api.v1.members');
     Route::post('members/{member}/merge', [MemberController::class, 'merge'])->name('api.v1.members.merge');
     Route::post('members/{member}/anonymise', [MemberController::class, 'anonymise'])->name('api.v1.members.anonymise');
+    Route::post('members/{member}/statement/email', [MemberController::class, 'emailStatement'])->name('api.v1.members.statement.email');
     Route::post('members/{member}/restore', [MemberController::class, 'restore'])
         ->withTrashed()
         ->name('api.v1.members.restore');

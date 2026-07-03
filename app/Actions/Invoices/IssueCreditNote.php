@@ -2,9 +2,11 @@
 
 namespace App\Actions\Invoices;
 
+use App\Actions\Notifications\DispatchBillingCustomerCommunication;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Invoices\CreditNoteData;
 use App\Data\Invoices\IssueCreditNoteData;
+use App\Enums\BillingCommunicationKind;
 use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\CreditNote;
 use App\Models\Invoice;
@@ -142,6 +144,12 @@ class IssueCreditNote
                 auth()->id(),
             );
         }
+
+        app(DispatchBillingCustomerCommunication::class)(
+            BillingCommunicationKind::CreditNote,
+            (int) $creditNote->id,
+            (int) $invoice->store_id,
+        );
 
         return CreditNoteData::fromModel($creditNote);
     }

@@ -5,6 +5,7 @@ use App\Models\Address;
 use App\Models\Country;
 use App\Models\CustomField;
 use App\Models\CustomFieldValue;
+use App\Models\DiscountCategory;
 use App\Models\Email;
 use App\Models\Link;
 use App\Models\Member;
@@ -579,6 +580,7 @@ describe('default custom_fields in API responses', function () {
 
 describe('RMS schema compatibility — single member', function () {
     it('matches RMS Organisation member response shape', function () {
+        $discountCategory = DiscountCategory::factory()->create();
         $saleTaxClass = OrganisationTaxClass::factory()->create(['name' => 'Default']);
         $purchaseTaxClass = OrganisationTaxClass::factory()->create(['name' => 'Default']);
         $owner = Member::factory()->user()->create(['name' => 'Ben Bowles']);
@@ -609,7 +611,7 @@ describe('RMS schema compatibility — single member', function () {
             'is_on_stop' => true,
             'rating' => 0,
             'owned_by' => $owner->id,
-            'discount_category_id' => 5,
+            'discount_category_id' => $discountCategory->id,
             'invoice_term_length' => 0,
         ]);
 
@@ -711,7 +713,7 @@ describe('RMS schema compatibility — single member', function () {
             ->and($data['membership']['on_stop'])->toBeTrue()
             ->and($data['membership']['rating'])->toBe(0)
             ->and($data['membership']['owned_by'])->toBe($owner->id)
-            ->and($data['membership']['discount_category_id'])->toBe(5)
+            ->and($data['membership']['discount_category_id'])->toBe($discountCategory->id)
             ->and($data['membership']['tax_class_id'])->toBe($saleTaxClass->id)
             ->and($data['membership']['number'])->toBe('ACC-001')
             ->and($data['membership']['tax_number'])->toBe('GB123456789');

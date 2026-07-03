@@ -28,6 +28,7 @@ class SystemCommunicationTemplates
             'invoice.overdue',
             'invoice.payment_received',
             'invoice.credit_note',
+            'statement.emailed',
             'document.emailed',
         ];
     }
@@ -205,18 +206,31 @@ class SystemCommunicationTemplates
                 intro: 'Thank you — we have received your payment.',
                 fields: [
                     '- **Invoice number:** {{ invoice.number | default:"—" }}',
-                    '- **Total:** {{ invoice.total | currency }}',
+                    '- **Payment amount:** {{ payment.amount | currency }}',
+                    '- **Invoice total:** {{ invoice.total | currency }}',
                 ],
             ),
             'invoice.credit_note' => self::emailDefinition(
                 key: $notificationTypeKey,
                 name: 'Credit Note Email',
-                subject: 'Credit Note — {{ invoice.number | default:"" }}',
+                subject: 'Credit Note {{ credit_note.number | default:"" }} — Invoice {{ invoice.number | default:"" }}',
                 eyebrow: 'Credit Note',
                 intro: 'A credit note has been issued to your account.',
                 fields: [
-                    '- **Reference:** {{ invoice.number | default:"—" }}',
-                    '- **Amount:** {{ invoice.total | currency }}',
+                    '- **Credit note:** {{ credit_note.number | default:"—" }}',
+                    '- **Invoice:** {{ invoice.number | default:"—" }}',
+                    '- **Amount:** {{ credit_note.total | currency }}',
+                ],
+            ),
+            'statement.emailed' => self::emailDefinition(
+                key: $notificationTypeKey,
+                name: 'Account Statement Email',
+                subject: 'Account Statement from {{ company.name | default:"Us" }}',
+                eyebrow: 'Account Statement',
+                intro: 'Please find your account statement attached.',
+                fields: [
+                    '- **Contact:** {{ contact.name | default:"—" }}',
+                    '- **Closing balance:** {{ statement.closing_balance | currency }}',
                 ],
             ),
             'document.emailed' => self::emailDefinition(

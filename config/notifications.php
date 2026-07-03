@@ -101,29 +101,11 @@ return [
             ['type' => 'shortage.resolution.confirmed'],
         ],
 
-        'invoice.created' => [
-            ['type' => 'invoice.created'],
-        ],
-
-        'invoice.issued' => [
-            ['type' => 'invoice.created'],
-        ],
-
         'invoice.overdue' => [
             ['type' => 'invoice.overdue'],
         ],
 
-        'payment.recorded' => [
-            ['type' => 'invoice.payment_received'],
-        ],
-
-        'payment.refunded' => [
-            ['type' => 'invoice.payment_received'],
-        ],
-
-        'credit_note.issued' => [
-            ['type' => 'invoice.credit_note'],
-        ],
+        // Billing customer emails are dispatched explicitly via SendBillingCustomerCommunication (P38).
     ],
 
 ];

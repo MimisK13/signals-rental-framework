@@ -2,9 +2,11 @@
 
 namespace App\Actions\Invoices;
 
+use App\Actions\Notifications\DispatchBillingCustomerCommunication;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Invoices\InvoiceData;
 use App\Data\Invoices\RecordPaymentData;
+use App\Enums\BillingCommunicationKind;
 use App\Models\Invoice;
 use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\Invoices\InvoiceStatusResolver;
@@ -100,7 +102,17 @@ class RecordPayment
             );
         });
 
-        return InvoiceData::fromModel($invoice->refresh());
+        $invoice->refresh();
+
+        if (! $isRefund) {
+            app(DispatchBillingCustomerCommunication::class)(
+                BillingCommunicationKind::Receipt,
+                $paymentId,
+                (int) $invoice->store_id,
+            );
+        }
+
+        return InvoiceData::fromModel($invoice);
     }
 
     private function assertPayableStatus(Invoice $invoice, bool $isRefund): void

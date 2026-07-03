@@ -46,7 +46,7 @@ class GenerateBillingIssueDocumentJob implements ShouldQueue
         ], now()->addHours(1));
 
         if ($this->userId !== null) {
-            Auth::loginUsingId($this->userId);
+            Auth::guard('web')->loginUsingId($this->userId);
         }
 
         $statusCacheKey = $this->billingStatusCacheKey();

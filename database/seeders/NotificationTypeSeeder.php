@@ -402,6 +402,16 @@ class NotificationTypeSeeder extends Seeder
                 'default_recipients' => [['type' => 'contact']],
                 'data_schema' => $schema,
             ],
+            'statement.emailed' => [
+                'category' => 'Invoicing',
+                'name' => 'Account Statement Emailed',
+                'description' => 'Sent when an account statement is emailed to a customer.',
+                'audience' => NotificationAudience::External,
+                'available_channels' => ['mail'],
+                'default_channels' => ['mail'],
+                'default_recipients' => [['type' => 'contact']],
+                'data_schema' => $schema,
+            ],
         ];
     }
 

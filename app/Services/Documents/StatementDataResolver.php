@@ -4,6 +4,7 @@ namespace App\Services\Documents;
 
 use App\Contracts\Documents\DocumentDataResolver;
 use App\Enums\MembershipType;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\Store;
 use App\Services\FieldBuilder;
@@ -16,9 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Statement documents render against a member (organisation or contact).
  *
- * Invoice and payment line collections are empty until the billing domain ships
- * (P33/P37). The resolver exposes the member envelope so templates can be
- * authored now and populated automatically when invoice data becomes available.
+ * Outstanding invoice lines are populated from issued invoice projections (P38).
  */
 class StatementDataResolver implements DocumentDataResolver
 {
@@ -103,6 +102,12 @@ class StatementDataResolver implements DocumentDataResolver
         $timezone = $store?->timezone ?: 'UTC';
         $periodEnd = now($timezone);
         $periodStart = $periodEnd->copy()->subMonth();
+        $invoices = $this->resolveOutstandingInvoices($member, $store?->id);
+        $closingBalance = array_reduce(
+            $invoices,
+            static fn (int $carry, array $row): int => $carry + $row['balance_minor'],
+            0,
+        );
 
         return [
             'member' => $this->resolveMember($member),
@@ -110,14 +115,67 @@ class StatementDataResolver implements DocumentDataResolver
             'statement' => [
                 'period_start' => $this->formatDate($periodStart, $timezone),
                 'period_end' => $this->formatDate($periodEnd, $timezone),
-                'opening_balance' => $this->formatZero($currencyCode),
-                'closing_balance' => $this->formatZero($currencyCode),
+                'opening_balance' => $this->formatMoney($closingBalance, $currencyCode),
+                'closing_balance' => $this->formatMoney($closingBalance, $currencyCode),
             ],
-            // TODO(P37): populate from Invoice records when the billing domain ships.
-            'invoices' => [],
-            // TODO(P33): populate from Payment records when payments ship.
+            'invoices' => array_map(
+                fn (array $row): array => [
+                    'number' => $row['number'],
+                    'issued_at' => $row['issued_at'],
+                    'total' => $row['total'],
+                    'balance' => $row['balance'],
+                ],
+                $invoices,
+            ),
             'payments' => [],
         ];
+    }
+
+    /**
+     * @return list<array{
+     *     number: string,
+     *     issued_at: string|null,
+     *     total: string,
+     *     balance: string,
+     *     balance_minor: int
+     * }>
+     */
+    private function resolveOutstandingInvoices(Member $member, ?int $storeId): array
+    {
+        $query = Invoice::query()
+            ->with('store')
+            ->where('member_id', $member->id)
+            ->where('amount_outstanding', '>', 0)
+            ->whereNotIn('status', ['draft', 'void', 'credited'])
+            ->orderBy('issued_at');
+
+        if ($storeId !== null) {
+            $query->where('store_id', $storeId);
+        }
+
+        return $query->get()->map(function (Invoice $invoice) use ($member): array {
+            $currencyCode = $invoice->currency_code !== ''
+                ? $invoice->currency_code
+                : ($member->default_currency_code ?: (string) settings('company.base_currency', 'GBP'));
+            $timezone = $invoice->store?->timezone ?: 'UTC';
+
+            return [
+                'number' => $invoice->number,
+                'issued_at' => $this->formatDate($invoice->issued_at, $timezone),
+                'total' => $this->formatMoney($invoice->total, $currencyCode),
+                'balance' => $this->formatMoney($invoice->amount_outstanding, $currencyCode),
+                'balance_minor' => $invoice->amount_outstanding,
+            ];
+        })->all();
+    }
+
+    private function formatMoney(int $minorUnits, string $currencyCode): string
+    {
+        $currency = Currency::of($currencyCode);
+
+        return (string) Money::ofMinor($minorUnits, $currency)
+            ->getAmount()
+            ->toScale($currency->getDefaultFractionDigits());
     }
 
     /**
@@ -187,14 +245,5 @@ class StatementDataResolver implements DocumentDataResolver
         ], fn (?string $part): bool => is_string($part) && $part !== ''));
 
         return $parts === [] ? null : implode(', ', $parts);
-    }
-
-    private function formatZero(string $currencyCode): string
-    {
-        $currency = Currency::of($currencyCode);
-
-        return (string) Money::ofMinor(0, $currency)
-            ->getAmount()
-            ->toScale($currency->getDefaultFractionDigits());
     }
 }
