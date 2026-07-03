@@ -88,7 +88,7 @@ class InvoiceGenerated extends Event
 
     public function handle(InvoiceState $state): void
     {
-        Invoice::query()->updateOrCreate(
+        Invoice::withTrashed()->updateOrCreate(
             ['id' => $state->invoice_id],
             [
                 'state_id' => $state->id,
@@ -195,7 +195,7 @@ class InvoiceGenerated extends Event
                 ->update(['invoiced_quantity' => $newQty]);
         }
 
-        $invoice = Invoice::query()->whereKey($state->invoice_id)->firstOrFail();
+        $invoice = Invoice::withTrashed()->whereKey($state->invoice_id)->firstOrFail();
 
         $this->recordInvoiceAudit(
             $invoice,

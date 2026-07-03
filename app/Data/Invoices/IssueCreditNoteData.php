@@ -19,4 +19,17 @@ class IssueCreditNoteData extends Data
         #[Max(65535)]
         public ?string $notes = null,
     ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function rules(): array
+    {
+        return [
+            'lines' => ['nullable', 'array'],
+            'lines.*.invoice_item_id' => ['required', 'integer'],
+            'lines.*.quantity' => ['nullable', 'numeric', 'min:0.01'],
+            'notes' => ['nullable', 'string', 'max:65535'],
+        ];
+    }
 }

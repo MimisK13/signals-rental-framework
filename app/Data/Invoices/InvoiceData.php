@@ -2,10 +2,19 @@
 
 namespace App\Data\Invoices;
 
+use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
 use App\Enums\InvoiceType;
+use App\Models\CreditNote;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\InvoicePayment;
+use App\Models\InvoiceTax;
+use App\Models\Member;
+use App\Models\Opportunity;
+use App\Models\Store;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Lazy;
 
 /**
  * API/serialisation representation of an invoice.
@@ -43,6 +52,17 @@ class InvoiceData extends Data
         public ?string $paid_at,
         public ?string $created_at,
         public ?string $updated_at,
+        public Lazy|EntityReferenceData|null $member = null,
+        public Lazy|EntityReferenceData|null $store = null,
+        public Lazy|EntityReferenceData|null $opportunity = null,
+        /** @var Lazy|array<int, InvoiceItemData> */
+        public Lazy|array $items = [],
+        /** @var Lazy|array<int, InvoiceTaxData> */
+        public Lazy|array $taxes = [],
+        /** @var Lazy|array<int, InvoicePaymentData> */
+        public Lazy|array $payments = [],
+        /** @var Lazy|array<int, CreditNoteData> */
+        public Lazy|array $credit_notes = [],
     ) {}
 
     public static function fromModel(Invoice $invoice): self
@@ -76,6 +96,60 @@ class InvoiceData extends Data
             paid_at: self::formatNullableTimestamp($invoice->paid_at),
             created_at: self::formatNullableTimestamp($invoice->created_at),
             updated_at: self::formatNullableTimestamp($invoice->updated_at),
+            member: Lazy::whenLoaded('member', $invoice, fn (): ?EntityReferenceData => self::reference($invoice->member)),
+            store: Lazy::whenLoaded('store', $invoice, fn (): ?EntityReferenceData => self::reference($invoice->store)),
+            opportunity: Lazy::whenLoaded('opportunity', $invoice, fn (): ?EntityReferenceData => self::reference($invoice->opportunity)),
+            items: Lazy::whenLoaded(
+                'items',
+                $invoice,
+                fn (): array => $invoice->items
+                    ->sortBy('sort_order')
+                    ->values()
+                    ->map(fn (InvoiceItem $item): InvoiceItemData => InvoiceItemData::fromModel($item))
+                    ->all(),
+            ),
+            taxes: Lazy::whenLoaded(
+                'taxes',
+                $invoice,
+                fn (): array => $invoice->taxes
+                    ->map(fn (InvoiceTax $tax): InvoiceTaxData => InvoiceTaxData::fromModel($tax))
+                    ->all(),
+            ),
+            payments: Lazy::whenLoaded(
+                'payments',
+                $invoice,
+                fn (): array => $invoice->payments
+                    ->sortByDesc('paid_at')
+                    ->values()
+                    ->map(fn (InvoicePayment $payment): InvoicePaymentData => InvoicePaymentData::fromModel($payment))
+                    ->all(),
+            ),
+            credit_notes: Lazy::whenLoaded(
+                'creditNotes',
+                $invoice,
+                fn (): array => $invoice->creditNotes
+                    ->sortByDesc('issued_at')
+                    ->values()
+                    ->map(fn (CreditNote $creditNote): CreditNoteData => CreditNoteData::fromModel($creditNote))
+                    ->all(),
+            ),
+        );
+    }
+
+    private static function reference(Member|Store|Opportunity|null $model): ?EntityReferenceData
+    {
+        if ($model === null) {
+            return null;
+        }
+
+        $name = match (true) {
+            $model instanceof Opportunity => $model->subject,
+            default => $model->name ?? (string) $model->id,
+        };
+
+        return new EntityReferenceData(
+            id: $model->id,
+            name: $name,
         );
     }
 }

@@ -24,6 +24,7 @@ class SendMemberStatement
             BillingCommunicationKind::Statement,
             (int) $member->id,
             $data->store_id,
+            explicit: true,
         );
     }
 }

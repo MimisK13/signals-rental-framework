@@ -223,9 +223,8 @@
                     </div>
                 </div>
 
-                {{-- Finance mega dropdown.
-                     Placeholder links are ungated for now; they gain
-                     invoices.* / payments.* gates when those modules ship. --}}
+                {{-- Finance mega dropdown --}}
+                @canany(['invoices.access', 'payments.record'])
                 <div class="nav-dropdown-wrapper">
                     <button class="header-nav-item" type="button">
                         Finance
@@ -235,13 +234,15 @@
                         <div class="mega-grid grid gap-x-8 gap-y-5">
                             <div>
                                 <div class="mega-group-label">Billing</div>
-                                <a href="#" class="mega-item">
+                                @can('invoices.access')
+                                <a href="{{ route('invoices.index') }}" class="mega-item {{ ActiveRoute::is('invoices.*') ? 'active' : '' }}" wire:navigate>
                                     <flux:icon.document-currency-pound class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Invoices</span>
                                         <span class="mega-item-desc">Issue &amp; track invoices</span>
                                     </div>
                                 </a>
+                                @endcan
                                 <a href="#" class="mega-item">
                                     <flux:icon.receipt-refund class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
@@ -270,6 +271,7 @@
                         </div>
                     </div>
                 </div>
+                @endcanany
 
                 {{-- Operations mega dropdown.
                      Placeholder links are ungated for now; they gain
@@ -599,10 +601,12 @@
                     <flux:icon.truck class="!size-[15px]" /> Vehicles
                 </a>
 
+                @can('invoices.access')
                 <div class="sidebar-group-label">Finance</div>
-                <a class="sidebar-item" href="#">
+                <a class="sidebar-item {{ ActiveRoute::is('invoices.*') ? 'active' : '' }}" href="{{ route('invoices.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.document-currency-pound class="!size-[15px]" /> Invoices
                 </a>
+                @endcan
                 <a class="sidebar-item" href="#">
                     <flux:icon.receipt-refund class="!size-[15px]" /> Credit Notes
                 </a>

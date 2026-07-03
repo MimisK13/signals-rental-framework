@@ -1,7 +1,13 @@
 <?php
 
+use App\Actions\Invoices\GenerateDepositInvoice;
+use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
+use App\Data\Invoices\GenerateDepositInvoiceData;
+use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
+use App\Enums\InvoiceType;
 use App\Livewire\Concerns\HasOpportunityActions;
 use App\Models\Opportunity;
+use App\Services\Invoices\InvoiceSourceStateRule;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -77,6 +83,25 @@ new #[Layout('components.layouts.app')] class extends Component
         $this->openConfirmModal('unlock_locks');
     }
 
+    public function generateInvoice(): void
+    {
+        $result = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+            'opportunity_id' => $this->opportunity->id,
+        ]));
+
+        $this->redirect(route('invoices.show', $result->id), navigate: true);
+    }
+
+    public function generateDeposit(): void
+    {
+        $result = (new GenerateDepositInvoice)(GenerateDepositInvoiceData::from([
+            'opportunity_id' => $this->opportunity->id,
+            'amount_percentage' => (string) settings('invoices.deposit_percentage_default', '25'),
+        ]));
+
+        $this->redirect(route('invoices.show', $result->id), navigate: true);
+    }
+
     /**
      * Merge the shared Actions data ({@see HasOpportunityActions}) into the view.
      *
@@ -84,7 +109,19 @@ new #[Layout('components.layouts.app')] class extends Component
      */
     public function with(): array
     {
-        return $this->opportunityActionData();
+        $sourceRule = app(InvoiceSourceStateRule::class);
+        $canCreate = Gate::check('invoices.create');
+        $fullyInvoiced = $this->opportunity->isFullyQuantityInvoiced();
+
+        return [
+            ...$this->opportunityActionData(),
+            'canGenerateStandard' => $canCreate
+                && ! $fullyInvoiced
+                && in_array($this->opportunity->state->value, $sourceRule->allowedStatesFor(InvoiceType::Standard), true),
+            'canGenerateDeposit' => $canCreate
+                && in_array($this->opportunity->state->value, $sourceRule->allowedStatesFor(InvoiceType::Deposit), true),
+            'fullyInvoiced' => $fullyInvoiced,
+        ];
     }
 }; ?>
 
@@ -92,6 +129,22 @@ new #[Layout('components.layouts.app')] class extends Component
     @include('livewire.opportunities.partials.opportunity-header', ['opportunity' => $opportunity, 'showActions' => true, 'canChangeStatus' => $canChangeStatus])
 
     @include('livewire.opportunities.partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'overview'])
+
+    @if(($canGenerateStandard ?? false) || ($canGenerateDeposit ?? false))
+        <div class="px-6 pt-4 flex flex-wrap gap-2 max-md:px-5 max-sm:px-3">
+            @if($canGenerateStandard)
+                <button type="button" wire:click="generateInvoice" class="s-btn s-btn-sm s-btn-accent">Invoice</button>
+            @endif
+            @if($canGenerateDeposit)
+                <button type="button" wire:click="generateDeposit" class="s-btn s-btn-sm s-btn-ghost">Generate Deposit</button>
+            @endif
+            <a href="{{ route('opportunities.invoices', $opportunity) }}" wire:navigate class="s-btn s-btn-sm s-btn-ghost">View Invoices</a>
+        </div>
+    @elseif($fullyInvoiced ?? false)
+        <div class="px-6 pt-4 max-md:px-5 max-sm:px-3">
+            <a href="{{ route('opportunities.invoices', $opportunity) }}" wire:navigate class="text-sm text-[var(--link)] hover:underline">View invoices</a>
+        </div>
+    @endif
 
     {{-- Archived (soft-deleted) opportunities are viewable but read-only. Surface a
          clear banner + a Restore action; the transition actions/status picker are

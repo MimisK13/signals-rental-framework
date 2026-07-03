@@ -22,4 +22,15 @@ class UpdateDraftInvoiceData extends Data
             reference_provided: true,
         );
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function rules(): array
+    {
+        return [
+            'notes' => ['nullable', 'string'],
+            'reference' => ['nullable', 'string', 'max:255'],
+        ];
+    }
 }

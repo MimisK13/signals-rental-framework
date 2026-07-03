@@ -84,10 +84,12 @@ class SendBillingCustomerCommunication
 
     private function shouldSkip(SendBillingCustomerCommunicationData $data): bool
     {
-        $settingsKey = $data->kind->settingsKey();
+        if (! $data->explicit) {
+            $settingsKey = $data->kind->settingsKey();
 
-        if ($settingsKey !== null && ! (bool) settings("invoices.{$settingsKey}", true)) {
-            return true;
+            if ($settingsKey !== null && ! (bool) settings("invoices.{$settingsKey}", true)) {
+                return true;
+            }
         }
 
         if (! $this->communicationTemplateResolver->hasActiveTemplate(

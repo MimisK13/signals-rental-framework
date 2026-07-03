@@ -15,5 +15,6 @@ class SendBillingCustomerCommunicationData extends Data
         public int $sourceId,
         public int $storeId,
         public ?int $userId = null,
+        public bool $explicit = false,
     ) {}
 }

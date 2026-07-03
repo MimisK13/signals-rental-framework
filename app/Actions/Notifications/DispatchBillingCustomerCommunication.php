@@ -16,6 +16,7 @@ class DispatchBillingCustomerCommunication
         int $sourceId,
         int $storeId,
         ?int $userId = null,
+        bool $explicit = false,
     ): void {
         if (Verbs::isReplaying()) {
             return;
@@ -26,6 +27,7 @@ class DispatchBillingCustomerCommunication
             sourceId: $sourceId,
             storeId: $storeId,
             userId: $userId ?? auth()->id(),
+            explicit: $explicit,
         );
     }
 }

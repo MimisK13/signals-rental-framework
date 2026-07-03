@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\DocumentTypeController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
 use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\ListNameController;
 use App\Http\Controllers\Api\V1\ListValueController;
 use App\Http\Controllers\Api\V1\MemberAddressController;
 use App\Http\Controllers\Api\V1\MemberController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\Api\V1\MemberLinkController;
 use App\Http\Controllers\Api\V1\MemberPhoneController;
 use App\Http\Controllers\Api\V1\MemberRelationshipController;
 use App\Http\Controllers\Api\V1\OpportunityController;
+use App\Http\Controllers\Api\V1\OpportunityInvoiceController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
 use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
 use App\Http\Controllers\Api\V1\PriceCategoryController;
@@ -337,7 +339,16 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     Route::apiResource('opportunities', OpportunityController::class)->names('api.v1.opportunities');
 
+    Route::post('opportunities/{opportunity}/invoices', [OpportunityInvoiceController::class, 'store'])->name('api.v1.opportunities.invoices.store');
+
     Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('api.v1.invoices.pdf');
+    Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('api.v1.invoices.issue');
+    Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('api.v1.invoices.void');
+    Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'recordPayment'])->name('api.v1.invoices.payments.store');
+    Route::post('invoices/{invoice}/refunds', [InvoiceController::class, 'recordRefund'])->name('api.v1.invoices.refunds.store');
+    Route::post('invoices/{invoice}/credit_notes', [InvoiceController::class, 'issueCreditNote'])->name('api.v1.invoices.credit_notes.store');
+    Route::post('invoices/{invoice}/email', [InvoiceController::class, 'email'])->name('api.v1.invoices.email');
+    Route::apiResource('invoices', InvoiceController::class)->names('api.v1.invoices');
 
     // Rate Definitions
     Route::post('rate_definitions/{rate_definition}/duplicate', [RateDefinitionController::class, 'duplicate'])->name('api.v1.rate_definitions.duplicate');

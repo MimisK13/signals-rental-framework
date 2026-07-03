@@ -26,6 +26,7 @@ class SendBillingCustomerCommunicationJob implements ShouldQueue
         public int $sourceId,
         public int $storeId,
         public ?int $userId = null,
+        public bool $explicit = false,
     ) {
         $this->queue = 'communications';
         $this->afterCommit = true;
@@ -42,6 +43,7 @@ class SendBillingCustomerCommunicationJob implements ShouldQueue
             sourceId: $this->sourceId,
             storeId: $this->storeId,
             userId: $this->userId,
+            explicit: $this->explicit,
         ));
     }
 }

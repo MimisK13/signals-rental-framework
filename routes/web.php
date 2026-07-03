@@ -3,8 +3,8 @@
 use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\Web\CommunicationUnsubscribeController;
 use App\Http\Controllers\Web\DocsController;
-use App\Http\Controllers\Web\OpportunityLineItemController;
 use App\Http\Controllers\Web\InboundWebhookController;
+use App\Http\Controllers\Web\OpportunityLineItemController;
 use App\Http\Controllers\Web\PublicDocumentController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Middleware\VerifyInboundWebhookSignature;
@@ -128,6 +128,12 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('stock-levels/{stockLevel}/edit', 'stock-levels.form')->name('stock-levels.edit');
     Volt::route('stock-levels/{stockLevel}/activities', 'stock-levels.activities')->name('stock-levels.activities');
 
+    // Invoices
+    Volt::route('invoices', 'invoices.index')->name('invoices.index');
+    Volt::route('invoices/create', 'invoices.form')->name('invoices.create');
+    Volt::route('invoices/{invoice}', 'invoices.show')->name('invoices.show');
+    Volt::route('invoices/{invoice}/edit', 'invoices.form')->name('invoices.edit');
+
     // Opportunities
     //
     // Named web routes resolve now so route('opportunities.*') works everywhere
@@ -152,6 +158,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // so an archived opportunity's tabs remain reachable.
     Volt::route('opportunities/{opportunity}/assets', 'opportunities.assets')->name('opportunities.assets')->withTrashed();
     Volt::route('opportunities/{opportunity}/costs', 'opportunities.costs')->name('opportunities.costs')->withTrashed();
+    Volt::route('opportunities/{opportunity}/invoices', 'opportunities.invoices')->name('opportunities.invoices')->withTrashed();
     Volt::route('opportunities/{opportunity}/participants', 'opportunities.participants')->name('opportunities.participants')->withTrashed();
     Volt::route('opportunities/{opportunity}/shortages', 'opportunities.shortages')->name('opportunities.shortages')->withTrashed();
     Volt::route('opportunities/{opportunity}/versions', 'opportunities.versions')->name('opportunities.versions')->withTrashed();

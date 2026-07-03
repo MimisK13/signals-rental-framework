@@ -63,9 +63,13 @@ class InvoiceState extends State
 
     public bool $is_void = false;
 
+    public bool $is_deleted = false;
+
     public bool $is_locked = false;
 
     public ?CarbonImmutable $voided_at = null;
+
+    public ?CarbonImmutable $deleted_at = null;
 
     public ?CarbonImmutable $generated_at = null;
 

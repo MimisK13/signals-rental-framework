@@ -63,6 +63,19 @@ class InvoicePolicy
         return true;
     }
 
+    public function delete(User $user, ?Model $model = null): bool
+    {
+        if (! $user->can($this->deletePermission())) {
+            return false;
+        }
+
+        if ($model instanceof Invoice) {
+            return ! $model->is_locked && $model->status === 'draft';
+        }
+
+        return true;
+    }
+
     public function issue(User $user, Invoice $invoice): bool
     {
         if (! $user->can('invoices.issue')) {

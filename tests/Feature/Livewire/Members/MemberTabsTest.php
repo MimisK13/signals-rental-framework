@@ -36,7 +36,7 @@ describe('stub tab pages', function () {
 
         $this->get("/members/{$member->id}/invoices")
             ->assertOk()
-            ->assertSee('Invoices Coming Soon');
+            ->assertSee('Outstanding Balance');
     });
 
     it('renders the activities tab', function () {

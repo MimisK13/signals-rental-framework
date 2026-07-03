@@ -131,6 +131,63 @@ describe('invoice issue customer email', function () {
         Mail::assertNothingSent();
         expect(CommunicationLog::query()->where('notification_type_key', 'invoice.created')->count())->toBe(0);
     });
+
+    it('sends email via explicit endpoint when auto_email_on_issue is disabled', function () {
+        Mail::fake();
+        settings()->set('invoices.auto_email_on_issue', false);
+
+        ['invoice' => $invoice, 'member' => $member] = billingCommunicationFixture();
+
+        (new IssueInvoice)($invoice->refresh());
+
+        Mail::assertNothingSent();
+        expect(CommunicationLog::query()->where('notification_type_key', 'invoice.created')->count())->toBe(0);
+
+        $user = User::factory()->owner()->create();
+        Sanctum::actingAs($user, ['invoices:read']);
+        $this->actingAs($user);
+
+        $this->postJson("/api/v1/invoices/{$invoice->id}/email")
+            ->assertAccepted();
+
+        $log = CommunicationLog::query()
+            ->where('notification_type_key', 'invoice.created')
+            ->where('notifiable_id', $member->id)
+            ->sole();
+
+        expect($log->status)->toBe('sent')
+            ->and($log->recipient_address)->toBe('billing@example.com');
+    });
+
+    it('suppresses explicit invoice email for opted-out members', function () {
+        Mail::fake();
+        settings()->set('invoices.auto_email_on_issue', false);
+
+        ['invoice' => $invoice, 'member' => $member] = billingCommunicationFixture();
+        $member->update([
+            'communication_preferences' => [
+                'opt_out' => ['invoice.created'],
+            ],
+        ]);
+
+        (new IssueInvoice)($invoice->refresh());
+
+        $user = User::factory()->owner()->create();
+        Sanctum::actingAs($user, ['invoices:read']);
+        $this->actingAs($user);
+
+        $this->postJson("/api/v1/invoices/{$invoice->id}/email")
+            ->assertAccepted();
+
+        Mail::assertNothingSent();
+
+        $log = CommunicationLog::query()
+            ->where('notification_type_key', 'invoice.created')
+            ->sole();
+
+        expect($log->status)->toBe('suppressed')
+            ->and($log->failure_reason)->toContain('opted out');
+    });
 });
 
 describe('payment receipt customer email', function () {
