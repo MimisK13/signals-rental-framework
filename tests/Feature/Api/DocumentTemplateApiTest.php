@@ -173,7 +173,7 @@ describe('document template CRUD and lifecycle', function () {
 
         $template->refresh();
 
-        expect($template->body_html)->toContain('count($items)')
+        expect($template->body_html)->toContain('@foreach ($items as $item)')
             ->and($template->version)->toBe(3);
     });
 

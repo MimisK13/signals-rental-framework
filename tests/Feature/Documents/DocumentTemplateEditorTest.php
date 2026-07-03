@@ -40,7 +40,7 @@ it('renders the document template editor with three panels', function () {
         ->assertOk()
         ->assertSee('Field browser')
         ->assertSee('Live preview')
-        ->assertSee('CodeMirror is not installed');
+        ->assertSee('data-testid="codemirror-host"', false);
 });
 
 it('loads template content and generates a preview', function () {

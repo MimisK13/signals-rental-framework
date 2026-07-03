@@ -241,6 +241,7 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
         $this->pageConfig = $this->template->page_config ?? config('documents.defaults.page', []);
         $this->loadVersions();
         $this->refreshPreview();
+        $this->dispatchEditorSync();
         $this->dispatch('document-template-version-restored');
     }
 
@@ -330,6 +331,12 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
         };
 
         $this->refreshPreview();
+        $this->dispatchEditorSync();
+    }
+
+    private function dispatchEditorSync(): void
+    {
+        $this->dispatch('document-template-editor-sync');
     }
 
     private function previewTemplate(): DocumentTemplate
@@ -394,7 +401,9 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
     .dt-tabs { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--card-border); background: var(--card-bg); }
     .dt-tab { padding: 6px 10px; font-size: 12px; border: 1px solid transparent; background: transparent; cursor: pointer; color: var(--text-secondary); }
     .dt-tab.active { border-color: var(--card-border); background: var(--base); color: var(--text-primary); }
-    .dt-code { flex: 1; min-height: 0; padding: 12px; }
+    .dt-code { flex: 1; min-height: 0; padding: 12px; display: flex; flex-direction: column; }
+    .dt-cm-host { flex: 1; min-height: 420px; border: 1px solid var(--card-border); border-radius: 4px; overflow: hidden; }
+    .dt-cm-host .cm-editor { height: 100%; }
     .dt-code textarea { width: 100%; height: 100%; min-height: 420px; resize: none; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; padding: 12px; border: 1px solid var(--card-border); background: var(--base); color: var(--text-primary); }
     .dt-preview { width: 42%; min-width: 360px; display: flex; flex-direction: column; background: var(--card-bg); }
     .dt-preview-controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--card-border); }
@@ -458,17 +467,38 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
                     <button type="button" wire:click="setActiveTab('{{ $tab }}')" class="dt-tab {{ $activeTab === $tab ? 'active' : '' }}">{{ $label }}</button>
                 @endforeach
             </div>
-            <div class="dt-code">
-                @if($activeTab === 'body')
-                    <textarea wire:model.live.debounce.500ms="bodyHtml" spellcheck="false" aria-label="Body editor"></textarea>
-                @elseif($activeTab === 'header')
-                    <textarea wire:model.live.debounce.500ms="headerHtml" spellcheck="false" aria-label="Header editor"></textarea>
-                @elseif($activeTab === 'footer')
-                    <textarea wire:model.live.debounce.500ms="footerHtml" spellcheck="false" aria-label="Footer editor"></textarea>
-                @else
-                    <textarea wire:model.live.debounce.500ms="stylesCss" spellcheck="false" aria-label="Styles editor"></textarea>
-                @endif
-                <p class="mt-2 text-xs text-[var(--text-muted)]">CodeMirror is not installed — using a plain textarea fallback for this pass.</p>
+            <div class="dt-code"
+                 x-data="{
+                     ...window.signals.documentTemplateEditor({
+                         wire: $wire,
+                         contents: {
+                             body: @js($bodyHtml),
+                             header: @js($headerHtml),
+                             footer: @js($footerHtml),
+                             styles: @js($stylesCss),
+                         },
+                     }),
+                     activeTab: @entangle('activeTab').live,
+                 }"
+                 x-init="init()"
+                 @destroy.window="destroy()">
+                <div x-show="cmReady"
+                     x-ref="cmHost"
+                     data-testid="codemirror-host"
+                     class="dt-cm-host"
+                     wire:ignore></div>
+                <div x-show="!cmReady">
+                    @if($activeTab === 'body')
+                        <textarea wire:model.live.debounce.500ms="bodyHtml" spellcheck="false" aria-label="Body editor"></textarea>
+                    @elseif($activeTab === 'header')
+                        <textarea wire:model.live.debounce.500ms="headerHtml" spellcheck="false" aria-label="Header editor"></textarea>
+                    @elseif($activeTab === 'footer')
+                        <textarea wire:model.live.debounce.500ms="footerHtml" spellcheck="false" aria-label="Footer editor"></textarea>
+                    @else
+                        <textarea wire:model.live.debounce.500ms="stylesCss" spellcheck="false" aria-label="Styles editor"></textarea>
+                    @endif
+                    <p class="mt-2 text-xs text-[var(--text-muted)]">CodeMirror unavailable — using plain textarea fallback.</p>
+                </div>
             </div>
         </section>
 

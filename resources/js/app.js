@@ -12,7 +12,9 @@ import createProductSearch, {
     parseQuickAdd,
 } from './opportunity-product-search';
 import createOpportunityLineItemsEditor from './opportunity-line-items-editor';
+import createDocumentTemplateEditor from './document-template-editor';
 
 window.signals = window.signals || {};
 window.signals.productSearch = { createProductSearch, buildIndex, merge, parseQuickAdd };
 window.signals.lineItemsEditor = createOpportunityLineItemsEditor;
+window.signals.documentTemplateEditor = createDocumentTemplateEditor;
