@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Outbound webhook metering** — `DeliverWebhook` increments `webhook_sent` rollups on first attempt
 - **REST meta endpoints** — `GET /api/v1/usage`, `/api/v1/usage/export`, `/api/v1/request_logs`, `/api/v1/endpoints` (all weight 0)
 - **Registries** — `AbilityRegistry`, extended `WebhookEventRegistry`, `ApiEndpointCatalogue`
+- **Docs landing page** at `/docs` (card grid per section) and **⌘K search** across titles, descriptions, headings, and body text
+- **Docs placeholder pages** for Workflows and Plugin SDK under Development
+
+### Changed
+
+- **Docs navigation restructured** around the app's areas — Getting Started, CRM, Job Planning, Resources, Finance, Operations, Development (API reference nested within), Changelog at the bottom; collapsible sidebar sections with per-level indentation; page URLs unchanged
+- **SSO and Magic-Link docs merged into Authentication & Settings** with permanent redirects from the old URLs
 
 See [docs/changelog/0.5.1.md](docs/changelog/0.5.1.md) for full detail.
 

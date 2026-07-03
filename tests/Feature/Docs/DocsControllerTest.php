@@ -1,10 +1,153 @@
 <?php
 
+use App\Services\DocsService;
+
 use function Pest\Laravel\get;
 
-test('docs index redirects to the first documentation page', function () {
+test('all registered documentation URLs return 200', function () {
+    $service = app(DocsService::class);
+
+    foreach ($service->getAllPageRouteKeys() as $routeKey) {
+        $response = get(route('docs.show', [$routeKey['urlSection'], $routeKey['slug']]));
+
+        expect($response->status())->toBe(
+            200,
+            "Expected {$routeKey['urlSection']}/{$routeKey['slug']} to return 200",
+        );
+    }
+
+    get(route('docs.changelog'))->assertOk();
+});
+
+test('legacy documentation URLs remain unchanged and return 200', function () {
+    $legacyUrls = [
+        ['getting-started', 'introduction'],
+        ['getting-started', 'authentication'],
+        ['platform', 'members'],
+        ['platform', 'opportunities'],
+        ['platform', 'api-console'],
+        ['api', 'overview'],
+        ['api', 'usage'],
+        ['development', 'library'],
+    ];
+
+    foreach ($legacyUrls as [$section, $page]) {
+        get(route('docs.show', [$section, $page]))->assertOk();
+    }
+});
+
+test('retired auth pages redirect to authentication with 301', function () {
+    get('/docs/getting-started/sso')
+        ->assertRedirect(route('docs.show', ['getting-started', 'authentication']))
+        ->assertStatus(301);
+
+    get('/docs/getting-started/magic-link')
+        ->assertRedirect(route('docs.show', ['getting-started', 'authentication']))
+        ->assertStatus(301);
+});
+
+test('development placeholder pages return 200', function () {
+    get(route('docs.show', ['development', 'workflows']))
+        ->assertOk()
+        ->assertSee('Coming soon');
+
+    get(route('docs.show', ['development', 'plugin-sdk']))
+        ->assertOk()
+        ->assertSee('Coming soon');
+});
+
+test('manifest-only page without markdown file returns 404', function () {
+    $dir = sys_get_temp_dir().'/docs-controller-test-'.uniqid();
+    mkdir($dir, 0755, true);
+
+    file_put_contents($dir.'/documentation.json', json_encode([
+        'sections' => [[
+            'title' => 'Guide',
+            'slug' => 'guide',
+            'pages' => [[
+                'title' => 'Ghost Page',
+                'slug' => 'ghost',
+                'description' => 'Listed in manifest only',
+            ]],
+        ]],
+    ], JSON_THROW_ON_ERROR));
+
+    app()->instance(DocsService::class, new DocsService($dir));
+
+    get(route('docs.show', ['guide', 'ghost']))->assertNotFound();
+
+    unlink($dir.'/documentation.json');
+    rmdir($dir);
+});
+
+test('docs index renders the landing page', function () {
     get(route('docs.index'))
-        ->assertRedirect(route('docs.show', ['getting-started', 'introduction']));
+        ->assertOk()
+        ->assertViewIs('docs.index')
+        ->assertSee('class="docs-landing"', false)
+        ->assertSee('Browse Signals Rental Framework documentation', false)
+        ->assertSee('CRM', false)
+        ->assertSee('Job Planning', false)
+        ->assertSee('Getting Started', false)
+        ->assertSee('Latest release:', false)
+        ->assertSee('0.5.1');
+});
+
+test('landing cards match manifest flat sections and groups', function () {
+    $service = app(DocsService::class);
+    $cards = $service->getLandingCards();
+
+    expect($cards)->toHaveCount(12)
+        ->and(collect($cards)->pluck('title')->all())->toContain('Getting Started', 'CRM', 'Development', 'Core Resources', 'Pricing & Tax');
+
+    get(route('docs.index'))
+        ->assertOk()
+        ->assertSee('View all &rarr;', false)
+        ->assertSee(route('docs.show', ['getting-started', 'introduction']), false)
+        ->assertSee(route('docs.show', ['platform', 'members']), false);
+});
+
+test('docs index returns 404 when manifest has sections but no pages', function () {
+    $dir = sys_get_temp_dir().'/docs-index-empty-pages-'.uniqid();
+    mkdir($dir, 0755, true);
+
+    file_put_contents($dir.'/documentation.json', json_encode([
+        'sections' => [[
+            'title' => 'Empty Section',
+            'slug' => 'empty',
+            'pages' => [],
+        ]],
+    ], JSON_THROW_ON_ERROR));
+
+    app()->instance(DocsService::class, new DocsService($dir));
+
+    get(route('docs.index'))->assertNotFound();
+
+    unlink($dir.'/documentation.json');
+    rmdir($dir);
+});
+
+test('docs index returns 404 when grouped sections contain no pages', function () {
+    $dir = sys_get_temp_dir().'/docs-index-empty-groups-'.uniqid();
+    mkdir($dir, 0755, true);
+
+    file_put_contents($dir.'/documentation.json', json_encode([
+        'sections' => [[
+            'title' => 'Platform',
+            'slug' => 'platform',
+            'groups' => [[
+                'label' => 'Core CRM',
+                'pages' => [],
+            ]],
+        ]],
+    ], JSON_THROW_ON_ERROR));
+
+    app()->instance(DocsService::class, new DocsService($dir));
+
+    get(route('docs.index'))->assertNotFound();
+
+    unlink($dir.'/documentation.json');
+    rmdir($dir);
 });
 
 test('valid documentation page returns 200', function () {
@@ -65,7 +208,7 @@ test('first docs page has no previous link', function () {
 });
 
 test('last docs page has no next link', function () {
-    get(route('docs.show', ['development', 'library']))
+    get(route('docs.show', ['api', 'activities']))
         ->assertDontSee('Next &rarr;', false);
 });
 
@@ -76,10 +219,35 @@ test('docs pages are accessible without authentication', function () {
         ->assertOk();
 });
 
-test('docs page includes search data with content', function () {
-    get(route('docs.show', ['getting-started', 'introduction']))
-        ->assertSee('docs-search-data', false)
-        ->assertSee('Search docs...');
+test('docs pages embed a single valid search index json payload', function () {
+    $response = get(route('docs.show', ['getting-started', 'introduction']));
+
+    $response->assertOk();
+
+    $html = $response->getContent();
+
+    expect(substr_count($html, 'id="docs-search-data"'))->toBe(1);
+
+    preg_match('/<script id="docs-search-data" type="application\/json">(.*?)<\/script>/s', $html, $matches);
+
+    expect($matches)->toHaveCount(2);
+
+    $index = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
+
+    assert(is_array($index));
+    assert($index !== []);
+
+    expect($index[0])->toHaveKeys(['title', 'section', 'sectionSlug', 'slug', 'url', 'description', 'headings', 'content']);
+});
+
+test('docs landing page includes the shared search index payload', function () {
+    get(route('docs.index'))
+        ->assertOk()
+        ->assertSee('id="docs-search-data"', false)
+        ->assertSee('docs-search-modal', false)
+        ->assertSee('x-data="docsSearchModal', false)
+        ->assertSee('class="docs-search-trigger"', false)
+        ->assertDontSee('class="docs-landing-search"', false);
 });
 
 test('docs page uses standalone docs layout', function () {
@@ -130,9 +298,10 @@ test('resolves the api-console platform documentation page', function () {
         ->assertSee('api.explorer.use');
 });
 
-test('lists api-console in the platform navigation sidebar', function () {
+test('lists api-console in the operations navigation sidebar', function () {
     get(route('docs.show', ['platform', 'api-console']))
         ->assertOk()
+        ->assertSee('data-section-slug="operations"', false)
         ->assertSee('API Console');
 });
 
@@ -162,9 +331,9 @@ test('changelog page includes sidebar with changelog link', function () {
         ->assertSee('Changelog');
 });
 
-test('changelog page includes search data', function () {
+test('changelog page includes search modal markup', function () {
     get(route('docs.changelog'))
-        ->assertSee('docs-search-data', false);
+        ->assertSee('docs-search-modal', false);
 });
 
 test('changelog page is accessible without authentication', function () {
@@ -184,13 +353,17 @@ test('docs sidebar includes changelog link on regular pages', function () {
         ->assertSee('Changelog');
 });
 
-test('sitemap returns valid xml with all docs pages', function () {
+test('sitemap returns valid xml with all docs pages and excludes the landing page', function () {
     get(route('docs.sitemap'))
         ->assertOk()
         ->assertHeader('content-type', 'application/xml')
         ->assertSee('<urlset', false)
         ->assertSee(route('docs.show', ['getting-started', 'introduction']), false)
-        ->assertSee(route('docs.changelog'), false);
+        ->assertSee(route('docs.show', ['platform', 'members']), false)
+        ->assertSee(route('docs.changelog'), false)
+        ->assertDontSee(route('docs.show', ['getting-started', 'sso']), false)
+        ->assertDontSee(route('docs.show', ['getting-started', 'magic-link']), false)
+        ->assertDontSee('<loc>'.route('docs.index').'</loc>', false);
 });
 
 test('docs page includes meta description when frontmatter has description', function () {
@@ -268,9 +441,9 @@ test('blade-type docs page includes sidebar navigation', function () {
         ->assertSee('Component Library');
 });
 
-test('blade-type docs page includes search data', function () {
+test('blade-type docs page includes search modal markup', function () {
     get(route('docs.show', ['development', 'library']))
-        ->assertSee('docs-search-data', false);
+        ->assertSee('docs-search-modal', false);
 });
 
 test('blade-type docs page includes pagination', function () {

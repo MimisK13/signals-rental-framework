@@ -3,79 +3,411 @@
         {
             "title": "Getting Started",
             "slug": "getting-started",
+            "icon": "rocket",
+            "description": "Install Signals, configure your company, and authenticate users.",
             "pages": [
-                { "title": "Introduction", "slug": "introduction" },
-                { "title": "Installation", "slug": "installation" },
-                { "title": "Configuration", "slug": "configuration" },
-                { "title": "Authentication & Settings", "slug": "authentication" },
-                { "title": "Single Sign-On (SSO)", "slug": "sso" },
-                { "title": "Magic-Link Login", "slug": "magic-link" },
-                { "title": "Seeders", "slug": "seeders" }
+                {
+                    "title": "Introduction",
+                    "slug": "introduction",
+                    "description": "Signals Rental Framework is an open-source rental management framework. Free, self-hostable, and plugin-extensible."
+                },
+                {
+                    "title": "Installation",
+                    "slug": "installation",
+                    "description": "Install Signals Rental Framework with the guided CLI wizard or quick-start script."
+                },
+                {
+                    "title": "Configuration",
+                    "slug": "configuration",
+                    "description": "Configure your company, stores, branding, and modules with the web wizard or terminal command."
+                },
+                {
+                    "title": "Authentication & Settings",
+                    "slug": "authentication",
+                    "description": "Log in, reset your password, and manage your profile, password, and appearance settings."
+                },
+                {
+                    "title": "Seeders",
+                    "slug": "seeders",
+                    "description": "What data gets seeded by default and how to run individual seeders."
+                }
             ]
         },
         {
-            "title": "Platform",
-            "slug": "platform",
+            "title": "CRM",
+            "slug": "crm",
+            "icon": "users",
+            "description": "Manage contacts, organisations, venues, activities, and calendars.",
             "pages": [
-                { "title": "Dashboard", "slug": "dashboard" },
-                { "title": "Admin Panel", "slug": "admin-panel" },
-                { "title": "API Console", "slug": "api-console" },
-                { "title": "Members", "slug": "members" },
-                { "title": "Products", "slug": "products" },
-                { "title": "Product Groups", "slug": "product-groups" },
-                { "title": "Stock Levels", "slug": "stock-levels" },
-                { "title": "Opportunities", "slug": "opportunities" },
-                { "title": "Equipment Availability", "slug": "availability" },
-                { "title": "Shortages", "slug": "shortages" },
-                { "title": "Activities", "slug": "activities" },
-                { "title": "Calendar", "slug": "calendar" },
-                { "title": "Job Planner", "slug": "planner" },
-                { "title": "Custom Fields", "slug": "custom-fields" },
-                { "title": "Lists", "slug": "lists" },
-                { "title": "Tax Classes", "slug": "tax-classes" },
-                { "title": "Countries", "slug": "countries" },
-                { "title": "Rate Definitions", "slug": "rate-definitions" },
-                { "title": "Stock Transactions", "slug": "stock-transactions" },
-                { "title": "Accessories", "slug": "accessories" },
-                { "title": "Multi-Currency & Tax", "slug": "multi-currency" }
+                {
+                    "title": "Members",
+                    "slug": "members",
+                    "description": "Manage contacts, organisations, venues, and user accounts in the CRM.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Activities",
+                    "slug": "activities",
+                    "description": "Track tasks, calls, meetings, emails, and follow-ups against members and opportunities. Activity types are user-configurable.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Calendar",
+                    "slug": "calendar",
+                    "description": "Visualise scheduled activities across day, week, and month views with owner filtering and secure iCal feeds.",
+                    "urlSection": "platform"
+                }
             ]
         },
         {
-            "title": "API",
-            "slug": "api",
+            "title": "Job Planning",
+            "slug": "job-planning",
+            "icon": "calendar-days",
+            "description": "Quotes, orders, availability, shortages, and the job planner timeline.",
             "pages": [
-                { "title": "API Overview", "slug": "overview" },
-                { "title": "Authentication", "slug": "authentication" },
-                { "title": "Members", "slug": "members" },
-                { "title": "Products", "slug": "products" },
-                { "title": "Stock Levels", "slug": "stock-levels" },
-                { "title": "Stock Transactions", "slug": "stock-transactions" },
-                { "title": "Availability", "slug": "availability" },
-                { "title": "Activities", "slug": "activities" },
-                { "title": "Opportunities", "slug": "opportunities" },
-                { "title": "Shortages", "slug": "shortages" },
-                { "title": "Containers", "slug": "containers" },
-                { "title": "Calendar Feeds", "slug": "calendar-feeds" },
-                { "title": "Product Groups", "slug": "product-groups" },
-                { "title": "Custom Views", "slug": "custom-views" },
-                { "title": "Currencies", "slug": "currencies" },
-                { "title": "Exchange Rates", "slug": "exchange-rates" },
-                { "title": "Attachments", "slug": "attachments" },
-                { "title": "Webhooks", "slug": "webhooks" },
-                { "title": "Usage & Metering", "slug": "usage" },
-                { "title": "Rate Definitions", "slug": "rate-definitions" },
-                { "title": "Tax Classes", "slug": "tax-classes" },
-                { "title": "Lists", "slug": "lists" },
-                { "title": "Custom Fields", "slug": "custom-fields" },
-                { "title": "Accessories", "slug": "accessories" }
+                {
+                    "title": "Opportunities",
+                    "slug": "opportunities",
+                    "description": "Quote, order, and fulfil rental jobs \u2014 the opportunity lifecycle, line-item editor, quote versioning, and state transitions.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Equipment Availability",
+                    "slug": "availability",
+                    "description": "Read equipment availability over time with a by-product-group grid, multi-store aggregation, and a per-product bookings drill-down with opportunity and asset rows.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Shortages",
+                    "slug": "shortages",
+                    "description": "Detect inventory shortfalls on an opportunity, gate conversion with Block/Warn/Allow, and resolve shortages through six resolvers.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Job Planner",
+                    "slug": "planner",
+                    "description": "An overlap timeline of quotes and orders across a configurable planning window, with lane-packed job cards coloured by workflow status and Delivery / In-Use / Collection phase bands.",
+                    "urlSection": "platform"
+                }
+            ]
+        },
+        {
+            "title": "Resources",
+            "slug": "resources",
+            "icon": "boxes",
+            "description": "Product catalogue, stock levels, transactions, and accessories.",
+            "pages": [
+                {
+                    "title": "Products",
+                    "slug": "products",
+                    "description": "Manage the product catalogue including rental, sale, and service products.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Product Groups",
+                    "slug": "product-groups",
+                    "description": "Organise your product catalogue into a hierarchy of groups and subgroups with icons and custom fields.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Stock Levels",
+                    "slug": "stock-levels",
+                    "description": "Track individual stock items, quantities, and locations across stores.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Stock Transactions",
+                    "slug": "stock-transactions",
+                    "description": "The append-only ledger that records every stock movement and keeps quantity held accurate.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Accessories",
+                    "slug": "accessories",
+                    "description": "Link related products together so accessories are suggested and tracked alongside a parent product.",
+                    "urlSection": "platform"
+                }
+            ]
+        },
+        {
+            "title": "Finance",
+            "slug": "finance",
+            "icon": "banknotes",
+            "description": "Rate definitions, tax classes, multi-currency, and countries.",
+            "pages": [
+                {
+                    "title": "Rate Definitions",
+                    "slug": "rate-definitions",
+                    "description": "Configure how products are priced over time using composable rate definitions, calculation strategies, and modifiers.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Tax Classes",
+                    "slug": "tax-classes",
+                    "description": "Manage product and organisation tax classifications.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Multi-Currency & Tax",
+                    "slug": "multi-currency",
+                    "description": "Currencies, exchange rates, and the tax resolution engine \u2014 the financial foundation Signals ships in Phase 2.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Countries",
+                    "slug": "countries",
+                    "description": "Browse and manage which countries are active for use across the platform.",
+                    "urlSection": "platform"
+                }
+            ]
+        },
+        {
+            "title": "Operations",
+            "slug": "operations",
+            "icon": "cog",
+            "description": "Dashboard, admin panel, API console, custom fields, and lists.",
+            "pages": [
+                {
+                    "title": "Dashboard",
+                    "slug": "dashboard",
+                    "description": "Your operational overview with KPIs, recent opportunities, and quick actions.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Admin Panel",
+                    "slug": "admin-panel",
+                    "description": "Manage company settings, users, security, email, notifications, system health, and infrastructure.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "API Console",
+                    "slug": "api-console",
+                    "description": "Monitor API activity, explore endpoints interactively, review weighted usage, and manage outbound and inbound webhooks.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Custom Fields",
+                    "slug": "custom-fields",
+                    "description": "Add custom data fields to any entity using the EAV field system.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Lists",
+                    "slug": "lists",
+                    "description": "Manage configurable dropdown lists used across the platform.",
+                    "urlSection": "platform"
+                }
             ]
         },
         {
             "title": "Development",
             "slug": "development",
+            "icon": "wrench",
+            "description": "Build on Signals with components, plugins, workflows, and the REST API reference.",
             "pages": [
-                { "title": "Getting Started", "slug": "getting-started" },
-                { "title": "Component Library", "slug": "library", "type": "blade", "view": "docs.components.library" }
+                {
+                    "title": "Getting Started",
+                    "slug": "getting-started",
+                    "description": "Learn how to use the Signals component system when building views, plugins, and custom interfaces.",
+                    "urlSection": "development"
+                },
+                {
+                    "title": "Component Library",
+                    "slug": "library",
+                    "type": "blade",
+                    "view": "docs.components.library",
+                    "description": "Browse the Signals Blade component reference with live examples.",
+                    "urlSection": "development"
+                },
+                {
+                    "title": "Workflows",
+                    "slug": "workflows",
+                    "urlSection": "development",
+                    "description": "No-code automation that chains triggers, steps, and conditions to customise rental business processes without writing code."
+                },
+                {
+                    "title": "Plugin SDK",
+                    "slug": "plugin-sdk",
+                    "urlSection": "development",
+                    "description": "Composer-based plugins with a YAML manifest and mediated SDK access so extensions register routes, fields, and hooks without touching core code."
+                }
+            ],
+            "subSections": [
+                {
+                    "label": "API Reference",
+                    "slug": "api-reference",
+                    "groups": [
+                        {
+                            "label": "Getting Started",
+                            "pages": [
+                                {
+                                    "title": "API Overview",
+                                    "slug": "overview",
+                                    "description": "Signals provides a full REST API with auto-generated OpenAPI documentation and token authentication.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Authentication",
+                                    "slug": "authentication",
+                                    "description": "How to authenticate with the Signals API using bearer tokens.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Core Resources",
+                            "pages": [
+                                {
+                                    "title": "Members",
+                                    "slug": "members",
+                                    "description": "CRUD endpoints for managing members \u2014 contacts, organisations, venues, and users.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Products",
+                                    "slug": "products",
+                                    "description": "CRUD endpoints for managing products in the catalogue.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Stock Levels",
+                                    "slug": "stock-levels",
+                                    "description": "Endpoints for reading and managing stock levels across stores.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Stock Transactions",
+                                    "slug": "stock-transactions",
+                                    "description": "Record stock movements against stock levels \u2014 purchases, sales, write-offs, and other inventory changes.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Product Groups",
+                                    "slug": "product-groups",
+                                    "description": "Endpoints for managing the product catalogue hierarchy.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Accessories",
+                                    "slug": "accessories",
+                                    "description": "Link and manage accessory relationships between products.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Rental",
+                            "pages": [
+                                {
+                                    "title": "Opportunities",
+                                    "slug": "opportunities",
+                                    "description": "Create, update, and query rental quotes and orders through the opportunities API.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Availability",
+                                    "slug": "availability",
+                                    "description": "Read-only availability queries for the rental availability engine.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Shortages",
+                                    "slug": "shortages",
+                                    "description": "Detect and resolve inventory shortfalls on opportunities.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Containers",
+                                    "slug": "containers",
+                                    "description": "List containers and pack or unpack serialised assets into dispatchable units.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Calendar Feeds",
+                                    "slug": "calendar-feeds",
+                                    "description": "Secure iCalendar feeds for subscribing to scheduled activities.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Pricing & Tax",
+                            "pages": [
+                                {
+                                    "title": "Rate Definitions",
+                                    "slug": "rate-definitions",
+                                    "description": "Manage composable rate definitions and pricing strategies.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Tax Classes",
+                                    "slug": "tax-classes",
+                                    "description": "REST endpoints for product tax classes, organisation tax classes, tax rates, and tax rules.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Currencies",
+                                    "slug": "currencies",
+                                    "description": "Manage ISO 4217 currencies and their platform configuration.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Exchange Rates",
+                                    "slug": "exchange-rates",
+                                    "description": "Read and manage effective-dated exchange rates between currencies.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Platform",
+                            "pages": [
+                                {
+                                    "title": "Webhooks",
+                                    "slug": "webhooks",
+                                    "description": "Subscribe to real-time event notifications delivered to your server via HTTPS.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Usage & Metering",
+                                    "slug": "usage",
+                                    "description": "Read aggregated API and webhook usage, request logs, and endpoint metering metadata.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Custom Views",
+                                    "slug": "custom-views",
+                                    "description": "Manage saved list configurations with columns, filters, and sort order.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Custom Fields",
+                                    "slug": "custom-fields",
+                                    "description": "REST endpoints for managing custom field definitions and the groups that organise them.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Lists",
+                                    "slug": "lists",
+                                    "description": "REST endpoints for configurable list names and their values, with an RMS-compatible alias.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Attachments",
+                                    "slug": "attachments",
+                                    "description": "Upload, list, and download file attachments for any attachable resource.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Activities",
+                                    "slug": "activities",
+                                    "description": "Create and query tasks, calls, meetings, and other activities via the API.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        }
+                    ]
+                }
             ]
         }
     ]

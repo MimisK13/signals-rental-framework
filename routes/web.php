@@ -404,6 +404,8 @@ Route::prefix('docs')->group(function () {
     Route::get('changelog', [DocsController::class, 'changelog'])->name('docs.changelog');
     Route::get('sitemap.xml', [DocsController::class, 'sitemap'])->name('docs.sitemap');
     Route::get('robots.txt', [DocsController::class, 'robots'])->name('docs.robots');
+    Route::redirect('getting-started/sso', '/docs/getting-started/authentication', 301);
+    Route::redirect('getting-started/magic-link', '/docs/getting-started/authentication', 301);
     Route::get('images/{path}', [DocsController::class, 'image'])
         ->name('docs.image')
         ->where('path', '.+');
