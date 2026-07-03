@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
+use App\Http\Controllers\Api\V1\PriceCategoryController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;

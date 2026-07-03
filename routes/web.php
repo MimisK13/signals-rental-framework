@@ -3,6 +3,7 @@
 use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\Web\CommunicationUnsubscribeController;
 use App\Http\Controllers\Web\DocsController;
+use App\Http\Controllers\Web\OpportunityLineItemController;
 use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\PublicDocumentController;
 use App\Http\Controllers\Web\SearchController;
