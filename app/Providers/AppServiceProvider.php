@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Contracts\Availability\AvailabilityDataPresence;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\Availability\AvailabilityStrategyContract;
+use App\Contracts\Documents\DocumentRenderer;
+use App\Contracts\Documents\PdfDriver;
 use App\Contracts\Tax\TaxResolver;
 use App\Contracts\Tax\VatNumberValidator;
 use App\Guards\Opportunities\Contracts\ApprovalGate;
@@ -34,8 +36,13 @@ use App\Services\ColumnRegistryResolver;
 use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
+use App\Services\Documents\DocumentBrandingResolver;
+use App\Services\Documents\DocumentRenderPipeline;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\OpportunityDataResolver;
+use App\Services\Documents\PdfDriverManager;
+use App\Services\Documents\SandboxedBladeCompiler;
+use App\Services\Documents\SandboxedBladeRenderer;
 use App\Services\NotificationRegistry;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
@@ -90,6 +97,7 @@ use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +126,25 @@ class AppServiceProvider extends ServiceProvider
 
             return $registry;
         });
+        $this->app->singleton(SandboxedBladeCompiler::class, function ($app): SandboxedBladeCompiler {
+            $cachePath = (string) config('documents.sandbox_cache_path');
+
+            if (! is_dir($cachePath)) {
+                mkdir($cachePath, 0755, true);
+            }
+
+            return new SandboxedBladeCompiler(
+                $app->make(Filesystem::class),
+                $cachePath,
+                base_path(),
+            );
+        });
+        $this->app->singleton(SandboxedBladeRenderer::class);
+        $this->app->singleton(DocumentBrandingResolver::class);
+        $this->app->singleton(PdfDriverManager::class);
+        $this->app->bind(PdfDriver::class, fn ($app): PdfDriver => $app->make(PdfDriverManager::class)->driver());
+        $this->app->singleton(DocumentRenderPipeline::class);
+        $this->app->bind(DocumentRenderer::class, DocumentRenderPipeline::class);
         $this->app->singleton(TaxCalculator::class);
         $this->app->scoped(TaxResolutionContextHolder::class);
         $this->app->singleton(TaxZoneRuleResolver::class);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasStoreScoping;
 use Database\Factories\DocumentTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class DocumentTemplate extends Model
 {
     /** @use HasFactory<DocumentTemplateFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasStoreScoping, SoftDeletes;
 
     /** @var list<string> */
     protected $fillable = [
@@ -86,5 +87,16 @@ class DocumentTemplate extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Registry key for the template's data resolver (distinct from document_type).
+     */
+    public function resolverType(): string
+    {
+        return match ($this->model_type) {
+            Opportunity::class => 'opportunity',
+            default => throw new \InvalidArgumentException("Unsupported document template model type [{$this->model_type}]."),
+        };
     }
 }

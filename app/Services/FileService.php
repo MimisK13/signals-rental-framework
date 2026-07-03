@@ -117,6 +117,35 @@ class FileService
     }
 
     /**
+     * Store binary content using UUID-based paths.
+     */
+    public function storeBinary(
+        string $content,
+        string $directory,
+        string $extension,
+        ?Model $entity = null,
+    ): string {
+        $uuid = (string) Str::uuid();
+        $disk = $this->disk();
+
+        if ($entity !== null) {
+            $entityType = strtolower(class_basename($entity));
+            $entityId = $entity->getKey();
+            $path = "{$directory}/{$entityType}/{$entityId}/{$uuid}.{$extension}";
+        } else {
+            $path = "{$directory}/{$uuid}.{$extension}";
+        }
+
+        $stored = Storage::disk($disk)->put($path, $content);
+
+        if (! $stored) {
+            throw new \RuntimeException("Failed to store file at path [{$path}] on disk [{$disk}].");
+        }
+
+        return $path;
+    }
+
+    /**
      * Generate a signed temporary URL for a file path.
      */
     public function signedUrl(string $path, int $expiry = 60): string

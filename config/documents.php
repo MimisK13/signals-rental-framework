@@ -1,5 +1,8 @@
 <?php
 
+use App\Services\Documents\Drivers\BrowsershotDriver;
+use App\Services\Documents\Drivers\DompdfDriver;
+
 return [
 
     /*
@@ -17,6 +20,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | PDF Drivers
+    |--------------------------------------------------------------------------
+    */
+
+    'drivers' => [
+        'dompdf' => DompdfDriver::class,
+        'browsershot' => BrowsershotDriver::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sandboxed Blade Cache
+    |--------------------------------------------------------------------------
+    |
+    | Dedicated cache path for compiled document templates, isolated from the
+    | main application view cache for security and invalidation control.
+    |
+    */
+
+    'sandbox_cache_path' => storage_path('framework/views/documents'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Page Layout
     |--------------------------------------------------------------------------
     |
@@ -29,6 +55,16 @@ return [
         'page_size' => 'A4',
         'page_orientation' => 'portrait',
         'locale' => 'en',
+        'page' => [
+            'page_size' => 'A4',
+            'page_orientation' => 'portrait',
+            'margins' => ['top' => 10, 'right' => 10, 'bottom' => 10, 'left' => 10],
+        ],
+        'branding' => [
+            'primary_colour' => '#1f2937',
+            'secondary_colour' => '#6b7280',
+            'font_family' => 'Inter, system-ui, sans-serif',
+        ],
     ],
 
     /*

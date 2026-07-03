@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DocumentStatus;
+use App\Models\Traits\HasStoreScoping;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Document extends Model
 {
     /** @use HasFactory<DocumentFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasStoreScoping, SoftDeletes;
 
     /** @var list<string> */
     protected $fillable = [
