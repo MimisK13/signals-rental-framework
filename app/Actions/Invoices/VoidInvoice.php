@@ -34,11 +34,27 @@ class VoidInvoice
 
         $voidedAt = CarbonImmutable::now('UTC');
 
-        $this->commitVerbs(function () use ($invoice, $voidedAt, $status): void {
+        $invoice->loadMissing('items');
+
+        $quantityReleases = [];
+
+        foreach ($invoice->items as $item) {
+            if ($item->opportunity_item_id === null || $item->invoiced_quantity === null) {
+                continue;
+            }
+
+            $quantityReleases[] = [
+                'opportunity_item_id' => (int) $item->opportunity_item_id,
+                'quantity' => (string) $item->invoiced_quantity,
+            ];
+        }
+
+        $this->commitVerbs(function () use ($invoice, $voidedAt, $status, $quantityReleases): void {
             InvoiceVoided::fire(
                 state_id: (int) $invoice->state_id,
                 status: $status,
                 voided_at: $voidedAt->toIso8601String(),
+                quantity_releases: $quantityReleases,
             );
         });
 

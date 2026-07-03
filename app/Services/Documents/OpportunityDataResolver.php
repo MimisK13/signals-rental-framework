@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\ProductTaxClass;
 use App\Models\Store;
 use App\Services\FieldBuilder;
+use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\SchemaBuilder;
 use App\Services\Tax\DocumentTaxBreakdown;
 use App\Services\Tax\TaxPointDateResolver;
@@ -38,6 +39,7 @@ class OpportunityDataResolver implements DocumentDataResolver
         private readonly DocumentTaxBreakdown $documentTaxBreakdown,
         private readonly TaxResolutionContextHolder $taxResolutionContextHolder,
         private readonly TaxPointDateResolver $taxPointDateResolver,
+        private readonly QuantityMinorArithmetic $quantityMinor,
     ) {}
 
     public function type(): string
@@ -237,7 +239,11 @@ class OpportunityDataResolver implements DocumentDataResolver
                 && $item->item_type !== OpportunityItemType::Text)
             ->map(function (OpportunityItem $item) use ($currencyCode): array {
                 $product = $item->item instanceof Product ? $item->item : null;
-                $grossMinor = (int) round((float) $item->quantity) * (int) $item->unit_price;
+                $grossMinor = $this->quantityMinor->multiplyMinorByQuantity(
+                    (int) $item->unit_price,
+                    (string) $item->quantity,
+                    $currencyCode,
+                );
                 $discountMinor = max(0, $grossMinor - (int) $item->total);
 
                 return [
@@ -333,7 +339,7 @@ class OpportunityDataResolver implements DocumentDataResolver
                 lineKey: 'item:'.$item->id,
                 netMinor: (int) $item->total,
                 productTaxClassId: $product?->tax_class_id,
-                quantity: max(0, (int) round((float) $item->quantity)),
+                quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
             );
 
             foreach ($item->itemSurcharges as $itemSurcharge) {
@@ -345,7 +351,7 @@ class OpportunityDataResolver implements DocumentDataResolver
                     lineKey: 'item:'.$item->id.':surcharge:'.$itemSurcharge->surcharge_id,
                     netMinor: (int) $itemSurcharge->amount,
                     productTaxClassId: $itemSurcharge->product_tax_class_id,
-                    quantity: max(0, (int) round((float) $item->quantity)),
+                    quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
                 );
             }
         }
@@ -359,7 +365,7 @@ class OpportunityDataResolver implements DocumentDataResolver
                 lineKey: 'cost:'.$cost->id,
                 netMinor: (int) $cost->amount,
                 productTaxClassId: $defaultProductTaxClassId,
-                quantity: max(0, (int) round((float) $cost->quantity)),
+                quantity: bccomp((string) $cost->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $cost->quantity, '0', 2),
             );
         }
 

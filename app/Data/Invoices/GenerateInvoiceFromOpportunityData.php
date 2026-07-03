@@ -16,6 +16,14 @@ class GenerateInvoiceFromOpportunityData extends Data
         public ?string $reference = null,
         /** @var array<int, string>|null */
         public ?array $tag_list = null,
+        /**
+         * Optional per-line partial quantities. Each entry selects an opportunity
+         * item and the quantity to invoice on this checkout. Omit to invoice all
+         * remaining quantities.
+         *
+         * @var list<array{opportunity_item_id: int, quantity: string}>|null
+         */
+        public ?array $lines = null,
     ) {}
 
     /**
@@ -30,6 +38,9 @@ class GenerateInvoiceFromOpportunityData extends Data
             'reference' => ['nullable', 'string', 'max:255'],
             'tag_list' => ['nullable', 'array'],
             'tag_list.*' => ['string', 'max:100'],
+            'lines' => ['nullable', 'array'],
+            'lines.*.opportunity_item_id' => ['required', 'integer'],
+            'lines.*.quantity' => ['required', 'numeric', 'min:0.01'],
         ];
     }
 }

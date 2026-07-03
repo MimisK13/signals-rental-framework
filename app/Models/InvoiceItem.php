@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $product_id
  * @property string $description
  * @property string $quantity
+ * @property string|null $invoiced_quantity
  * @property int $unit_price
  * @property int $discount
  * @property int $tax
@@ -47,6 +48,7 @@ class InvoiceItem extends Model
         'product_id',
         'description',
         'quantity',
+        'invoiced_quantity',
         'unit_price',
         'discount',
         'tax',
@@ -66,6 +68,7 @@ class InvoiceItem extends Model
     {
         return [
             'quantity' => 'decimal:2',
+            'invoiced_quantity' => 'decimal:2',
             'unit_price' => 'integer',
             'discount' => 'integer',
             'tax' => 'integer',

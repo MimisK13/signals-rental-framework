@@ -10,6 +10,7 @@ use App\Data\Invoices\InvoiceData;
 use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Services\CurrencyService;
 use App\Services\CustomFieldCopier;
 use App\Services\Invoices\InvoiceNumberGenerator;
@@ -17,6 +18,7 @@ use App\Services\Invoices\InvoiceSourceStateRule;
 use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\Invoices\InvoiceTotalsCalculator;
 use App\Services\Invoices\OpportunityInvoiceSnapshotter;
+use App\Services\Invoices\PartialQuantityInvoiceCalculator;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\Invoices\InvoiceGenerated;
 use Carbon\CarbonImmutable;
@@ -25,6 +27,12 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Checkout: generate an invoice from an opportunity with a frozen tax snapshot.
+ *
+ * Supports progressive partial-quantity invoicing (P36). Multiple standard invoices
+ * per opportunity are permitted. Idempotency guard redesign: the former
+ * one-invoice-per-opportunity lock is removed for standard type; concurrent
+ * over-invoice races are prevented by lockForUpdate on opportunity items inside
+ * the transaction while cumulative invoiced_quantity is validated.
  */
 class GenerateInvoiceFromOpportunity
 {
@@ -51,19 +59,19 @@ class GenerateInvoiceFromOpportunity
         $generatedAt = CarbonImmutable::now('UTC');
 
         $invoiceId = $this->commitVerbs(function () use ($data, $type, $opportunity, $generatedAt): int {
-            $existing = Invoice::query()
+            $lockedItems = OpportunityItem::query()
                 ->where('opportunity_id', $opportunity->id)
-                ->where('type', $type->value)
+                ->where(function ($query) use ($opportunity): void {
+                    $query->whereNull('version_id')
+                        ->orWhere('version_id', $opportunity->active_version_id);
+                })
                 ->lockForUpdate()
-                ->first();
-
-            if ($existing !== null) {
-                return (int) $existing->id;
-            }
+                ->get()
+                ->keyBy('id');
 
             $snapshot = app(OpportunityInvoiceSnapshotter::class)->snapshot($opportunity);
 
-            $totals = app(InvoiceTotalsCalculator::class)->calculate(
+            $fullTotals = app(InvoiceTotalsCalculator::class)->calculate(
                 $opportunity,
                 $snapshot['lines'],
                 $snapshot['tax_lines'],
@@ -71,12 +79,24 @@ class GenerateInvoiceFromOpportunity
                 $generatedAt,
             );
 
-            if ($totals['total'] !== (int) $opportunity->charge_including_tax_total) {
+            $partialTotals = app(PartialQuantityInvoiceCalculator::class)->calculate(
+                fullLines: $fullTotals['lines'],
+                fullTaxRows: $fullTotals['tax_rows'],
+                fullSubtotal: $fullTotals['subtotal'],
+                fullTaxTotal: $fullTotals['tax_total'],
+                selections: $data->lines,
+                lockedItems: $lockedItems,
+            );
+
+            $isFullCheckout = $data->lines === null
+                && $partialTotals['mark_opportunity_invoiced'];
+
+            if ($isFullCheckout && $partialTotals['total'] !== (int) $opportunity->charge_including_tax_total) {
                 throw ValidationException::withMessages([
                     'opportunity_id' => [
                         sprintf(
                             'Invoice total (%d) does not match opportunity charge_including_tax_total (%d).',
-                            $totals['total'],
+                            $partialTotals['total'],
                             (int) $opportunity->charge_including_tax_total,
                         ),
                     ],
@@ -92,7 +112,7 @@ class GenerateInvoiceFromOpportunity
 
                     return $this->lineToPayload($line, $lineId);
                 },
-                $totals['lines'],
+                $partialTotals['lines'],
             );
 
             $taxPayloads = array_map(
@@ -101,7 +121,7 @@ class GenerateInvoiceFromOpportunity
 
                     return $this->taxRowToPayload($row, $taxId);
                 },
-                $totals['tax_rows'],
+                $partialTotals['tax_rows'],
             );
 
             $status = app(InvoiceStatusRegistry::class)->defaultStatus();
@@ -125,16 +145,17 @@ class GenerateInvoiceFromOpportunity
                 currency_code: $currency,
                 exchange_rate: $this->resolveExchangeRate($currency, $opportunity),
                 prices_include_tax: (bool) $opportunity->prices_include_tax,
-                subtotal: $totals['subtotal'],
-                tax_total: $totals['tax_total'],
-                total: $totals['total'],
+                subtotal: $partialTotals['subtotal'],
+                tax_total: $partialTotals['tax_total'],
+                total: $partialTotals['total'],
                 notes: $data->notes,
                 reference: $data->reference ?? $opportunity->reference,
                 tag_list: array_values($data->tag_list ?? []),
                 generated_at: $generatedAt->toIso8601String(),
                 line_items: $linePayloads,
                 tax_rows: $taxPayloads,
-                mark_opportunity_invoiced: true,
+                mark_opportunity_invoiced: $partialTotals['mark_opportunity_invoiced'],
+                quantity_updates: $partialTotals['quantity_updates'],
             );
 
             return $invoiceId;
@@ -158,6 +179,7 @@ class GenerateInvoiceFromOpportunity
             'source_type' => $line->source_type,
             'description' => $line->description,
             'quantity' => $line->quantity,
+            'invoiced_quantity' => $line->invoiced_quantity ?? $line->quantity,
             'unit_price' => $line->unit_price,
             'discount' => $line->discount,
             'net_total' => $line->net_total,

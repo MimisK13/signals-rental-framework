@@ -58,6 +58,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $ends_at
  * @property string $dispatched_quantity
  * @property string $returned_quantity
+ * @property string $invoiced_quantity
  * @property int|null $dispatch_store_id
  * @property int|null $return_store_id
  * @property bool $is_optional
@@ -110,6 +111,7 @@ class OpportunityItem extends Model implements HasSchema
         'ends_at',
         'dispatched_quantity',
         'returned_quantity',
+        'invoiced_quantity',
         'dispatch_store_id',
         'return_store_id',
         'is_optional',
@@ -141,6 +143,7 @@ class OpportunityItem extends Model implements HasSchema
             'ends_at' => 'datetime',
             'dispatched_quantity' => 'decimal:2',
             'returned_quantity' => 'decimal:2',
+            'invoiced_quantity' => 'decimal:2',
             'dispatch_store_id' => 'integer',
             'return_store_id' => 'integer',
             'is_optional' => 'boolean',
@@ -161,6 +164,7 @@ class OpportunityItem extends Model implements HasSchema
         $builder->string('name')->label('Name')->required()->searchable()->filterable()->sortable();
         $builder->text('description')->label('Description')->searchable();
         $builder->decimal('quantity')->label('Quantity')->filterable()->sortable();
+        $builder->decimal('invoiced_quantity')->label('Invoiced Quantity')->filterable()->sortable();
         $builder->integer('unit_price')->label('Unit Price')->sortable();
         $builder->enum('charge_period')->label('Charge Period')->filterable()->groupable();
         $builder->integer('total')->label('Total')->sortable();
@@ -256,6 +260,19 @@ class OpportunityItem extends Model implements HasSchema
     public function returnStore(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'return_store_id');
+    }
+
+    /** Remaining quantity available to invoice on this line. */
+    public function remainingInvoiceQuantity(): string
+    {
+        $remaining = bcsub((string) $this->quantity, (string) $this->invoiced_quantity, 2);
+
+        return bccomp($remaining, '0', 2) < 0 ? '0.00' : $remaining;
+    }
+
+    public function isFullyInvoiced(): bool
+    {
+        return bccomp($this->remainingInvoiceQuantity(), '0', 2) <= 0;
     }
 
     /**

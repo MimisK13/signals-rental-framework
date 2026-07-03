@@ -580,6 +580,52 @@ class Opportunity extends Model implements HasSchema
     }
 
     /**
+     * Whether every priceable, non-optional line has been fully quantity-invoiced.
+     * The persisted {@see $invoiced} flag is set only when a closing invoice includes
+     * costs (see P36 partial-quantity rules); this accessor reflects live item state.
+     */
+    public function isFullyQuantityInvoiced(): bool
+    {
+        $items = $this->relationLoaded('items')
+            ? $this->items
+            : $this->items()->get();
+
+        $invoiceable = $items->filter(
+            fn (OpportunityItem $item): bool => ! $item->is_optional && $item->item_type->isPriceable(),
+        );
+
+        if ($invoiceable->isEmpty()) {
+            return false;
+        }
+
+        return $invoiceable->every(fn (OpportunityItem $item): bool => $item->isFullyInvoiced());
+    }
+
+    /**
+     * Per-line remaining invoice quantities keyed by opportunity item id.
+     *
+     * @return array<int, string>
+     */
+    public function remainingInvoiceQuantitiesByItem(): array
+    {
+        $items = $this->relationLoaded('items')
+            ? $this->items
+            : $this->items()->get();
+
+        $remaining = [];
+
+        foreach ($items as $item) {
+            if ($item->is_optional || ! $item->item_type->isPriceable()) {
+                continue;
+            }
+
+            $remaining[(int) $item->id] = $item->remainingInvoiceQuantity();
+        }
+
+        return $remaining;
+    }
+
+    /**
      * Format money columns in the opportunity's own snapshotted currency, falling
      * back to the company base currency when none is set.
      */

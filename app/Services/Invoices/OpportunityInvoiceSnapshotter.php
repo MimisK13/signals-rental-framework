@@ -11,6 +11,7 @@ use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
+use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\TaxCalculator;
 use Illuminate\Support\Collection;
 
@@ -22,6 +23,7 @@ class OpportunityInvoiceSnapshotter
 {
     public function __construct(
         private readonly TaxCalculator $taxCalculator,
+        private readonly QuantityMinorArithmetic $quantityMinor,
     ) {}
 
     /**
@@ -78,7 +80,7 @@ class OpportunityInvoiceSnapshotter
                 lineKey: $lineKey,
                 netMinor: $lineNet,
                 productTaxClassId: $product?->tax_class_id,
-                quantity: max(0, (int) round((float) $item->quantity)),
+                quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
             );
 
             $displayLines[] = $this->buildItemLine(
@@ -87,6 +89,7 @@ class OpportunityInvoiceSnapshotter
                 product: $product,
                 netTotal: $lineNet,
                 sortOrder: $sortOrder++,
+                currency: $currency,
             );
 
             foreach ($item->itemSurcharges as $itemSurcharge) {
@@ -101,7 +104,7 @@ class OpportunityInvoiceSnapshotter
                     lineKey: $surchargeKey,
                     netMinor: $surchargeNet,
                     productTaxClassId: $itemSurcharge->product_tax_class_id,
-                    quantity: max(0, (int) round((float) $item->quantity)),
+                    quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
                 );
 
                 $displayLines[] = new FrozenInvoiceLineData(
@@ -138,7 +141,7 @@ class OpportunityInvoiceSnapshotter
                 lineKey: $costKey,
                 netMinor: $costNet,
                 productTaxClassId: $defaultProductTaxClassId,
-                quantity: max(0, (int) round((float) $cost->quantity)),
+                quantity: bccomp((string) $cost->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $cost->quantity, '0', 2),
             );
 
             $displayLines[] = new FrozenInvoiceLineData(
@@ -189,9 +192,13 @@ class OpportunityInvoiceSnapshotter
         ?Product $product,
         int $netTotal,
         int $sortOrder,
+        string $currency,
     ): FrozenInvoiceLineData {
-        $quantityUnits = max(0, (int) round((float) $item->quantity));
-        $grossBeforeDiscount = (int) $item->unit_price * max(1, $quantityUnits);
+        $grossBeforeDiscount = $this->quantityMinor->multiplyMinorByQuantity(
+            (int) $item->unit_price,
+            (string) $item->quantity,
+            $currency,
+        );
         $discount = max(0, $grossBeforeDiscount - $netTotal);
 
         return new FrozenInvoiceLineData(
@@ -234,8 +241,12 @@ class OpportunityInvoiceSnapshotter
 
     private function costNet(OpportunityCost $cost, Opportunity $opportunity, ?int $defaultProductTaxClassId): int
     {
-        $quantityUnits = max(0, (int) round((float) $cost->quantity));
-        $lineTotal = $cost->amount * $quantityUnits;
+        $currency = $this->currencyFor($opportunity);
+        $lineTotal = $this->quantityMinor->multiplyMinorByQuantity(
+            (int) $cost->amount,
+            (string) $cost->quantity,
+            $currency,
+        );
 
         if (! $opportunity->prices_include_tax) {
             return $lineTotal;

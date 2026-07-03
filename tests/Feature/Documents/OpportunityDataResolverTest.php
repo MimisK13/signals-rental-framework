@@ -108,6 +108,23 @@ describe('OpportunityDataResolver output', function () {
             ->and($data['items'][0]['transaction_type_label'])->toBe('Sale');
     });
 
+    it('derives line discount from fractional quantity gross without rounding quantity up', function () {
+        $opportunity = documentResolverOpportunity();
+        $item = $opportunity->items->first();
+        $item->update([
+            'quantity' => '1.5',
+            'unit_price' => 10_000,
+            'total' => 15_000,
+        ]);
+
+        $resolver = app(OpportunityDataResolver::class);
+        $data = $resolver->resolve($resolver->loadSource($opportunity->id));
+
+        expect($data['items'][0]['quantity'])->toBe('1.50')
+            ->and($data['items'][0]['discount'])->toBe('0.00')
+            ->and($data['items'][0]['total'])->toBe('150.00');
+    });
+
     it('includes a tax summary with grouped decimal-string totals', function () {
         $opportunity = documentResolverOpportunity();
         $resolver = app(OpportunityDataResolver::class);

@@ -27,6 +27,8 @@ class FrozenInvoiceLineData extends Data
         public ?int $surcharge_id = null,
         public ?int $section_item_id = null,
         public int $sort_order = 0,
+        /** Quantity invoiced on this checkout (partial-quantity P36). */
+        public ?string $invoiced_quantity = null,
     ) {}
 
     public function grossTotal(): int

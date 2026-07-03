@@ -64,20 +64,17 @@ describe('GenerateInvoiceFromOpportunity', function () {
             ->and((bool) $opportunity->fresh()->invoiced)->toBeTrue();
     });
 
-    it('is idempotent on double submit for the same opportunity and type', function () {
+    it('rejects duplicate full checkout when the opportunity is already fully invoiced', function () {
         $opportunity = giCreateOrderOpportunity();
 
         $first = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
             'opportunity_id' => $opportunity->id,
         ]));
 
-        $second = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
             'opportunity_id' => $opportunity->id,
         ]));
-
-        expect($second->id)->toBe($first->id)
-            ->and(Invoice::query()->where('opportunity_id', $opportunity->id)->count())->toBe(1);
-    });
+    })->throws(ValidationException::class, 'No remaining quantity');
 
     it('rejects standard invoice from a quotation per default source-state rules', function () {
         $zones = giWireZoneTaxInfrastructure();

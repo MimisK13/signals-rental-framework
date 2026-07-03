@@ -19,6 +19,7 @@ use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\DiscountSourceRegistry;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
 use App\Services\Pricing\OpportunitySurchargeApplicator;
+use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\Pricing\RoundingStrategy;
 use App\Services\RateEngine\RateCalculator;
 use App\Services\RateEngine\RateResolver;
@@ -49,9 +50,9 @@ use Illuminate\Support\Collection;
  *   2. derive the subtotal — for a rate-backed line the {@see RateCalculator}
  *      produces the duration-aware subtotal (via the rate definition's strategy,
  *      base period and modifiers); for a manual/no-rate line the subtotal is
- *      `unit_price * round(quantity) * chargeable_days` for hire-based transaction
- *      types (the same day count the editor shows), or `unit_price * round(quantity)`
- *      for sale lines.
+ *      `unit_price * quantity * chargeable_days` for hire-based transaction
+ *      types (the same day count the editor shows), or `unit_price * quantity`
+ *      for sale lines — quantity is a decimal string via {@see QuantityMinorArithmetic}.
  *   3. apply the line discount (tenant rounding at the minor-unit boundary, BEFORE tax).
  *   4. NET EXTRACTION when `prices_include_tax`: an input entered tax-inclusive has
  *      its embedded tax stripped at this point ({@see TaxCalculator::calculateInclusive})
@@ -96,6 +97,7 @@ class OpportunityTotalsCalculator
         private readonly TaxCalculator $taxCalculator,
         private readonly OpportunityItemChargeableDays $chargeableDays,
         private readonly RoundingStrategy $roundingStrategy,
+        private readonly QuantityMinorArithmetic $quantityMinor,
         private readonly DocumentTaxBreakdown $documentTaxBreakdown,
         private readonly TaxPointDateResolver $taxPointDateResolver,
         private readonly TaxResolutionContextHolder $taxResolutionContextHolder,
@@ -182,7 +184,7 @@ class OpportunityTotalsCalculator
                 ? $manualUnitPrice
                 : null;
 
-            $quantityUnits = max(0, (int) round((float) $item->quantity));
+            $quantity = $this->quantityMinor->normalizeQuantity((string) $item->quantity);
             [$start, $end] = $this->effectiveDates($item, $opportunity);
             $product = $this->resolveProduct($item);
 
@@ -190,7 +192,7 @@ class OpportunityTotalsCalculator
                 $item,
                 $product,
                 $currency,
-                $quantityUnits,
+                $quantity,
                 $start,
                 $end,
                 $opportunity->store_id,
@@ -366,7 +368,7 @@ class OpportunityTotalsCalculator
                 lineKey: 'item:'.$item->id,
                 netMinor: $lineNet,
                 productTaxClassId: $product?->tax_class_id,
-                quantity: max(0, (int) round((float) $item->quantity)),
+                quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
             );
 
             foreach ($item->itemSurcharges as $itemSurcharge) {
@@ -378,7 +380,7 @@ class OpportunityTotalsCalculator
                     lineKey: 'item:'.$item->id.':surcharge:'.$itemSurcharge->surcharge_id,
                     netMinor: (int) $itemSurcharge->amount,
                     productTaxClassId: $itemSurcharge->product_tax_class_id,
-                    quantity: max(0, (int) round((float) $item->quantity)),
+                    quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
                 );
             }
 
@@ -405,7 +407,7 @@ class OpportunityTotalsCalculator
                 lineKey: 'cost:'.$cost->id,
                 netMinor: $costNet,
                 productTaxClassId: $defaultProductTaxClassId,
-                quantity: max(0, (int) round((float) $cost->quantity)),
+                quantity: bccomp((string) $cost->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $cost->quantity, '0', 2),
             );
 
             // Route the cost net into the RMS category bucket; delivery feeds the
@@ -519,14 +521,18 @@ class OpportunityTotalsCalculator
     }
 
     /**
-     * The cost's NET line value in minor units: amount * round(quantity), with the
+     * The cost's NET line value in minor units: amount × quantity (decimal-safe),
      * embedded tax stripped when prices are entered tax-inclusive so the bucket
      * stays net.
      */
     private function costNet(OpportunityCost $cost, Opportunity $opportunity, ?int $defaultProductTaxClassId): int
     {
-        $quantityUnits = max(0, (int) round((float) $cost->quantity));
-        $lineTotal = $cost->amount * $quantityUnits;
+        $currency = $this->currencyFor($opportunity);
+        $lineTotal = $this->quantityMinor->multiplyMinorByQuantity(
+            (int) $cost->amount,
+            (string) $cost->quantity,
+            $currency,
+        );
 
         if (! $opportunity->prices_include_tax) {
             return $lineTotal;
@@ -559,7 +565,7 @@ class OpportunityTotalsCalculator
         OpportunityItem $item,
         ?Product $product,
         string $currency,
-        int $quantityUnits,
+        string $quantity,
         Carbon $start,
         Carbon $end,
         ?int $storeId,
@@ -570,7 +576,7 @@ class OpportunityTotalsCalculator
         if ($manualUnitPrice !== null) {
             return [
                 $manualUnitPrice,
-                $this->manualLineSubtotal($manualUnitPrice, $quantityUnits, $item, $opportunity),
+                $this->manualLineSubtotal($manualUnitPrice, $quantity, $item, $opportunity, $currency),
             ];
         }
 
@@ -593,18 +599,26 @@ class OpportunityTotalsCalculator
 
             return [
                 $unitPrice,
-                $this->manualLineSubtotal($unitPrice, $quantityUnits, $item, $opportunity),
+                $this->manualLineSubtotal($unitPrice, $quantity, $item, $opportunity, $currency),
+            ];
+        }
+
+        if ($this->quantityMinor->quantityHasFraction($quantity)) {
+            return [
+                $rate->price,
+                $this->manualLineSubtotal($rate->price, $quantity, $item, $opportunity, $currency),
             ];
         }
 
         $definition = $rate->rateDefinition;
+        $wholeUnits = $this->quantityMinor->wholeUnitCountForRateEngine($quantity);
 
         $context = new CalculationContext(
             unitPriceMinor: $rate->price,
             currency: $currency,
             start: $start,
             end: $end,
-            quantity: max(1, $quantityUnits),
+            quantity: max(1, $wholeUnits),
             basePeriod: $definition->base_period,
             strategyConfig: $definition->strategy_config,
             transactionType: $this->mapTransactionType($item->transaction_type),
@@ -627,11 +641,12 @@ class OpportunityTotalsCalculator
      */
     private function manualLineSubtotal(
         int $unitPriceMinor,
-        int $quantityUnits,
+        string $quantity,
         OpportunityItem $item,
         Opportunity $opportunity,
+        string $currencyCode,
     ): int {
-        $base = $unitPriceMinor * $quantityUnits;
+        $base = $this->quantityMinor->multiplyMinorByQuantity($unitPriceMinor, $quantity, $currencyCode);
 
         if ($item->transaction_type === LineItemTransactionType::Sale) {
             return $base;
@@ -663,7 +678,7 @@ class OpportunityTotalsCalculator
                 continue;
             }
 
-            $quantityUnits = max(0, (int) round((float) $item->quantity));
+            $quantity = $this->quantityMinor->normalizeQuantity((string) $item->quantity);
             [$start, $end] = $this->effectiveDates($item, $opportunity);
             $product = $this->resolveProduct($item);
 
@@ -671,7 +686,7 @@ class OpportunityTotalsCalculator
                 $item,
                 $product,
                 $currency,
-                $quantityUnits,
+                $quantity,
                 $start,
                 $end,
                 $opportunity->store_id,

@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceTax;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Verbs\Events\Invoices\Concerns\RecordsInvoiceAudit;
 use App\Verbs\States\InvoiceState;
 use Carbon\CarbonImmutable;
@@ -52,6 +53,8 @@ class InvoiceGenerated extends Event
         /** @var list<array<string, mixed>> */
         public array $tax_rows = [],
         public bool $mark_opportunity_invoiced = false,
+        /** @var list<array{opportunity_item_id: int, quantity: string}> */
+        public array $quantity_updates = [],
         public bool $is_posting = true,
     ) {}
 
@@ -126,6 +129,9 @@ class InvoiceGenerated extends Event
                     'product_id' => $line['product_id'] ?? null,
                     'description' => (string) $line['description'],
                     'quantity' => (string) $line['quantity'],
+                    'invoiced_quantity' => isset($line['invoiced_quantity'])
+                        ? (string) $line['invoiced_quantity']
+                        : null,
                     'unit_price' => (int) $line['unit_price'],
                     'discount' => (int) $line['discount'],
                     'tax' => (int) $line['tax'],
@@ -161,6 +167,20 @@ class InvoiceGenerated extends Event
             Opportunity::query()
                 ->whereKey($this->opportunity_id)
                 ->update(['invoiced' => true]);
+        }
+
+        foreach ($this->quantity_updates as $update) {
+            $item = OpportunityItem::query()->find((int) $update['opportunity_item_id']);
+
+            if ($item === null) {
+                continue;
+            }
+
+            $newQty = bcadd((string) $item->invoiced_quantity, (string) $update['quantity'], 2);
+
+            OpportunityItem::query()
+                ->whereKey($item->id)
+                ->update(['invoiced_quantity' => $newQty]);
         }
 
         $invoice = Invoice::query()->whereKey($state->invoice_id)->firstOrFail();
