@@ -40,6 +40,7 @@ final class CoreAbilityDefinitions
             'pricing:write' => ['label' => 'Write pricing categories', 'description' => 'Write discount and price categories'],
             'schema:read' => ['label' => 'Read schema / field metadata', 'description' => 'Read schema / field metadata'],
             'documents:read' => ['label' => 'Read document types', 'description' => 'Read document type metadata'],
+            'documents:write' => ['label' => 'Write document sequences', 'description' => 'Update document numbering sequences'],
             'custom-fields:read' => ['label' => 'Read custom fields', 'description' => 'Read custom fields'],
             'custom-fields:write' => ['label' => 'Write custom fields', 'description' => 'Write custom fields'],
             'static-data:read' => ['label' => 'Read static data (lists)', 'description' => 'Read static data (lists)'],
