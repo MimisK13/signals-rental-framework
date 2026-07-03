@@ -22,11 +22,13 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     $this->actingAs(User::factory()->owner()->create());
+    Queue::fake();
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-03T12:00:00Z'));
     settings()->set('company.date_format_php', 'd/m/Y');
     settings()->set('pricing.rounding_direction', PricingRoundingDirection::HalfUp->value);

@@ -37,12 +37,14 @@ use App\Services\ColumnRegistryResolver;
 use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
+use App\Services\Documents\CreditNoteDataResolver;
 use App\Services\Documents\DocumentBrandingResolver;
 use App\Services\Documents\DocumentEventDispatcher;
 use App\Services\Documents\DocumentRenderContext;
 use App\Services\Documents\DocumentRenderPipeline;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentTypeRegistry;
+use App\Services\Documents\InvoiceDataResolver;
 use App\Services\Documents\OpportunityDataResolver;
 use App\Services\Documents\PdfDriverManager;
 use App\Services\Documents\ReceiptDataResolver;
@@ -155,6 +157,8 @@ class AppServiceProvider extends ServiceProvider
             $registry->register($app->make(ReturnListDataResolver::class));
             $registry->register($app->make(StatementDataResolver::class));
             $registry->register($app->make(ReceiptDataResolver::class));
+            $registry->register($app->make(InvoiceDataResolver::class));
+            $registry->register($app->make(CreditNoteDataResolver::class));
 
             return $registry;
         });

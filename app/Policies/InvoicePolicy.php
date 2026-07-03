@@ -5,11 +5,12 @@ namespace App\Policies;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
+use App\Policies\Traits\ChecksStoreAccess;
 use Illuminate\Database\Eloquent\Model;
 
 class InvoicePolicy
 {
-    use AuthorizesByPermission;
+    use AuthorizesByPermission, ChecksStoreAccess;
 
     protected function viewPermission(): string
     {
@@ -34,6 +35,19 @@ class InvoicePolicy
     protected function deletePermission(): string
     {
         return 'invoices.delete';
+    }
+
+    public function view(User $user, ?Model $model = null): bool
+    {
+        if (! $user->can($this->viewPermission())) {
+            return false;
+        }
+
+        if ($model instanceof Invoice) {
+            return $this->canAccessStore($user, $model);
+        }
+
+        return true;
     }
 
     public function update(User $user, ?Model $model = null): bool

@@ -4,13 +4,18 @@ namespace App\Actions\Invoices;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Invoices\InvoiceData;
+use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\Invoice;
 use App\Models\Opportunity;
+use App\Services\Documents\DocumentTemplateResolver;
 use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Verbs\Events\Invoices\InvoiceIssued;
 use App\Verbs\Events\Opportunities\OpportunityLocksApplied;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use Thunk\Verbs\Facades\Verbs;
 
 /**
  * Issues a draft invoice via the InvoiceIssued event.
@@ -62,6 +67,34 @@ class IssueInvoice
             );
         });
 
-        return InvoiceData::fromModel($invoice->refresh());
+        $invoice->refresh();
+
+        $hasTemplate = app(DocumentTemplateResolver::class)->hasActiveTemplate(
+            (int) $invoice->store_id,
+            $invoice->typeEnum()->documentType(),
+        );
+
+        if (! Verbs::isReplaying() && $hasTemplate) {
+            $jobId = (string) Str::uuid();
+
+            Cache::put(self::pdfStatusCacheKey((int) $invoice->id), [
+                'status' => 'queued',
+                'job_id' => $jobId,
+            ], now()->addHours(1));
+
+            GenerateBillingIssueDocumentJob::dispatch(
+                $jobId,
+                'invoice',
+                (int) $invoice->id,
+                auth()->id(),
+            );
+        }
+
+        return InvoiceData::fromModel($invoice);
+    }
+
+    public static function pdfStatusCacheKey(int $invoiceId): string
+    {
+        return "billing-document:invoice:{$invoiceId}";
     }
 }

@@ -158,6 +158,18 @@ class InvoiceGenerated extends Event
                     'tax_rate_id' => $taxRow['tax_rate_id'] ?? null,
                     'taxable_amount' => (int) $taxRow['taxable_amount'],
                     'tax_amount' => (int) $taxRow['tax_amount'],
+                    'rate_percentage' => isset($taxRow['rate_percentage'])
+                        ? (string) $taxRow['rate_percentage']
+                        : null,
+                    'tax_rate_name' => isset($taxRow['tax_rate_name'])
+                        ? (string) $taxRow['tax_rate_name']
+                        : null,
+                    'result_type' => isset($taxRow['result_type'])
+                        ? (string) $taxRow['result_type']
+                        : null,
+                    'legal_text' => isset($taxRow['legal_text'])
+                        ? (string) $taxRow['legal_text']
+                        : null,
                     'created_at' => $state->generated_at,
                 ],
             );

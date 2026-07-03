@@ -5,8 +5,10 @@ namespace App\Actions\Invoices;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Invoices\CreditNoteData;
 use App\Data\Invoices\IssueCreditNoteData;
+use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\CreditNote;
 use App\Models\Invoice;
+use App\Services\Documents\DocumentTemplateResolver;
 use App\Services\Invoices\CreditNoteNumberGenerator;
 use App\Services\Invoices\CreditNoteStatusRegistry;
 use App\Services\Invoices\CreditNoteTaxMirror;
@@ -14,8 +16,11 @@ use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\Invoices\CreditNoteIssued;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Thunk\Verbs\Facades\Verbs;
 
 /**
  * Issues a full or partial credit note against an issued invoice.
@@ -117,7 +122,33 @@ class IssueCreditNote
 
         $creditNote = CreditNote::query()->whereKey($creditNoteId)->firstOrFail();
 
+        $hasTemplate = app(DocumentTemplateResolver::class)->hasActiveTemplate(
+            (int) $invoice->store_id,
+            'credit_note',
+        );
+
+        if (! Verbs::isReplaying() && $hasTemplate) {
+            $jobId = (string) Str::uuid();
+
+            Cache::put(self::pdfStatusCacheKey((int) $creditNote->id), [
+                'status' => 'queued',
+                'job_id' => $jobId,
+            ], now()->addHours(1));
+
+            GenerateBillingIssueDocumentJob::dispatch(
+                $jobId,
+                'credit_note',
+                (int) $creditNote->id,
+                auth()->id(),
+            );
+        }
+
         return CreditNoteData::fromModel($creditNote);
+    }
+
+    public static function pdfStatusCacheKey(int $creditNoteId): string
+    {
+        return "billing-document:credit_note:{$creditNoteId}";
     }
 
     private function assertCreditableStatus(Invoice $invoice): void

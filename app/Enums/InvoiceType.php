@@ -27,6 +27,17 @@ enum InvoiceType: string
         return 'invoice_'.$this->value;
     }
 
+    /**
+     * Document Engine document type used when rendering this invoice as a PDF.
+     */
+    public function documentType(): string
+    {
+        return match ($this) {
+            self::Proforma => 'pro_forma',
+            default => 'invoice',
+        };
+    }
+
     public function isPosting(): bool
     {
         return match ($this) {

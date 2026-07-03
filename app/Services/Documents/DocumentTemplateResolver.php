@@ -7,6 +7,15 @@ use Illuminate\Validation\ValidationException;
 
 class DocumentTemplateResolver
 {
+    public function hasActiveTemplate(int $storeId, string $documentType): bool
+    {
+        return DocumentTemplate::query()
+            ->where('store_id', $storeId)
+            ->where('document_type', $documentType)
+            ->where('is_active', true)
+            ->exists();
+    }
+
     public function resolveForGeneration(
         int $storeId,
         ?int $templateId,

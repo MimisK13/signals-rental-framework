@@ -20,7 +20,7 @@ use App\Http\Controllers\Api\V1\DocumentTemplateController;
 use App\Http\Controllers\Api\V1\DocumentTypeController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
-use App\Http\Controllers\Api\V1\ListNameController;
+use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\ListValueController;
 use App\Http\Controllers\Api\V1\MemberAddressController;
 use App\Http\Controllers\Api\V1\MemberController;
@@ -31,10 +31,10 @@ use App\Http\Controllers\Api\V1\MemberRelationshipController;
 use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
 use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
+use App\Http\Controllers\Api\V1\PriceCategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
-use App\Http\Controllers\Api\V1\PriceCategoryController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;
@@ -335,6 +335,8 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::delete('opportunities/{opportunity}/versions/{version}', [OpportunityVersionController::class, 'destroy'])->name('api.v1.opportunities.versions.destroy');
 
     Route::apiResource('opportunities', OpportunityController::class)->names('api.v1.opportunities');
+
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('api.v1.invoices.pdf');
 
     // Rate Definitions
     Route::post('rate_definitions/{rate_definition}/duplicate', [RateDefinitionController::class, 'duplicate'])->name('api.v1.rate_definitions.duplicate');

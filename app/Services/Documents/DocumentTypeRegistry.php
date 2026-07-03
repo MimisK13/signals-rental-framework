@@ -2,6 +2,8 @@
 
 namespace App\Services\Documents;
 
+use App\Models\CreditNote;
+use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -101,12 +103,9 @@ class DocumentTypeRegistry
     {
         $opportunityTypes = [
             'quote' => 'Quote',
-            'invoice' => 'Invoice',
-            'credit_note' => 'Credit Note',
             'delivery_note' => 'Delivery Note',
             'pick_list' => 'Pick List',
             'return_list' => 'Return List',
-            'pro_forma' => 'Pro Forma Invoice',
             'damage_report' => 'Damage Report',
             'purchase_order' => 'Purchase Order',
         ];
@@ -122,6 +121,30 @@ class DocumentTypeRegistry
                 "Renders against an opportunity ({$label}).",
             );
         }
+
+        $this->register(
+            'invoice',
+            'invoice',
+            Invoice::class,
+            'Invoice',
+            'Issued invoice with frozen line items and tax summary.',
+        );
+
+        $this->register(
+            'credit_note',
+            'credit_note',
+            CreditNote::class,
+            'Credit Note',
+            'Credit note with negated mirror of the original invoice.',
+        );
+
+        $this->register(
+            'pro_forma',
+            'invoice',
+            Invoice::class,
+            'Pro Forma Invoice',
+            'Pro forma invoice rendered from the invoice projection.',
+        );
 
         $this->register(
             'statement',

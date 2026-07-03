@@ -2,6 +2,8 @@
 
 namespace App\Services\Documents;
 
+use App\Models\CreditNote;
+use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -69,18 +71,8 @@ class SystemDocumentTemplates
                 title: 'Quote',
                 intro: 'Please find below our quotation for your event.',
             ),
-            'invoice' => self::baseDefinition(
-                type: 'invoice',
-                name: 'Standard Invoice',
-                title: 'Invoice',
-                intro: 'Please find below your invoice for the services provided.',
-            ),
-            'credit_note' => self::baseDefinition(
-                type: 'credit_note',
-                name: 'Standard Credit Note',
-                title: 'Credit Note',
-                intro: 'This credit note adjusts the account balance shown below.',
-            ),
+            'invoice' => self::invoiceDefinition(),
+            'credit_note' => self::creditNoteDefinition(),
             'delivery_note' => self::warehouseDefinition(
                 type: 'delivery_note',
                 name: 'Standard Delivery Note',
@@ -94,16 +86,350 @@ class SystemDocumentTemplates
                 intro: 'Warehouse pick list — check each line as items are collected.',
             ),
             'return_list' => self::returnListDefinition(),
-            'pro_forma' => self::baseDefinition(
-                type: 'pro_forma',
-                name: 'Standard Pro Forma',
-                title: 'Pro Forma Invoice',
-                intro: 'This pro forma invoice is provided for approval and is not a tax invoice.',
-            ),
+            'pro_forma' => self::proFormaDefinition(),
             'statement' => self::statementDefinition(),
             'receipt' => self::receiptDefinition(),
             default => throw new \InvalidArgumentException("Unsupported system document type [{$documentType}]."),
         };
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function invoiceDefinition(): array
+    {
+        return [
+            'document_type' => 'invoice',
+            'slug' => 'system-invoice',
+            'name' => 'Standard Invoice',
+            'description' => 'System default Standard Invoice template.',
+            'model_type' => Invoice::class,
+            'header_html' => self::invoiceHeaderHtml('Invoice'),
+            'body_html' => self::invoiceBodyHtml('Please find below your invoice for the services provided.'),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles().self::taxLegalStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function proFormaDefinition(): array
+    {
+        return [
+            'document_type' => 'pro_forma',
+            'slug' => 'system-pro_forma',
+            'name' => 'Standard Pro Forma',
+            'description' => 'System default Standard Pro Forma template.',
+            'model_type' => Invoice::class,
+            'header_html' => self::invoiceHeaderHtml('Pro Forma Invoice'),
+            'body_html' => self::invoiceBodyHtml('This pro forma invoice is provided for approval and is not a tax invoice.'),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles().self::taxLegalStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function creditNoteDefinition(): array
+    {
+        return [
+            'document_type' => 'credit_note',
+            'slug' => 'system-credit_note',
+            'name' => 'Standard Credit Note',
+            'description' => 'System default Standard Credit Note template.',
+            'model_type' => CreditNote::class,
+            'header_html' => self::creditNoteHeaderHtml(),
+            'body_html' => self::creditNoteBodyHtml(),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles().self::taxLegalStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    private static function invoiceHeaderHtml(string $title): string
+    {
+        return <<<HTML
+<div class="doc-header">
+    <div class="doc-brand">
+        <h1 class="doc-store">{{ \$store->name }}</h1>
+        <p class="doc-type">{$title}</p>
+    </div>
+    <div class="doc-meta-block">
+        <p><strong>Invoice:</strong> {{ \$invoice->number }}</p>
+        <p><strong>Issued:</strong> {{ \$invoice->issued_at }}</p>
+        <p><strong>Due:</strong> {{ \$invoice->due_at }}</p>
+    </div>
+</div>
+HTML;
+    }
+
+    private static function invoiceBodyHtml(string $intro): string
+    {
+        return <<<HTML
+<p class="doc-intro">{$intro}</p>
+
+<div class="doc-addresses">
+    <div class="doc-address">
+        <h2>From</h2>
+        <p>{{ \$store->name }}</p>
+        <p>{{ \$store->address }}</p>
+        <p>{{ \$store->phone }}</p>
+        <p>{{ \$store->email }}</p>
+    </div>
+    <div class="doc-address">
+        <h2>To</h2>
+        <p>{{ \$member->company_name ?? \$member->name }}</p>
+        <p>{{ \$member->email }}</p>
+        <p>{{ \$member->phone }}</p>
+    </div>
+</div>
+
+@if (\$opportunity->number)
+<div class="doc-event">
+    <p><strong>Reference:</strong> {{ \$opportunity->number }} — {{ \$opportunity->subject }}</p>
+</div>
+@endif
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th class="num">Qty</th>
+            <th class="num">Unit</th>
+            <th class="num">Discount</th>
+            <th class="num">Tax</th>
+            <th class="num">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (\$lines as \$line)
+            <tr>
+                <td>{{ \$line->description }}</td>
+                <td class="num">{{ \$line->quantity }}</td>
+                <td class="num">{{ \$line->unit_price }}</td>
+                <td class="num">{{ \$line->discount }}</td>
+                <td class="num">{{ \$line->tax }}</td>
+                <td class="num">{{ \$line->total }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+@if (count(\$tax_summary->groups ?? []))
+<table class="doc-items doc-tax-summary">
+    <thead>
+        <tr>
+            <th>Tax rate</th>
+            <th class="num">Rate</th>
+            <th class="num">Net</th>
+            <th class="num">Tax</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (\$tax_summary->groups as \$group)
+            <tr>
+                <td>{{ \$group->tax_rate_name }}</td>
+                <td class="num">{{ \$group->rate_percentage }}%</td>
+                <td class="num">{{ \$group->net_total }}</td>
+                <td class="num">{{ \$group->tax_total }}</td>
+            </tr>
+            @if (\$group->legal_text)
+                <tr>
+                    <td colspan="4" class="tax-legal">{{ \$group->legal_text }}</td>
+                </tr>
+            @endif
+        @endforeach
+    </tbody>
+</table>
+@endif
+
+<table class="doc-totals">
+    <tr><td>Subtotal</td><td class="num">{{ \$invoice->subtotal }}</td></tr>
+    <tr><td>Tax</td><td class="num">{{ \$invoice->tax_total }}</td></tr>
+    <tr class="grand"><td>Total</td><td class="num">{{ \$invoice->total }}</td></tr>
+    <tr><td>Paid</td><td class="num">{{ \$invoice->amount_paid }}</td></tr>
+    <tr><td>Balance due</td><td class="num">{{ \$invoice->amount_outstanding }}</td></tr>
+</table>
+
+@if (count(\$payments ?? []))
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Payment date</th>
+            <th>Method</th>
+            <th>Reference</th>
+            <th class="num">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (\$payments as \$payment)
+            <tr>
+                <td>{{ \$payment->received_at }}</td>
+                <td>{{ \$payment->method_label }}</td>
+                <td>{{ \$payment->reference }}</td>
+                <td class="num">{{ \$payment->amount }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+@endif
+HTML;
+    }
+
+    private static function creditNoteHeaderHtml(): string
+    {
+        return <<<'HTML'
+<div class="doc-header">
+    <div class="doc-brand">
+        <h1 class="doc-store">{{ $store->name }}</h1>
+        <p class="doc-type">Credit Note</p>
+    </div>
+    <div class="doc-meta-block">
+        <p><strong>Credit note:</strong> {{ $credit_note->number }}</p>
+        <p><strong>Issued:</strong> {{ $credit_note->issued_at }}</p>
+        <p><strong>Original invoice:</strong> {{ $invoice->number }}</p>
+    </div>
+</div>
+HTML;
+    }
+
+    private static function creditNoteBodyHtml(): string
+    {
+        return <<<'HTML'
+<p class="doc-intro">This credit note adjusts the account balance for the original invoice shown below.</p>
+
+<div class="doc-addresses">
+    <div class="doc-address">
+        <h2>From</h2>
+        <p>{{ $store->name }}</p>
+        <p>{{ $store->address }}</p>
+        <p>{{ $store->phone }}</p>
+        <p>{{ $store->email }}</p>
+    </div>
+    <div class="doc-address">
+        <h2>To</h2>
+        <p>{{ $member->company_name ?? $member->name }}</p>
+        <p>{{ $member->email }}</p>
+        <p>{{ $member->phone }}</p>
+    </div>
+</div>
+
+<div class="doc-event">
+    <p><strong>Original invoice:</strong> {{ $invoice->number }} ({{ $invoice->issued_at }})</p>
+    <p><strong>Original total:</strong> {{ $invoice->total }}</p>
+</div>
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th class="num">Qty</th>
+            <th class="num">Unit</th>
+            <th class="num">Discount</th>
+            <th class="num">Tax</th>
+            <th class="num">Credit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($lines as $line)
+            <tr>
+                <td>{{ $line->description }}</td>
+                <td class="num">{{ $line->quantity }}</td>
+                <td class="num">{{ $line->unit_price }}</td>
+                <td class="num">{{ $line->discount }}</td>
+                <td class="num">{{ $line->tax }}</td>
+                <td class="num">{{ $line->total }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+@if (count($tax_summary->groups ?? []))
+<table class="doc-items doc-tax-summary">
+    <thead>
+        <tr>
+            <th>Tax rate</th>
+            <th class="num">Rate</th>
+            <th class="num">Net</th>
+            <th class="num">Tax</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($tax_summary->groups as $group)
+            <tr>
+                <td>{{ $group->tax_rate_name }}</td>
+                <td class="num">{{ $group->rate_percentage }}%</td>
+                <td class="num">{{ $group->net_total }}</td>
+                <td class="num">{{ $group->tax_total }}</td>
+            </tr>
+            @if ($group->legal_text)
+                <tr>
+                    <td colspan="4" class="tax-legal">{{ $group->legal_text }}</td>
+                </tr>
+            @endif
+        @endforeach
+    </tbody>
+</table>
+@endif
+
+<table class="doc-totals">
+    <tr><td>Subtotal credit</td><td class="num">{{ $credit_note->subtotal }}</td></tr>
+    <tr><td>Tax credit</td><td class="num">{{ $credit_note->tax_total }}</td></tr>
+    <tr class="grand"><td>Total credit</td><td class="num">{{ $credit_note->total }}</td></tr>
+</table>
+HTML;
+    }
+
+    private static function taxLegalStyles(): string
+    {
+        return <<<'CSS'
+.doc-tax-summary {
+    margin-top: 8px;
+}
+.tax-legal {
+    font-size: 11px;
+    color: var(--secondary-colour);
+    font-style: italic;
+    padding-top: 4px;
+}
+CSS;
     }
 
     /**

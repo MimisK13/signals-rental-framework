@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\InvoiceType;
 use App\Models\Traits\FormatsMoney;
+use App\Models\Traits\HasStoreScoping;
 use App\Services\Invoices\EnsuresInvoiceIsDraft;
 use App\Services\Invoices\InvoiceStatusResolver;
 use Database\Factories\InvoiceFactory;
@@ -52,7 +53,7 @@ use Illuminate\Validation\ValidationException;
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */
-    use FormatsMoney, HasFactory, SoftDeletes;
+    use FormatsMoney, HasFactory, HasStoreScoping, SoftDeletes;
 
     public $incrementing = false;
 

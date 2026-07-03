@@ -2,7 +2,9 @@
 
 use App\Contracts\Documents\DocumentDataResolver;
 use App\Contracts\Documents\PdfDriver;
+use App\Models\CreditNote;
 use App\Models\DocumentTemplate;
+use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -33,13 +35,13 @@ describe('core document type registry', function () {
                 'label' => 'Quote',
             ],
             'invoice' => [
-                'resolver_type' => 'opportunity',
-                'model_type' => Opportunity::class,
+                'resolver_type' => 'invoice',
+                'model_type' => Invoice::class,
                 'label' => 'Invoice',
             ],
             'credit_note' => [
-                'resolver_type' => 'opportunity',
-                'model_type' => Opportunity::class,
+                'resolver_type' => 'credit_note',
+                'model_type' => CreditNote::class,
                 'label' => 'Credit Note',
             ],
             'delivery_note' => [
@@ -58,8 +60,8 @@ describe('core document type registry', function () {
                 'label' => 'Return List',
             ],
             'pro_forma' => [
-                'resolver_type' => 'opportunity',
-                'model_type' => Opportunity::class,
+                'resolver_type' => 'invoice',
+                'model_type' => Invoice::class,
                 'label' => 'Pro Forma Invoice',
             ],
             'damage_report' => [
@@ -99,7 +101,9 @@ describe('core document type registry', function () {
         expect($actualCoreDocumentTypes)->toBe($expectedCoreDocumentTypes)
             ->and(collect($registry->all())->pluck('type')->sort()->values()->all())
             ->toBe(collect(array_keys($expectedCoreDocumentTypes))->sort()->values()->all())
-            ->and(app(DocumentResolverRegistry::class)->has('receipt'))->toBeTrue();
+            ->and(app(DocumentResolverRegistry::class)->has('receipt'))->toBeTrue()
+            ->and(app(DocumentResolverRegistry::class)->has('invoice'))->toBeTrue()
+            ->and(app(DocumentResolverRegistry::class)->has('credit_note'))->toBeTrue();
     });
 });
 

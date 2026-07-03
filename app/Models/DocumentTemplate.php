@@ -104,6 +104,8 @@ class DocumentTemplate extends Model
         return match ($this->model_type) {
             Opportunity::class => 'opportunity',
             Member::class => 'statement',
+            Invoice::class => 'invoice',
+            CreditNote::class => 'credit_note',
             default => throw new \InvalidArgumentException("Unsupported document template model type [{$this->model_type}]."),
         };
     }

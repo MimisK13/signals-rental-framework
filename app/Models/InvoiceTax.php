@@ -17,6 +17,10 @@ use Illuminate\Support\Carbon;
  * @property int $tax_rate_id
  * @property int $taxable_amount
  * @property int $tax_amount
+ * @property string|null $rate_percentage
+ * @property string|null $tax_rate_name
+ * @property string|null $result_type
+ * @property string|null $legal_text
  * @property Carbon|null $created_at
  */
 class InvoiceTax extends Model
@@ -42,6 +46,10 @@ class InvoiceTax extends Model
         'tax_rate_id',
         'taxable_amount',
         'tax_amount',
+        'rate_percentage',
+        'tax_rate_name',
+        'result_type',
+        'legal_text',
         'created_at',
     ];
 
