@@ -23,6 +23,7 @@ use App\Services\Pricing\RoundingStrategy;
 use App\Services\RateEngine\RateCalculator;
 use App\Services\RateEngine\RateResolver;
 use App\Services\Tax\DocumentTaxBreakdown;
+use App\Services\Tax\TaxPointDateResolver;
 use App\Services\Tax\TaxResolutionContext;
 use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\TaxCalculator;
@@ -96,6 +97,7 @@ class OpportunityTotalsCalculator
         private readonly OpportunityItemChargeableDays $chargeableDays,
         private readonly RoundingStrategy $roundingStrategy,
         private readonly DocumentTaxBreakdown $documentTaxBreakdown,
+        private readonly TaxPointDateResolver $taxPointDateResolver,
         private readonly TaxResolutionContextHolder $taxResolutionContextHolder,
         private readonly BundlePricingApplicator $bundlePricingApplicator,
         private readonly OpportunitySurchargeApplicator $surchargeApplicator,
@@ -435,6 +437,7 @@ class OpportunityTotalsCalculator
             $taxTotal = (int) $opportunity->tax_total;
         } else {
             $taxContext = TaxResolutionContext::fromOpportunity($opportunity);
+            $taxPointDate = $this->taxPointDateResolver->resolveForOpportunity($opportunity);
 
             $taxTotal = $this->taxResolutionContextHolder->using($taxContext, function () use (
                 $opportunity,
@@ -444,6 +447,7 @@ class OpportunityTotalsCalculator
                 $netHeadline,
                 $defaultProductTaxClassId,
                 $dealMode,
+                $taxPointDate,
             ): int {
                 if ($opportunity->deal_total !== null && $dealMode === DealPriceMode::FlatHeadline) {
                     return $this->documentTaxBreakdown->summarize(new DocumentTaxRequest(
@@ -456,7 +460,7 @@ class OpportunityTotalsCalculator
                         ],
                         currencyCode: $currency,
                         organisationTaxClassId: $orgTaxClassId,
-                        effectiveAt: $opportunity->starts_at,
+                        effectiveAt: $taxPointDate,
                         pricesIncludeTax: $opportunity->prices_include_tax,
                     ))->totalTax;
                 }
@@ -465,7 +469,7 @@ class OpportunityTotalsCalculator
                     lines: $taxLines,
                     currencyCode: $currency,
                     organisationTaxClassId: $orgTaxClassId,
-                    effectiveAt: $opportunity->starts_at,
+                    effectiveAt: $taxPointDate,
                     pricesIncludeTax: false,
                 ))->totalTax;
             });

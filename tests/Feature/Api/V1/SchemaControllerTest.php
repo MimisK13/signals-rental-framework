@@ -21,6 +21,7 @@ describe('GET /api/v1/schema', function () {
                 'products', 'product_groups', 'stock_levels', 'stock_transactions', 'activities',
                 'rate_definitions', 'product_rates', 'opportunities', 'opportunity_items',
                 'opportunity_costs', 'opportunity_versions', 'containers', 'shortage_resolutions',
+                'document_tax_groups',
             ])))]);
     });
 });

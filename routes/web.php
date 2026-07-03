@@ -310,6 +310,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/tax/organisation-tax-classes/{organisationTaxClass}/edit', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.edit');
 
     // Tax Zones & Categories
+    Volt::route('admin/settings/finance', 'admin.settings.finance')->name('admin.settings.finance');
     Volt::route('admin/settings/tax/zones', 'admin.settings.tax.zones')->name('admin.settings.tax.zones');
     Volt::route('admin/settings/tax/zones/create', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.create');
     Volt::route('admin/settings/tax/zones/{taxZone}/edit', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.edit');

@@ -57,6 +57,7 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                 'title' => 'Tax',
                 'description' => 'Tax classifications for products and organisations.',
                 'items' => [
+                    ['label' => 'Finance', 'description' => 'Tax-point policy and pricing display defaults', 'icon' => 'banknotes', 'route' => 'admin.settings.finance'],
                     ['label' => 'Product Tax Classes', 'description' => 'Tax rates applied to products', 'icon' => 'receipt-percent', 'route' => 'admin.settings.tax.product-tax-classes'],
                     ['label' => 'Organisation Tax Classes', 'description' => 'Tax exemptions for organisations', 'icon' => 'building-office-2', 'route' => 'admin.settings.tax.organisation-tax-classes'],
                     ['label' => 'Tax Rates', 'description' => 'Tax rate percentages', 'icon' => 'calculator', 'route' => 'admin.settings.tax.rates'],

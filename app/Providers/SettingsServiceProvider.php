@@ -9,6 +9,7 @@ use App\Settings\ApiSettings;
 use App\Settings\AvailabilitySettings;
 use App\Settings\CompanySettings;
 use App\Settings\EmailSettings;
+use App\Settings\FinanceSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
 use App\Settings\OpportunitySettings;
@@ -34,6 +35,7 @@ class SettingsServiceProvider extends ServiceProvider
             $registry->register(new AvailabilitySettings);
             $registry->register(new CompanySettings);
             $registry->register(new EmailSettings);
+            $registry->register(new FinanceSettings);
             $registry->register(new GeneralPreferencesSettings);
             $registry->register(new IntegrationSettings);
             $registry->register(new OpportunitySettings);

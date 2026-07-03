@@ -129,6 +129,10 @@ class Store extends Model implements HasSchema
         $builder->relation('country_id')->label('Country')
             ->relation('country', 'belongsTo', Country::class, 'name')
             ->filterable();
+        $builder->relation('tax_zone_id')->label('Tax Zone')
+            ->relation('taxZone', 'belongsTo', TaxZone::class, 'name')
+            ->group('Tax')
+            ->filterable();
         $builder->string('phone')->label('Phone');
         $builder->string('email')->label('Email');
         $builder->string('timezone')->label('Timezone')->filterable();

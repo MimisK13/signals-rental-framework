@@ -129,6 +129,11 @@
     {{-- Tax --}}
     @if($group === 'tax')
         <div class="s-admin-sidebar-title">Tax</div>
+        <a href="{{ route('admin.settings.finance') }}" wire:navigate
+           class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.finance') ? 'active' : '' }}">
+            <flux:icon.banknotes class="s-admin-nav-icon" />
+            Finance
+        </a>
         <a href="{{ route('admin.settings.tax.zones') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.zones*') ? 'active' : '' }}">
             <flux:icon.globe-alt class="s-admin-nav-icon" />

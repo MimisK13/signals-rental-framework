@@ -32,6 +32,7 @@ use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
 use App\Models\Webhook;
+use App\Schemas\DocumentTaxGroupSchema;
 use App\Services\SchemaRegistry;
 use App\Support\Api\Attributes\PriceWeight;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
@@ -75,6 +76,7 @@ class SchemaController extends Controller
         'opportunity_versions' => OpportunityVersion::class,
         'containers' => Container::class,
         'shortage_resolutions' => ShortageResolution::class,
+        'document_tax_groups' => DocumentTaxGroupSchema::class,
     ];
 
     /**

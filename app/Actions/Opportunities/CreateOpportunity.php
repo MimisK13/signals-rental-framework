@@ -105,7 +105,7 @@ class CreateOpportunity
                 charge_total: $data->charge_total,
                 currency_code: $currency,
                 exchange_rate: $this->resolveExchangeRate($currency),
-                prices_include_tax: $data->prices_include_tax,
+                prices_include_tax: $data->prices_include_tax ?? (bool) settings('finance.prices_include_tax_default', false),
                 tag_list: array_values($data->tag_list ?? []),
             );
 

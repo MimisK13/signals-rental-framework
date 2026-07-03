@@ -31,6 +31,8 @@ class TaxRule extends Model implements HasSchema
         'result_type',
         'legal_text',
         'priority',
+        'effective_from',
+        'effective_to',
         'is_active',
     ];
 
@@ -50,6 +52,8 @@ class TaxRule extends Model implements HasSchema
             'tax_category_id' => 'integer',
             'result_type' => TaxResultType::class,
             'priority' => 'integer',
+            'effective_from' => 'date',
+            'effective_to' => 'date',
             'is_active' => 'boolean',
         ];
     }
@@ -93,6 +97,8 @@ class TaxRule extends Model implements HasSchema
             ->filterable();
         $builder->enum('result_type')->label('Result Type')->filterable();
         $builder->integer('priority')->label('Priority')->sortable();
+        $builder->date('effective_from')->label('Effective From')->filterable()->sortable();
+        $builder->date('effective_to')->label('Effective To')->filterable()->sortable();
         $builder->boolean('is_active')->label('Active')->filterable()->sortable()->groupable();
         $builder->datetime('created_at')->label('Created')->sortable();
         $builder->datetime('updated_at')->label('Updated')->sortable();

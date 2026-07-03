@@ -121,6 +121,15 @@ class Member extends Model implements HasSchema
         $builder->relation('purchase_tax_class_id')->label('Purchase Tax Class')
             ->relation('purchaseTaxClass', 'belongsTo', OrganisationTaxClass::class, 'name')
             ->filterable();
+        $builder->relation('tax_zone_id')->label('Tax Zone')
+            ->relation('taxZone', 'belongsTo', TaxZone::class, 'name')
+            ->group('Tax')
+            ->filterable();
+        $builder->enum('buyer_type')->label('Buyer Type')->group('Tax')->filterable();
+        $builder->boolean('tax_exempt')->label('Tax Exempt')->group('Tax')->filterable()->sortable();
+        $builder->boolean('tax_number_validated')->label('VAT Validated')->group('Tax')->filterable()->nullable();
+        $builder->datetime('tax_number_validated_at')->label('VAT Validated At')->group('Tax')->filterable()->sortable();
+        $builder->json('tax_number_validation')->label('VAT Validation Details')->group('Tax')->filterable(false)->sortable(false);
         $builder->json('tag_list')->label('Tags')->searchable();
         $builder->string('account_number')->label('Account Number')->searchable()->filterable();
         $builder->boolean('is_on_stop')->label('On Stop')->filterable()->sortable();

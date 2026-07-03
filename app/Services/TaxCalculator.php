@@ -9,6 +9,7 @@ use App\Models\TaxRule;
 use App\Services\Pricing\RoundingStrategy;
 use App\ValueObjects\TaxResult;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Calculates tax for a given amount using the tax rule matrix.
@@ -61,9 +62,7 @@ class TaxCalculator implements TaxResolver
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
     ): TaxResult {
-        unset($effectiveAt);
-
-        $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId);
+        $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId, $effectiveAt);
 
         if (! $rule) {
             return $this->zeroTax($netMinorUnits, $currencyCode);
@@ -104,9 +103,7 @@ class TaxCalculator implements TaxResolver
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
     ): TaxResult {
-        unset($effectiveAt);
-
-        $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId);
+        $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId, $effectiveAt);
 
         if (! $rule) {
             return $this->zeroTax($grossMinorUnits, $currencyCode);
@@ -144,13 +141,16 @@ class TaxCalculator implements TaxResolver
      * rule's rate is missing or inactive. When a rule is returned, its `taxRate` relation is
      * guaranteed loaded, present, and active.
      */
-    private function resolveTaxableRule(?int $orgTaxClassId, ?int $productTaxClassId): ?TaxRule
-    {
+    private function resolveTaxableRule(
+        ?int $orgTaxClassId,
+        ?int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt = null,
+    ): ?TaxRule {
         if ($orgTaxClassId === null || $productTaxClassId === null) {
             return null;
         }
 
-        $rule = $this->resolveRule($orgTaxClassId, $productTaxClassId);
+        $rule = $this->resolveRule($orgTaxClassId, $productTaxClassId, $effectiveAt);
 
         if (! $rule) {
             return null;
@@ -179,14 +179,16 @@ class TaxCalculator implements TaxResolver
     /**
      * Resolve the applicable tax rule by org + product class, with fallback to defaults.
      */
-    public function resolveRule(?int $orgTaxClassId, ?int $productTaxClassId): ?TaxRule
-    {
-        $rule = TaxRule::query()
-            ->where('organisation_tax_class_id', $orgTaxClassId)
-            ->where('product_tax_class_id', $productTaxClassId)
-            ->where('is_active', true)
-            ->orderByDesc('priority')
-            ->with('taxRate')
+    public function resolveRule(
+        ?int $orgTaxClassId,
+        ?int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt = null,
+    ): ?TaxRule {
+        if ($orgTaxClassId === null || $productTaxClassId === null) {
+            return null;
+        }
+
+        $rule = $this->classMapRuleQuery($orgTaxClassId, $productTaxClassId, $effectiveAt)
             ->first();
 
         if ($rule) {
@@ -204,13 +206,51 @@ class TaxCalculator implements TaxResolver
             return null;
         }
 
-        return TaxRule::query()
-            ->where('organisation_tax_class_id', $defaultOrgClass->id)
-            ->where('product_tax_class_id', $defaultProductClass->id)
-            ->where('is_active', true)
-            ->orderByDesc('priority')
-            ->with('taxRate')
+        return $this->classMapRuleQuery($defaultOrgClass->id, $defaultProductClass->id, $effectiveAt)
             ->first();
+    }
+
+    /**
+     * @return Builder<TaxRule>
+     */
+    private function classMapRuleQuery(
+        int $orgTaxClassId,
+        int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt,
+    ): Builder {
+        $query = TaxRule::query()
+            ->where('organisation_tax_class_id', $orgTaxClassId)
+            ->where('product_tax_class_id', $productTaxClassId)
+            ->where('is_active', true)
+            ->whereNotNull('tax_rate_id')
+            ->orderByDesc('priority')
+            ->with('taxRate');
+
+        $this->applyEffectiveDateScope($query, $effectiveAt);
+
+        return $query;
+    }
+
+    /**
+     * @param  Builder<TaxRule>  $query
+     */
+    private function applyEffectiveDateScope(Builder $query, ?DateTimeInterface $effectiveAt): void
+    {
+        if ($effectiveAt === null) {
+            return;
+        }
+
+        $date = $effectiveAt->format('Y-m-d');
+
+        $query
+            ->where(function (Builder $builder) use ($date): void {
+                $builder->whereNull('effective_from')
+                    ->orWhereDate('effective_from', '<=', $date);
+            })
+            ->where(function (Builder $builder) use ($date): void {
+                $builder->whereNull('effective_to')
+                    ->orWhereDate('effective_to', '>=', $date);
+            });
     }
 
     /**

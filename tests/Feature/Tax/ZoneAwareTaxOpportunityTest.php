@@ -150,6 +150,7 @@ describe('zone-aware opportunity tax totals', function () {
             'tax_zone_id' => $zones['euMember']->id,
             'buyer_type' => TaxBuyerType::B2b->value,
             'tax_number' => 'DE123456789',
+            'tax_number_validated' => true,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
@@ -303,6 +304,7 @@ describe('zone-aware opportunity tax totals', function () {
             'tax_zone_id' => $zones['world']->id,
             'buyer_type' => TaxBuyerType::B2b->value,
             'tax_number' => 'US123456789',
+            'tax_number_validated' => true,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
@@ -370,6 +372,7 @@ describe('zone-aware opportunity tax totals', function () {
             'tax_zone_id' => $zones['euMember']->id,
             'buyer_type' => TaxBuyerType::B2b->value,
             'tax_number' => 'DE999999999',
+            'tax_number_validated' => true,
         ]);
 
         $product1 = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
@@ -422,6 +425,7 @@ describe('zone-aware opportunity tax totals', function () {
             'tax_zone_id' => $zones['euMember']->id,
             'buyer_type' => TaxBuyerType::B2b->value,
             'tax_number' => 'DE123456789',
+            'tax_number_validated' => true,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
