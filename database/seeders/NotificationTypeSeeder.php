@@ -327,7 +327,7 @@ class NotificationTypeSeeder extends Seeder
                 'description' => 'Sent when stock a waitlist monitor is waiting on becomes available.',
                 'audience' => NotificationAudience::Internal,
                 'available_channels' => ['database', 'mail'],
-                'default_channels' => [],
+                'default_channels' => ['database'],
                 'default_recipients' => [['type' => 'subject_owner']],
                 'data_schema' => $schema,
             ],

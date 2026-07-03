@@ -54,6 +54,8 @@ use App\Services\Notifications\CommunicationLogStatusRegistry;
 use App\Services\Notifications\Drivers\BroadcastDriver;
 use App\Services\Notifications\Drivers\DatabaseDriver;
 use App\Services\Notifications\Drivers\EmailDriver;
+use App\Services\Notifications\EventNotificationConditionEvaluator;
+use App\Services\Notifications\EventNotificationMapRegistry;
 use App\Services\Notifications\NotificationChannelResolver;
 use App\Services\Notifications\RecipientResolverRegistry;
 use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
@@ -237,6 +239,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(CommunicationLogStatusRegistry::class);
+
+        $this->app->singleton(EventNotificationMapRegistry::class);
+
+        $this->app->singleton(EventNotificationConditionEvaluator::class);
 
         $this->app->singleton(NotificationChannelResolver::class);
 

@@ -120,14 +120,46 @@ it('registers the four-stage pipeline with both core business rules', function (
         ->and(app(GuardPipeline::class))->toBeInstanceOf(GuardPipeline::class);
 });
 
-it('ships the approval + plugin-validator + consumer-hook seams as empty no-ops', function () {
-    // Approval seam resolves to the no-op default.
+it('keeps approval and plugin-validator seams empty and registers only the expected core workflow triggers', function () {
     expect(app(ApprovalGate::class))->toBeInstanceOf(AutoApprovalGate::class);
 
-    // Plugin validators + the workflow / approval-chain consumer hooks are empty.
     expect(app(PluginValidatorRegistry::class)->all())->toBe([])
-        ->and(app(WorkflowTriggerRegistry::class)->all())->toBe([])
         ->and(app(ApprovalChainRegistry::class)->all())->toBe([]);
+
+    $pricingTransitions = [
+        'opportunity.deal_price_set',
+        'opportunity.deal_price_cleared',
+        'opportunity.group_deal_price_set',
+        'opportunity.pricing_recalculated',
+        'opportunity.discount_reset',
+    ];
+
+    $documentTransitions = [
+        'document.created',
+        'document.finalised',
+        'document.voided',
+        'document.emailed',
+        'document.public_link_created',
+        'document.public_link_accessed',
+        'document.public_link_revoked',
+        'document_template.created',
+        'document_template.updated',
+        'document_template.deleted',
+        'document_template.set_as_default',
+        'document_sequence.reset',
+    ];
+
+    $expectedWorkflowTriggers = [];
+
+    foreach ($pricingTransitions as $transition) {
+        $expectedWorkflowTriggers[$transition] = ['core-pricing-seam'];
+    }
+
+    foreach ($documentTransitions as $transition) {
+        $expectedWorkflowTriggers[$transition] = ['core-document-engine-seam'];
+    }
+
+    expect(app(WorkflowTriggerRegistry::class)->all())->toBe($expectedWorkflowTriggers);
 });
 
 // ---------------------------------------------------------------------------
@@ -355,11 +387,10 @@ it('records accepted_by on a version when it is accepted', function () {
     expect(OpportunityVersion::query()->whereKey($version->id)->firstOrFail()->accepted_by)->toBe($acceptor->id);
 });
 
-it('registers the waitlist-match notification type as a placeholder hook', function () {
+it('registers the waitlist-match notification type for live dispatch', function () {
     $type = app(NotificationRegistry::class)->get('shortage.waitlist.matched');
 
     expect($type)->not->toBeNull()
-        ->and($type['category'])->toBe('Opportunities')
-        // Delivery deferred: no default channel until a recipient exists.
-        ->and($type['default_channels'])->toBe([]);
+        ->and($type['category'])->toBe('Shortages')
+        ->and($type['default_channels'])->toBe(['database']);
 });
