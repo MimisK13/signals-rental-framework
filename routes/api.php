@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\CustomViewController;
 use App\Http\Controllers\Api\V1\DiscountCategoryController;
 use App\Http\Controllers\Api\V1\DiscountRuleController;
 use App\Http\Controllers\Api\V1\DocumentSequenceController;
+use App\Http\Controllers\Api\V1\DocumentTemplateController;
 use App\Http\Controllers\Api\V1\DocumentTypeController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
@@ -83,6 +84,15 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('document_types/{type}/fields', [DocumentTypeController::class, 'fields'])->name('api.v1.document_types.fields');
     Route::get('document_sequences', [DocumentSequenceController::class, 'index'])->name('api.v1.document_sequences.index');
     Route::put('document_sequences/{documentSequence}', [DocumentSequenceController::class, 'update'])->name('api.v1.document_sequences.update');
+    Route::get('document_templates', [DocumentTemplateController::class, 'index'])->name('api.v1.document_templates.index');
+    Route::post('document_templates', [DocumentTemplateController::class, 'store'])->name('api.v1.document_templates.store');
+    Route::get('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'show'])->name('api.v1.document_templates.show');
+    Route::put('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'update'])->name('api.v1.document_templates.update');
+    Route::delete('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'destroy'])->name('api.v1.document_templates.destroy');
+    Route::post('document_templates/{documentTemplate}/set_default', [DocumentTemplateController::class, 'setDefault'])->name('api.v1.document_templates.set_default');
+    Route::post('document_templates/{documentTemplate}/duplicate', [DocumentTemplateController::class, 'duplicate'])->name('api.v1.document_templates.duplicate');
+    Route::post('document_templates/{documentTemplate}/restore_default', [DocumentTemplateController::class, 'restoreDefault'])->name('api.v1.document_templates.restore_default');
+    Route::post('document_templates/{documentTemplate}/versions/{version}/restore', [DocumentTemplateController::class, 'restoreVersion'])->name('api.v1.document_templates.restore_version');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index'])->name('api.v1.settings.index');

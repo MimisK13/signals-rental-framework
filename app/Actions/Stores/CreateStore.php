@@ -5,6 +5,7 @@ namespace App\Actions\Stores;
 use App\Data\Stores\CreateStoreData;
 use App\Events\AuditableEvent;
 use App\Models\Store;
+use Database\Seeders\DocumentTemplateSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
@@ -31,6 +32,8 @@ class CreateStore
             }
 
             $store = Store::create($attributes);
+
+            app(DocumentTemplateSeeder::class)->seedForStore($store);
 
             event(new AuditableEvent($store, 'store.created'));
 
