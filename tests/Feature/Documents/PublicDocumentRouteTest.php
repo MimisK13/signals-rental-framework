@@ -134,7 +134,20 @@ describe('GET public document route', function () {
 
         $this->get(route('documents.public.show', ['token' => $token]))
             ->assertOk()
-            ->assertHeader('Content-Type', 'text/html; charset=utf-8');
+            ->assertHeader('Content-Type', 'text/html; charset=utf-8')
+            ->assertHeader('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:")
+            ->assertHeader('X-Frame-Options', 'DENY');
+    });
+
+    it('does not sandbox pdf responses', function () {
+        ['document' => $document] = publicDocumentFixture();
+
+        $token = 'valid-public-token-pdf-headers';
+        $document->update(['public_token' => $token]);
+
+        $this->get(route('documents.public.show', ['token' => $token]))
+            ->assertOk()
+            ->assertHeaderMissing('Content-Security-Policy');
     });
 
     it('records first_viewed_at exactly once', function () {

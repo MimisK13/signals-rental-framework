@@ -101,11 +101,21 @@ class PublicDocumentController
         $mimeType = $this->fileService->mimeTypeForPath($path);
         $filename = $this->fileService->inlineFilename($document->document_number, $path);
 
-        return response($contents, HttpResponse::HTTP_OK, [
+        $headers = [
             'Content-Type' => $mimeType,
             'Content-Disposition' => 'inline; filename="'.$filename.'"',
             'X-Content-Type-Options' => 'nosniff',
-        ]);
+        ];
+
+        if (str_contains($mimeType, 'html')) {
+            // Stored template HTML is untrusted for the app origin: the CSP
+            // sandbox gives it a null origin with scripts disabled so any
+            // injected markup cannot reach app cookies or APIs.
+            $headers['Content-Security-Policy'] = "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:";
+            $headers['X-Frame-Options'] = 'DENY';
+        }
+
+        return response($contents, HttpResponse::HTTP_OK, $headers);
     }
 
     private function isAccessible(?Document $document): bool
