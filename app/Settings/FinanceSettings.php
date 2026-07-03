@@ -23,6 +23,7 @@ class FinanceSettings extends SettingsDefinition
             'tax_point_policy' => 'supply_date',
             'prices_include_tax_default' => false,
             'show_tax_on_documents' => true,
+            'partial_invoice_tax' => 'proportional',
         ];
     }
 
@@ -36,6 +37,11 @@ class FinanceSettings extends SettingsDefinition
             ],
             'prices_include_tax_default' => ['required', 'boolean'],
             'show_tax_on_documents' => ['required', 'boolean'],
+            'partial_invoice_tax' => [
+                'required',
+                'string',
+                Rule::in(['proportional', 'full']),
+            ],
         ];
     }
 
@@ -45,6 +51,7 @@ class FinanceSettings extends SettingsDefinition
             'tax_point_policy' => 'string',
             'prices_include_tax_default' => 'boolean',
             'show_tax_on_documents' => 'boolean',
+            'partial_invoice_tax' => 'string',
         ];
     }
 }

@@ -20,6 +20,8 @@ class InvoiceState extends State
 
     public string $type = 'standard';
 
+    public bool $is_posting = true;
+
     public string $status = 'draft';
 
     public int $member_id = 0;

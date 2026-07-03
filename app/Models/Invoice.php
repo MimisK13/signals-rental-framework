@@ -23,6 +23,7 @@ use Illuminate\Validation\ValidationException;
  * @property int $state_id
  * @property string $number
  * @property string $type
+ * @property bool $is_posting
  * @property string $status
  * @property int $member_id
  * @property int $store_id
@@ -64,6 +65,7 @@ class Invoice extends Model
         'state_id',
         'number',
         'type',
+        'is_posting',
         'status',
         'is_locked',
         'member_id',
@@ -99,6 +101,7 @@ class Invoice extends Model
             'amount_paid' => 'integer',
             'amount_outstanding' => 'integer',
             'credited_total' => 'integer',
+            'is_posting' => 'boolean',
             'is_locked' => 'boolean',
             'prices_include_tax' => 'boolean',
             'tag_list' => 'array',

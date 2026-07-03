@@ -35,6 +35,13 @@ class GenerateInvoiceFromOpportunity
         Gate::authorize('invoices.create');
 
         $type = InvoiceType::from($data->type);
+
+        if ($type !== InvoiceType::Standard) {
+            throw ValidationException::withMessages([
+                'type' => ['Standard checkout uses GenerateInvoiceFromOpportunity; use the dedicated action for deposit or pro-forma invoices.'],
+            ]);
+        }
+
         $opportunity = Opportunity::query()
             ->with(['member', 'store'])
             ->findOrFail($data->opportunity_id);

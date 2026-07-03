@@ -26,6 +26,7 @@ class InvoiceFactory extends Factory
             'state_id' => snowflake_id(),
             'number' => 'INV-'.fake()->unique()->numerify('####'),
             'type' => InvoiceType::Standard->value,
+            'is_posting' => true,
             'status' => 'draft',
             'is_locked' => false,
             'member_id' => Member::factory()->organisation(),
@@ -50,7 +51,10 @@ class InvoiceFactory extends Factory
 
     public function proforma(): static
     {
-        return $this->state(fn (): array => ['type' => InvoiceType::Proforma->value]);
+        return $this->state(fn (): array => [
+            'type' => InvoiceType::Proforma->value,
+            'is_posting' => false,
+        ]);
     }
 
     public function issued(): static

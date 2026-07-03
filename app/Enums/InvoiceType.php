@@ -26,4 +26,12 @@ enum InvoiceType: string
     {
         return 'invoice_'.$this->value;
     }
+
+    public function isPosting(): bool
+    {
+        return match ($this) {
+            self::Proforma => false,
+            default => true,
+        };
+    }
 }

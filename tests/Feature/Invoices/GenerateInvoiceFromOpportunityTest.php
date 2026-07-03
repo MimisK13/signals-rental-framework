@@ -1,10 +1,12 @@
 <?php
 
 use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
+use App\Actions\Invoices\GenerateProformaInvoice;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
+use App\Data\Invoices\GenerateProformaInvoiceData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Enums\InvoiceType;
@@ -240,9 +242,8 @@ describe('GenerateInvoiceFromOpportunity', function () {
         );
         $opportunity->refresh();
 
-        $invoice = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        $invoice = (new GenerateProformaInvoice)(GenerateProformaInvoiceData::from([
             'opportunity_id' => $opportunity->id,
-            'type' => InvoiceType::Proforma->value,
         ]));
 
         $items = Invoice::query()->findOrFail($invoice->id)->items;

@@ -110,3 +110,47 @@ function giCreateOrderOpportunity(array $memberAttrs = [], array $oppAttrs = [],
 
     return $opportunity->fresh(['items', 'costs', 'member', 'store']);
 }
+
+/**
+ * @param  array<string, mixed>  $memberAttrs
+ * @param  array<string, mixed>  $oppAttrs
+ * @param  array<string, mixed>|null  $zones
+ */
+function giCreateQuotationOpportunity(array $memberAttrs = [], array $oppAttrs = [], ?array $zones = null): Opportunity
+{
+    $zones ??= giWireZoneTaxInfrastructure();
+
+    $store = Store::factory()->create([
+        'tax_zone_id' => $zones['uk']->id,
+        'country_code' => 'GB',
+    ]);
+    $member = Member::factory()->organisation()->create(array_merge([
+        'sale_tax_class_id' => $zones['orgClass']->id,
+        'tax_zone_id' => $zones['uk']->id,
+        'buyer_type' => TaxBuyerType::B2c->value,
+    ], $memberAttrs));
+
+    $created = (new CreateOpportunity)(CreateOpportunityData::from(array_merge([
+        'subject' => 'Deposit quotation',
+        'member_id' => $member->id,
+        'store_id' => $store->id,
+    ], $oppAttrs)));
+
+    (new ConvertToQuotation)(Opportunity::findOrFail($created->id));
+
+    $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
+
+    (new AddOpportunityItem)(Opportunity::findOrFail($created->id), AddOpportunityItemData::from([
+        'name' => $product->name,
+        'itemable_id' => $product->id,
+        'itemable_type' => Product::class,
+        'quantity' => '1',
+        'unit_price' => 10_000,
+        'transaction_type' => LineItemTransactionType::Sale->value,
+    ]));
+
+    $opportunity = Opportunity::query()->findOrFail($created->id);
+    app(OpportunityTotalsCalculator::class)->rollUp($opportunity->fresh(['items.itemSurcharges', 'costs', 'member']));
+
+    return $opportunity->fresh(['items', 'costs', 'member', 'store']);
+}

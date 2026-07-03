@@ -2,6 +2,7 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Enums\PartialInvoiceTaxPolicy;
 use App\Enums\TaxPointPolicy;
 use App\Models\Member;
 use App\Models\Store;
@@ -29,6 +30,10 @@ describe('FinanceSettings definition', function () {
 
     it('defaults show_tax_on_documents to true', function () {
         expect(settings('finance.show_tax_on_documents'))->toBeTrue();
+    });
+
+    it('defaults partial_invoice_tax to proportional', function () {
+        expect(settings('finance.partial_invoice_tax'))->toBe(PartialInvoiceTaxPolicy::Proportional->value);
     });
 
     it('is registered in the settings registry', function () {
@@ -70,7 +75,18 @@ describe('FinanceSettings class metadata', function () {
         expect((new FinanceSettings)->types())
             ->toHaveKey('tax_point_policy', 'string')
             ->toHaveKey('prices_include_tax_default', 'boolean')
-            ->toHaveKey('show_tax_on_documents', 'boolean');
+            ->toHaveKey('show_tax_on_documents', 'boolean')
+            ->toHaveKey('partial_invoice_tax', 'string');
+    });
+
+    it('rejects invalid partial_invoice_tax values via definition rules', function () {
+        $validator = Validator::make(
+            ['partial_invoice_tax' => 'split'],
+            (new FinanceSettings)->rules(),
+        );
+
+        expect($validator->fails())->toBeTrue()
+            ->and($validator->errors()->has('partial_invoice_tax'))->toBeTrue();
     });
 });
 

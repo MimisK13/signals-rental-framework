@@ -52,6 +52,7 @@ class InvoiceGenerated extends Event
         /** @var list<array<string, mixed>> */
         public array $tax_rows = [],
         public bool $mark_opportunity_invoiced = false,
+        public bool $is_posting = true,
     ) {}
 
     public function apply(InvoiceState $state): void
@@ -60,6 +61,7 @@ class InvoiceGenerated extends Event
         $state->number = $this->number;
         $state->type = $this->type;
         $state->status = $this->status;
+        $state->is_posting = $this->is_posting;
         $state->member_id = $this->member_id;
         $state->store_id = $this->store_id;
         $state->opportunity_id = $this->opportunity_id;
@@ -89,6 +91,7 @@ class InvoiceGenerated extends Event
                 'state_id' => $state->id,
                 'number' => $state->number,
                 'type' => $state->type,
+                'is_posting' => $state->is_posting,
                 'status' => $state->status,
                 'is_locked' => $state->is_locked,
                 'member_id' => $state->member_id,
