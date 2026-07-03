@@ -86,6 +86,8 @@ class PermissionSeeder extends Seeder
             'rates.view' => ['label' => 'View Rates', 'description' => 'View rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.access']],
             'rates.create' => ['label' => 'Create Rates', 'description' => 'Create rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.view']],
             'rates.edit' => ['label' => 'Edit Rates', 'description' => 'Edit rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.view']],
+            'pricing.view' => ['label' => 'View Pricing Categories', 'description' => 'View discount and price categories', 'group' => 'Pricing', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'pricing.manage' => ['label' => 'Manage Pricing Categories', 'description' => 'Create and manage discount and price categories', 'group' => 'Pricing', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['pricing.view']],
             'rates.delete' => ['label' => 'Delete Rates', 'description' => 'Delete rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.edit']],
 
             // Stock
@@ -103,6 +105,16 @@ class PermissionSeeder extends Seeder
             'reports.access' => ['label' => 'Access Reports', 'description' => 'Access the reports area', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
             'reports.view' => ['label' => 'View Reports', 'description' => 'View reports', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['reports.access']],
             'reports.export' => ['label' => 'Export Reports', 'description' => 'Export report data', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['reports.view']],
+
+            // Documents
+            'documents.access' => ['label' => 'Access Documents', 'description' => 'Access the documents area', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'documents.view' => ['label' => 'View Documents', 'description' => 'View generated documents', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.access']],
+            'documents.create' => ['label' => 'Create Documents', 'description' => 'Generate documents from templates', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'documents.finalise' => ['label' => 'Finalise Documents', 'description' => 'Lock generated documents from further changes', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'documents.share' => ['label' => 'Share Documents', 'description' => 'Create and manage public document links', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'documents.delete' => ['label' => 'Delete Documents', 'description' => 'Delete generated documents', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'document_templates.view' => ['label' => 'View Document Templates', 'description' => 'View document template definitions', 'group' => 'Documents', 'sub_group' => 'Templates', 'layer' => 'action', 'dependencies' => ['documents.access']],
+            'document_templates.edit' => ['label' => 'Edit Document Templates', 'description' => 'Create and edit document templates', 'group' => 'Documents', 'sub_group' => 'Templates', 'layer' => 'action', 'dependencies' => ['document_templates.view']],
 
             // System
             'system.read' => ['label' => 'Read System Info', 'description' => 'Access system health and diagnostics via API', 'group' => 'System', 'sub_group' => null, 'layer' => 'action', 'dependencies' => []],

@@ -129,6 +129,16 @@
     {{-- Tax --}}
     @if($group === 'tax')
         <div class="s-admin-sidebar-title">Tax</div>
+        <a href="{{ route('admin.settings.tax.zones') }}" wire:navigate
+           class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.zones*') ? 'active' : '' }}">
+            <flux:icon.globe-alt class="s-admin-nav-icon" />
+            Tax Zones
+        </a>
+        <a href="{{ route('admin.settings.tax.categories') }}" wire:navigate
+           class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.categories*') ? 'active' : '' }}">
+            <flux:icon.tag class="s-admin-nav-icon" />
+            Tax Categories
+        </a>
         <a href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.product-tax-classes*') ? 'active' : '' }}">
             <flux:icon.receipt-percent class="s-admin-nav-icon" />
@@ -159,6 +169,28 @@
                class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.rate-definitions*') ? 'active' : '' }}">
                 <flux:icon.calculator class="s-admin-nav-icon" />
                 Rate Definitions
+            </a>
+        @endcan
+        @can('pricing.view')
+            <a href="{{ route('admin.settings.pricing.discount-categories') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.discount-categories*') ? 'active' : '' }}">
+                <flux:icon.receipt-percent class="s-admin-nav-icon" />
+                Discount Categories
+            </a>
+            <a href="{{ route('admin.settings.pricing.price-categories') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.price-categories*') ? 'active' : '' }}">
+                <flux:icon.currency-pound class="s-admin-nav-icon" />
+                Price Categories
+            </a>
+            <a href="{{ route('admin.settings.pricing.bundle-rules') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.bundle-rules*') ? 'active' : '' }}">
+                <flux:icon.squares-2x2 class="s-admin-nav-icon" />
+                Bundle Rules
+            </a>
+            <a href="{{ route('admin.settings.pricing.surcharge-groups') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.surcharge-groups*') ? 'active' : '' }}">
+                <flux:icon.plus-circle class="s-admin-nav-icon" />
+                Surcharge Groups
             </a>
         @endcan
     @endif

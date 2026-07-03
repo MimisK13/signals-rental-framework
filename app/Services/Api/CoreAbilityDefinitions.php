@@ -36,6 +36,8 @@ final class CoreAbilityDefinitions
             'shortages:write' => ['label' => 'Write shortage resolutions', 'description' => 'Write shortage resolutions'],
             'rates:read' => ['label' => 'Read rate definitions & product rates', 'description' => 'Read rate definitions & product rates'],
             'rates:write' => ['label' => 'Write rate definitions & product rates', 'description' => 'Write rate definitions & product rates'],
+            'pricing:read' => ['label' => 'Read pricing categories', 'description' => 'Read discount and price categories'],
+            'pricing:write' => ['label' => 'Write pricing categories', 'description' => 'Write discount and price categories'],
             'schema:read' => ['label' => 'Read schema / field metadata', 'description' => 'Read schema / field metadata'],
             'custom-fields:read' => ['label' => 'Read custom fields', 'description' => 'Read custom fields'],
             'custom-fields:write' => ['label' => 'Write custom fields', 'description' => 'Write custom fields'],

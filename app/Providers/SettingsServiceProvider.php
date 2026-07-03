@@ -12,9 +12,11 @@ use App\Settings\EmailSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
 use App\Settings\OpportunitySettings;
+use App\Settings\PricingSettings;
 use App\Settings\SchedulingSettings;
 use App\Settings\SecuritySettings;
 use App\Settings\SsoSettings;
+use App\Settings\TaxSettings;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,9 +37,11 @@ class SettingsServiceProvider extends ServiceProvider
             $registry->register(new GeneralPreferencesSettings);
             $registry->register(new IntegrationSettings);
             $registry->register(new OpportunitySettings);
+            $registry->register(new PricingSettings);
             $registry->register(new SchedulingSettings);
             $registry->register(new SecuritySettings);
             $registry->register(new SsoSettings);
+            $registry->register(new TaxSettings);
 
             return $registry;
         });

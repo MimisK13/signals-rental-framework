@@ -2,6 +2,7 @@
 
 namespace App\ValueObjects;
 
+use App\Enums\TaxResultType;
 use Brick\Money\Currency;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
@@ -39,6 +40,9 @@ class TaxResult
         public readonly string $currencyCode,
         public readonly ?int $taxRateId = null,
         public readonly ?int $taxRuleId = null,
+        public readonly ?TaxResultType $resultType = null,
+        public readonly ?string $legalText = null,
+        public readonly ?int $zoneTaxRuleId = null,
     ) {}
 
     /**
@@ -79,6 +83,9 @@ class TaxResult
             'currency_code' => $this->currencyCode,
             'tax_rate_id' => $this->taxRateId,
             'tax_rule_id' => $this->taxRuleId,
+            'result_type' => $this->resultType?->value,
+            'legal_text' => $this->legalText,
+            'zone_tax_rule_id' => $this->zoneTaxRuleId,
         ];
     }
 

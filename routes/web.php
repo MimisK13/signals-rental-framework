@@ -309,6 +309,14 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/tax/organisation-tax-classes/create', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.create');
     Volt::route('admin/settings/tax/organisation-tax-classes/{organisationTaxClass}/edit', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.edit');
 
+    // Tax Zones & Categories
+    Volt::route('admin/settings/tax/zones', 'admin.settings.tax.zones')->name('admin.settings.tax.zones');
+    Volt::route('admin/settings/tax/zones/create', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.create');
+    Volt::route('admin/settings/tax/zones/{taxZone}/edit', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.edit');
+    Volt::route('admin/settings/tax/categories', 'admin.settings.tax.categories')->name('admin.settings.tax.categories');
+    Volt::route('admin/settings/tax/categories/create', 'admin.settings.tax.category-form')->name('admin.settings.tax.categories.create');
+    Volt::route('admin/settings/tax/categories/{taxCategory}/edit', 'admin.settings.tax.category-form')->name('admin.settings.tax.categories.edit');
+
     // Tax Rates
     Volt::route('admin/settings/tax/rates', 'admin.settings.tax.rates')->name('admin.settings.tax.rates');
     Volt::route('admin/settings/tax/rates/create', 'admin.settings.tax.rate-form')->name('admin.settings.tax.rates.create');
@@ -317,12 +325,28 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     // Tax Rules
     Volt::route('admin/settings/tax/rules', 'admin.settings.tax.rules')->name('admin.settings.tax.rules');
     Volt::route('admin/settings/tax/rules/create', 'admin.settings.tax.rule-form')->name('admin.settings.tax.rules.create');
+    Volt::route('admin/settings/tax/rules/create-zone', 'admin.settings.tax.zone-rule-form')->name('admin.settings.tax.rules.create-zone');
     Volt::route('admin/settings/tax/rules/{taxRule}/edit', 'admin.settings.tax.rule-form')->name('admin.settings.tax.rules.edit');
+    Volt::route('admin/settings/tax/rules/{taxRule}/edit-zone', 'admin.settings.tax.zone-rule-form')->name('admin.settings.tax.rules.edit-zone');
 
     // Pricing
     Volt::route('admin/settings/rate-definitions', 'admin.settings.rate-definitions')->name('admin.settings.rate-definitions');
     Volt::route('admin/settings/rate-definitions/create', 'admin.settings.rate-definition-form')->name('admin.settings.rate-definitions.create');
     Volt::route('admin/settings/rate-definitions/{rateDefinition}/edit', 'admin.settings.rate-definition-form')->name('admin.settings.rate-definitions.edit');
+
+    // Pricing categories
+    Volt::route('admin/settings/pricing/discount-categories', 'admin.settings.pricing.discount-categories')->name('admin.settings.pricing.discount-categories');
+    Volt::route('admin/settings/pricing/discount-categories/create', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.create');
+    Volt::route('admin/settings/pricing/discount-categories/{discountCategory}/edit', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.edit');
+    Volt::route('admin/settings/pricing/price-categories', 'admin.settings.pricing.price-categories')->name('admin.settings.pricing.price-categories');
+    Volt::route('admin/settings/pricing/price-categories/create', 'admin.settings.pricing.price-category-form')->name('admin.settings.pricing.price-categories.create');
+    Volt::route('admin/settings/pricing/price-categories/{priceCategory}/edit', 'admin.settings.pricing.price-category-form')->name('admin.settings.pricing.price-categories.edit');
+    Volt::route('admin/settings/pricing/bundle-rules', 'admin.settings.pricing.bundle-rules')->name('admin.settings.pricing.bundle-rules');
+    Volt::route('admin/settings/pricing/bundle-rules/create', 'admin.settings.pricing.bundle-rule-form')->name('admin.settings.pricing.bundle-rules.create');
+    Volt::route('admin/settings/pricing/bundle-rules/{bundleRule}/edit', 'admin.settings.pricing.bundle-rule-form')->name('admin.settings.pricing.bundle-rules.edit');
+    Volt::route('admin/settings/pricing/surcharge-groups', 'admin.settings.pricing.surcharge-groups')->name('admin.settings.pricing.surcharge-groups');
+    Volt::route('admin/settings/pricing/surcharge-groups/create', 'admin.settings.pricing.surcharge-group-form')->name('admin.settings.pricing.surcharge-groups.create');
+    Volt::route('admin/settings/pricing/surcharge-groups/{surchargeGroup}/edit', 'admin.settings.pricing.surcharge-group-form')->name('admin.settings.pricing.surcharge-groups.edit');
 });
 
 /*

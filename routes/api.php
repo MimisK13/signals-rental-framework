@@ -5,12 +5,15 @@ use App\Http\Controllers\Api\V1\ActionLogController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
+use App\Http\Controllers\Api\V1\BundleRuleController;
 use App\Http\Controllers\Api\V1\ContainerController;
 use App\Http\Controllers\Api\V1\CountryController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomFieldController;
 use App\Http\Controllers\Api\V1\CustomFieldGroupController;
 use App\Http\Controllers\Api\V1\CustomViewController;
+use App\Http\Controllers\Api\V1\DiscountCategoryController;
+use App\Http\Controllers\Api\V1\DiscountRuleController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
 use App\Http\Controllers\Api\V1\ListNameController;
@@ -39,9 +42,13 @@ use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShortageController;
 use App\Http\Controllers\Api\V1\StockLevelController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
+use App\Http\Controllers\Api\V1\SurchargeController;
+use App\Http\Controllers\Api\V1\SurchargeGroupController;
 use App\Http\Controllers\Api\V1\SystemController;
+use App\Http\Controllers\Api\V1\TaxCategoryController;
 use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\TaxRuleController;
+use App\Http\Controllers\Api\V1\TaxZoneController;
 use App\Http\Controllers\Api\V1\UsageController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\WebhookController;
@@ -131,7 +138,17 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('organisation_tax_classes', OrganisationTaxClassController::class)->names('api.v1.organisation_tax_classes');
     Route::apiResource('product_tax_classes', ProductTaxClassController::class)->names('api.v1.product_tax_classes');
 
+    // Pricing Categories
+    Route::apiResource('discount_categories', DiscountCategoryController::class)->names('api.v1.discount_categories');
+    Route::apiResource('discount_rules', DiscountRuleController::class)->names('api.v1.discount_rules');
+    Route::apiResource('bundle_rules', BundleRuleController::class)->names('api.v1.bundle_rules');
+    Route::apiResource('surcharge_groups', SurchargeGroupController::class)->names('api.v1.surcharge_groups');
+    Route::apiResource('surcharges', SurchargeController::class)->names('api.v1.surcharges');
+    Route::apiResource('price_categories', PriceCategoryController::class)->names('api.v1.price_categories');
+
     // Tax Rates & Rules
+    Route::apiResource('tax_zones', TaxZoneController::class)->names('api.v1.tax_zones');
+    Route::apiResource('tax_categories', TaxCategoryController::class)->names('api.v1.tax_categories');
     Route::apiResource('tax_rates', TaxRateController::class)->names('api.v1.tax_rates');
     Route::apiResource('tax_rules', TaxRuleController::class)->names('api.v1.tax_rules');
 
@@ -246,6 +263,11 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Manual deal-total override
     Route::post('opportunities/{opportunity}/deal_price', [OpportunityController::class, 'setDealPrice'])->name('api.v1.opportunities.deal_price.set');
     Route::delete('opportunities/{opportunity}/deal_price', [OpportunityController::class, 'clearDealPrice'])->name('api.v1.opportunities.deal_price.clear');
+    Route::post('opportunities/{opportunity}/recalculate', [OpportunityController::class, 'recalculatePricing'])->name('api.v1.opportunities.recalculate');
+    Route::put('opportunities/{opportunity}/sections/{section}/deal_price', [OpportunityController::class, 'setSectionDealPrice'])->name('api.v1.opportunities.sections.deal_price.set');
+    Route::post('opportunities/{opportunity}/apply_discount_category', [OpportunityController::class, 'applyDiscountCategory'])->name('api.v1.opportunities.apply_discount_category');
+    Route::post('opportunities/{opportunity}/toggle_surcharge_group', [OpportunityController::class, 'toggleSurchargeGroup'])->name('api.v1.opportunities.toggle_surcharge_group');
+    Route::post('opportunities/{opportunity}/items/{item}/override_surcharge', [OpportunityController::class, 'overrideItemSurcharge'])->name('api.v1.opportunities.override_item_surcharge');
     // Shortages (computed detection + non-PO resolution)
     Route::get('opportunities/{opportunity}/shortages', [ShortageController::class, 'index'])->name('api.v1.opportunities.shortages.index');
     // Persisted resolutions recorded against the opportunity (panel "active

@@ -68,6 +68,8 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                 'description' => 'Rate definitions and pricing engines.',
                 'items' => [
                     ['label' => 'Rate Definitions', 'description' => 'Composable pricing engines for products', 'icon' => 'calculator', 'route' => 'admin.settings.rate-definitions', 'gate' => 'rates.view'],
+                    ['label' => 'Discount Categories', 'description' => 'Organisation discount category definitions', 'icon' => 'receipt-percent', 'route' => 'admin.settings.pricing.discount-categories', 'gate' => 'pricing.view'],
+                    ['label' => 'Price Categories', 'description' => 'Alternative base price lists for organisations', 'icon' => 'currency-pound', 'route' => 'admin.settings.pricing.price-categories', 'gate' => 'pricing.view'],
                 ],
             ],
             'system' => [

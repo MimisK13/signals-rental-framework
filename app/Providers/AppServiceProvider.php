@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Contracts\Availability\AvailabilityDataPresence;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\Availability\AvailabilityStrategyContract;
+use App\Contracts\Tax\TaxResolver;
+use App\Contracts\Tax\VatNumberValidator;
 use App\Guards\Opportunities\Contracts\ApprovalGate;
 use App\Guards\Opportunities\PluginValidatorRegistry;
 use App\Guards\Opportunities\Rules\DispatchShortageRule;
@@ -38,6 +40,24 @@ use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
 use App\Services\Opportunities\TransitionRuleRegistry;
 use App\Services\PermissionRegistry;
+use App\Services\Pricing\BundlePricingApplicator;
+use App\Services\Pricing\CriteriaMatcher;
+use App\Services\Pricing\DealPriceProportionalDistributor;
+use App\Services\Pricing\DealPriceValidatorRegistry;
+use App\Services\Pricing\DiscountCategoryApplier;
+use App\Services\Pricing\DiscountCriteriaPredicateRegistry;
+use App\Services\Pricing\DiscountRuleEvaluator;
+use App\Services\Pricing\DiscountSourceRegistry;
+use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
+use App\Services\Pricing\OpportunityPricingCalculateDecorator;
+use App\Services\Pricing\OpportunityPricingRecalculator;
+use App\Services\Pricing\Predicates\ProductGroupIdsPredicate;
+use App\Services\Pricing\Predicates\ProductIdsPredicate;
+use App\Services\Pricing\Predicates\QuantityMaxPredicate;
+use App\Services\Pricing\Predicates\QuantityMinPredicate;
+use App\Services\Pricing\Predicates\TagNamesPredicate;
+use App\Services\Pricing\Predicates\TransactionTypesPredicate;
+use App\Services\Pricing\QuantityContextResolver;
 use App\Services\RateEngine\Modifiers\FactorModifier;
 use App\Services\RateEngine\Modifiers\MultiplierModifier;
 use App\Services\RateEngine\RateEngineRegistry;
@@ -56,6 +76,10 @@ use App\Services\Shortages\Resolvers\WaitlistResolver;
 use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
 use App\Services\Shortages\ShortageResolverDefinition;
 use App\Services\Shortages\ShortageResolverRegistry;
+use App\Services\Tax\DefaultVatNumberValidator;
+use App\Services\Tax\TaxResolutionContextHolder;
+use App\Services\Tax\TaxZoneRuleResolver;
+use App\Services\Tax\ZoneAwareTaxResolver;
 use App\Services\TaxCalculator;
 use App\Support\Formatter;
 use App\Support\Timezone;
@@ -87,6 +111,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocsService::class);
         $this->app->singleton(SchemaRegistry::class);
         $this->app->singleton(TaxCalculator::class);
+        $this->app->scoped(TaxResolutionContextHolder::class);
+        $this->app->singleton(TaxZoneRuleResolver::class);
+        $this->app->singleton(ZoneAwareTaxResolver::class);
+        $this->app->bind(TaxResolver::class, ZoneAwareTaxResolver::class);
+        $this->app->singleton(VatNumberValidator::class, DefaultVatNumberValidator::class);
         $this->app->singleton(ColumnRegistryResolver::class);
         $this->app->singleton(ActivityTypeList::class);
 
@@ -182,6 +211,32 @@ class AppServiceProvider extends ServiceProvider
 
             return $registry;
         });
+
+        $this->app->singleton(DiscountCriteriaPredicateRegistry::class, function (): DiscountCriteriaPredicateRegistry {
+            $registry = new DiscountCriteriaPredicateRegistry;
+
+            $registry->register(new ProductGroupIdsPredicate);
+            $registry->register(new QuantityMinPredicate);
+            $registry->register(new QuantityMaxPredicate);
+            $registry->register(new ProductIdsPredicate);
+            $registry->register(new TagNamesPredicate);
+            $registry->register(new TransactionTypesPredicate);
+
+            return $registry;
+        });
+
+        $this->app->singleton(CriteriaMatcher::class);
+        $this->app->singleton(BundlePricingApplicator::class);
+        $this->app->singleton(QuantityContextResolver::class);
+        $this->app->singleton(DiscountRuleEvaluator::class);
+        $this->app->singleton(DiscountCategoryApplier::class);
+
+        $this->app->singleton(DealPriceValidatorRegistry::class);
+        $this->app->singleton(DiscountSourceRegistry::class);
+        $this->app->singleton(OpportunityItemDiscountPercentFilterRegistry::class);
+        $this->app->singleton(OpportunityPricingCalculateDecorator::class);
+        $this->app->singleton(DealPriceProportionalDistributor::class);
+        $this->app->singleton(OpportunityPricingRecalculator::class);
 
         $this->app->singleton(RateEngineRegistry::class, function (): RateEngineRegistry {
             $registry = new RateEngineRegistry;
@@ -288,6 +343,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerSocialiteProviders();
         $this->registerVerbsMetadata();
         $this->registerApiCatalogueCacheInvalidation();
+        $this->registerPricingWorkflowTriggers();
 
         // LogAction is auto-discovered by Laravel via its handle(AuditableEvent) type-hint.
         // Manual registration removed to prevent duplicate listener execution.
@@ -454,5 +510,24 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute($limit)->by($request->user()->id);
         });
+
+        RateLimiter::for('vies-validation', function () {
+            return Limit::perMinute(30);
+        });
+    }
+
+    protected function registerPricingWorkflowTriggers(): void
+    {
+        $registry = app(WorkflowTriggerRegistry::class);
+
+        foreach ([
+            'opportunity.deal_price_set',
+            'opportunity.deal_price_cleared',
+            'opportunity.group_deal_price_set',
+            'opportunity.pricing_recalculated',
+            'opportunity.discount_reset',
+        ] as $transition) {
+            $registry->register($transition, 'core-pricing-seam');
+        }
     }
 }
