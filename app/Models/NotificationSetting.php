@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property list<string>|null $channels
+ * @property list<array<string, mixed>>|null $recipient_rules
+ */
 class NotificationSetting extends Model
 {
     /** @use HasFactory<NotificationSettingFactory> */

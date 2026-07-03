@@ -190,6 +190,14 @@ class Member extends Model implements HasSchema
     }
 
     /**
+     * Route broadcast-channel notifications to the member's private Reverb channel.
+     */
+    public function routeNotificationForBroadcast(): string
+    {
+        return 'member.'.$this->id;
+    }
+
+    /**
      * @return MorphMany<Phone, $this>
      */
     public function phones(): MorphMany

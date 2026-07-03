@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property list<string> $default_channels
+ * @property list<string> $available_channels
+ * @property list<array<string, mixed>>|null $default_recipients
+ */
 class NotificationType extends Model
 {
     /** @use HasFactory<NotificationTypeFactory> */

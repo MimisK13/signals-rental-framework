@@ -50,9 +50,17 @@ use App\Services\Documents\SandboxedBladeRenderer;
 use App\Services\Documents\StatementDataResolver;
 use App\Services\NotificationRegistry;
 use App\Services\Notifications\ChannelProviderRegistry;
+use App\Services\Notifications\CommunicationLogStatusRegistry;
 use App\Services\Notifications\Drivers\BroadcastDriver;
 use App\Services\Notifications\Drivers\DatabaseDriver;
 use App\Services\Notifications\Drivers\EmailDriver;
+use App\Services\Notifications\NotificationChannelResolver;
+use App\Services\Notifications\RecipientResolverRegistry;
+use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\RoleRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\SpecificMemberRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\SubjectOwnerRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\TriggerActorRecipientResolver;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
@@ -224,6 +232,22 @@ class AppServiceProvider extends ServiceProvider
             $registry->register('email', EmailDriver::class);
             $registry->register('database', DatabaseDriver::class);
             $registry->register('broadcast', BroadcastDriver::class);
+
+            return $registry;
+        });
+
+        $this->app->singleton(CommunicationLogStatusRegistry::class);
+
+        $this->app->singleton(NotificationChannelResolver::class);
+
+        $this->app->singleton(RecipientResolverRegistry::class, function (): RecipientResolverRegistry {
+            $registry = new RecipientResolverRegistry;
+
+            $registry->register(new SubjectOwnerRecipientResolver);
+            $registry->register(new RoleRecipientResolver);
+            $registry->register(new SpecificMemberRecipientResolver);
+            $registry->register(new TriggerActorRecipientResolver);
+            $registry->register(new ContactRecipientResolver);
 
             return $registry;
         });
