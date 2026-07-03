@@ -34,6 +34,8 @@ use App\Services\ColumnRegistryResolver;
 use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
+use App\Services\Documents\DocumentResolverRegistry;
+use App\Services\Documents\OpportunityDataResolver;
 use App\Services\NotificationRegistry;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
@@ -110,6 +112,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Formatter::class);
         $this->app->singleton(DocsService::class);
         $this->app->singleton(SchemaRegistry::class);
+        $this->app->singleton(DocumentResolverRegistry::class, function ($app): DocumentResolverRegistry {
+            $registry = new DocumentResolverRegistry;
+            $registry->register($app->make(OpportunityDataResolver::class));
+
+            return $registry;
+        });
         $this->app->singleton(TaxCalculator::class);
         $this->app->scoped(TaxResolutionContextHolder::class);
         $this->app->singleton(TaxZoneRuleResolver::class);

@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\CustomFieldGroupController;
 use App\Http\Controllers\Api\V1\CustomViewController;
 use App\Http\Controllers\Api\V1\DiscountCategoryController;
 use App\Http\Controllers\Api\V1\DiscountRuleController;
+use App\Http\Controllers\Api\V1\DocumentTypeController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
 use App\Http\Controllers\Api\V1\ListNameController;
@@ -75,6 +76,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Schema Discovery
     Route::get('schema', [SchemaController::class, 'index'])->name('api.v1.schema.index');
     Route::get('schema/{model}', [SchemaController::class, 'show'])->name('api.v1.schema.show');
+
+    // Document type field browser
+    Route::get('document_types', [DocumentTypeController::class, 'index'])->name('api.v1.document_types.index');
+    Route::get('document_types/{type}/fields', [DocumentTypeController::class, 'fields'])->name('api.v1.document_types.fields');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index'])->name('api.v1.settings.index');
