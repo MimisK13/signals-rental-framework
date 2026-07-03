@@ -49,9 +49,9 @@ return [
     'transitions' => [
         'draft' => ['issued', 'void'],
         'issued' => ['partially_paid', 'paid', 'overdue', 'void', 'credited'],
-        'partially_paid' => ['paid', 'overdue', 'void', 'credited'],
+        'partially_paid' => ['paid', 'overdue', 'void', 'credited', 'issued'],
         'overdue' => ['partially_paid', 'paid', 'void', 'credited'],
-        'paid' => ['credited'],
+        'paid' => ['partially_paid', 'issued', 'credited'],
         'void' => [],
         'credited' => [],
     ],
@@ -99,6 +99,14 @@ return [
                 'amount_paid' => ['gt' => 0],
             ],
             'status' => 'paid',
+        ],
+        [
+            'when' => [
+                'amount_paid' => ['eq' => 0],
+                'amount_outstanding' => ['gt' => 0],
+                'stored_status' => ['in' => ['paid', 'partially_paid']],
+            ],
+            'status' => 'issued',
         ],
         [
             'when' => [

@@ -66,4 +66,13 @@ class InvoicePolicy
 
         return $invoice->status !== 'void';
     }
+
+    public function recordPayment(User $user, Invoice $invoice): bool
+    {
+        if (! $user->can('payments.record')) {
+            return false;
+        }
+
+        return ! in_array($invoice->status, ['draft', 'void', 'credited'], true);
+    }
 }

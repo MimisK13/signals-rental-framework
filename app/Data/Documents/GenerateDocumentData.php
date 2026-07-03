@@ -3,6 +3,7 @@
 namespace App\Data\Documents;
 
 use App\Enums\DocumentOutputFormat;
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +33,7 @@ class GenerateDocumentData extends Data
             'document_type' => ['nullable', 'string', 'max:100', 'required_without:document_template_id'],
             'source_id' => ['nullable', 'integer', 'required_without:documentable_id'],
             'documentable_id' => ['nullable', 'integer', 'required_without:source_id'],
-            'documentable_type' => ['nullable', 'string', Rule::in(['Opportunity', 'opportunity', 'Member', 'member'])],
+            'documentable_type' => ['nullable', 'string', Rule::in(['Opportunity', 'opportunity', 'Member', 'member', 'InvoicePayment', 'invoice_payment', 'payment'])],
             'output_format' => ['nullable', 'string', Rule::enum(DocumentOutputFormat::class)],
         ];
     }
@@ -56,6 +57,10 @@ class GenerateDocumentData extends Data
 
         if ($type === Member::class || strtolower($type) === 'member' || str_ends_with($type, 'Member')) {
             return Member::class;
+        }
+
+        if ($type === InvoicePayment::class || in_array(strtolower($type), ['invoicepayment', 'invoice_payment', 'payment'], true)) {
+            return InvoicePayment::class;
         }
 
         throw new \InvalidArgumentException("Unsupported documentable type [{$type}].");

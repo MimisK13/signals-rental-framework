@@ -32,6 +32,9 @@ dataset('invoice status matrix', [
     'fully paid' => [
         'issued', 10_000, 10_000, 0, '2026-07-01T12:00:00Z', 'paid', false,
     ],
+    'full refund reopens to issued' => [
+        'paid', 0, 10_000, 10_000, '2026-07-20T12:00:00Z', 'issued', false,
+    ],
     'void stays void' => [
         'void', 0, 10_000, 10_000, '2026-07-01T12:00:00Z', 'void', false,
     ],

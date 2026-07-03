@@ -2,6 +2,7 @@
 
 namespace App\Services\Documents;
 
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use InvalidArgumentException;
@@ -130,6 +131,12 @@ class DocumentTypeRegistry
             'Customer account statement summarising outstanding balances.',
         );
 
-        // TODO(P33): Receipt resolves against Payment — register when Payment model ships.
+        $this->register(
+            'receipt',
+            'receipt',
+            InvoicePayment::class,
+            'Payment Receipt',
+            'Receipt for a payment recorded against an invoice.',
+        );
     }
 }

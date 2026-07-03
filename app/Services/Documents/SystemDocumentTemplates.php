@@ -2,6 +2,7 @@
 
 namespace App\Services\Documents;
 
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 
@@ -20,6 +21,7 @@ class SystemDocumentTemplates
         'return_list',
         'pro_forma',
         'statement',
+        'receipt',
     ];
 
     /**
@@ -99,6 +101,7 @@ class SystemDocumentTemplates
                 intro: 'This pro forma invoice is provided for approval and is not a tax invoice.',
             ),
             'statement' => self::statementDefinition(),
+            'receipt' => self::receiptDefinition(),
             default => throw new \InvalidArgumentException("Unsupported system document type [{$documentType}]."),
         };
     }
@@ -462,6 +465,98 @@ CSS;
             'styles_css' => self::commercialStyles(),
             'page_config' => self::defaultPageConfig(),
         ];
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function receiptDefinition(): array
+    {
+        return [
+            'document_type' => 'receipt',
+            'slug' => 'system-receipt',
+            'name' => 'Standard Receipt',
+            'description' => 'System default payment receipt template.',
+            'model_type' => InvoicePayment::class,
+            'header_html' => self::receiptHeaderHtml(),
+            'body_html' => self::receiptBodyHtml(),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    private static function receiptBodyHtml(): string
+    {
+        return <<<'HTML'
+<p class="doc-intro">Thank you for your payment. This receipt confirms the amount received against the invoice below.</p>
+
+<div class="doc-event">
+    <p><strong>Customer:</strong> {{ $member->company_name ?? $member->name }}</p>
+    <p><strong>Invoice:</strong> {{ $invoice->number }}</p>
+    <p><strong>Invoice date:</strong> {{ $invoice->issued_at }}</p>
+</div>
+
+<table class="doc-items">
+    <tbody>
+        <tr>
+            <th>Payment date</th>
+            <td>{{ $payment->received_at }}</td>
+        </tr>
+        <tr>
+            <th>Payment method</th>
+            <td>{{ $payment->method_label }}</td>
+        </tr>
+        <tr>
+            <th>Reference</th>
+            <td>{{ $payment->reference }}</td>
+        </tr>
+        <tr>
+            <th>Amount received</th>
+            <td>{{ $payment->amount }}</td>
+        </tr>
+        <tr>
+            <th>Invoice total</th>
+            <td>{{ $invoice->total }}</td>
+        </tr>
+        <tr>
+            <th>Total paid</th>
+            <td>{{ $invoice->amount_paid }}</td>
+        </tr>
+        <tr>
+            <th>Outstanding balance</th>
+            <td>{{ $invoice->amount_outstanding }}</td>
+        </tr>
+    </tbody>
+</table>
+HTML;
+    }
+
+    private static function receiptHeaderHtml(): string
+    {
+        return <<<'HTML'
+<div class="doc-header">
+    <div class="doc-brand">
+        <h1 class="doc-store">{{ $store->name }}</h1>
+        <p class="doc-type">Payment Receipt</p>
+    </div>
+    <div class="doc-meta-block">
+        <p><strong>Invoice:</strong> {{ $invoice->number }}</p>
+        <p><strong>Received:</strong> {{ $payment->received_at }}</p>
+    </div>
+</div>
+HTML;
     }
 
     private static function returnListBodyHtml(): string

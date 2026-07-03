@@ -27,8 +27,14 @@ class InvoicePayment extends Model
     /** @use HasFactory<InvoicePaymentFactory> */
     use FormatsMoney, HasFactory;
 
+    public $incrementing = false;
+
+    /** @var string */
+    protected $keyType = 'int';
+
     /** @var list<string> */
     protected $fillable = [
+        'id',
         'invoice_id',
         'amount',
         'payment_method',

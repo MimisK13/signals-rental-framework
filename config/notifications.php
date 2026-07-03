@@ -112,6 +112,14 @@ return [
         'invoice.overdue' => [
             ['type' => 'invoice.overdue'],
         ],
+
+        'payment.recorded' => [
+            ['type' => 'invoice.payment_received'],
+        ],
+
+        'payment.refunded' => [
+            ['type' => 'invoice.payment_received'],
+        ],
     ],
 
 ];

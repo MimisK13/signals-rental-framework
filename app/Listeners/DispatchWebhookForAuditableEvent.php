@@ -68,6 +68,8 @@ class DispatchWebhookForAuditableEvent
         'invoice.issued',
         'invoice.voided',
         'invoice.overdue',
+        'payment.recorded',
+        'payment.refunded',
     ];
 
     /**

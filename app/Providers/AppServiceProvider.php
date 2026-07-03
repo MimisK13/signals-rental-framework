@@ -45,6 +45,7 @@ use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentTypeRegistry;
 use App\Services\Documents\OpportunityDataResolver;
 use App\Services\Documents\PdfDriverManager;
+use App\Services\Documents\ReceiptDataResolver;
 use App\Services\Documents\ReturnListDataResolver;
 use App\Services\Documents\SandboxedBladeCompiler;
 use App\Services\Documents\SandboxedBladeRenderer;
@@ -153,6 +154,7 @@ class AppServiceProvider extends ServiceProvider
             $registry->register($app->make(OpportunityDataResolver::class));
             $registry->register($app->make(ReturnListDataResolver::class));
             $registry->register($app->make(StatementDataResolver::class));
+            $registry->register($app->make(ReceiptDataResolver::class));
 
             return $registry;
         });

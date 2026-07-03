@@ -3,6 +3,8 @@
 use App\Contracts\Documents\DocumentDataResolver;
 use App\Contracts\Documents\PdfDriver;
 use App\Models\DocumentTemplate;
+use App\Models\InvoicePayment;
+use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Services\Documents\DocumentResolverRegistry;
@@ -19,6 +21,86 @@ use Illuminate\Database\Eloquent\Model;
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+});
+
+describe('core document type registry', function () {
+    it('registers receipt against InvoicePayment and only the expected core types', function () {
+        /** @var array<string, array{resolver_type: string, model_type: class-string, label: string}> $expectedCoreDocumentTypes */
+        $expectedCoreDocumentTypes = [
+            'quote' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Quote',
+            ],
+            'invoice' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Invoice',
+            ],
+            'credit_note' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Credit Note',
+            ],
+            'delivery_note' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Delivery Note',
+            ],
+            'pick_list' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Pick List',
+            ],
+            'return_list' => [
+                'resolver_type' => 'return_list',
+                'model_type' => Opportunity::class,
+                'label' => 'Return List',
+            ],
+            'pro_forma' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Pro Forma Invoice',
+            ],
+            'damage_report' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Damage Report',
+            ],
+            'purchase_order' => [
+                'resolver_type' => 'opportunity',
+                'model_type' => Opportunity::class,
+                'label' => 'Purchase Order',
+            ],
+            'statement' => [
+                'resolver_type' => 'statement',
+                'model_type' => Member::class,
+                'label' => 'Statement',
+            ],
+            'receipt' => [
+                'resolver_type' => 'receipt',
+                'model_type' => InvoicePayment::class,
+                'label' => 'Payment Receipt',
+            ],
+        ];
+
+        $registry = app(DocumentTypeRegistry::class);
+
+        $actualCoreDocumentTypes = [];
+
+        foreach ($expectedCoreDocumentTypes as $type => $definition) {
+            $actualCoreDocumentTypes[$type] = [
+                'resolver_type' => $registry->resolverType($type),
+                'model_type' => $registry->modelType($type),
+                'label' => $registry->get($type)['label'],
+            ];
+        }
+
+        expect($actualCoreDocumentTypes)->toBe($expectedCoreDocumentTypes)
+            ->and(collect($registry->all())->pluck('type')->sort()->values()->all())
+            ->toBe(collect(array_keys($expectedCoreDocumentTypes))->sort()->values()->all())
+            ->and(app(DocumentResolverRegistry::class)->has('receipt'))->toBeTrue();
+    });
 });
 
 class FakePluginDocumentResolver implements DocumentDataResolver
@@ -146,11 +228,5 @@ describe('PluginRegistrar document seams', function () {
         app(PluginDocumentTemplateSeederRegistry::class)->register(fn () => null);
 
         expect(app(PluginDocumentTemplateSeederRegistry::class)->all())->toHaveCount(1);
-    });
-});
-
-describe('receipt document type seam', function () {
-    it('does not register receipt until the Payment model exists', function () {
-        expect(app(DocumentTypeRegistry::class)->has('receipt'))->toBeFalse();
     });
 });

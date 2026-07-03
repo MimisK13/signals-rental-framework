@@ -9,6 +9,7 @@ use App\Enums\DocumentOutputFormat;
 use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\DocumentTemplate;
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Services\Documents\DocumentEventDispatcher;
@@ -122,8 +123,18 @@ class GenerateDocument
             return (int) DocumentTemplate::query()->findOrFail($data->document_template_id)->store_id;
         }
 
-        if ($data->resolvedDocumentableClass() === Opportunity::class) {
+        $documentableClass = $data->resolvedDocumentableClass();
+
+        if ($documentableClass === Opportunity::class) {
             return (int) Opportunity::query()->findOrFail($data->resolvedSourceId())->store_id;
+        }
+
+        if ($documentableClass === InvoicePayment::class) {
+            return (int) InvoicePayment::query()
+                ->with('invoice')
+                ->findOrFail($data->resolvedSourceId())
+                ->invoice
+                ->store_id;
         }
 
         throw ValidationException::withMessages([
@@ -144,8 +155,15 @@ class GenerateDocument
     {
         $modelClass = $data->resolvedDocumentableClass();
 
-        /** @var Opportunity|Member $source */
+        /** @var Opportunity|Member|InvoicePayment $source */
         $source = $modelClass::query()->findOrFail($data->resolvedSourceId());
+
+        if ($source instanceof InvoicePayment) {
+            $source->load(['invoice.member', 'invoice.store']);
+            Gate::authorize('view', $source->invoice);
+
+            return $source;
+        }
 
         Gate::authorize('view', $source);
 
@@ -166,6 +184,14 @@ class GenerateDocument
             $code = $source->default_currency_code;
 
             if (is_string($code) && $code !== '') {
+                return $code;
+            }
+        }
+
+        if ($source instanceof InvoicePayment) {
+            $code = $source->invoice->currency_code;
+
+            if ($code !== '') {
                 return $code;
             }
         }

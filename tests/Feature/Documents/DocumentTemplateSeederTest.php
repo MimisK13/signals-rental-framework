@@ -1,13 +1,22 @@
 <?php
 
+use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
+use App\Actions\Invoices\IssueInvoice;
+use App\Actions\Invoices\RecordPayment;
+use App\Actions\Opportunities\ConvertToOrder;
+use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Stores\CreateStore;
 use App\Contracts\Documents\DocumentRenderer;
+use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
+use App\Data\Invoices\RecordPaymentData;
 use App\Data\Stores\CreateStoreData;
 use App\Enums\DocumentOutputFormat;
-use App\Enums\OpportunityState;
+use App\Enums\PaymentMethod;
 use App\Enums\PricingRoundingDirection;
 use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
+use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
@@ -19,6 +28,8 @@ use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
 use App\Services\Documents\SystemDocumentTemplates;
+use App\Services\Opportunities\OpportunityTotalsCalculator;
+use Carbon\CarbonImmutable;
 use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -31,10 +42,16 @@ beforeEach(function () {
     settings()->set('pricing.rounding_direction', PricingRoundingDirection::HalfUp->value);
     settings()->set('tax.unresolved_zone_fallback', 'seller_domestic');
     settings()->set('company.date_format_php', 'd/m/Y');
+    settings()->set('invoices.due_days', 30);
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-03T12:00:00Z'));
+});
+
+afterEach(function () {
+    CarbonImmutable::setTestNow();
 });
 
 /**
- * @return array{store: Store, member: Member, opportunity: Opportunity}
+ * @return array{store: Store, member: Member, opportunity: Opportunity, payment: InvoicePayment}
  */
 function seededTemplateRenderFixture(): array
 {
@@ -69,7 +86,6 @@ function seededTemplateRenderFixture(): array
         'store_id' => $store->id,
         'subject' => 'Seeded Template Render Test',
         'currency_code' => 'GBP',
-        'state' => OpportunityState::Quotation,
         'starts_at' => Carbon::parse('2026-07-01T09:00:00Z'),
         'ends_at' => Carbon::parse('2026-07-03T17:00:00Z'),
         'charge_total' => 10_000,
@@ -97,7 +113,32 @@ function seededTemplateRenderFixture(): array
         ]);
     }
 
-    return compact('store', 'member', 'opportunity');
+    (new ConvertToQuotation)($opportunity->refresh());
+    (new ConvertToOrder)($opportunity->refresh());
+
+    app(OpportunityTotalsCalculator::class)->rollUp(
+        $opportunity->fresh(['items.itemSurcharges', 'costs', 'member', 'store']),
+    );
+
+    $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        'opportunity_id' => $opportunity->id,
+    ]));
+
+    $invoice = Invoice::query()->findOrFail($draft->id);
+    (new IssueInvoice)($invoice);
+
+    (new RecordPayment)(
+        $invoice->refresh(),
+        RecordPaymentData::from([
+            'amount' => max(1, intdiv($invoice->total, 2)),
+            'payment_method' => PaymentMethod::BankTransfer->value,
+            'reference' => 'SEED-RENDER-001',
+        ]),
+    );
+
+    $payment = InvoicePayment::query()->where('invoice_id', $invoice->id)->sole();
+
+    return compact('store', 'member', 'opportunity', 'payment');
 }
 
 describe('DocumentTemplateSeeder', function () {
@@ -143,7 +184,7 @@ describe('DocumentTemplateSeeder', function () {
     });
 
     it('renders a valid non-empty PDF for every seeded system template type', function () {
-        ['store' => $store, 'member' => $member, 'opportunity' => $opportunity] = seededTemplateRenderFixture();
+        ['store' => $store, 'member' => $member, 'opportunity' => $opportunity, 'payment' => $payment] = seededTemplateRenderFixture();
 
         foreach (SystemDocumentTemplates::CORE_TYPES as $documentType) {
             $template = DocumentTemplate::query()
@@ -151,7 +192,11 @@ describe('DocumentTemplateSeeder', function () {
                 ->where('document_type', $documentType)
                 ->firstOrFail();
 
-            $sourceId = $documentType === 'statement' ? $member->id : $opportunity->id;
+            $sourceId = match ($documentType) {
+                'statement' => $member->id,
+                'receipt' => $payment->id,
+                default => $opportunity->id,
+            };
 
             $result = app(DocumentRenderer::class)->render(
                 $template->fresh('store'),
