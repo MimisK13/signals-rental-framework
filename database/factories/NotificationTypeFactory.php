@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\NotificationAudience;
 use App\Models\NotificationType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,8 +23,20 @@ class NotificationTypeFactory extends Factory
             'category' => fake()->randomElement(['Users', 'System', 'Opportunities']),
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
+            'audience' => NotificationAudience::Internal,
             'available_channels' => ['database', 'mail'],
             'default_channels' => ['database'],
+            'default_recipients' => [['type' => 'subject_owner']],
+            'data_schema' => [
+                'groups' => [
+                    [
+                        'label' => 'Entity',
+                        'fields' => [
+                            ['path' => 'entity.name', 'type' => 'string', 'label' => 'Name'],
+                        ],
+                    ],
+                ],
+            ],
             'is_active' => true,
             'is_system' => false,
             'source' => 'core',

@@ -15,6 +15,8 @@ class NotificationSetting extends Model
     protected $fillable = [
         'notification_type_id',
         'channels',
+        'channel_config',
+        'recipient_rules',
         'is_enabled',
     ];
 
@@ -25,6 +27,8 @@ class NotificationSetting extends Model
     {
         return [
             'channels' => 'array',
+            'channel_config' => 'array',
+            'recipient_rules' => 'array',
             'is_enabled' => 'boolean',
         ];
     }
