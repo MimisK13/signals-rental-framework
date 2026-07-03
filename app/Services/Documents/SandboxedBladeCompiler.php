@@ -80,4 +80,62 @@ class SandboxedBladeCompiler extends BladeCompiler
     {
         throw DocumentRenderException::forbidden('Raw PHP blocks are not allowed in document templates.');
     }
+
+    /**
+     * @param  string|null  $expression
+     */
+    protected function compileForeach($expression): string
+    {
+        preg_match('/\( *(.+) +as +(.*)\)$/is', $expression ?? '', $matches);
+
+        if (count($matches) === 0) {
+            throw DocumentRenderException::forbidden('Malformed @foreach statement.');
+        }
+
+        $iteratee = trim($matches[1]);
+        $iteration = trim($matches[2]);
+        $prepare = SandboxedLoopEnvironment::class.'::prepareLoopData('.$iteratee.')';
+        $initLoop = "\$__currentLoopData = {$prepare}; \$__env->addLoop(\$__currentLoopData);";
+        $iterateLoop = '$__env->incrementLoopIndices(); $loop = $__env->getLastLoop();';
+
+        return "<?php {$initLoop} foreach(\$__currentLoopData as {$iteration}): {$iterateLoop} ?>";
+    }
+
+    protected function compileEndforeach(): string
+    {
+        return '<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>';
+    }
+
+    /**
+     * @param  string|null  $expression
+     */
+    protected function compileForelse($expression): string
+    {
+        $empty = '$__empty_'.++$this->forElseCounter;
+
+        preg_match('/\( *(.+) +as +(.+)\)$/is', $expression ?? '', $matches);
+
+        if (count($matches) === 0) {
+            throw DocumentRenderException::forbidden('Malformed @forelse statement.');
+        }
+
+        $iteratee = trim($matches[1]);
+        $iteration = trim($matches[2]);
+        $prepare = SandboxedLoopEnvironment::class.'::prepareLoopData('.$iteratee.')';
+        $initLoop = "\$__currentLoopData = {$prepare}; \$__env->addLoop(\$__currentLoopData);";
+        $iterateLoop = '$__env->incrementLoopIndices(); $loop = $__env->getLastLoop();';
+
+        return "<?php {$empty} = true; {$initLoop} foreach(\$__currentLoopData as {$iteration}): {$iterateLoop} {$empty} = false; ?>";
+    }
+
+    protected function compileEmpty($expression): string
+    {
+        if ($expression) {
+            return "<?php if(empty{$expression}): ?>";
+        }
+
+        $empty = '$__empty_'.$this->forElseCounter--;
+
+        return "<?php endforeach; \$__env->popLoop(); \$loop = \$__env->getLastLoop(); if ({$empty}): ?>";
+    }
 }

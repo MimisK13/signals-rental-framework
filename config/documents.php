@@ -43,6 +43,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Sandboxed Loop Iteration Cap
+    |--------------------------------------------------------------------------
+    |
+    | Maximum number of rows a @foreach / @forelse loop may iterate during a
+    | single template render. Arrays are silently truncated; other countable
+    | iterables that exceed this limit raise a user-facing render error.
+    |
+    */
+
+    'max_loop_iterations' => (int) env('DOCUMENTS_MAX_LOOP_ITERATIONS', 500),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Page Layout
     |--------------------------------------------------------------------------
     |

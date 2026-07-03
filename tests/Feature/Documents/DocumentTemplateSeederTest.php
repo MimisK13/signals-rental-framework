@@ -163,4 +163,23 @@ describe('DocumentTemplateSeeder', function () {
                 ->and($result->pdfBinary)->toStartWith('%PDF');
         }
     });
+
+    it('includes rendered line item content in seeded commercial PDFs', function () {
+        ['store' => $store, 'opportunity' => $opportunity] = seededTemplateRenderFixture();
+
+        $template = DocumentTemplate::query()
+            ->where('store_id', $store->id)
+            ->where('document_type', 'quote')
+            ->firstOrFail();
+
+        $preview = app(DocumentRenderer::class)->render(
+            $template->fresh('store'),
+            'opportunity',
+            $opportunity->id,
+            DocumentOutputFormat::Preview,
+        );
+
+        expect($preview->success)->toBeTrue()
+            ->and($preview->html)->toContain('Render Line');
+    });
 });

@@ -126,6 +126,18 @@
         </a>
     @endif
 
+    {{-- Documents --}}
+    @if($group === 'documents')
+        <div class="s-admin-sidebar-title">Documents</div>
+        @can('document_templates.view')
+            <a href="{{ route('admin.document-templates.index') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.document-templates*') ? 'active' : '' }}">
+                <flux:icon.document-text class="s-admin-nav-icon" />
+                Document Templates
+            </a>
+        @endcan
+    @endif
+
     {{-- Tax --}}
     @if($group === 'tax')
         <div class="s-admin-sidebar-title">Tax</div>

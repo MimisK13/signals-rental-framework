@@ -36,6 +36,10 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('Browser');
+
 /*
 | The PostgreSQL lane (tests/Pgsql) runs against a real Postgres connection and
 | manages its own schema + per-test transaction via the UsesPostgres trait, so

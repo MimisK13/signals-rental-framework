@@ -337,6 +337,10 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
 
     // Pricing categories
     Volt::route('admin/settings/pricing/discount-categories', 'admin.settings.pricing.discount-categories')->name('admin.settings.pricing.discount-categories');
+
+    // Documents
+    Volt::route('admin/document-templates', 'document-templates.index')->name('admin.document-templates.index');
+    Volt::route('admin/document-templates/{documentTemplate}/edit', 'document-templates.edit')->name('admin.document-templates.edit');
     Volt::route('admin/settings/pricing/discount-categories/create', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.create');
     Volt::route('admin/settings/pricing/discount-categories/{discountCategory}/edit', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.edit');
     Volt::route('admin/settings/pricing/price-categories', 'admin.settings.pricing.price-categories')->name('admin.settings.pricing.price-categories');

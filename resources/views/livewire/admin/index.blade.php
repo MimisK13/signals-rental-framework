@@ -64,6 +64,13 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                     ['label' => 'Tax Rules', 'description' => 'Map tax classes to rates', 'icon' => 'table-cells', 'route' => 'admin.settings.tax.rules'],
                 ],
             ],
+            'documents' => [
+                'title' => 'Documents',
+                'description' => 'PDF templates, numbering, and print layouts.',
+                'items' => [
+                    ['label' => 'Document Templates', 'description' => 'Edit quote, invoice, and warehouse document templates', 'icon' => 'document-text', 'route' => 'admin.document-templates.index', 'gate' => 'document_templates.view'],
+                ],
+            ],
             'pricing' => [
                 'title' => 'Pricing',
                 'description' => 'Rate definitions and pricing engines.',

@@ -207,8 +207,28 @@ HTML;
     <p><strong>Event:</strong> {{ \$opportunity->subject }}</p>
     <p><strong>Dates:</strong> {{ \$opportunity->starts_at }} – {{ \$opportunity->ends_at }}</p>
     <p><strong>Rental days:</strong> {{ \$opportunity->rental_days }}</p>
-    <p><strong>Line items:</strong> {{ count(\$items) }}</p>
 </div>
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th class="num">Qty</th>
+            <th class="num">Unit</th>
+            <th class="num">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (\$items as \$item)
+            <tr>
+                <td>{{ \$item->name }}</td>
+                <td class="num">{{ \$item->quantity }}</td>
+                <td class="num">{{ \$item->unit_price }}</td>
+                <td class="num">{{ \$item->total }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
 
 <table class="doc-totals">
     <tr><td>Subtotal</td><td class="num">{{ \$opportunity->charge_total }}</td></tr>
@@ -227,8 +247,26 @@ HTML;
     <p><strong>Job:</strong> {{ \$opportunity->subject }}</p>
     <p><strong>Customer:</strong> {{ \$member->company_name ?? \$member->name }}</p>
     <p><strong>Dates:</strong> {{ \$opportunity->starts_at }} – {{ \$opportunity->ends_at }}</p>
-    <p><strong>Lines to pick:</strong> {{ count(\$items) }}</p>
 </div>
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th class="num">Qty</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (\$items as \$item)
+            <tr>
+                <td>{{ \$item->name }}</td>
+                <td class="num">{{ \$item->quantity }}</td>
+                <td>{{ \$item->description }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
 
 <p class="doc-warehouse-note">Use the warehouse system to view serial numbers, locations, and check-off status for each line.</p>
 HTML;

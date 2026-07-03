@@ -110,6 +110,8 @@ class SandboxedBladeRenderer
     {
         extract($data, EXTR_SKIP);
 
+        $__env = new SandboxedLoopEnvironment;
+
         ob_start();
 
         try {
