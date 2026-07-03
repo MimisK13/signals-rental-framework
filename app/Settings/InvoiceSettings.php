@@ -2,6 +2,8 @@
 
 namespace App\Settings;
 
+use App\Enums\OpportunityState;
+
 /**
  * Tenant invoice configuration scaffold (P30).
  *
@@ -19,8 +21,17 @@ class InvoiceSettings extends SettingsDefinition
     public function defaults(): array
     {
         return [
-            // Placeholder for P31 generate-from-opportunity source-state rules.
-            'source_states' => [],
+            'source_states' => [
+                'standard' => [OpportunityState::Order->value],
+                'deposit' => [
+                    OpportunityState::Quotation->value,
+                    OpportunityState::Order->value,
+                ],
+                'proforma' => [
+                    OpportunityState::Quotation->value,
+                    OpportunityState::Order->value,
+                ],
+            ],
             // Optional override when a store has no document_sequences row yet.
             'fallback_number_prefix' => 'INV-',
         ];

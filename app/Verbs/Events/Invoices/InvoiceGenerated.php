@@ -3,6 +3,9 @@
 namespace App\Verbs\Events\Invoices;
 
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\InvoiceTax;
+use App\Models\Opportunity;
 use App\Verbs\States\InvoiceState;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
@@ -10,12 +13,13 @@ use Thunk\Verbs\Event;
 
 /**
  * Genesis event for an invoice. Creates the state as a draft document and
- * projects the initial `invoices` row.
+ * projects the initial `invoices` row plus optional line/tax rows when
+ * generated from an opportunity checkout (P31).
  *
  * `invoice_id` is the application-allocated small primary key. The
- * CreateDraftInvoice action allocates it via SequenceAllocator and passes it in
- * here, so it is persisted in the event payload and replay reproduces identical
- * projection ids (replay-stable).
+ * CreateDraftInvoice / GenerateInvoiceFromOpportunity actions allocate it via
+ * SequenceAllocator and pass it in here, so it is persisted in the event payload
+ * and replay reproduces identical projection ids (replay-stable).
  */
 class InvoiceGenerated extends Event
 {
@@ -40,6 +44,11 @@ class InvoiceGenerated extends Event
         /** @var list<string> */
         public array $tag_list = [],
         public ?string $generated_at = null,
+        /** @var list<array<string, mixed>> */
+        public array $line_items = [],
+        /** @var list<array<string, mixed>> */
+        public array $tax_rows = [],
+        public bool $mark_opportunity_invoiced = false,
     ) {}
 
     public function apply(InvoiceState $state): void
@@ -98,5 +107,51 @@ class InvoiceGenerated extends Event
                 'updated_at' => $state->generated_at,
             ],
         );
+
+        foreach ($this->line_items as $line) {
+            InvoiceItem::query()->updateOrCreate(
+                ['id' => (int) $line['invoice_item_id']],
+                [
+                    'invoice_id' => $state->invoice_id,
+                    'opportunity_item_id' => $line['opportunity_item_id'] ?? null,
+                    'product_id' => $line['product_id'] ?? null,
+                    'description' => (string) $line['description'],
+                    'quantity' => (string) $line['quantity'],
+                    'unit_price' => (int) $line['unit_price'],
+                    'discount' => (int) $line['discount'],
+                    'tax' => (int) $line['tax'],
+                    'total' => (int) $line['net_total'],
+                    'tax_treatment' => (string) $line['tax_treatment'],
+                    'product_tax_class_id' => ($line['product_tax_class_id'] ?? 0) > 0
+                        ? (int) $line['product_tax_class_id']
+                        : null,
+                    'currency_code' => $state->currency_code,
+                    'exchange_rate' => $state->exchange_rate,
+                    'prices_include_tax' => $state->prices_include_tax,
+                    'sort_order' => (int) ($line['sort_order'] ?? 0),
+                    'created_at' => $state->generated_at,
+                    'updated_at' => $state->generated_at,
+                ],
+            );
+        }
+
+        foreach ($this->tax_rows as $taxRow) {
+            InvoiceTax::query()->updateOrCreate(
+                ['id' => (int) $taxRow['invoice_tax_id']],
+                [
+                    'invoice_id' => $state->invoice_id,
+                    'tax_rate_id' => $taxRow['tax_rate_id'] ?? null,
+                    'taxable_amount' => (int) $taxRow['taxable_amount'],
+                    'tax_amount' => (int) $taxRow['tax_amount'],
+                    'created_at' => $state->generated_at,
+                ],
+            );
+        }
+
+        if ($this->mark_opportunity_invoiced && $this->opportunity_id !== null) {
+            Opportunity::query()
+                ->whereKey($this->opportunity_id)
+                ->update(['invoiced' => true]);
+        }
     }
 }

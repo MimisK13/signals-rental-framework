@@ -24,10 +24,20 @@ class InvoiceTax extends Model
     /** @use HasFactory<InvoiceTaxFactory> */
     use FormatsMoney, HasFactory;
 
+    /**
+     * The PK is application-allocated (baked into the InvoiceGenerated event),
+     * so Eloquent must not auto-increment it.
+     */
+    public $incrementing = false;
+
     public $timestamps = false;
+
+    /** @var string */
+    protected $keyType = 'int';
 
     /** @var list<string> */
     protected $fillable = [
+        'id',
         'invoice_id',
         'tax_rate_id',
         'taxable_amount',

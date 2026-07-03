@@ -81,6 +81,8 @@ function something(): void
     // ..
 }
 
+require_once __DIR__.'/Support/GenerateInvoiceFixtures.php';
+
 /**
  * Assert that the AuditableEvent → LogAction listener wrote an action_logs row
  * end-to-end for the given action against the given model.

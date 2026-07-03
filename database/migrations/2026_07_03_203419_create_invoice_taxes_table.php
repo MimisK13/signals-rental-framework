@@ -14,12 +14,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('invoice_taxes', function (Blueprint $table): void {
-            $table->id();
+            $table->unsignedBigInteger('id')->primary();
 
             $table->unsignedBigInteger('invoice_id');
             $table->foreign('invoice_id')->references('id')->on('invoices')->cascadeOnDelete();
 
-            $table->foreignId('tax_rate_id')->constrained('tax_rates')->cascadeOnDelete();
+            $table->foreignId('tax_rate_id')->nullable()->constrained('tax_rates')->nullOnDelete();
 
             $table->integer('taxable_amount')->default(0);
             $table->integer('tax_amount')->default(0);

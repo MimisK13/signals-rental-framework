@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Invoice;
 use App\Models\InvoiceTax;
 use App\Models\TaxRate;
+use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,6 +24,7 @@ class InvoiceTaxFactory extends Factory
         $tax = (int) round($taxable * 0.2);
 
         return [
+            'id' => app(SequenceAllocator::class)->next('invoice_taxes'),
             'invoice_id' => Invoice::factory(),
             'tax_rate_id' => TaxRate::factory(),
             'taxable_amount' => $taxable,
