@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
@@ -48,6 +49,45 @@ class DocumentPolicy
     public function create(User $user): bool
     {
         return $user->can($this->createPermission());
+    }
+
+    public function finalise(User $user, Document $document): bool
+    {
+        if (! $user->can('documents.finalise')) {
+            return false;
+        }
+
+        if (! $this->canAccessStore($user, $document)) {
+            return false;
+        }
+
+        return $document->status === DocumentStatus::Draft;
+    }
+
+    public function void(User $user, Document $document): bool
+    {
+        if (! $user->can($this->deletePermission())) {
+            return false;
+        }
+
+        if (! $this->canAccessStore($user, $document)) {
+            return false;
+        }
+
+        return $document->status === DocumentStatus::Final;
+    }
+
+    public function share(User $user, Document $document): bool
+    {
+        if (! $user->can('documents.share')) {
+            return false;
+        }
+
+        if (! $this->canAccessStore($user, $document)) {
+            return false;
+        }
+
+        return $document->status !== DocumentStatus::Void;
     }
 
     public function delete(User $user, ?Model $model = null): bool

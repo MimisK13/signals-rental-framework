@@ -180,6 +180,42 @@ class FileService
     }
 
     /**
+     * Read stored file contents from the configured disk.
+     */
+    public function getContents(string $path): string
+    {
+        $contents = Storage::disk($this->disk())->get($path);
+
+        if ($contents === null) {
+            throw new \RuntimeException("File not found at path [{$path}].");
+        }
+
+        return $contents;
+    }
+
+    /**
+     * Infer a MIME type from a stored file path.
+     */
+    public function mimeTypeForPath(string $path): string
+    {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'pdf' => 'application/pdf',
+            'html', 'htm' => 'text/html; charset=utf-8',
+            default => 'application/octet-stream',
+        };
+    }
+
+    /**
+     * Build a safe inline filename for Content-Disposition headers.
+     */
+    public function inlineFilename(string $documentNumber, string $path): string
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return preg_replace('/[^A-Za-z0-9._-]+/', '-', $documentNumber).'.'.$extension;
+    }
+
+    /**
      * Generate a thumbnail image using Intervention Image.
      */
     private function generateThumbnail(UploadedFile $file, int $width, int $height): string

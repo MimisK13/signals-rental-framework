@@ -11,6 +11,7 @@ use App\Models\Document;
 use App\Models\DocumentTemplate;
 use App\Models\Opportunity;
 use App\Services\Documents\DocumentNumberGenerator;
+use App\Services\Documents\DocumentTemplateResolver;
 use App\Services\FileService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -22,32 +23,48 @@ class GenerateDocument
         private readonly DocumentRenderer $renderer,
         private readonly DocumentNumberGenerator $numberGenerator,
         private readonly FileService $fileService,
+        private readonly DocumentTemplateResolver $templateResolver,
     ) {}
 
     public function __invoke(GenerateDocumentData $data): DocumentData
     {
         Gate::authorize('create', Document::class);
 
-        $template = DocumentTemplate::query()
-            ->with('store')
-            ->findOrFail($data->document_template_id);
+        $source = $this->loadSource($data);
+        $template = $this->templateResolver->resolveForGeneration(
+            $source->store_id,
+            $data->document_template_id,
+            $data->document_type,
+        );
 
         $this->assertTemplateAccessible($template);
 
-        $source = $this->loadSource($template, $data->source_id);
         $documentType = $template->document_type;
         $resolverType = $template->resolverType();
+        $outputFormat = $data->output_format;
 
         $renderResult = $this->renderer->render(
             $template,
             $resolverType,
-            $data->source_id,
-            DocumentOutputFormat::Pdf,
+            $source->getKey(),
+            $outputFormat,
         );
 
-        if (! $renderResult->success || $renderResult->pdfBinary === null || $renderResult->renderedData === null) {
+        if (! $renderResult->success || $renderResult->renderedData === null) {
             throw ValidationException::withMessages([
                 'document_template_id' => [$renderResult->error ?? 'Unable to render document template.'],
+            ]);
+        }
+
+        if ($outputFormat === DocumentOutputFormat::Pdf && $renderResult->pdfBinary === null) {
+            throw ValidationException::withMessages([
+                'output_format' => ['Unable to render PDF output for this template.'],
+            ]);
+        }
+
+        if ($outputFormat === DocumentOutputFormat::HtmlDownload && ($renderResult->html === null || $renderResult->html === '')) {
+            throw ValidationException::withMessages([
+                'output_format' => ['Unable to render HTML output for this template.'],
             ]);
         }
 
@@ -68,16 +85,29 @@ class GenerateDocument
             'template_version' => $template->version,
         ]);
 
-        $pdfPath = $this->fileService->storeBinary(
-            $renderResult->pdfBinary,
-            'documents',
-            'pdf',
-            $document,
-        );
+        if ($outputFormat === DocumentOutputFormat::Pdf) {
+            $pdfPath = $this->fileService->storeBinary(
+                $renderResult->pdfBinary,
+                'documents',
+                'pdf',
+                $document,
+            );
 
-        $document->update(['pdf_path' => $pdfPath]);
+            $document->update(['pdf_path' => $pdfPath]);
+        }
 
-        return DocumentData::fromModel($document->refresh());
+        if ($outputFormat === DocumentOutputFormat::HtmlDownload) {
+            $htmlPath = $this->fileService->storeBinary(
+                $renderResult->html,
+                'documents',
+                'html',
+                $document,
+            );
+
+            $document->update(['html_snapshot_path' => $htmlPath]);
+        }
+
+        return DocumentData::fromModel($document->refresh(), includeDownloadUrl: true);
     }
 
     private function assertTemplateAccessible(DocumentTemplate $template): void
@@ -89,21 +119,18 @@ class GenerateDocument
         }
     }
 
-    private function loadSource(DocumentTemplate $template, int $sourceId): Opportunity
+    private function loadSource(GenerateDocumentData $data): Opportunity
     {
-        if ($template->model_type !== Opportunity::class) {
-            throw new RuntimeException('Unsupported document template model type.');
+        $modelClass = $data->resolvedDocumentableClass();
+
+        if ($modelClass !== Opportunity::class) {
+            throw new RuntimeException('Unsupported documentable model type.');
         }
 
-        $opportunity = Opportunity::query()->findOrFail($sourceId);
+        /** @var Opportunity $opportunity */
+        $opportunity = $modelClass::query()->findOrFail($data->resolvedSourceId());
 
         Gate::authorize('view', $opportunity);
-
-        if ($opportunity->store_id !== $template->store_id) {
-            throw ValidationException::withMessages([
-                'source_id' => ['The source record does not belong to the template store.'],
-            ]);
-        }
 
         return $opportunity;
     }

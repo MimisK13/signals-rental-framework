@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\CustomFieldGroupController;
 use App\Http\Controllers\Api\V1\CustomViewController;
 use App\Http\Controllers\Api\V1\DiscountCategoryController;
 use App\Http\Controllers\Api\V1\DiscountRuleController;
+use App\Http\Controllers\Api\V1\DocumentController;
 use App\Http\Controllers\Api\V1\DocumentSequenceController;
 use App\Http\Controllers\Api\V1\DocumentTemplateController;
 use App\Http\Controllers\Api\V1\DocumentTypeController;
@@ -93,6 +94,16 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('document_templates/{documentTemplate}/duplicate', [DocumentTemplateController::class, 'duplicate'])->name('api.v1.document_templates.duplicate');
     Route::post('document_templates/{documentTemplate}/restore_default', [DocumentTemplateController::class, 'restoreDefault'])->name('api.v1.document_templates.restore_default');
     Route::post('document_templates/{documentTemplate}/versions/{version}/restore', [DocumentTemplateController::class, 'restoreVersion'])->name('api.v1.document_templates.restore_version');
+
+    Route::get('documents', [DocumentController::class, 'index'])->name('api.v1.documents.index');
+    Route::post('documents/generate', [DocumentController::class, 'generate'])->name('api.v1.documents.generate');
+    Route::post('documents/batch_generate', [DocumentController::class, 'batchGenerate'])->name('api.v1.documents.batch_generate');
+    Route::get('documents/{document}', [DocumentController::class, 'show'])->name('api.v1.documents.show');
+    Route::post('documents/{document}/finalise', [DocumentController::class, 'finalise'])->name('api.v1.documents.finalise');
+    Route::post('documents/{document}/void', [DocumentController::class, 'void'])->name('api.v1.documents.void');
+    Route::post('documents/{document}/public_link', [DocumentController::class, 'createPublicLink'])->name('api.v1.documents.public_link.create');
+    Route::put('documents/{document}/public_link', [DocumentController::class, 'configurePublicLink'])->name('api.v1.documents.public_link.configure');
+    Route::delete('documents/{document}/public_link', [DocumentController::class, 'revokePublicLink'])->name('api.v1.documents.public_link.revoke');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index'])->name('api.v1.settings.index');

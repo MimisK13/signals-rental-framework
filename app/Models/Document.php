@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property DocumentStatus $status
  * @property array<string, mixed>|null $rendered_data
+ * @property Carbon|null $public_expires_at
+ * @property Carbon|null $first_viewed_at
  */
 class Document extends Model
 {

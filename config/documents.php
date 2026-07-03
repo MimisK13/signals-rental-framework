@@ -92,4 +92,25 @@ return [
 
     'public_token_length' => (int) env('DOCUMENTS_PUBLIC_TOKEN_LENGTH', 64),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Public Route Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Unauthenticated public document links are served at /{prefix}/{token}.
+    |
+    */
+
+    'public_route_prefix' => env('DOCUMENTS_PUBLIC_ROUTE_PREFIX', 'd'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public Link PIN Protection
+    |--------------------------------------------------------------------------
+    */
+
+    'public_pin_max_attempts' => (int) env('DOCUMENTS_PUBLIC_PIN_MAX_ATTEMPTS', 5),
+
+    'public_pin_decay_seconds' => (int) env('DOCUMENTS_PUBLIC_PIN_DECAY_SECONDS', 900),
+
 ];

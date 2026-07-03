@@ -3,7 +3,7 @@
 use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\Web\DocsController;
 use App\Http\Controllers\Web\InboundWebhookController;
-use App\Http\Controllers\Web\OpportunityLineItemController;
+use App\Http\Controllers\Web\PublicDocumentController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Middleware\VerifyInboundWebhookSignature;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +12,11 @@ use Livewire\Volt\Volt;
 Route::post('webhooks/receive/{source}', InboundWebhookController::class)
     ->middleware(VerifyInboundWebhookSignature::class)
     ->name('webhooks.receive');
+
+Route::prefix(config('documents.public_route_prefix', 'd'))->group(function (): void {
+    Route::get('{token}', [PublicDocumentController::class, 'show'])->name('documents.public.show');
+    Route::post('{token}/pin', [PublicDocumentController::class, 'verifyPin'])->name('documents.public.verify-pin');
+});
 
 Route::get('/', function () {
     if (config('signals.installed') && ! config('signals.setup_complete')) {
@@ -149,6 +154,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('opportunities/{opportunity}/activities', 'opportunities.activities')->name('opportunities.activities')->withTrashed();
     Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
     Volt::route('opportunities/{opportunity}/files', 'opportunities.files')->name('opportunities.files')->withTrashed();
+    Volt::route('opportunities/{opportunity}/documents', 'opportunities.documents')->name('opportunities.documents')->withTrashed();
 
     Route::delete('opportunities/{opportunity}/items/{item}', [OpportunityLineItemController::class, 'destroy'])
         ->name('opportunities.items.destroy')

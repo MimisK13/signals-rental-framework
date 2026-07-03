@@ -4,6 +4,8 @@ namespace App\Data\Documents;
 
 use App\Enums\DocumentStatus;
 use App\Models\Document;
+use App\Models\DocumentTemplate;
+use App\Services\FileService;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Data;
 
@@ -28,17 +30,34 @@ class DocumentData extends Data
         public string $locale,
         public string $currency_code,
         public ?int $template_version,
+        public ?string $first_viewed_at,
+        public ?string $download_url,
+        public ?DocumentTemplateSummaryData $template,
+        public ?DocumentPublicLinkData $public_link,
         public string $created_at,
         public string $updated_at,
     ) {}
 
-    public static function fromModel(Document $document): self
-    {
+    public static function fromModel(
+        Document $document,
+        bool $includeTemplate = false,
+        bool $includePublicLink = false,
+        bool $includeDownloadUrl = false,
+    ): self {
+        $document->loadMissing('documentTemplate');
+
         /** @var Carbon $createdAt */
         $createdAt = $document->created_at;
 
         /** @var Carbon $updatedAt */
         $updatedAt = $document->updated_at;
+
+        /** @var Carbon|null $firstViewedAt */
+        $firstViewedAt = $document->first_viewed_at;
+
+        $fileService = app(FileService::class);
+
+        $downloadPath = $document->pdf_path ?? $document->html_snapshot_path;
 
         return new self(
             id: $document->id,
@@ -56,8 +75,33 @@ class DocumentData extends Data
             locale: $document->locale,
             currency_code: $document->currency_code,
             template_version: $document->template_version,
+            first_viewed_at: $firstViewedAt?->toIso8601String(),
+            download_url: $includeDownloadUrl
+                ? $fileService->signedUrlOrNull($downloadPath)
+                : null,
+            template: $includeTemplate && $document->documentTemplate instanceof DocumentTemplate
+                ? DocumentTemplateSummaryData::fromModel($document->documentTemplate)
+                : null,
+            public_link: $includePublicLink
+                ? self::publicLinkFromModel($document)
+                : null,
             created_at: $createdAt->toIso8601String(),
             updated_at: $updatedAt->toIso8601String(),
+        );
+    }
+
+    public static function publicLinkFromModel(Document $document): DocumentPublicLinkData
+    {
+        $token = $document->public_token;
+        $isActive = is_string($token) && $token !== '';
+
+        $expiresAtIso = $document->public_expires_at?->toIso8601String();
+
+        return new DocumentPublicLinkData(
+            is_active: $isActive,
+            public_url: $isActive ? route('documents.public.show', ['token' => $token]) : null,
+            public_expires_at: $expiresAtIso,
+            is_pin_protected: is_string($document->public_pin_hash) && $document->public_pin_hash !== '',
         );
     }
 }
