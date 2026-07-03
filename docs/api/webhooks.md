@@ -24,6 +24,7 @@ Webhooks can be managed via the API (`/api/v1/webhooks`) or from the admin panel
 | `member.deleted` | A member is permanently deleted |
 | `member.merged` | Two members are merged (secondary archived into primary) |
 | `member.anonymised` | A member's personally identifiable information is erased |
+| `member.vat_validated` | A member's VAT number is validated (VIES or manual confirmation) |
 
 ### Products
 
@@ -128,6 +129,11 @@ when the event store is rebuilt.
 | `opportunity.restored` | A soft-deleted opportunity is restored |
 | `opportunity.deal_price_set` | A negotiated deal total is set |
 | `opportunity.deal_price_cleared` | A negotiated deal total is cleared |
+| `opportunity.group_deal_price_set` | A negotiated deal total is set on a line-item group |
+| `opportunity.pricing_recalculated` | Opportunity pricing is recalculated (rates, tax, surcharges) |
+| `opportunity.discount_reset` | Applied discounts are cleared from an opportunity |
+| `opportunity.discount_category_applied` | A discount category is applied to an opportunity |
+| `opportunity.discount_manually_overridden` | A discount category percentage is manually overridden |
 | `opportunity.item_added` | A line item is added |
 | `opportunity.item_details_updated` | A line item's details (description, notes, etc.) are updated |
 | `opportunity.item_renamed` | A line item is renamed |
@@ -138,8 +144,10 @@ when the event store is rebuilt.
 | `opportunity.item_optional_toggled` | A line item is toggled optional/required |
 | `opportunity.item_price_overridden` | A line item unit price is overridden |
 | `opportunity.item_substituted` | A line item product is substituted |
+| `opportunity.item_surcharge_overridden` | A line item surcharge amount is manually overridden |
 | `opportunity.items_restructured` | An opportunity's line-item tree is restructured |
 | `opportunity.items_reordered` | An opportunity's line items are reordered |
+| `opportunity.surcharge_group_toggled` | A surcharge group is enabled or disabled on an opportunity |
 | `opportunity.cost_added` | An additional cost is added |
 | `opportunity.cost_updated` | An additional cost is updated |
 | `opportunity.cost_removed` | An additional cost is removed |
@@ -166,6 +174,25 @@ when the event store is rebuilt.
 | `opportunity.bulk_dispatched` | A bulk (non-serialised) quantity is dispatched |
 | `opportunity.bulk_returned` | A bulk quantity is returned |
 | `opportunity.bulk_quantity_adjusted` | A bulk dispatched/returned quantity is adjusted |
+
+### Documents
+
+| Event | Trigger |
+|-------|---------|
+| `document.created` | A document is generated from a template |
+| `document.finalised` | A document is finalised (locked for sharing) |
+| `document.voided` | A finalised document is voided |
+| `document.emailed` | A document is emailed to a recipient (Notification Engine, P38) |
+| `document.public_link_created` | A public sharing link is created for a document |
+| `document.public_link_accessed` | A public sharing link is accessed for the first time |
+| `document.public_link_revoked` | A public sharing link is revoked |
+| `document.public_link_configured` | A public link's expiry or PIN settings are changed |
+| `document_template.created` | A document template is created or duplicated |
+| `document_template.updated` | A document template is saved |
+| `document_template.deleted` | A custom document template is deleted |
+| `document_template.restored` | A system template is restored to its shipped default |
+| `document_template.set_as_default` | A template is marked as the default for its type |
+| `document_sequence.reset` | A document numbering sequence rolls over to a new period |
 
 ### Availability
 

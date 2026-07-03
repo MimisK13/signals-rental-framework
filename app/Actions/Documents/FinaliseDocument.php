@@ -4,8 +4,8 @@ namespace App\Actions\Documents;
 
 use App\Data\Documents\DocumentData;
 use App\Enums\DocumentStatus;
-use App\Events\AuditableEvent;
 use App\Models\Document;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -25,12 +25,12 @@ class FinaliseDocument
 
         $document->update(['status' => DocumentStatus::Final]);
 
-        event(new AuditableEvent(
+        app(DocumentEventDispatcher::class)->document(
             $document,
             'document.finalised',
             ['status' => $oldStatus],
             ['status' => DocumentStatus::Final->value],
-        ));
+        );
 
         return DocumentData::fromModel(
             $document->refresh(),

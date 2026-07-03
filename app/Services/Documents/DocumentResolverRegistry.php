@@ -22,6 +22,14 @@ class DocumentResolverRegistry
     private array $resolvers = [];
 
     /**
+     * Post-resolve extenders keyed by resolver type. Each extender receives the
+     * resolved data array and source model, and returns the (possibly mutated) array.
+     *
+     * @var array<string, list<callable(array<string, mixed>, Model): array<string, mixed>>>
+     */
+    private array $resolveExtenders = [];
+
+    /**
      * @var array<string, list<array{name: string, fields: list<array<string, mixed>>}>>
      */
     private array $fieldTreeCache = [];
@@ -35,6 +43,14 @@ class DocumentResolverRegistry
     {
         $this->resolvers[$resolver->type()] = $resolver;
         $this->invalidate($resolver->type());
+    }
+
+    /**
+     * @param  callable(array<string, mixed>, Model): array<string, mixed>  $extender
+     */
+    public function extendResolve(string $type, callable $extender): void
+    {
+        $this->resolveExtenders[$type][] = $extender;
     }
 
     /**
@@ -112,8 +128,13 @@ class DocumentResolverRegistry
     {
         $resolver = $this->get($type);
         $source = $resolver->loadSource($sourceId);
+        $data = $resolver->resolve($source);
 
-        return $resolver->resolve($source);
+        foreach ($this->resolveExtenders[$type] ?? [] as $extender) {
+            $data = $extender($data, $source);
+        }
+
+        return $data;
     }
 
     public function invalidate(?string $type = null): void

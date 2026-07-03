@@ -2,6 +2,7 @@
 
 namespace App\Services\Documents;
 
+use App\Models\Member;
 use App\Models\Opportunity;
 
 /**
@@ -16,7 +17,9 @@ class SystemDocumentTemplates
         'credit_note',
         'delivery_note',
         'pick_list',
+        'return_list',
         'pro_forma',
+        'statement',
     ];
 
     /**
@@ -88,12 +91,14 @@ class SystemDocumentTemplates
                 title: 'Pick List',
                 intro: 'Warehouse pick list — check each line as items are collected.',
             ),
+            'return_list' => self::returnListDefinition(),
             'pro_forma' => self::baseDefinition(
                 type: 'pro_forma',
                 name: 'Standard Pro Forma',
                 title: 'Pro Forma Invoice',
                 intro: 'This pro forma invoice is provided for approval and is not a tax invoice.',
             ),
+            'statement' => self::statementDefinition(),
             default => throw new \InvalidArgumentException("Unsupported system document type [{$documentType}]."),
         };
     }
@@ -397,6 +402,163 @@ CSS;
     private static function warehouseStyles(): string
     {
         return self::commercialStyles();
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function returnListDefinition(): array
+    {
+        return [
+            'document_type' => 'return_list',
+            'slug' => 'system-return_list',
+            'name' => 'Standard Return List',
+            'description' => 'System default Return List template.',
+            'model_type' => Opportunity::class,
+            'header_html' => self::headerHtml('Return List'),
+            'body_html' => self::returnListBodyHtml(),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::warehouseStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function statementDefinition(): array
+    {
+        return [
+            'document_type' => 'statement',
+            'slug' => 'system-statement',
+            'name' => 'Standard Statement',
+            'description' => 'System default customer statement template.',
+            'model_type' => Member::class,
+            'header_html' => self::statementHeaderHtml(),
+            'body_html' => self::statementBodyHtml(),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    private static function returnListBodyHtml(): string
+    {
+        return <<<'HTML'
+<p class="doc-intro">Check-in list — verify each returned item and note any damage.</p>
+
+<div class="doc-event">
+    <p><strong>Job:</strong> {{ $opportunity->subject }}</p>
+    <p><strong>Customer:</strong> {{ $member->company_name ?? $member->name }}</p>
+    <p><strong>Dates:</strong> {{ $opportunity->starts_at }} – {{ $opportunity->ends_at }}</p>
+</div>
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th class="num">Qty</th>
+            <th>Condition</th>
+            <th>Damaged</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($return_items as $item)
+            <tr>
+                <td>{{ $item->name }}</td>
+                <td class="num">{{ $item->quantity }}</td>
+                <td>{{ $item->condition_notes ?? '' }}</td>
+                <td>{{ ($item->is_damaged ?? false) ? 'Yes' : 'No' }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+HTML;
+    }
+
+    private static function statementHeaderHtml(): string
+    {
+        return <<<'HTML'
+<div class="doc-header">
+    <div class="doc-brand">
+        <h1 class="doc-store">{{ $store->name }}</h1>
+        <p class="doc-type">Account Statement</p>
+    </div>
+    <div class="doc-meta-block">
+        <p><strong>Account:</strong> {{ $member->account_number ?? $member->name }}</p>
+        <p><strong>Period:</strong> {{ $statement->period_start }} – {{ $statement->period_end }}</p>
+    </div>
+</div>
+HTML;
+    }
+
+    private static function statementBodyHtml(): string
+    {
+        return <<<'HTML'
+<div class="doc-addresses">
+    <div class="doc-address">
+        <h2>From</h2>
+        <p>{{ $store->name }}</p>
+        <p>{{ $store->address }}</p>
+        <p>{{ $store->phone }}</p>
+        <p>{{ $store->email }}</p>
+    </div>
+    <div class="doc-address">
+        <h2>To</h2>
+        <p>{{ $member->company_name ?? $member->name }}</p>
+        <p>{{ $member->email }}</p>
+        <p>{{ $member->phone }}</p>
+    </div>
+</div>
+
+<table class="doc-totals">
+    <tr><td>Opening Balance</td><td class="num">{{ $statement->opening_balance }}</td></tr>
+    <tr class="grand"><td>Closing Balance</td><td class="num">{{ $statement->closing_balance }}</td></tr>
+</table>
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Invoice</th>
+            <th>Issued</th>
+            <th class="num">Total</th>
+            <th class="num">Balance</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($invoices as $invoice)
+            <tr>
+                <td>{{ $invoice->number ?? '' }}</td>
+                <td>{{ $invoice->issued_at ?? '' }}</td>
+                <td class="num">{{ $invoice->total ?? '' }}</td>
+                <td class="num">{{ $invoice->balance ?? '' }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+HTML;
     }
 
     /**

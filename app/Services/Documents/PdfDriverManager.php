@@ -3,26 +3,43 @@
 namespace App\Services\Documents;
 
 use App\Contracts\Documents\PdfDriver;
-use App\Services\Documents\Drivers\BrowsershotDriver;
-use App\Services\Documents\Drivers\DompdfDriver;
 use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;
 
 class PdfDriverManager
 {
+    /**
+     * @var array<string, class-string<PdfDriver>>
+     */
+    private array $drivers;
+
     public function __construct(
         private readonly Container $container,
-    ) {}
+    ) {
+        /** @var array<string, class-string<PdfDriver>> $configured */
+        $configured = config('documents.drivers', []);
+        $this->drivers = $configured;
+    }
+
+    /**
+     * @param  class-string<PdfDriver>  $driverClass
+     */
+    public function register(string $name, string $driverClass): void
+    {
+        $this->drivers[$name] = $driverClass;
+    }
 
     public function driver(?string $name = null): PdfDriver
     {
         $name ??= (string) config('documents.pdf_driver', 'dompdf');
 
-        return match ($name) {
-            'dompdf' => $this->container->make(DompdfDriver::class),
-            'browsershot' => $this->container->make(BrowsershotDriver::class),
-            default => throw new InvalidArgumentException("Unknown document PDF driver [{$name}]."),
-        };
+        $driverClass = $this->drivers[$name] ?? null;
+
+        if ($driverClass === null) {
+            throw new InvalidArgumentException("Unknown document PDF driver [{$name}].");
+        }
+
+        return $this->container->make($driverClass);
     }
 
     /**
@@ -30,6 +47,6 @@ class PdfDriverManager
      */
     public function availableDrivers(): array
     {
-        return array_keys(config('documents.drivers', []));
+        return array_keys($this->drivers);
     }
 }

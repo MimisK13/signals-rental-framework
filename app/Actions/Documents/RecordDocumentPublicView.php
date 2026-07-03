@@ -2,9 +2,9 @@
 
 namespace App\Actions\Documents;
 
-use App\Events\AuditableEvent;
 use App\Models\Document;
 use App\Models\Scopes\StoreScope;
+use App\Services\Documents\DocumentEventDispatcher;
 
 class RecordDocumentPublicView
 {
@@ -16,13 +16,11 @@ class RecordDocumentPublicView
 
         $document->update(['first_viewed_at' => now()]);
 
-        event(new AuditableEvent(
+        app(DocumentEventDispatcher::class)->document(
             $document,
             'document.public_link_accessed',
             metadata: ['first_view' => true],
-        ));
-
-        // TODO(P22): dispatch document.public_link_accessed domain signal + webhook fan-out.
+        );
     }
 
     public static function findByToken(string $token): ?Document

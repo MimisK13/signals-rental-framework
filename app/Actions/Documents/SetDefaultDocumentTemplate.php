@@ -4,6 +4,7 @@ namespace App\Actions\Documents;
 
 use App\Data\Documents\DocumentTemplateData;
 use App\Models\DocumentTemplate;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
@@ -22,6 +23,8 @@ class SetDefaultDocumentTemplate
                 ->update(['is_default' => false]);
 
             $template->update(['is_default' => true]);
+
+            app(DocumentEventDispatcher::class)->template($template, 'document_template.set_as_default');
 
             return DocumentTemplateData::fromModel($template->refresh());
         });

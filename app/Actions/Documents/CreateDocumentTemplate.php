@@ -6,7 +6,8 @@ use App\Actions\Documents\Concerns\ValidatesDocumentTemplateStoreAccess;
 use App\Data\Documents\CreateDocumentTemplateData;
 use App\Data\Documents\DocumentTemplateData;
 use App\Models\DocumentTemplate;
-use App\Models\Opportunity;
+use App\Services\Documents\DocumentEventDispatcher;
+use App\Services\Documents\DocumentTypeRegistry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +20,12 @@ class CreateDocumentTemplate
     {
         Gate::authorize('create', DocumentTemplate::class);
         $this->assertUserCanAccessStore($data->store_id);
+
+        if (! app(DocumentTypeRegistry::class)->has($data->document_type)) {
+            throw ValidationException::withMessages([
+                'document_type' => ['The document type is not registered.'],
+            ]);
+        }
 
         if (DocumentTemplate::query()->where('store_id', $data->store_id)->where('slug', $data->slug)->exists()) {
             throw ValidationException::withMessages([
@@ -38,7 +45,7 @@ class CreateDocumentTemplate
                 'slug' => $data->slug,
                 'description' => $data->description,
                 'document_type' => $data->document_type,
-                'model_type' => $data->model_type ?? Opportunity::class,
+                'model_type' => $data->model_type ?? app(DocumentTypeRegistry::class)->modelType($data->document_type),
                 'body_html' => $data->body_html,
                 'header_html' => $data->header_html,
                 'footer_html' => $data->footer_html,
@@ -51,6 +58,8 @@ class CreateDocumentTemplate
                 'version' => 1,
                 'last_edited_at' => now(),
             ]);
+
+            app(DocumentEventDispatcher::class)->template($template, 'document_template.created');
 
             return DocumentTemplateData::fromModel($template);
         });

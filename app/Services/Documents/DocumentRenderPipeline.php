@@ -22,6 +22,7 @@ class DocumentRenderPipeline implements DocumentRenderer
         private readonly SandboxedBladeRenderer $bladeRenderer,
         private readonly DocumentBrandingResolver $brandingResolver,
         private readonly PdfDriverManager $pdfDriverManager,
+        private readonly DocumentRenderContext $renderContext,
     ) {}
 
     public function render(
@@ -31,6 +32,7 @@ class DocumentRenderPipeline implements DocumentRenderer
         DocumentOutputFormat $format = DocumentOutputFormat::Preview,
     ): DocumentRenderResult {
         try {
+            $this->renderContext->storeId = $template->store_id;
             $renderedData = $this->resolverRegistry->resolve($documentType, $sourceId);
         } catch (Throwable $exception) {
             return DocumentRenderResult::failure(

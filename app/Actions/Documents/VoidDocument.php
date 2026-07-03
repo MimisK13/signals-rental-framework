@@ -4,8 +4,8 @@ namespace App\Actions\Documents;
 
 use App\Data\Documents\DocumentData;
 use App\Enums\DocumentStatus;
-use App\Events\AuditableEvent;
 use App\Models\Document;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -30,12 +30,12 @@ class VoidDocument
             'public_pin_hash' => null,
         ]);
 
-        event(new AuditableEvent(
+        app(DocumentEventDispatcher::class)->document(
             $document,
             'document.voided',
             ['status' => $oldStatus],
             ['status' => DocumentStatus::Void->value],
-        ));
+        );
 
         return DocumentData::fromModel(
             $document->refresh(),

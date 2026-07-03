@@ -37,18 +37,25 @@ use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
 use App\Services\Documents\DocumentBrandingResolver;
+use App\Services\Documents\DocumentEventDispatcher;
+use App\Services\Documents\DocumentRenderContext;
 use App\Services\Documents\DocumentRenderPipeline;
 use App\Services\Documents\DocumentResolverRegistry;
+use App\Services\Documents\DocumentTypeRegistry;
 use App\Services\Documents\OpportunityDataResolver;
 use App\Services\Documents\PdfDriverManager;
+use App\Services\Documents\ReturnListDataResolver;
 use App\Services\Documents\SandboxedBladeCompiler;
 use App\Services\Documents\SandboxedBladeRenderer;
+use App\Services\Documents\StatementDataResolver;
 use App\Services\NotificationRegistry;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
 use App\Services\Opportunities\TransitionRuleRegistry;
 use App\Services\PermissionRegistry;
+use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
+use App\Services\Plugins\PluginRegistrar;
 use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\CriteriaMatcher;
 use App\Services\Pricing\DealPriceProportionalDistributor;
@@ -123,9 +130,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentResolverRegistry::class, function ($app): DocumentResolverRegistry {
             $registry = new DocumentResolverRegistry;
             $registry->register($app->make(OpportunityDataResolver::class));
+            $registry->register($app->make(ReturnListDataResolver::class));
+            $registry->register($app->make(StatementDataResolver::class));
 
             return $registry;
         });
+        $this->app->singleton(DocumentTypeRegistry::class);
+        $this->app->singleton(DocumentEventDispatcher::class);
+        $this->app->scoped(DocumentRenderContext::class);
+        $this->app->singleton(PluginDocumentTemplateSeederRegistry::class);
+        $this->app->singleton(PluginRegistrar::class);
         $this->app->singleton(SandboxedBladeCompiler::class, function ($app): SandboxedBladeCompiler {
             $cachePath = (string) config('documents.sandbox_cache_path');
 
@@ -379,6 +393,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerVerbsMetadata();
         $this->registerApiCatalogueCacheInvalidation();
         $this->registerPricingWorkflowTriggers();
+        $this->registerDocumentWorkflowTriggers();
 
         // LogAction is auto-discovered by Laravel via its handle(AuditableEvent) type-hint.
         // Manual registration removed to prevent duplicate listener execution.
@@ -549,6 +564,28 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('vies-validation', function () {
             return Limit::perMinute(30);
         });
+    }
+
+    protected function registerDocumentWorkflowTriggers(): void
+    {
+        $registry = app(WorkflowTriggerRegistry::class);
+
+        foreach ([
+            'document.created',
+            'document.finalised',
+            'document.voided',
+            'document.emailed',
+            'document.public_link_created',
+            'document.public_link_accessed',
+            'document.public_link_revoked',
+            'document_template.created',
+            'document_template.updated',
+            'document_template.deleted',
+            'document_template.set_as_default',
+            'document_sequence.reset',
+        ] as $transition) {
+            $registry->register($transition, 'core-document-engine-seam');
+        }
     }
 
     protected function registerPricingWorkflowTriggers(): void

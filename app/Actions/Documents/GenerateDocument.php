@@ -9,13 +9,15 @@ use App\Enums\DocumentOutputFormat;
 use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\DocumentTemplate;
+use App\Models\Member;
 use App\Models\Opportunity;
+use App\Services\Documents\DocumentEventDispatcher;
 use App\Services\Documents\DocumentNumberGenerator;
 use App\Services\Documents\DocumentTemplateResolver;
 use App\Services\FileService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
-use RuntimeException;
 
 class GenerateDocument
 {
@@ -30,15 +32,16 @@ class GenerateDocument
     {
         Gate::authorize('create', Document::class);
 
-        $source = $this->loadSource($data);
+        $storeId = $this->resolveStoreId($data);
         $template = $this->templateResolver->resolveForGeneration(
-            $source->store_id,
+            $storeId,
             $data->document_template_id,
             $data->document_type,
         );
 
         $this->assertTemplateAccessible($template);
 
+        $source = $this->loadSource($data);
         $documentType = $template->document_type;
         $resolverType = $template->resolverType();
         $outputFormat = $data->output_format;
@@ -107,7 +110,25 @@ class GenerateDocument
             $document->update(['html_snapshot_path' => $htmlPath]);
         }
 
-        return DocumentData::fromModel($document->refresh(), includeDownloadUrl: true);
+        $document->refresh();
+        app(DocumentEventDispatcher::class)->document($document, 'document.created');
+
+        return DocumentData::fromModel($document, includeDownloadUrl: true);
+    }
+
+    private function resolveStoreId(GenerateDocumentData $data): int
+    {
+        if ($data->document_template_id !== null) {
+            return (int) DocumentTemplate::query()->findOrFail($data->document_template_id)->store_id;
+        }
+
+        if ($data->resolvedDocumentableClass() === Opportunity::class) {
+            return (int) Opportunity::query()->findOrFail($data->resolvedSourceId())->store_id;
+        }
+
+        throw ValidationException::withMessages([
+            'document_template_id' => ['A document template is required when generating member documents.'],
+        ]);
     }
 
     private function assertTemplateAccessible(DocumentTemplate $template): void
@@ -119,28 +140,34 @@ class GenerateDocument
         }
     }
 
-    private function loadSource(GenerateDocumentData $data): Opportunity
+    private function loadSource(GenerateDocumentData $data): Model
     {
         $modelClass = $data->resolvedDocumentableClass();
 
-        if ($modelClass !== Opportunity::class) {
-            throw new RuntimeException('Unsupported documentable model type.');
-        }
+        /** @var Opportunity|Member $source */
+        $source = $modelClass::query()->findOrFail($data->resolvedSourceId());
 
-        /** @var Opportunity $opportunity */
-        $opportunity = $modelClass::query()->findOrFail($data->resolvedSourceId());
+        Gate::authorize('view', $source);
 
-        Gate::authorize('view', $opportunity);
-
-        return $opportunity;
+        return $source;
     }
 
-    private function resolveCurrencyCode(Opportunity $opportunity): string
+    private function resolveCurrencyCode(Model $source): string
     {
-        $code = $opportunity->currency_code;
+        if ($source instanceof Opportunity) {
+            $code = $source->currency_code;
 
-        if (is_string($code) && $code !== '') {
-            return $code;
+            if (is_string($code) && $code !== '') {
+                return $code;
+            }
+        }
+
+        if ($source instanceof Member) {
+            $code = $source->default_currency_code;
+
+            if (is_string($code) && $code !== '') {
+                return $code;
+            }
         }
 
         return (string) settings('company.base_currency', 'GBP');

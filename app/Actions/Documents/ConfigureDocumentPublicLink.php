@@ -4,8 +4,8 @@ namespace App\Actions\Documents;
 
 use App\Data\Documents\ConfigureDocumentPublicLinkData;
 use App\Data\Documents\DocumentData;
-use App\Events\AuditableEvent;
 use App\Models\Document;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -39,7 +39,7 @@ class ConfigureDocumentPublicLink
             $document->update($updates);
         }
 
-        event(new AuditableEvent(
+        app(DocumentEventDispatcher::class)->document(
             $document,
             'document.public_link_configured',
             null,
@@ -47,7 +47,7 @@ class ConfigureDocumentPublicLink
                 'public_expires_at' => $document->public_expires_at?->toIso8601String(),
                 'is_pin_protected' => is_string($document->public_pin_hash) && $document->public_pin_hash !== '',
             ],
-        ));
+        );
 
         return DocumentData::fromModel(
             $document->refresh(),

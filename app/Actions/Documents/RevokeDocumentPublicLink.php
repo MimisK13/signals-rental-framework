@@ -3,8 +3,8 @@
 namespace App\Actions\Documents;
 
 use App\Data\Documents\DocumentData;
-use App\Events\AuditableEvent;
 use App\Models\Document;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -26,10 +26,7 @@ class RevokeDocumentPublicLink
             'public_pin_hash' => null,
         ]);
 
-        event(new AuditableEvent(
-            $document,
-            'document.public_link_revoked',
-        ));
+        app(DocumentEventDispatcher::class)->document($document, 'document.public_link_revoked');
 
         return DocumentData::fromModel(
             $document->refresh(),

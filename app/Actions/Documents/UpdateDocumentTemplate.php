@@ -6,6 +6,7 @@ use App\Actions\Documents\Concerns\SnapshotsDocumentTemplateVersions;
 use App\Data\Documents\DocumentTemplateData;
 use App\Data\Documents\UpdateDocumentTemplateData;
 use App\Models\DocumentTemplate;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -50,6 +51,8 @@ class UpdateDocumentTemplate
                 'version' => $template->version + 1,
                 'last_edited_at' => now(),
             ]);
+
+            app(DocumentEventDispatcher::class)->template($template, 'document_template.updated');
 
             return DocumentTemplateData::fromModel($template->refresh());
         });

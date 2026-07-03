@@ -5,6 +5,7 @@ namespace App\Actions\Documents;
 use App\Actions\Documents\Concerns\SnapshotsDocumentTemplateVersions;
 use App\Data\Documents\DocumentTemplateData;
 use App\Models\DocumentTemplate;
+use App\Services\Documents\DocumentEventDispatcher;
 use App\Services\Documents\SystemDocumentTemplates;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -41,6 +42,8 @@ class RestoreDefaultDocumentTemplate
                 'version' => $template->version + 1,
                 'last_edited_at' => now(),
             ]);
+
+            app(DocumentEventDispatcher::class)->template($template, 'document_template.restored');
 
             return DocumentTemplateData::fromModel($template->refresh());
         });

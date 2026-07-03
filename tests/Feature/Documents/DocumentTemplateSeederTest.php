@@ -34,7 +34,7 @@ beforeEach(function () {
 });
 
 /**
- * @return array{store: Store, opportunity: Opportunity}
+ * @return array{store: Store, member: Member, opportunity: Opportunity}
  */
 function seededTemplateRenderFixture(): array
 {
@@ -97,7 +97,7 @@ function seededTemplateRenderFixture(): array
         ]);
     }
 
-    return compact('store', 'opportunity');
+    return compact('store', 'member', 'opportunity');
 }
 
 describe('DocumentTemplateSeeder', function () {
@@ -143,7 +143,7 @@ describe('DocumentTemplateSeeder', function () {
     });
 
     it('renders a valid non-empty PDF for every seeded system template type', function () {
-        ['store' => $store, 'opportunity' => $opportunity] = seededTemplateRenderFixture();
+        ['store' => $store, 'member' => $member, 'opportunity' => $opportunity] = seededTemplateRenderFixture();
 
         foreach (SystemDocumentTemplates::CORE_TYPES as $documentType) {
             $template = DocumentTemplate::query()
@@ -151,10 +151,12 @@ describe('DocumentTemplateSeeder', function () {
                 ->where('document_type', $documentType)
                 ->firstOrFail();
 
+            $sourceId = $documentType === 'statement' ? $member->id : $opportunity->id;
+
             $result = app(DocumentRenderer::class)->render(
                 $template->fresh('store'),
-                'opportunity',
-                $opportunity->id,
+                $template->resolverType(),
+                $sourceId,
                 DocumentOutputFormat::Pdf,
             );
 

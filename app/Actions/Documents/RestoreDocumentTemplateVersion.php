@@ -6,6 +6,7 @@ use App\Actions\Documents\Concerns\SnapshotsDocumentTemplateVersions;
 use App\Data\Documents\DocumentTemplateData;
 use App\Models\DocumentTemplate;
 use App\Models\DocumentTemplateVersion;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
@@ -33,6 +34,8 @@ class RestoreDocumentTemplateVersion
                 'version' => $template->version + 1,
                 'last_edited_at' => now(),
             ]);
+
+            app(DocumentEventDispatcher::class)->template($template, 'document_template.updated');
 
             return DocumentTemplateData::fromModel($template->refresh());
         });

@@ -3,6 +3,7 @@
 namespace App\Actions\Documents;
 
 use App\Models\DocumentTemplate;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -17,6 +18,8 @@ class DeleteDocumentTemplate
                 'document_template' => ['System templates cannot be deleted.'],
             ]);
         }
+
+        app(DocumentEventDispatcher::class)->template($template, 'document_template.deleted');
 
         $template->delete();
     }

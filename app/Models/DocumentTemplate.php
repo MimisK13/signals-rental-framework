@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasStoreScoping;
+use App\Services\Documents\DocumentTypeRegistry;
 use Database\Factories\DocumentTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -94,8 +95,15 @@ class DocumentTemplate extends Model
      */
     public function resolverType(): string
     {
+        $registry = app(DocumentTypeRegistry::class);
+
+        if ($registry->has($this->document_type)) {
+            return $registry->resolverType($this->document_type);
+        }
+
         return match ($this->model_type) {
             Opportunity::class => 'opportunity',
+            Member::class => 'statement',
             default => throw new \InvalidArgumentException("Unsupported document template model type [{$this->model_type}]."),
         };
     }

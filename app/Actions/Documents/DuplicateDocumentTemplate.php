@@ -4,6 +4,7 @@ namespace App\Actions\Documents;
 
 use App\Data\Documents\DocumentTemplateData;
 use App\Models\DocumentTemplate;
+use App\Services\Documents\DocumentEventDispatcher;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
@@ -37,6 +38,8 @@ class DuplicateDocumentTemplate
             'version' => 1,
             'last_edited_at' => now(),
         ]);
+
+        app(DocumentEventDispatcher::class)->template($duplicate, 'document_template.created');
 
         return DocumentTemplateData::fromModel($duplicate);
     }

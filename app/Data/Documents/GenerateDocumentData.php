@@ -3,6 +3,7 @@
 namespace App\Data\Documents;
 
 use App\Enums\DocumentOutputFormat;
+use App\Models\Member;
 use App\Models\Opportunity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
@@ -31,7 +32,7 @@ class GenerateDocumentData extends Data
             'document_type' => ['nullable', 'string', 'max:100', 'required_without:document_template_id'],
             'source_id' => ['nullable', 'integer', 'required_without:documentable_id'],
             'documentable_id' => ['nullable', 'integer', 'required_without:source_id'],
-            'documentable_type' => ['nullable', 'string', Rule::in(['Opportunity', 'opportunity'])],
+            'documentable_type' => ['nullable', 'string', Rule::in(['Opportunity', 'opportunity', 'Member', 'member'])],
             'output_format' => ['nullable', 'string', Rule::enum(DocumentOutputFormat::class)],
         ];
     }
@@ -51,6 +52,10 @@ class GenerateDocumentData extends Data
 
         if ($type === Opportunity::class || strtolower($type) === 'opportunity' || str_ends_with($type, 'Opportunity')) {
             return Opportunity::class;
+        }
+
+        if ($type === Member::class || strtolower($type) === 'member' || str_ends_with($type, 'Member')) {
+            return Member::class;
         }
 
         throw new \InvalidArgumentException("Unsupported documentable type [{$type}].");

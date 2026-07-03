@@ -86,7 +86,7 @@ class DocumentNumberGenerator
     private function resolveInstant(DocumentSequence $sequence, ?DateTimeInterface $at): CarbonImmutable
     {
         $sequence->loadMissing('store');
-        $timezone = $sequence->store?->timezone ?? 'UTC';
+        $timezone = $sequence->store->timezone ?? 'UTC';
 
         if ($at !== null) {
             return CarbonImmutable::instance($at)->setTimezone($timezone);
@@ -106,13 +106,22 @@ class DocumentNumberGenerator
 
         $year = (int) $instant->format('Y');
         $month = (int) $instant->format('n');
+        $shouldReset = false;
 
         if ($frequency === DocumentSequenceResetFrequency::Yearly) {
             if ($sequence->current_period_year !== null && $sequence->current_period_year !== $year) {
                 $sequence->next_number = 1;
+                $shouldReset = true;
             }
 
             $sequence->current_period_year = $year;
+
+            if ($shouldReset) {
+                app(DocumentEventDispatcher::class)->sequence($sequence, 'document_sequence.reset', [
+                    'reset_frequency' => $frequency->value,
+                    'period_year' => $year,
+                ]);
+            }
 
             return;
         }
@@ -122,10 +131,19 @@ class DocumentNumberGenerator
 
         if ($periodChanged && $sequence->current_period_year !== null) {
             $sequence->next_number = 1;
+            $shouldReset = true;
         }
 
         $sequence->current_period_year = $year;
         $sequence->current_period_month = $month;
+
+        if ($shouldReset) {
+            app(DocumentEventDispatcher::class)->sequence($sequence, 'document_sequence.reset', [
+                'reset_frequency' => $frequency->value,
+                'period_year' => $year,
+                'period_month' => $month,
+            ]);
+        }
     }
 
     private function nextNumberAfterPeriodCheck(DocumentSequence $sequence, CarbonInterface $instant): int

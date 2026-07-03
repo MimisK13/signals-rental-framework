@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use App\Actions\Documents\CreateDocumentTemplate;
 use App\Actions\Documents\DeleteDocumentTemplate;
 use App\Actions\Documents\DuplicateDocumentTemplate;
+use App\Actions\Documents\ExportDocumentTemplate;
+use App\Actions\Documents\ImportDocumentTemplate;
 use App\Actions\Documents\RestoreDefaultDocumentTemplate;
 use App\Actions\Documents\RestoreDocumentTemplateVersion;
 use App\Actions\Documents\SetDefaultDocumentTemplate;
 use App\Actions\Documents\UpdateDocumentTemplate;
 use App\Data\Documents\CreateDocumentTemplateData;
 use App\Data\Documents\DocumentTemplateData;
+use App\Data\Documents\ImportDocumentTemplateData;
 use App\Data\Documents\UpdateDocumentTemplateData;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
@@ -233,6 +236,44 @@ class DocumentTemplateController extends Controller
         return $this->respondWith(
             $result->toArray(),
             'document_template',
+        );
+    }
+
+    /**
+     * Export a template definition as portable JSON (no version history).
+     *
+     * @response array{document_template_export: array<string, mixed>}
+     */
+    #[PriceWeight(0)]
+    public function export(DocumentTemplate $documentTemplate): JsonResponse
+    {
+        $this->authorizeApi('document_templates.view', 'documents:read');
+        Gate::authorize('view', $documentTemplate);
+
+        return response()->json([
+            'document_template_export' => (new ExportDocumentTemplate)($documentTemplate),
+        ]);
+    }
+
+    /**
+     * Import a portable JSON template export as a new non-system template.
+     *
+     * @response 201 array{document_template: DocumentTemplateData}
+     */
+    #[PriceWeight(1)]
+    public function import(Request $request): JsonResponse
+    {
+        $this->authorizeApi('document_templates.edit', 'documents:write');
+
+        $validated = $request->validate(ImportDocumentTemplateData::rules());
+        $dto = ImportDocumentTemplateData::from($validated);
+
+        $result = (new ImportDocumentTemplate)($dto);
+
+        return $this->respondWith(
+            $result->toArray(),
+            'document_template',
+            Response::HTTP_CREATED,
         );
     }
 }

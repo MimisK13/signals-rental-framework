@@ -4,8 +4,8 @@ namespace App\Actions\Documents;
 
 use App\Data\Documents\CreateDocumentPublicLinkData;
 use App\Data\Documents\DocumentData;
-use App\Events\AuditableEvent;
 use App\Models\Document;
+use App\Services\Documents\DocumentEventDispatcher;
 use App\Services\Documents\DocumentPublicTokenGenerator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +28,7 @@ class CreateDocumentPublicLink
             'public_pin_hash' => $this->hashPin($data->pin),
         ]);
 
-        event(new AuditableEvent(
+        app(DocumentEventDispatcher::class)->document(
             $document,
             'document.public_link_created',
             null,
@@ -36,7 +36,7 @@ class CreateDocumentPublicLink
                 'public_expires_at' => $data->expires_at,
                 'is_pin_protected' => $data->pin !== null && $data->pin !== '',
             ],
-        ));
+        );
 
         return DocumentData::fromModel(
             $document->refresh(),

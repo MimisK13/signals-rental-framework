@@ -5,10 +5,15 @@ namespace Database\Seeders;
 use App\Models\DocumentTemplate;
 use App\Models\Store;
 use App\Services\Documents\SystemDocumentTemplates;
+use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
 use Illuminate\Database\Seeder;
 
 class DocumentTemplateSeeder extends Seeder
 {
+    public function __construct(
+        private readonly PluginDocumentTemplateSeederRegistry $pluginSeeders,
+    ) {}
+
     /**
      * Seed system templates for every existing store.
      */
@@ -50,5 +55,7 @@ class DocumentTemplateSeeder extends Seeder
                 ],
             );
         }
+
+        $this->pluginSeeders->seedForStore($store);
     }
 }
