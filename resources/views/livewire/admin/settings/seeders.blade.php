@@ -79,9 +79,12 @@ new #[Layout('components.layouts.app')] #[Title('Seeders')] class extends Compon
 
         $storesSeeded = Schema::hasTable('stores') && \App\Models\Store::query()->exists();
 
-        $demoNames = ['London Warehouse', 'Manchester Depot', 'Edinburgh Office'];
-        $demoStoresSeeded = Schema::hasTable('stores') && \App\Models\Store::query()->whereIn('name', $demoNames)->count() === count($demoNames);
-        $demoMembersSeeded = Schema::hasTable('members') && \App\Models\Member::query()->count() >= 5000;
+        $demoStoresSeeded = Schema::hasTable('stores')
+            && \App\Models\Store::query()->whereJsonContains('tag_list', 'demo-data')->exists();
+        $demoMembersSeeded = Schema::hasTable('members')
+            && \App\Models\Member::query()->whereJsonContains('tag_list', 'demo-data')->exists();
+        $demoInvoicesSeeded = Schema::hasTable('invoices')
+            && \App\Models\Invoice::query()->whereJsonContains('tag_list', 'demo-data')->exists();
 
         $this->seeders = [
             'countries' => [
@@ -208,15 +211,17 @@ new #[Layout('components.layouts.app')] #[Title('Seeders')] class extends Compon
             'demo' => [
                 'name' => 'DemoDataSeeder',
                 'class' => 'Database\\Seeders\\DemoDataSeeder',
-                'description' => 'Creates demo stores and populates the CRM with members, contact details, and relationships.',
+                'description' => 'Populates a full Phase-4 UAT substrate: CRM volume data plus billing, sub-hire, and container scenarios for end-to-end testing.',
                 'items' => [
-                    '3 demo stores (London, Manchester, Edinburgh)',
-                    '2,000 organisations with email & phone each',
-                    '500 venues with email & phone each',
-                    '3,000 contacts with email & phone each',
-                    'Relationships linking contacts to organisations and venues',
+                    '3 demo stores plus CRM volume (organisations, venues, contacts, relationships)',
+                    'Member enrichment: discount/price categories with tiers; EU B2B, charity, tax-exempt, and ROW tax variants',
+                    'Product enrichment: supplier costs, reduced tax category, containerable serialised product with assets',
+                    '~12 opportunities across draft, quotation, order, dispatched, and returned (deal price, surcharge, quantity-break)',
+                    'Quote-to-cash: draft, paid, partial + refund + credit note, deposit, pro-forma, and overdue invoices',
+                    'Sub-hire: draft PO plus sent/received PO with confirmed virtual stock intake',
+                    'Containers: open flight case and sealed packed case on serialised demo assets',
                 ],
-                'seeded' => $demoStoresSeeded && $demoMembersSeeded,
+                'seeded' => $demoStoresSeeded && $demoMembersSeeded && $demoInvoicesSeeded,
                 'isDefault' => false,
             ],
         ];

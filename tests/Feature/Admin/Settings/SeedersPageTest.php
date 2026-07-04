@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Invoice;
+use App\Models\Member;
 use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Models\User;
@@ -45,6 +47,23 @@ it('detects stores as not seeded when no stores exist', function () {
     $seeders = $component->get('seeders');
     expect($seeders['stores']['seeded'])->toBeFalse();
     expect($seeders['demo']['seeded'])->toBeFalse();
+});
+
+it('detects demo data as seeded when tagged stores, members, and invoices exist', function () {
+    Store::factory()->create(['tag_list' => ['demo-data'], 'is_default' => false]);
+    Member::factory()->create(['tag_list' => ['demo-data']]);
+    Invoice::factory()->create(['tag_list' => ['demo-data']]);
+
+    $seeders = Volt::test('admin.settings.seeders')->get('seeders');
+
+    expect($seeders['demo']['seeded'])->toBeTrue();
+});
+
+it('describes the phase-4 demo substrate on the seeders page', function () {
+    Volt::test('admin.settings.seeders')
+        ->assertSee('Phase-4 UAT substrate')
+        ->assertSee('Quote-to-cash')
+        ->assertSee('virtual stock intake');
 });
 
 it('runs an individual seeder', function () {

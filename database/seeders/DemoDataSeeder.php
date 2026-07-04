@@ -31,19 +31,28 @@ use App\Models\ProductRate;
 use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Models\User;
+use Database\Seeders\Concerns\DemoDataSeederSupport;
+use Database\Seeders\Concerns\SeedsDemoPhase4;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 
 class DemoDataSeeder extends Seeder
 {
+    use DemoDataSeederSupport;
+    use SeedsDemoPhase4;
+
     public function run(): void
     {
         $this->createDemoStores();
         $this->createDemoMembers();
+        $this->enrichDemoMembers();
         $this->createDemoProducts();
+        $this->enrichDemoProducts();
         $this->createDemoOpportunities();
         $this->createDemoInvoices();
+        $this->createDemoPurchaseOrders();
+        $this->createDemoContainers();
         $this->createDemoCustomFields();
         $this->createDemoActivities();
     }
@@ -451,18 +460,18 @@ class DemoDataSeeder extends Seeder
     {
         $this->command->info('Seeding demo opportunities...');
 
-        $owner = User::query()->first();
+        $owner = $this->resolveDemoOwner();
         $store = Store::query()->where('is_default', true)->first()
             ?? Store::query()->first();
 
         $organisations = Member::query()
-            ->whereJsonContains('tag_list', 'demo-data')
+            ->whereJsonContains('tag_list', self::DEMO_TAG)
             ->where('membership_type', MembershipType::Organisation)
             ->limit(20)
             ->get();
 
         $products = Product::query()
-            ->whereJsonContains('tag_list', 'demo-data')
+            ->whereJsonContains('tag_list', self::DEMO_TAG)
             ->whereIn('product_type', [ProductType::Rental, ProductType::Sale])
             ->get();
 
@@ -470,80 +479,60 @@ class DemoDataSeeder extends Seeder
             return;
         }
 
-        // Authorise the action-class Gate checks as the seeded owner so the
-        // event-sourced creation path runs exactly as it would for a real user.
         Auth::setUser($owner);
 
-        $window = [
-            'starts_at' => now()->addWeek()->setTime(9, 0)->toIso8601String(),
-            'ends_at' => now()->addWeek()->addDays(3)->setTime(17, 0)->toIso8601String(),
-        ];
+        try {
+            foreach ($this->seedExtendedDemoOpportunityBlueprints() as $index => [$reference, $subject, $stage, $special]) {
+                $exists = Opportunity::query()
+                    ->whereJsonContains('tag_list', self::DEMO_TAG)
+                    ->where('reference', $reference)
+                    ->exists();
 
-        // [reference, subject, target lifecycle stage]. 'draft' stops after items
-        // are added; 'quotation' converts to a quote; 'order' converts through to
-        // a confirmed order. A spread across all three exercises the search block,
-        // demand projections and the index counts. Headline refs 0001 + 0013 carry
-        // rich three-level group → product → accessory trees.
-        $blueprints = [
-            ['DEMO-OPP-0001', 'Summer Festival Main Stage', 'order'],
-            ['DEMO-OPP-0002', 'Corporate AGM AV Package', 'order'],
-            ['DEMO-OPP-0003', 'Product Launch Lighting Rig', 'quotation'],
-            ['DEMO-OPP-0004', 'Awards Dinner Sound System', 'quotation'],
-            ['DEMO-OPP-0005', 'Conference Breakout Rooms', 'quotation'],
-            ['DEMO-OPP-0006', 'Wedding Marquee Hire', 'draft'],
-            ['DEMO-OPP-0007', 'Trade Show Booth Fit-Out', 'draft'],
-            ['DEMO-OPP-0008', 'Charity Gala Staging', 'order'],
-            ['DEMO-OPP-0013', 'Arena Tour Production Package', 'order'],
-        ];
+                if ($exists) {
+                    continue;
+                }
 
-        foreach ($blueprints as $index => [$reference, $subject, $stage]) {
-            $exists = Opportunity::query()
-                ->whereJsonContains('tag_list', 'demo-data')
-                ->where('reference', $reference)
-                ->exists();
+                $window = $this->demoOpportunityWindow($index);
+                $member = $organisations[$index % $organisations->count()];
 
-            if ($exists) {
-                continue;
-            }
+                $data = OpportunityData::from($this->buildDemoOpportunity(
+                    $subject,
+                    $reference,
+                    $member->id,
+                    $store->id,
+                    $owner->id,
+                    $window,
+                ));
 
-            $member = $organisations[$index % $organisations->count()];
+                $opportunity = Opportunity::query()->whereKey($data->id)->firstOrFail();
 
-            $data = OpportunityData::from($this->buildDemoOpportunity(
-                $subject,
-                $reference,
-                $member->id,
-                $store->id,
-                $owner->id,
-                $window,
-            ));
+                if (in_array($reference, ['DEMO-OPP-0001', 'DEMO-OPP-0013'], true)) {
+                    $this->seedRichDemoLineTree($opportunity, $window);
+                } else {
+                    $this->seedStandardDemoLines($opportunity, $window, $index, $products);
+                }
 
-            $opportunity = Opportunity::query()->whereKey($data->id)->firstOrFail();
-
-            if (in_array($reference, ['DEMO-OPP-0001', 'DEMO-OPP-0013'], true)) {
-                $this->seedRichDemoLineTree($opportunity, $window);
-            } else {
-                $this->seedStandardDemoLines($opportunity, $window, $index, $products);
-            }
-
-            $opportunity->refresh();
-
-            if ($stage === 'quotation' || $stage === 'order') {
-                (new ConvertToQuotation)($opportunity);
                 $opportunity->refresh();
-            }
 
-            if ($stage === 'order') {
-                (new ConvertToOrder)($opportunity);
-                $opportunity->refresh();
-            }
+                if ($stage === 'quotation' || $stage === 'order') {
+                    (new ConvertToQuotation)($opportunity);
+                    $opportunity->refresh();
+                }
 
-            // Tag the projection so signals:clear-demo can find and remove it.
-            // tag_list is presentation metadata, not lifecycle state, so it is
-            // written directly rather than through an event.
-            $opportunity->forceFill(['tag_list' => ['demo-data']])->save();
+                if ($stage === 'order') {
+                    (new ConvertToOrder)($opportunity);
+                    $opportunity->refresh();
+                }
+
+                if ($special !== null) {
+                    $this->applyDemoOpportunitySpecial($opportunity->fresh(), $special, $owner);
+                }
+
+                $opportunity->refresh()->forceFill(['tag_list' => [self::DEMO_TAG]])->save();
+            }
+        } finally {
+            Auth::forgetUser();
         }
-
-        Auth::forgetUser();
     }
 
     /**
@@ -754,13 +743,6 @@ class DemoDataSeeder extends Seeder
             'starts_at' => $window['starts_at'],
             'ends_at' => $window['ends_at'],
         ]));
-    }
-
-    /** @codeCoverageIgnore */
-    private function createDemoInvoices(): void
-    {
-        // TODO: Implement when Invoice model exists
-        // Spec: ~10 invoices (open, issued, paid)
     }
 
     /** @codeCoverageIgnore */
