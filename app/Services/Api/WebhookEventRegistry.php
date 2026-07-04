@@ -49,6 +49,8 @@ class WebhookEventRegistry
         'container.created',
         'container.item.packed',
         'container.item.unpacked',
+        'container.sealed',
+        'container.unsealed',
         'activity.created',
         'activity.updated',
         'activity.deleted',

@@ -60,6 +60,11 @@ class ContainerPolicy
         return $user->can('containers.seal') && $this->canAccessContainerStore($user, $container);
     }
 
+    public function unseal(User $user, Container $container): bool
+    {
+        return $user->can('containers.seal') && $this->canAccessContainerStore($user, $container);
+    }
+
     public function dissolve(User $user, Container $container): bool
     {
         return $user->can('containers.dissolve') && $this->canAccessContainerStore($user, $container);

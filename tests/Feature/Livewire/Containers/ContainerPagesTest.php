@@ -65,6 +65,37 @@ it('packs an item from the show page', function () {
         ->exists())->toBeTrue();
 });
 
+it('seals and unseals from the show page', function () {
+    $container = Container::factory()->kit()->create([
+        'store_id' => $this->store->id,
+        'scan_mode' => 'free',
+    ]);
+    $asset = StockLevel::factory()->serialised()->create([
+        'product_id' => Product::factory()->serialised()->create()->id,
+        'store_id' => $this->store->id,
+    ]);
+    ContainerItem::factory()->create([
+        'container_id' => $container->id,
+        'serialised_item_id' => $asset->id,
+        'product_id' => $asset->product_id,
+    ]);
+
+    Volt::test('containers.show', ['container' => $container])
+        ->assertSee('Seal')
+        ->call('seal')
+        ->assertHasNoErrors();
+
+    expect($container->fresh()->status->value)->toBe('sealed');
+
+    Volt::test('containers.show', ['container' => $container->fresh()])
+        ->assertSee('Unseal')
+        ->set('unsealReason', 'manual')
+        ->call('unseal')
+        ->assertHasNoErrors();
+
+    expect($container->fresh()->status->value)->toBe('open');
+});
+
 it('forbids the index page without containers.view', function () {
     $user = User::factory()->create();
     $user->givePermissionTo('stock.access');

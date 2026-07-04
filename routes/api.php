@@ -233,6 +233,9 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('containers/temporary', [ContainerController::class, 'storeTemporary'])->name('api.v1.containers.temporary.store');
     Route::post('containers/{container}/pack', [ContainerController::class, 'pack'])->name('api.v1.containers.pack');
     Route::post('containers/{container}/unpack', [ContainerController::class, 'unpack'])->name('api.v1.containers.unpack');
+    Route::post('containers/{container}/seal', [ContainerController::class, 'seal'])->name('api.v1.containers.seal');
+    Route::post('containers/{container}/unseal', [ContainerController::class, 'unseal'])->name('api.v1.containers.unseal');
+    Route::get('containers/{container}/compliance', [ContainerController::class, 'compliance'])->name('api.v1.containers.compliance');
     Route::get('containers', [ContainerController::class, 'index'])->name('api.v1.containers.index');
     Route::post('containers', [ContainerController::class, 'store'])->name('api.v1.containers.store');
     Route::get('containers/{container}', [ContainerController::class, 'show'])->name('api.v1.containers.show');

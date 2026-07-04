@@ -5,17 +5,21 @@ namespace App\Http\Controllers\Api\V1;
 use App\Actions\Containers\CreateContainer;
 use App\Actions\Containers\CreateTemporaryContainer;
 use App\Actions\Containers\PackContainerItem;
+use App\Actions\Containers\SealContainer;
 use App\Actions\Containers\UnpackContainerItem;
+use App\Actions\Containers\UnsealContainer;
 use App\Actions\Containers\UpdateContainer;
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\CreateContainerData;
 use App\Data\Containers\CreateTemporaryContainerData;
 use App\Data\Containers\PackContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
+use App\Data\Containers\UnsealContainerData;
 use App\Data\Containers\UpdateContainerData;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Models\Container;
+use App\Services\Containers\ContainerManifestService;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,8 +27,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * API surface for containers (serialised-containers.md). Read, create,
- * update, and pack/unpack are exposed here — seal, dissolve, dispatch, return,
- * and repack stay in later Phase-4 slices.
+ * update, pack/unpack, seal, and unseal are exposed here — dissolve, dispatch,
+ * return, and repack stay in later Phase-4 slices.
  *
  * Pack/unpack delegate to the existing {@see PackContainerItem} /
  * {@see UnpackContainerItem} actions, which create/release the container demand
@@ -196,5 +200,49 @@ class ContainerController extends Controller
         $item = (new UnpackContainerItem)($container, $data);
 
         return $this->respondWith($item->toArray(), 'container_item');
+    }
+
+    /**
+     * Seal an open container (QA gate — strict mode validates template match).
+     */
+    #[ApiResponse(200, 'Container sealed')]
+    public function seal(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.seal', 'containers:write');
+
+        $result = (new SealContainer)($container);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Unseal a sealed container so items can be modified. Does not cascade to
+     * nested containers.
+     */
+    #[ApiResponse(200, 'Container unsealed')]
+    public function unseal(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.seal', 'containers:write');
+
+        $data = UnsealContainerData::from($request->validate(UnsealContainerData::rules()));
+
+        $result = (new UnsealContainer)($container, $data);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Compare rolled-up contents against the product template (nested to max depth).
+     */
+    #[ApiResponse(200, 'Container compliance report')]
+    public function compliance(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+
+        $report = app(ContainerManifestService::class)->compliance($container);
+
+        return response()->json([
+            'compliance' => $report->toArray(),
+        ]);
     }
 }

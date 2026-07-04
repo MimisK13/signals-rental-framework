@@ -4,6 +4,7 @@ namespace App\Services\Containers;
 
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\ContainerItemData;
+use App\Enums\ContainerUnsealReason;
 use App\Events\AuditableEvent;
 use App\Models\Container;
 use App\Models\ContainerItem;
@@ -64,6 +65,38 @@ class ContainerEventRecorder
             'serialised_item_id' => $item->serialised_item_id,
             'product_id' => $item->product_id,
             'reason' => $item->unpacked_reason?->value,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function sealed(Container $container, int $itemCount): void
+    {
+        event(new AuditableEvent($container, 'container.sealed', newValues: [
+            'status' => $container->status->value,
+            'sealed_at' => $container->sealed_at?->toIso8601String(),
+        ]));
+
+        app(WebhookService::class)->dispatch('container.sealed', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'item_count' => $itemCount,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function unsealed(Container $container, ContainerUnsealReason $reason): void
+    {
+        event(new AuditableEvent($container, 'container.unsealed', newValues: [
+            'status' => $container->status->value,
+            'reason' => $reason->value,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.unsealed', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'reason' => $reason->value,
             'user_id' => Auth::id(),
         ]);
     }

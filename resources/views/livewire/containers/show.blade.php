@@ -1,10 +1,15 @@
 <?php
 
 use App\Actions\Containers\PackContainerItem;
+use App\Actions\Containers\SealContainer;
 use App\Actions\Containers\UnpackContainerItem;
+use App\Actions\Containers\UnsealContainer;
 use App\Data\Containers\PackContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
+use App\Data\Containers\UnsealContainerData;
 use App\Enums\ContainerItemUnpackReason;
+use App\Enums\ContainerStatus;
+use App\Enums\ContainerUnsealReason;
 use App\Models\Container;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -15,10 +20,13 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public string $packSerialisedItemId = '';
 
+    public string $unsealReason = '';
+
     public function mount(Container $container): void
     {
         Gate::authorize('view', $container);
         $this->container = $container->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem']);
+        $this->unsealReason = ContainerUnsealReason::Manual->value;
     }
 
     public function pack(): void
@@ -30,7 +38,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         ]));
 
         $this->packSerialisedItemId = '';
-        $this->container->refresh()->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem']);
+        $this->refreshContainer();
     }
 
     public function unpack(int $serialisedItemId): void
@@ -42,6 +50,31 @@ new #[Layout('components.layouts.app')] class extends Component {
             'reason' => ContainerItemUnpackReason::Manual->value,
         ]));
 
+        $this->refreshContainer();
+    }
+
+    public function seal(): void
+    {
+        Gate::authorize('seal', $this->container);
+
+        (new SealContainer)($this->container);
+
+        $this->refreshContainer();
+    }
+
+    public function unseal(): void
+    {
+        Gate::authorize('unseal', $this->container);
+
+        (new UnsealContainer)($this->container, UnsealContainerData::from([
+            'reason' => $this->unsealReason,
+        ]));
+
+        $this->refreshContainer();
+    }
+
+    protected function refreshContainer(): void
+    {
         $this->container->refresh()->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem']);
     }
 
@@ -49,6 +82,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         return [
             'canPack' => Gate::check('pack', $this->container),
+            'canSeal' => Gate::check('seal', $this->container),
+            'unsealReasons' => ContainerUnsealReason::configValues(),
         ];
     }
 }; ?>
@@ -58,6 +93,24 @@ new #[Layout('components.layouts.app')] class extends Component {
         <x-slot:meta>
             <a href="{{ route('containers.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Containers</a>
         </x-slot:meta>
+        <x-slot:actions>
+            @if($canSeal && $container->status === ContainerStatus::Open)
+                <flux:button wire:click="seal" wire:loading.attr="disabled" variant="primary">Seal</flux:button>
+            @endif
+            @if($canSeal && $container->status === ContainerStatus::Sealed)
+                <div class="flex flex-wrap items-end gap-2">
+                    <flux:field>
+                        <flux:label>Unseal reason</flux:label>
+                        <flux:select wire:model="unsealReason">
+                            @foreach($unsealReasons as $reason)
+                                <option value="{{ $reason }}">{{ str($reason)->headline() }}</option>
+                            @endforeach
+                        </flux:select>
+                    </flux:field>
+                    <flux:button wire:click="unseal" wire:loading.attr="disabled">Unseal</flux:button>
+                </div>
+            @endif
+        </x-slot:actions>
     </x-signals.page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3 space-y-4">
@@ -70,6 +123,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <div>
                     <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Status</div>
                     <span class="s-badge s-badge-zinc">{{ $container->status->label() }}</span>
+                </div>
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Scan mode</div>
+                    <div>{{ $container->scan_mode->label() }}</div>
                 </div>
                 <div>
                     <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Store</div>
