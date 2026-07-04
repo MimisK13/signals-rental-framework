@@ -57,8 +57,6 @@ class DocumentData extends Data
 
         $fileService = app(FileService::class);
 
-        $downloadPath = $document->pdf_path ?? $document->html_snapshot_path;
-
         return new self(
             id: $document->id,
             store_id: $document->store_id,
@@ -77,7 +75,7 @@ class DocumentData extends Data
             template_version: $document->template_version,
             first_viewed_at: $firstViewedAt?->toIso8601String(),
             download_url: $includeDownloadUrl
-                ? $fileService->signedUrlOrNull($downloadPath)
+                ? $fileService->signedDocumentUrlOrNull($document)
                 : null,
             template: $includeTemplate && $document->documentTemplate instanceof DocumentTemplate
                 ? DocumentTemplateSummaryData::fromModel($document->documentTemplate)

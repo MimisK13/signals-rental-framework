@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\OpportunityLineItemController;
 use App\Http\Controllers\Web\PublicDocumentController;
 use App\Http\Controllers\Web\SearchController;
+use App\Http\Controllers\Web\SignedDocumentDownloadController;
 use App\Http\Middleware\VerifyInboundWebhookSignature;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -19,6 +20,11 @@ Route::prefix(config('documents.public_route_prefix', 'd'))->group(function (): 
     Route::get('{token}', [PublicDocumentController::class, 'show'])->name('documents.public.show');
     Route::post('{token}/pin', [PublicDocumentController::class, 'verifyPin'])->name('documents.public.verify-pin');
 });
+
+Route::get('documents/{documentId}/file', SignedDocumentDownloadController::class)
+    ->middleware('signed')
+    ->whereNumber('documentId')
+    ->name('documents.signed-download');
 
 Route::get('/', function () {
     if (config('signals.installed') && ! config('signals.setup_complete')) {

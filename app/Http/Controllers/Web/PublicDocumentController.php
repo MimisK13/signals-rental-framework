@@ -99,7 +99,7 @@ class PublicDocumentController
 
         $contents = $this->fileService->getContents($path);
         $mimeType = $this->fileService->mimeTypeForPath($path);
-        $filename = $this->fileService->inlineFilename($document->document_number, $path);
+        $filename = $this->fileService->documentFilename($document, $path);
 
         $headers = [
             'Content-Type' => $mimeType,

@@ -255,8 +255,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     <tbody>
                         @foreach($documents as $document)
                             @php
-                                $downloadPath = $document->pdf_path ?? $document->html_snapshot_path;
-                                $downloadUrl = $fileService->signedUrlOrNull($downloadPath);
+                                $downloadUrl = $fileService->signedDocumentUrlOrNull($document);
                                 $publicUrl = $document->public_token
                                     ? route('documents.public.show', ['token' => $document->public_token])
                                     : null;

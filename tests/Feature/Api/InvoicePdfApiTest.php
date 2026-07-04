@@ -53,11 +53,32 @@ it('redirects to a signed PDF URL when the invoice document exists', function ()
     ['invoice' => $invoice] = invoicePdfApiFixture();
 
     app(GenerateBillingIssueDocument::class)->forInvoice($invoice);
+    $document = Document::query()->where('documentable_id', $invoice->id)->firstOrFail();
 
     $response = $this->getJson("/api/v1/invoices/{$invoice->id}/pdf");
 
     $response->assertRedirect();
-    expect($response->headers->get('Location'))->toContain('.pdf');
+    expect($response->headers->get('Location'))->toContain('/documents/'.$document->id.'/file');
+});
+
+it('serves invoice pdf downloads with a friendly filename on local disk', function () {
+    $user = User::factory()->owner()->create();
+    Sanctum::actingAs($user, ['invoices:read']);
+
+    ['invoice' => $invoice] = invoicePdfApiFixture();
+
+    $documentData = app(GenerateBillingIssueDocument::class)->forInvoice($invoice);
+    $document = Document::query()->findOrFail($documentData->id);
+
+    $response = $this->getJson("/api/v1/invoices/{$invoice->id}/pdf");
+    $response->assertRedirect();
+
+    $this->get($response->headers->get('Location'))
+        ->assertOk()
+        ->assertHeader(
+            'Content-Disposition',
+            'inline; filename="'.$document->document_number.'-invoice.pdf"',
+        );
 });
 
 it('returns 202 while the invoice PDF is still generating', function () {

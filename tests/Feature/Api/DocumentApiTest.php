@@ -169,7 +169,8 @@ describe('Document API', function () {
             ->assertJsonPath('document.template.id', $template->id)
             ->assertJsonPath('document.public_link.is_active', true)
             ->assertJsonPath('document.public_link.is_pin_protected', true)
-            ->assertJsonPath('document.download_url', fn ($url) => is_string($url) && $url !== '');
+            ->assertJsonPath('document.download_url', fn ($url) => is_string($url) && $url !== '')
+            ->assertJsonPath('document.download_url', fn ($url) => str_contains($url, '/documents/'.$created['id'].'/file'));
     });
 
     it('generates a document synchronously and supports html output', function () {

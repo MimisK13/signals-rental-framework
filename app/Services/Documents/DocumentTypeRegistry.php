@@ -8,6 +8,7 @@ use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\PurchaseOrder;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 /**
@@ -81,6 +82,16 @@ class DocumentTypeRegistry
     public function modelType(string $documentType): string
     {
         return $this->get($documentType)['model_type'];
+    }
+
+    public function label(string $documentType): string
+    {
+        return $this->get($documentType)['label'];
+    }
+
+    public function filenameSlug(string $documentType): string
+    {
+        return Str::slug(strtolower($this->label($documentType)), '-');
     }
 
     /**

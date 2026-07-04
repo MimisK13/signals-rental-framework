@@ -122,6 +122,7 @@ describe('GET public document route', function () {
             ->assertHeader('Content-Type', 'application/pdf');
 
         expect($response->headers->get('Content-Disposition'))->toContain('inline');
+        expect($response->headers->get('Content-Disposition'))->toContain($document->document_number.'-quote.pdf');
 
         expect($document->refresh()->first_viewed_at)->not->toBeNull();
     });

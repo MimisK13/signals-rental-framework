@@ -245,7 +245,7 @@ class InvoiceController extends Controller
             ->first();
 
         if ($document !== null) {
-            $url = app(FileService::class)->signedUrlOrNull($document->pdf_path);
+            $url = app(FileService::class)->signedDocumentUrlOrNull($document);
 
             if ($url !== null) {
                 return redirect()->away($url);
