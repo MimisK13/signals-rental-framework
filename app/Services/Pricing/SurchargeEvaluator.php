@@ -29,6 +29,7 @@ class SurchargeEvaluator
     public function __construct(
         private readonly CriteriaMatcher $matcher,
         private readonly RoundingStrategy $roundingStrategy,
+        private readonly OpportunityItemSurchargeAmountFilterRegistry $surchargeAmountFilters,
     ) {}
 
     /**
@@ -62,6 +63,7 @@ class SurchargeEvaluator
             }
 
             $amount = $this->calculateAmount(
+                $item,
                 $surcharge,
                 $postDiscountNetMinor,
                 $quantityUnits,
@@ -264,6 +266,7 @@ class SurchargeEvaluator
     }
 
     private function calculateAmount(
+        OpportunityItem $item,
         Surcharge $surcharge,
         int $postDiscountNetMinor,
         int $quantityUnits,
@@ -276,11 +279,33 @@ class SurchargeEvaluator
                 10,
             );
 
-            return $this->roundingStrategy->roundMinorAmount($raw, $currencyCode);
+            $filtered = $this->surchargeAmountFilters->apply(
+                $item,
+                $raw,
+                (int) $surcharge->id,
+            );
+
+            if ($filtered === null || bccomp($filtered, '0', 10) <= 0) {
+                return 0;
+            }
+
+            return $this->roundingStrategy->roundMinorAmount($filtered, $currencyCode);
         }
 
         if ($surcharge->isFixed()) {
-            return (int) $surcharge->fixed_value_minor * max(1, $quantityUnits);
+            $raw = bcmul((string) $surcharge->fixed_value_minor, (string) max(1, $quantityUnits), 10);
+
+            $filtered = $this->surchargeAmountFilters->apply(
+                $item,
+                $raw,
+                (int) $surcharge->id,
+            );
+
+            if ($filtered === null || bccomp($filtered, '0', 10) <= 0) {
+                return 0;
+            }
+
+            return (int) bcadd($filtered, '0', 0);
         }
 
         return 0;

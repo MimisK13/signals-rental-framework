@@ -86,6 +86,7 @@ class WebhookEventRegistry
         'opportunity.deal_price_set',
         'opportunity.deal_price_cleared',
         'opportunity.group_deal_price_set',
+        'opportunity.group_deal_price_cleared',
         'opportunity.pricing_recalculated',
         'opportunity.discount_reset',
         'opportunity.item_added',

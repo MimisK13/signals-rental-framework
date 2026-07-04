@@ -90,6 +90,7 @@ use App\Services\Pricing\DiscountCriteriaPredicateRegistry;
 use App\Services\Pricing\DiscountRuleEvaluator;
 use App\Services\Pricing\DiscountSourceRegistry;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
+use App\Services\Pricing\OpportunityItemSurchargeAmountFilterRegistry;
 use App\Services\Pricing\OpportunityPricingCalculateDecorator;
 use App\Services\Pricing\OpportunityPricingRecalculator;
 use App\Services\Pricing\Predicates\ProductGroupIdsPredicate;
@@ -368,6 +369,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DealPriceValidatorRegistry::class);
         $this->app->singleton(DiscountSourceRegistry::class);
         $this->app->singleton(OpportunityItemDiscountPercentFilterRegistry::class);
+        $this->app->singleton(OpportunityItemSurchargeAmountFilterRegistry::class);
         $this->app->singleton(OpportunityPricingCalculateDecorator::class);
         $this->app->singleton(DealPriceProportionalDistributor::class);
         $this->app->singleton(OpportunityPricingRecalculator::class);
@@ -695,6 +697,7 @@ class AppServiceProvider extends ServiceProvider
             'opportunity.deal_price_set',
             'opportunity.deal_price_cleared',
             'opportunity.group_deal_price_set',
+            'opportunity.group_deal_price_cleared',
             'opportunity.pricing_recalculated',
             'opportunity.discount_reset',
         ] as $transition) {

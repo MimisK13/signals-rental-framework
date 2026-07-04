@@ -147,6 +147,7 @@ when the event store is rebuilt.
 | `opportunity.deal_price_set` | A negotiated deal total is set |
 | `opportunity.deal_price_cleared` | A negotiated deal total is cleared |
 | `opportunity.group_deal_price_set` | A negotiated deal total is set on a line-item group |
+| `opportunity.group_deal_price_cleared` | A negotiated deal total is cleared from a line-item group |
 | `opportunity.pricing_recalculated` | Opportunity pricing is recalculated (rates, tax, surcharges) |
 | `opportunity.discount_reset` | Applied discounts are cleared from an opportunity |
 | `opportunity.discount_category_applied` | A discount category is applied to an opportunity |

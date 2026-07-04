@@ -4,7 +4,6 @@ namespace App\Verbs\Events\Opportunities;
 
 use App\Enums\DealPriceMode;
 use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityState;
@@ -68,8 +67,6 @@ class DealPriceSet extends Event
             'deal_price_original_total' => $this->deal_price_original_total,
         ])->saveQuietly();
 
-        $this->clearGroupDealPrices($opportunity);
-
         if ($mode === DealPriceMode::Proportional) {
             app(OpportunityTotalsCalculator::class)->repriceOpportunity($opportunity->fresh(['items.item', 'member']));
         } else {
@@ -99,16 +96,5 @@ class DealPriceSet extends Event
         }
 
         return DealPriceMode::from($this->deal_price_mode);
-    }
-
-    private function clearGroupDealPrices(Opportunity $opportunity): void
-    {
-        OpportunityItem::query()
-            ->where('opportunity_id', $opportunity->id)
-            ->whereNotNull('deal_price')
-            ->update([
-                'deal_price' => null,
-                'deal_price_original_total' => null,
-            ]);
     }
 }

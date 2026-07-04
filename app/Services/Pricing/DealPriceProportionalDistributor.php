@@ -131,6 +131,16 @@ class DealPriceProportionalDistributor
     }
 
     /**
+     * @return Collection<int, OpportunityItem>
+     */
+    public function scopedItemsForGroup(Opportunity $opportunity, OpportunityItem $groupItem): Collection
+    {
+        $opportunity->loadMissing(['items.item']);
+
+        return $this->scopedPriceableItems($opportunity->items, $groupItem);
+    }
+
+    /**
      * @param  Collection<int, OpportunityItem>  $items
      * @return Collection<int, OpportunityItem>
      */
@@ -168,7 +178,11 @@ class DealPriceProportionalDistributor
             $product = Product::query()->find($item->itemable_id);
         }
 
-        return $product?->discountable ?? true;
+        if (! $product instanceof Product) {
+            return true;
+        }
+
+        return $product->discountable;
     }
 
     private function percentForTargetNet(int $baselineNet, int $targetNet): ?string

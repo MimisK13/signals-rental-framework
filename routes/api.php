@@ -326,6 +326,7 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::delete('opportunities/{opportunity}/deal_price', [OpportunityController::class, 'clearDealPrice'])->name('api.v1.opportunities.deal_price.clear');
     Route::post('opportunities/{opportunity}/recalculate', [OpportunityController::class, 'recalculatePricing'])->name('api.v1.opportunities.recalculate');
     Route::put('opportunities/{opportunity}/sections/{section}/deal_price', [OpportunityController::class, 'setSectionDealPrice'])->name('api.v1.opportunities.sections.deal_price.set');
+    Route::delete('opportunities/{opportunity}/sections/{section}/deal_price', [OpportunityController::class, 'clearSectionDealPrice'])->name('api.v1.opportunities.sections.deal_price.clear');
     Route::post('opportunities/{opportunity}/apply_discount_category', [OpportunityController::class, 'applyDiscountCategory'])->name('api.v1.opportunities.apply_discount_category');
     Route::post('opportunities/{opportunity}/toggle_surcharge_group', [OpportunityController::class, 'toggleSurchargeGroup'])->name('api.v1.opportunities.toggle_surcharge_group');
     Route::post('opportunities/{opportunity}/items/{item}/override_surcharge', [OpportunityController::class, 'overrideItemSurcharge'])->name('api.v1.opportunities.override_item_surcharge');

@@ -16,6 +16,7 @@ use App\Actions\Opportunities\ChangeOpportunityStatus;
 use App\Actions\Opportunities\CheckAsset;
 use App\Actions\Opportunities\ClearAssetContainer;
 use App\Actions\Opportunities\ClearDealPrice;
+use App\Actions\Opportunities\ClearSectionDealPrice;
 use App\Actions\Opportunities\CloneOpportunity;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
@@ -1319,6 +1320,18 @@ class OpportunityController extends Controller
         $data = SetSectionDealPriceData::from($request->validate(SetSectionDealPriceData::rules()));
 
         (new SetSectionDealPrice)($opportunity, $section, $data);
+
+        return $this->respondWithFreshOpportunity($opportunity->id);
+    }
+
+    #[ApiResponse(200, 'Section deal price cleared')]
+    public function clearSectionDealPrice(
+        Opportunity $opportunity,
+        OpportunityItem $section,
+    ): JsonResponse {
+        $this->authorizeApi('opportunities.edit', 'opportunities:write');
+
+        (new ClearSectionDealPrice)($opportunity, $section);
 
         return $this->respondWithFreshOpportunity($opportunity->id);
     }

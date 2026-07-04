@@ -6,11 +6,14 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\SetDealPriceData;
 use App\Enums\DealPriceMode;
+use App\Enums\OpportunityItemType;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Services\Pricing\DealPriceProportionalDistributor;
 use App\Verbs\Events\Opportunities\DealPriceSet;
+use App\Verbs\Events\Opportunities\GroupDealPriceCleared;
 use App\Verbs\Events\Opportunities\ItemDealPriceDiscountSet;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -35,6 +38,8 @@ class SetDealPrice
                 opportunity: $opportunity,
                 permission: 'opportunities.edit',
             ));
+
+            $this->clearActiveGroupDealPrices($opportunity);
 
             $lineApplications = [];
             $originalTotal = null;
@@ -80,5 +85,42 @@ class SetDealPrice
         });
 
         return OpportunityData::fromModel($opportunity->fresh(['items']));
+    }
+
+    private function clearActiveGroupDealPrices(Opportunity $opportunity): void
+    {
+        $opportunity = $opportunity->fresh(['items']) ?? $opportunity;
+        $distributor = app(DealPriceProportionalDistributor::class);
+
+        $groupsWithDeal = $opportunity->items->filter(
+            fn (OpportunityItem $item): bool => $item->item_type === OpportunityItemType::Group
+                && $item->deal_price !== null,
+        );
+
+        foreach ($groupsWithDeal as $group) {
+            $lineApplications = [];
+
+            foreach ($distributor->scopedItemsForGroup($opportunity, $group) as $item) {
+                if ($item->deal_price_discount_percent === null) {
+                    continue;
+                }
+
+                ItemDealPriceDiscountSet::fire(
+                    opportunity_item_id: (int) $item->state_id,
+                    deal_price_discount_percent: null,
+                );
+
+                $lineApplications[] = [
+                    'opportunity_item_id' => (int) $item->id,
+                    'deal_price_discount_percent' => null,
+                ];
+            }
+
+            GroupDealPriceCleared::fire(
+                group_opportunity_item_id: (int) $group->state_id,
+                line_applications: $lineApplications,
+                reprice: false,
+            );
+        }
     }
 }
