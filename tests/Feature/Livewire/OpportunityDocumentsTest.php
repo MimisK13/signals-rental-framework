@@ -143,4 +143,38 @@ describe('Opportunity documents tab', function () {
         expect($document->public_token)->not->toBeNull()
             ->and($document->public_pin_hash)->not->toBeNull();
     });
+
+    it('renders a qr code when a public share link exists', function () {
+        ['opportunity' => $opportunity, 'template' => $template] = opportunityDocumentsFixture();
+
+        $user = User::factory()->create(['is_owner' => true, 'is_active' => true]);
+        $user->givePermissionTo([
+            'opportunities.view',
+            'documents.view',
+            'documents.create',
+            'documents.share',
+        ]);
+
+        $this->actingAs($user);
+
+        Volt::test('opportunities.documents', ['opportunity' => $opportunity])
+            ->set('selectedTemplateId', $template->id)
+            ->call('generateDocument')
+            ->assertHasNoErrors();
+
+        $document = $opportunity->documents()->firstOrFail();
+
+        Volt::test('opportunities.documents', ['opportunity' => $opportunity->fresh()])
+            ->call('openShareModal', $document->id)
+            ->call('saveShareLink')
+            ->assertHasNoErrors();
+
+        $document->refresh();
+
+        Volt::test('opportunities.documents', ['opportunity' => $opportunity->fresh()])
+            ->assertSee('<svg', false)
+            ->call('openShareModal', $document->id)
+            ->assertSee('<svg', false)
+            ->assertSee(route('documents.public.show', ['token' => $document->public_token]), false);
+    });
 });

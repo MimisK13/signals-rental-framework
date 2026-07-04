@@ -11,6 +11,7 @@ use App\Enums\DocumentOutputFormat;
 use App\Models\Document;
 use App\Models\DocumentTemplate;
 use App\Models\Opportunity;
+use App\Services\Documents\QrCodeGenerator;
 use App\Services\FileService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -193,6 +194,7 @@ new #[Layout('components.layouts.app')] class extends Component
             'canCreate' => Gate::allows('documents.create'),
             'canShare' => Gate::allows('documents.share'),
             'fileService' => app(FileService::class),
+            'qrCodeGenerator' => app(QrCodeGenerator::class),
         ];
     }
 }; ?>
@@ -280,13 +282,23 @@ new #[Layout('components.layouts.app')] class extends Component
                                         @endif
                                         @if($canShare)
                                             @if($publicUrl)
-                                                <button type="button"
-                                                        x-data="{ copied: false }"
-                                                        x-on:click="navigator.clipboard.writeText(@js($publicUrl)); copied = true; setTimeout(() => copied = false, 2000)"
-                                                        class="s-btn s-btn-sm s-btn-outline">
-                                                    <span x-show="!copied">{{ __('Copy link') }}</span>
-                                                    <span x-cloak x-show="copied">{{ __('Copied') }}</span>
-                                                </button>
+                                                <div class="flex flex-wrap items-center justify-end gap-2">
+                                                    <button type="button"
+                                                            x-data="{ copied: false }"
+                                                            x-on:click="navigator.clipboard.writeText(@js($publicUrl)); copied = true; setTimeout(() => copied = false, 2000)"
+                                                            class="s-btn s-btn-sm s-btn-outline">
+                                                        <span x-show="!copied">{{ __('Copy link') }}</span>
+                                                        <span x-cloak x-show="copied">{{ __('Copied') }}</span>
+                                                    </button>
+                                                    <div
+                                                        wire:key="document-share-qr-{{ $document->id }}"
+                                                        class="inline-flex rounded-lg border border-[var(--border)] bg-white p-1.5"
+                                                        title="{{ __('Scan to open public link') }}"
+                                                        aria-label="{{ __('QR code for public document link') }}"
+                                                    >
+                                                        {!! $qrCodeGenerator->generate($publicUrl) !!}
+                                                    </div>
+                                                </div>
                                                 <button type="button" wire:click="openShareModal({{ $document->id }})" class="s-btn s-btn-sm s-btn-outline">
                                                     {{ __('Configure') }}
                                                 </button>
@@ -318,9 +330,38 @@ new #[Layout('components.layouts.app')] class extends Component
     </div>
 
     @if($shareDocumentId)
+        @php
+            $shareDocument = $documents->firstWhere('id', $shareDocumentId);
+            $sharePublicUrl = $shareDocument?->public_token
+                ? route('documents.public.show', ['token' => $shareDocument->public_token])
+                : null;
+        @endphp
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
             <x-signals.card class="w-full max-w-md">
                 <h3 class="text-base font-semibold text-[var(--text-primary)]">{{ __('Public link settings') }}</h3>
+                @if($sharePublicUrl)
+                    <div class="mt-4 flex flex-col items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] p-4 sm:flex-row sm:items-start">
+                        <div
+                            wire:key="share-modal-qr-{{ $shareDocumentId }}"
+                            class="inline-flex shrink-0 rounded-lg border border-[var(--border)] bg-white p-1.5"
+                            title="{{ __('Scan to open public link') }}"
+                            aria-label="{{ __('QR code for public document link') }}"
+                        >
+                            {!! $qrCodeGenerator->generate($sharePublicUrl) !!}
+                        </div>
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <p class="text-xs font-medium text-[var(--text-secondary)]">{{ __('Public link') }}</p>
+                            <p class="break-all text-sm font-mono text-[var(--text-primary)]">{{ $sharePublicUrl }}</p>
+                            <button type="button"
+                                    x-data="{ copied: false }"
+                                    x-on:click="navigator.clipboard.writeText(@js($sharePublicUrl)); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="s-btn s-btn-sm s-btn-outline">
+                                <span x-show="!copied">{{ __('Copy link') }}</span>
+                                <span x-cloak x-show="copied">{{ __('Copied') }}</span>
+                            </button>
+                        </div>
+                    </div>
+                @endif
                 <div class="mt-4 space-y-4">
                     <div>
                         <label class="s-label" for="shareExpiresAt">{{ __('Expires at (optional)') }}</label>
