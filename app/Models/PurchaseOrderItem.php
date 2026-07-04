@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Models\Traits\FormatsMoney;
+use App\Services\SchemaBuilder;
 use Database\Factories\PurchaseOrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $supplier_cost_id
  * @property int $sort_order
  */
-class PurchaseOrderItem extends Model
+class PurchaseOrderItem extends Model implements HasSchema
 {
     /** @use HasFactory<PurchaseOrderItemFactory> */
     use FormatsMoney, HasFactory;
@@ -66,6 +68,22 @@ class PurchaseOrderItem extends Model
     protected function moneyFormattingCurrency(): string
     {
         return $this->purchaseOrder?->currency_code ?: $this->baseFormattingCurrency();
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->relation('purchase_order_id')->label('Purchase Order')
+            ->relation('purchaseOrder', 'belongsTo', PurchaseOrder::class, 'number')
+            ->filterable()->sortable();
+        $builder->relation('product_id')->label('Product')
+            ->relation('product', 'belongsTo', Product::class, 'name')
+            ->filterable();
+        $builder->string('description')->label('Description')->searchable()->filterable();
+        $builder->decimal('quantity')->label('Quantity')->sortable();
+        $builder->decimal('received_quantity')->label('Received Qty')->sortable();
+        $builder->currency('unit_cost')->label('Unit Cost')->sortable();
+        $builder->currency('tax')->label('Tax')->sortable();
+        $builder->currency('total')->label('Total')->sortable();
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Enums\MembershipType;
 use App\Enums\OpportunityState;
 use App\Enums\ProductType;
 use App\Models\Activity;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;
@@ -30,6 +31,7 @@ class SearchController
                 'product_groups' => [],
                 'activities' => [],
                 'opportunities' => [],
+                'invoices' => [],
             ]);
         }
 
@@ -42,6 +44,7 @@ class SearchController
             'product_groups' => [],
             'activities' => [],
             'opportunities' => [],
+            'invoices' => [],
         ];
 
         // Search members
@@ -177,6 +180,29 @@ class SearchController
                     'type' => $state->label(),
                     'typeValue' => 'opportunity',
                     'url' => route('opportunities.show', $opportunity->id),
+                ];
+            }
+        }
+
+        // Search invoices by number or customer reference.
+        if (Gate::allows('invoices.view')) {
+            $invoices = Invoice::query()
+                ->where(function ($builder) use ($escaped): void {
+                    $builder->where('number', 'ilike', '%'.$escaped.'%')
+                        ->orWhere('reference', 'ilike', '%'.$escaped.'%');
+                })
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get();
+
+            foreach ($invoices as $invoice) {
+                $statusLabel = (string) (config('invoices.statuses.'.$invoice->status.'.label') ?? $invoice->status);
+                $results['invoices'][] = [
+                    'id' => $invoice->id,
+                    'name' => $invoice->number,
+                    'number' => $statusLabel,
+                    'typeValue' => 'invoice',
+                    'url' => route('invoices.show', $invoice->id),
                 ];
             }
         }

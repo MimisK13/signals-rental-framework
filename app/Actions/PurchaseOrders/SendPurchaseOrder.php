@@ -5,6 +5,7 @@ namespace App\Actions\PurchaseOrders;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\PurchaseOrders\PurchaseOrderData;
 use App\Models\PurchaseOrder;
+use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderSent;
 use Carbon\CarbonImmutable;
@@ -34,6 +35,9 @@ class SendPurchaseOrder
             );
         });
 
-        return PurchaseOrderData::fromModel($purchaseOrder->refresh());
+        $purchaseOrder = $purchaseOrder->refresh();
+        app(PurchaseOrderEventRecorder::class)->sent($purchaseOrder);
+
+        return PurchaseOrderData::fromModel($purchaseOrder);
     }
 }

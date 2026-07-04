@@ -30,6 +30,7 @@ use App\Models\OpportunityItem;
 use App\Models\OrganisationTaxClass;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
+use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\TaxRate;
 use App\Models\TaxRule;
@@ -68,7 +69,8 @@ afterEach(function () {
  *     issued_invoice: Invoice,
  *     deposit_invoice: Invoice,
  *     proforma_invoice: Invoice,
- *     credit_note: CreditNote
+ *     credit_note: CreditNote,
+ *     purchase_order: PurchaseOrder
  * }
  */
 function seededTemplateRenderFixture(): array
@@ -180,6 +182,11 @@ function seededTemplateRenderFixture(): array
     );
     $creditNote = CreditNote::query()->findOrFail($creditNoteData->id);
 
+    $purchaseOrder = createTestPurchaseOrder([
+        'store_id' => $store->id,
+        'opportunity_id' => $opportunity->id,
+    ]);
+
     return [
         'store' => $store,
         'member' => $member,
@@ -189,6 +196,7 @@ function seededTemplateRenderFixture(): array
         'deposit_invoice' => $depositInvoice->refresh(),
         'proforma_invoice' => $proformaInvoice->refresh(),
         'credit_note' => $creditNote,
+        'purchase_order' => $purchaseOrder,
     ];
 }
 
@@ -235,7 +243,7 @@ describe('DocumentTemplateSeeder', function () {
     });
 
     it('renders a valid non-empty PDF for every seeded system template type', function () {
-        ['store' => $store, 'member' => $member, 'opportunity' => $opportunity, 'payment' => $payment, 'issued_invoice' => $issuedInvoice, 'deposit_invoice' => $depositInvoice, 'proforma_invoice' => $proformaInvoice, 'credit_note' => $creditNote] = seededTemplateRenderFixture();
+        ['store' => $store, 'member' => $member, 'opportunity' => $opportunity, 'payment' => $payment, 'issued_invoice' => $issuedInvoice, 'deposit_invoice' => $depositInvoice, 'proforma_invoice' => $proformaInvoice, 'credit_note' => $creditNote, 'purchase_order' => $purchaseOrder] = seededTemplateRenderFixture();
 
         foreach (SystemDocumentTemplates::CORE_TYPES as $documentType) {
             $template = DocumentTemplate::query()
@@ -249,14 +257,17 @@ describe('DocumentTemplateSeeder', function () {
                 'invoice' => $issuedInvoice->id,
                 'credit_note' => $creditNote->id,
                 'pro_forma' => $proformaInvoice->id,
+                'deposit' => $depositInvoice->id,
+                'purchase_order' => $purchaseOrder->id,
                 default => $opportunity->id,
             };
 
             $resolverType = match ($documentType) {
-                'invoice', 'pro_forma' => 'invoice',
+                'invoice', 'pro_forma', 'deposit' => 'invoice',
                 'credit_note' => 'credit_note',
                 'statement' => 'statement',
                 'receipt' => 'receipt',
+                'purchase_order' => 'purchase_order',
                 'return_list' => 'return_list',
                 default => 'opportunity',
             };
@@ -269,6 +280,46 @@ describe('DocumentTemplateSeeder', function () {
             );
 
             expect($result->success)->toBeTrue("Expected {$documentType} template to render successfully")
+                ->and($result->pdfBinary)->not->toBeEmpty()
+                ->and($result->pdfBinary)->toStartWith('%PDF');
+        }
+    });
+
+    it('renders a valid non-empty PDF for every core financial document type', function () {
+        ['store' => $store, 'member' => $member, 'payment' => $payment, 'issued_invoice' => $issuedInvoice, 'deposit_invoice' => $depositInvoice, 'proforma_invoice' => $proformaInvoice, 'credit_note' => $creditNote, 'purchase_order' => $purchaseOrder] = seededTemplateRenderFixture();
+
+        foreach (SystemDocumentTemplates::CORE_FINANCIAL_TYPES as $documentType) {
+            $template = DocumentTemplate::query()
+                ->where('store_id', $store->id)
+                ->where('document_type', $documentType)
+                ->firstOrFail();
+
+            $sourceId = match ($documentType) {
+                'statement' => $member->id,
+                'receipt' => $payment->id,
+                'invoice' => $issuedInvoice->id,
+                'credit_note' => $creditNote->id,
+                'pro_forma' => $proformaInvoice->id,
+                'deposit' => $depositInvoice->id,
+                'purchase_order' => $purchaseOrder->id,
+            };
+
+            $resolverType = match ($documentType) {
+                'invoice', 'pro_forma', 'deposit' => 'invoice',
+                'credit_note' => 'credit_note',
+                'statement' => 'statement',
+                'receipt' => 'receipt',
+                'purchase_order' => 'purchase_order',
+            };
+
+            $result = app(DocumentRenderer::class)->render(
+                $template->fresh('store'),
+                $resolverType,
+                $sourceId,
+                DocumentOutputFormat::Pdf,
+            );
+
+            expect($result->success)->toBeTrue("Expected {$documentType} financial template to render successfully")
                 ->and($result->pdfBinary)->not->toBeEmpty()
                 ->and($result->pdfBinary)->toStartWith('%PDF');
         }

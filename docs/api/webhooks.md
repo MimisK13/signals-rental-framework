@@ -245,6 +245,30 @@ when the event store is rebuilt.
 | `shortage.waitlist.created` | A waitlist monitor is placed on a shortage |
 | `shortage.waitlist.matched` | Monitored stock becomes available |
 | `shortage.waitlist.expired` | A waitlist monitor expires without matching |
+| `shortage.escalated` | An unresolved shortage passes the configured escalation threshold |
+
+### Purchase Orders
+
+| Event | Trigger |
+|-------|---------|
+| `purchase_order.created` | A draft purchase order is created |
+| `purchase_order.updated` | A draft purchase order is updated |
+| `purchase_order.sent` | A purchase order is sent to the supplier |
+| `purchase_order.received` | Goods are received against a purchase order |
+| `purchase_order.cancelled` | A purchase order is cancelled |
+| `purchase_order.deleted` | A draft purchase order is deleted |
+
+### Virtual Stock
+
+| Event | Trigger |
+|-------|---------|
+| `virtual_stock_intake.created` | A draft virtual stock intake is created |
+| `virtual_stock_intake.updated` | A draft virtual stock intake is updated |
+| `virtual_stock_intake.confirmed` | A virtual stock intake is confirmed |
+| `virtual_stock_intake.received` | Virtual stock is received into availability |
+| `virtual_stock_intake.returned` | Virtual stock is returned after the hire window |
+| `virtual_stock_intake.cancelled` | A virtual stock intake is cancelled |
+| `virtual_stock_intake.deleted` | A draft virtual stock intake is deleted |
 
 ## Payload Format
 

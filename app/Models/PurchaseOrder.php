@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;
+use App\Services\SchemaBuilder;
 use Database\Factories\PurchaseOrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,7 +47,7 @@ use Illuminate\Validation\ValidationException;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class PurchaseOrder extends Model
+class PurchaseOrder extends Model implements HasSchema
 {
     /** @use HasFactory<PurchaseOrderFactory> */
     use FormatsMoney, HasFactory, HasStoreScoping, SoftDeletes;
@@ -115,6 +117,32 @@ class PurchaseOrder extends Model
                 'purchase_order' => ['Only draft purchase orders can be edited.'],
             ]);
         }
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->string('number')->label('Number')->searchable()->filterable()->sortable();
+        $builder->enum('po_type')->label('Type')->filterable()->sortable()->groupable();
+        $builder->enum('status')->label('Status')->filterable()->sortable()->groupable();
+        $builder->relation('supplier_id')->label('Supplier')
+            ->relation('supplier', 'belongsTo', Member::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('store_id')->label('Store')
+            ->relation('store', 'belongsTo', Store::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('opportunity_id')->label('Opportunity')
+            ->relation('opportunity', 'belongsTo', Opportunity::class, 'subject')
+            ->filterable();
+        $builder->currency('subtotal')->label('Subtotal')->sortable();
+        $builder->currency('tax_total')->label('Tax Total')->sortable();
+        $builder->currency('total')->label('Total')->sortable();
+        $builder->string('currency_code')->label('Currency')->filterable();
+        $builder->datetime('expected_at')->label('Expected')->sortable()->filterable();
+        $builder->datetime('starts_at')->label('Starts')->sortable()->filterable();
+        $builder->datetime('ends_at')->label('Ends')->sortable()->filterable();
+        $builder->datetime('sent_at')->label('Sent')->sortable()->filterable();
+        $builder->datetime('received_at')->label('Received')->sortable()->filterable();
+        $builder->datetime('created_at')->label('Created')->sortable()->filterable();
     }
 
     /**

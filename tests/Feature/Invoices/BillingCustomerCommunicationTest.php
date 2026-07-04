@@ -211,7 +211,8 @@ describe('payment receipt customer email', function () {
             ->sole();
 
         expect($log->notifiable_id)->toBe($member->id)
-            ->and($log->status)->toBe('sent');
+            ->and($log->status)->toBe('sent')
+            ->and($log->attachments)->toHaveCount(1);
     });
 });
 
@@ -232,7 +233,8 @@ describe('credit note customer email', function () {
             ->sole();
 
         expect($log->notifiable_id)->toBe($member->id)
-            ->and($log->status)->toBe('sent');
+            ->and($log->status)->toBe('sent')
+            ->and($log->attachments)->toHaveCount(1);
     });
 });
 
@@ -253,7 +255,8 @@ describe('member statement email', function () {
             ->sole();
 
         expect($log->notifiable_id)->toBe($member->id)
-            ->and($log->status)->toBe('sent');
+            ->and($log->status)->toBe('sent')
+            ->and($log->attachments)->toHaveCount(1);
     });
 
     it('exposes a statement email API endpoint', function () {

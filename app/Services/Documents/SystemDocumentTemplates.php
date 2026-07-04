@@ -7,23 +7,41 @@ use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\PurchaseOrder;
 
 /**
  * Canonical system document template definitions seeded per store.
  */
 class SystemDocumentTemplates
 {
+    /**
+     * The seven billing/sub-hire document types verified end-to-end in P56.
+     *
+     * @var list<string>
+     */
+    public const CORE_FINANCIAL_TYPES = [
+        'invoice',
+        'credit_note',
+        'deposit',
+        'pro_forma',
+        'statement',
+        'receipt',
+        'purchase_order',
+    ];
+
     /** @var list<string> */
     public const CORE_TYPES = [
         'quote',
         'invoice',
         'credit_note',
+        'deposit',
         'delivery_note',
         'pick_list',
         'return_list',
         'pro_forma',
         'statement',
         'receipt',
+        'purchase_order',
     ];
 
     /**
@@ -89,6 +107,8 @@ class SystemDocumentTemplates
             'pro_forma' => self::proFormaDefinition(),
             'statement' => self::statementDefinition(),
             'receipt' => self::receiptDefinition(),
+            'deposit' => self::depositDefinition(),
+            'purchase_order' => self::purchaseOrderDefinition(),
             default => throw new \InvalidArgumentException("Unsupported system document type [{$documentType}]."),
         };
     }
@@ -151,6 +171,141 @@ class SystemDocumentTemplates
             'styles_css' => self::commercialStyles().self::taxLegalStyles(),
             'page_config' => self::defaultPageConfig(),
         ];
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function depositDefinition(): array
+    {
+        return [
+            'document_type' => 'deposit',
+            'slug' => 'system-deposit',
+            'name' => 'Standard Deposit Invoice',
+            'description' => 'System default deposit invoice template.',
+            'model_type' => Invoice::class,
+            'header_html' => self::invoiceHeaderHtml('Deposit Invoice'),
+            'body_html' => self::invoiceBodyHtml('This deposit invoice requests a partial payment against the quoted order.'),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles().self::taxLegalStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     document_type: string,
+     *     slug: string,
+     *     name: string,
+     *     description: string,
+     *     model_type: string,
+     *     header_html: string,
+     *     body_html: string,
+     *     footer_html: string,
+     *     styles_css: string,
+     *     page_config: array<string, mixed>
+     * }
+     */
+    private static function purchaseOrderDefinition(): array
+    {
+        return [
+            'document_type' => 'purchase_order',
+            'slug' => 'system-purchase_order',
+            'name' => 'Standard Purchase Order',
+            'description' => 'System default supplier purchase order template.',
+            'model_type' => PurchaseOrder::class,
+            'header_html' => self::purchaseOrderHeaderHtml(),
+            'body_html' => self::purchaseOrderBodyHtml(),
+            'footer_html' => self::footerHtml(),
+            'styles_css' => self::commercialStyles(),
+            'page_config' => self::defaultPageConfig(),
+        ];
+    }
+
+    private static function purchaseOrderHeaderHtml(): string
+    {
+        return <<<'HTML'
+<div class="doc-header">
+    <div class="doc-brand">
+        <h1 class="doc-store">{{ $store->name }}</h1>
+        <p class="doc-type">Purchase Order</p>
+    </div>
+    <div class="doc-meta-block">
+        <p><strong>PO:</strong> {{ $purchase_order->number }}</p>
+        <p><strong>Expected:</strong> {{ $purchase_order->expected_at }}</p>
+        <p><strong>Status:</strong> {{ $purchase_order->status_label }}</p>
+    </div>
+</div>
+HTML;
+    }
+
+    private static function purchaseOrderBodyHtml(): string
+    {
+        return <<<'HTML'
+<p class="doc-intro">Please supply the goods and services listed below.</p>
+
+<div class="doc-addresses">
+    <div class="doc-address">
+        <h2>From</h2>
+        <p>{{ $store->name }}</p>
+        <p>{{ $store->address }}</p>
+        <p>{{ $store->phone }}</p>
+        <p>{{ $store->email }}</p>
+    </div>
+    <div class="doc-address">
+        <h2>Supplier</h2>
+        <p>{{ $supplier->company_name ?? $supplier->name }}</p>
+        <p>{{ $supplier->email }}</p>
+        <p>{{ $supplier->phone }}</p>
+    </div>
+</div>
+
+@if ($opportunity->number)
+<div class="doc-event">
+    <p><strong>Reference:</strong> {{ $opportunity->number }} — {{ $opportunity->subject }}</p>
+</div>
+@endif
+
+<table class="doc-items">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th class="num">Qty</th>
+            <th class="num">Unit Cost</th>
+            <th class="num">Tax</th>
+            <th class="num">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($lines as $line)
+            <tr>
+                <td>{{ $line->description }}</td>
+                <td class="num">{{ $line->quantity }}</td>
+                <td class="num">{{ $line->unit_cost }}</td>
+                <td class="num">{{ $line->tax }}</td>
+                <td class="num">{{ $line->total }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<table class="doc-totals">
+    <tr><td>Subtotal</td><td class="num">{{ $purchase_order->subtotal }}</td></tr>
+    <tr><td>Tax</td><td class="num">{{ $purchase_order->tax_total }}</td></tr>
+    <tr class="grand"><td>Total</td><td class="num">{{ $purchase_order->total }}</td></tr>
+</table>
+HTML;
     }
 
     /**

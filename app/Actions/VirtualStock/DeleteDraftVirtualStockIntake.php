@@ -5,6 +5,7 @@ namespace App\Actions\VirtualStock;
 use App\Concerns\CommitsVerbsEvents;
 use App\Models\VirtualStockIntake;
 use App\Services\VirtualStock\EnsuresVirtualStockIntakeIsDraft;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeDeleted;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
@@ -27,5 +28,7 @@ class DeleteDraftVirtualStockIntake
                 deleted_by: auth()->id(),
             );
         });
+
+        app(VirtualStockIntakeEventRecorder::class)->deleted($intake);
     }
 }

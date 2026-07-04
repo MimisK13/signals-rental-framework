@@ -5,6 +5,7 @@ namespace App\Actions\VirtualStock;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeReceived;
 use Carbon\CarbonImmutable;
@@ -38,6 +39,9 @@ class ReceiveVirtualStockIntake
 
         ($this->apportionVirtualStockCost)($intake->refresh(), authorize: false);
 
-        return VirtualStockIntakeData::fromModel($intake->refresh());
+        $intake = $intake->refresh();
+        app(VirtualStockIntakeEventRecorder::class)->received($intake);
+
+        return VirtualStockIntakeData::fromModel($intake);
     }
 }

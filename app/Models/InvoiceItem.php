@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Enums\TaxResultType;
 use App\Models\Traits\FormatsMoney;
+use App\Services\SchemaBuilder;
 use Database\Factories\InvoiceItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $prices_include_tax
  * @property int $sort_order
  */
-class InvoiceItem extends Model
+class InvoiceItem extends Model implements HasSchema
 {
     /** @use HasFactory<InvoiceItemFactory> */
     use FormatsMoney, HasFactory;
@@ -118,5 +120,24 @@ class InvoiceItem extends Model
     public function productTaxClass(): BelongsTo
     {
         return $this->belongsTo(ProductTaxClass::class);
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->relation('invoice_id')->label('Invoice')
+            ->relation('invoice', 'belongsTo', Invoice::class, 'number')
+            ->filterable()->sortable();
+        $builder->relation('product_id')->label('Product')
+            ->relation('product', 'belongsTo', Product::class, 'name')
+            ->filterable();
+        $builder->string('description')->label('Description')->searchable()->filterable();
+        $builder->decimal('quantity')->label('Quantity')->sortable();
+        $builder->decimal('invoiced_quantity')->label('Invoiced Qty')->sortable();
+        $builder->currency('unit_price')->label('Unit Price')->sortable();
+        $builder->currency('discount')->label('Discount')->sortable();
+        $builder->currency('tax')->label('Tax')->sortable();
+        $builder->currency('total')->label('Total')->sortable();
+        $builder->enum('tax_treatment')->label('Tax Treatment')->filterable();
+        $builder->string('currency_code')->label('Currency')->filterable();
     }
 }

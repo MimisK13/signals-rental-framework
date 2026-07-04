@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;
+use App\Services\SchemaBuilder;
 use Database\Factories\VirtualStockIntakeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,7 +47,7 @@ use Illuminate\Validation\ValidationException;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class VirtualStockIntake extends Model
+class VirtualStockIntake extends Model implements HasSchema
 {
     /** @use HasFactory<VirtualStockIntakeFactory> */
     use FormatsMoney, HasFactory, HasStoreScoping, SoftDeletes;
@@ -111,6 +113,30 @@ class VirtualStockIntake extends Model
                 'virtual_stock_intake' => ['Only draft virtual stock intakes can be edited.'],
             ]);
         }
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->string('number')->label('Number')->searchable()->filterable()->sortable();
+        $builder->enum('status')->label('Status')->filterable()->sortable()->groupable();
+        $builder->relation('product_id')->label('Product')
+            ->relation('product', 'belongsTo', Product::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('store_id')->label('Store')
+            ->relation('store', 'belongsTo', Store::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('purchase_order_id')->label('Purchase Order')
+            ->relation('purchaseOrder', 'belongsTo', PurchaseOrder::class, 'number')
+            ->filterable();
+        $builder->integer('quantity')->label('Quantity')->sortable();
+        $builder->currency('unit_cost')->label('Unit Cost')->sortable();
+        $builder->string('currency_code')->label('Currency')->filterable();
+        $builder->datetime('available_from')->label('Available From')->sortable()->filterable();
+        $builder->datetime('available_until')->label('Available Until')->sortable()->filterable();
+        $builder->datetime('confirmed_at')->label('Confirmed')->sortable()->filterable();
+        $builder->datetime('received_at')->label('Received')->sortable()->filterable();
+        $builder->datetime('returned_at')->label('Returned')->sortable()->filterable();
+        $builder->datetime('created_at')->label('Created')->sortable()->filterable();
     }
 
     /**

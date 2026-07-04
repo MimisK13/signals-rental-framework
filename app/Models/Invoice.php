@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Enums\InvoiceType;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;
 use App\Services\Invoices\EnsuresInvoiceIsDraft;
 use App\Services\Invoices\InvoiceStatusResolver;
+use App\Services\SchemaBuilder;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -50,7 +52,7 @@ use Illuminate\Validation\ValidationException;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class Invoice extends Model
+class Invoice extends Model implements HasSchema
 {
     /** @use HasFactory<InvoiceFactory> */
     use FormatsMoney, HasFactory, HasStoreScoping, SoftDeletes;
@@ -165,6 +167,34 @@ class Invoice extends Model
     public function ensureDraft(): void
     {
         app(EnsuresInvoiceIsDraft::class)->assert($this);
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->string('number')->label('Number')->searchable()->filterable()->sortable();
+        $builder->enum('type')->label('Type')->filterable()->sortable()->groupable();
+        $builder->enum('status')->label('Status')->filterable()->sortable()->groupable();
+        $builder->relation('member_id')->label('Member')
+            ->relation('member', 'belongsTo', Member::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('store_id')->label('Store')
+            ->relation('store', 'belongsTo', Store::class, 'name')
+            ->filterable()->sortable();
+        $builder->relation('opportunity_id')->label('Opportunity')
+            ->relation('opportunity', 'belongsTo', Opportunity::class, 'subject')
+            ->filterable();
+        $builder->currency('subtotal')->label('Subtotal')->sortable();
+        $builder->currency('tax_total')->label('Tax Total')->sortable();
+        $builder->currency('total')->label('Total')->sortable();
+        $builder->currency('amount_paid')->label('Amount Paid')->sortable();
+        $builder->currency('amount_outstanding')->label('Outstanding')->sortable();
+        $builder->currency('credited_total')->label('Credited Total')->sortable();
+        $builder->string('currency_code')->label('Currency')->filterable();
+        $builder->datetime('issued_at')->label('Issued')->sortable()->filterable();
+        $builder->datetime('due_at')->label('Due')->sortable()->filterable();
+        $builder->datetime('paid_at')->label('Paid')->sortable()->filterable();
+        $builder->boolean('is_locked')->label('Locked')->filterable();
+        $builder->datetime('created_at')->label('Created')->sortable()->filterable();
     }
 
     /**

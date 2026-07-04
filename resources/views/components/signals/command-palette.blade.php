@@ -14,6 +14,7 @@
         productGroupResults: [],
         activityResults: [],
         opportunityResults: [],
+        invoiceResults: [],
         badgeColors: { 'organisation': 's-badge-blue', 'venue': 's-badge-amber', 'contact': 's-badge-green' },
         avatarColors: { 'organisation': 's-avatar-blue', 'venue': 's-avatar-amber', 'contact': 's-avatar-green' },
         searching: false,
@@ -38,6 +39,9 @@
             @endcan
             @can('opportunities.access')
             { group: 'Navigation', label: 'Opportunities', icon: 'briefcase', url: '{{ route('opportunities.index') }}', keywords: 'quotes orders hires opportunities jobs' },
+            @endcan
+            @can('invoices.access')
+            { group: 'Navigation', label: 'Invoices', icon: 'document-currency-pound', url: '{{ route('invoices.index') }}', keywords: 'invoices billing payments credit notes statements' },
             @endcan
             { group: 'Navigation', label: 'Admin Settings', icon: 'cog', url: '{{ route('admin.settings.company') }}', keywords: 'setup configuration company' },
             @can('members.create')
@@ -97,6 +101,9 @@
             @can('opportunities.view')
             this.opportunityResults.forEach(o => results.push({ group: 'Opportunities', label: o.name, hint: o.number, icon: 'briefcase', url: o.url }));
             @endcan
+            @can('invoices.view')
+            this.invoiceResults.forEach(i => results.push({ group: 'Invoices', label: i.name, hint: i.number, icon: 'document-currency-pound', url: i.url }));
+            @endcan
             this.filteredCommands.forEach(c => results.push(c));
             return results;
         },
@@ -127,6 +134,7 @@
                     this.productGroupResults = data.product_groups || [];
                     this.activityResults = data.activities || [];
                     this.opportunityResults = data.opportunities || [];
+                    this.invoiceResults = data.invoices || [];
                     this.searching = false;
                 })
                 .catch(() => {
@@ -136,6 +144,7 @@
                     this.productGroupResults = [];
                     this.activityResults = [];
                     this.opportunityResults = [];
+                    this.invoiceResults = [];
                     this.searching = false;
                 });
             }, 200);
@@ -151,6 +160,7 @@
                 this.productGroupResults = [];
                 this.activityResults = [];
                 this.opportunityResults = [];
+                this.invoiceResults = [];
                 this.$nextTick(() => this.$refs.searchInput?.focus());
             }
         },

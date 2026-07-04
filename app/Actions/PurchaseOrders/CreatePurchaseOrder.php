@@ -8,6 +8,7 @@ use App\Data\PurchaseOrders\CreatePurchaseOrderData;
 use App\Data\PurchaseOrders\PurchaseOrderData;
 use App\Models\PurchaseOrder;
 use App\Services\CurrencyService;
+use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
 use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
@@ -118,7 +119,12 @@ class CreatePurchaseOrder
         });
 
         return PurchaseOrderData::fromModel(
-            PurchaseOrder::query()->whereKey($purchaseOrderId)->firstOrFail(),
+            tap(
+                PurchaseOrder::query()->whereKey($purchaseOrderId)->firstOrFail(),
+                function (PurchaseOrder $purchaseOrder): void {
+                    app(PurchaseOrderEventRecorder::class)->created($purchaseOrder);
+                },
+            ),
         );
     }
 

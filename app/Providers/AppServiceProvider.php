@@ -48,6 +48,7 @@ use App\Services\Documents\DocumentTypeRegistry;
 use App\Services\Documents\InvoiceDataResolver;
 use App\Services\Documents\OpportunityDataResolver;
 use App\Services\Documents\PdfDriverManager;
+use App\Services\Documents\PurchaseOrderDataResolver;
 use App\Services\Documents\ReceiptDataResolver;
 use App\Services\Documents\ReturnListDataResolver;
 use App\Services\Documents\SandboxedBladeCompiler;
@@ -166,6 +167,7 @@ class AppServiceProvider extends ServiceProvider
             $registry->register($app->make(ReceiptDataResolver::class));
             $registry->register($app->make(InvoiceDataResolver::class));
             $registry->register($app->make(CreditNoteDataResolver::class));
+            $registry->register($app->make(PurchaseOrderDataResolver::class));
 
             return $registry;
         });

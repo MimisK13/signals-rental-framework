@@ -142,6 +142,9 @@ class DispatchWebhookForAuditableEvent
             return ['opportunity' => OpportunityData::fromModel($fresh)->toArray()];
         }
 
+        // Invoice webhooks are emitted solely via this bridge: Verbs invoice events
+        // record audit in handle() → AuditableEvent → here. They are NOT also
+        // dispatched from actions/recorders, so there is no double-delivery path.
         if ($model instanceof Invoice
             && in_array($event->action, self::INVOICE_ENTITY_ACTIONS, true)) {
             $fresh = Invoice::query()->find($model->getKey()) ?? $model;

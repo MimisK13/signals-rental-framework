@@ -241,6 +241,8 @@ new #[Layout('components.layouts.app')] class extends Component {
         </x-slot:actions>
     </x-signals.page-header>
 
+    @include('livewire.invoices.partials.invoice-tabs', ['invoice' => $invoice, 'activeTab' => 'overview'])
+
     <div class="grid grid-cols-1 gap-6 px-6 py-4 lg:grid-cols-[1fr_280px] max-md:px-5 max-sm:px-3">
         <div class="space-y-6">
             <x-signals.panel title="Line Items">

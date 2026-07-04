@@ -5,6 +5,7 @@ namespace App\Actions\PurchaseOrders;
 use App\Concerns\CommitsVerbsEvents;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrders\EnsuresPurchaseOrderIsDraft;
+use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderDeleted;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
@@ -27,5 +28,7 @@ class DeleteDraftPurchaseOrder
                 deleted_by: auth()->id(),
             );
         });
+
+        app(PurchaseOrderEventRecorder::class)->deleted($purchaseOrder);
     }
 }

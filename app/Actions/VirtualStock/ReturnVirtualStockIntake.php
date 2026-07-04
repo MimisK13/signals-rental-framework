@@ -6,6 +6,7 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeReturned;
@@ -53,6 +54,9 @@ class ReturnVirtualStockIntake
 
         ($this->apportionVirtualStockCost)->removeForIntake($intake->refresh(), authorize: false);
 
-        return VirtualStockIntakeData::fromModel($intake->refresh());
+        $intake = $intake->refresh();
+        app(VirtualStockIntakeEventRecorder::class)->returned($intake);
+
+        return VirtualStockIntakeData::fromModel($intake);
     }
 }

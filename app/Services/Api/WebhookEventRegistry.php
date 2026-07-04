@@ -164,6 +164,20 @@ class WebhookEventRegistry
         'payment.recorded',
         'payment.refunded',
         'credit_note.issued',
+        'purchase_order.created',
+        'purchase_order.updated',
+        'purchase_order.sent',
+        'purchase_order.received',
+        'purchase_order.cancelled',
+        'purchase_order.deleted',
+        'virtual_stock_intake.created',
+        'virtual_stock_intake.updated',
+        'virtual_stock_intake.confirmed',
+        'virtual_stock_intake.received',
+        'virtual_stock_intake.returned',
+        'virtual_stock_intake.cancelled',
+        'virtual_stock_intake.deleted',
+        'shortage.escalated',
     ];
 
     /**

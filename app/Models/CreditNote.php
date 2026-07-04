@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Models\Traits\FormatsMoney;
+use App\Services\SchemaBuilder;
 use Database\Factories\CreditNoteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class CreditNote extends Model
+class CreditNote extends Model implements HasSchema
 {
     /** @use HasFactory<CreditNoteFactory> */
     use FormatsMoney, HasFactory, SoftDeletes;
@@ -105,5 +107,20 @@ class CreditNote extends Model
     public function taxes(): HasMany
     {
         return $this->hasMany(CreditNoteTax::class);
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->string('number')->label('Number')->searchable()->filterable()->sortable();
+        $builder->enum('status')->label('Status')->filterable()->sortable()->groupable();
+        $builder->relation('invoice_id')->label('Invoice')
+            ->relation('invoice', 'belongsTo', Invoice::class, 'number')
+            ->filterable()->sortable();
+        $builder->currency('subtotal')->label('Subtotal')->sortable();
+        $builder->currency('tax_total')->label('Tax Total')->sortable();
+        $builder->currency('total')->label('Total')->sortable();
+        $builder->string('currency_code')->label('Currency')->filterable();
+        $builder->datetime('issued_at')->label('Issued')->sortable()->filterable();
+        $builder->datetime('created_at')->label('Created')->sortable()->filterable();
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\PurchaseOrder;
 use InvalidArgumentException;
 
 /**
@@ -106,8 +107,7 @@ class DocumentTypeRegistry
             'delivery_note' => 'Delivery Note',
             'pick_list' => 'Pick List',
             'return_list' => 'Return List',
-            'damage_report' => 'Damage Report',
-            'purchase_order' => 'Purchase Order',
+            'damage_report' => 'Damage Report', // Staged: no source model yet — renders via opportunity resolver until asset inspection ships.
         ];
 
         foreach ($opportunityTypes as $type => $label) {
@@ -160,6 +160,22 @@ class DocumentTypeRegistry
             InvoicePayment::class,
             'Payment Receipt',
             'Receipt for a payment recorded against an invoice.',
+        );
+
+        $this->register(
+            'deposit',
+            'invoice',
+            Invoice::class,
+            'Deposit Invoice',
+            'Deposit invoice rendered from the invoice projection.',
+        );
+
+        $this->register(
+            'purchase_order',
+            'purchase_order',
+            PurchaseOrder::class,
+            'Purchase Order',
+            'Supplier purchase order with line items and totals.',
         );
     }
 }

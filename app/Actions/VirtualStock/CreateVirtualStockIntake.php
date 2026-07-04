@@ -10,6 +10,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\VirtualStockIntake;
 use App\Services\CurrencyService;
 use App\Services\SequenceAllocator;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockNumberGenerator;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeCreated;
@@ -75,7 +76,12 @@ class CreateVirtualStockIntake
         });
 
         return VirtualStockIntakeData::fromModel(
-            VirtualStockIntake::query()->whereKey($intakeId)->firstOrFail(),
+            tap(
+                VirtualStockIntake::query()->whereKey($intakeId)->firstOrFail(),
+                function (VirtualStockIntake $intake): void {
+                    app(VirtualStockIntakeEventRecorder::class)->created($intake);
+                },
+            ),
         );
     }
 

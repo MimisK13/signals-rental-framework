@@ -5,6 +5,7 @@ namespace App\Actions\PurchaseOrders;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\PurchaseOrders\PurchaseOrderData;
 use App\Models\PurchaseOrder;
+use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderCancelled;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,9 @@ class CancelPurchaseOrder
             );
         });
 
-        return PurchaseOrderData::fromModel($purchaseOrder->refresh());
+        $purchaseOrder = $purchaseOrder->refresh();
+        app(PurchaseOrderEventRecorder::class)->cancelled($purchaseOrder, $reason);
+
+        return PurchaseOrderData::fromModel($purchaseOrder);
     }
 }

@@ -6,6 +6,7 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
 use Carbon\CarbonImmutable;
@@ -41,6 +42,9 @@ class ConfirmVirtualStockIntake
 
         ($this->apportionVirtualStockCost)($intake->refresh(), authorize: false);
 
-        return VirtualStockIntakeData::fromModel($intake->refresh());
+        $intake = $intake->refresh();
+        app(VirtualStockIntakeEventRecorder::class)->confirmed($intake);
+
+        return VirtualStockIntakeData::fromModel($intake);
     }
 }

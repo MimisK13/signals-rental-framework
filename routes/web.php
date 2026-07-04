@@ -134,6 +134,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('invoices', 'invoices.index')->name('invoices.index');
     Volt::route('invoices/create', 'invoices.form')->name('invoices.create');
     Volt::route('invoices/{invoice}', 'invoices.show')->name('invoices.show');
+    Volt::route('invoices/{invoice}/communications', 'invoices.communications')->name('invoices.communications');
     Volt::route('invoices/{invoice}/edit', 'invoices.form')->name('invoices.edit');
 
     // Purchase orders

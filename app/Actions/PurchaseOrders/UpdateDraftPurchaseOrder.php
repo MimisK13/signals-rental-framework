@@ -9,6 +9,7 @@ use App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData;
 use App\Models\PurchaseOrder;
 use App\Services\CurrencyService;
 use App\Services\PurchaseOrders\EnsuresPurchaseOrderIsDraft;
+use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
 use App\Services\PurchaseOrders\PurchaseOrderTotalsCalculator;
 use App\Services\SequenceAllocator;
@@ -96,7 +97,10 @@ class UpdateDraftPurchaseOrder
             );
         });
 
-        return PurchaseOrderData::fromModel($purchaseOrder->refresh()->load('items'));
+        $purchaseOrder = $purchaseOrder->refresh()->load('items');
+        app(PurchaseOrderEventRecorder::class)->updated($purchaseOrder);
+
+        return PurchaseOrderData::fromModel($purchaseOrder);
     }
 
     private function resolveExchangeRate(string $currency, PurchaseOrder $purchaseOrder): string

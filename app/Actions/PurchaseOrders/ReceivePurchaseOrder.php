@@ -15,6 +15,7 @@ use App\Models\ShortageResolution;
 use App\Models\StockLevel;
 use App\Models\StockTransaction;
 use App\Models\VirtualStockIntake;
+use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
 use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
 use App\Services\SequenceAllocator;
@@ -276,7 +277,10 @@ class ReceivePurchaseOrder
 
         $this->probeAffectedShortages($purchaseOrder, $resolutionTargets);
 
-        return PurchaseOrderData::fromModel($purchaseOrder->refresh()->load('items'));
+        $purchaseOrder = $purchaseOrder->refresh()->load('items');
+        app(PurchaseOrderEventRecorder::class)->received($purchaseOrder);
+
+        return PurchaseOrderData::fromModel($purchaseOrder);
     }
 
     /**

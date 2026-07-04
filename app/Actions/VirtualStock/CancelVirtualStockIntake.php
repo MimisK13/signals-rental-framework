@@ -5,6 +5,7 @@ namespace App\Actions\VirtualStock;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeCancelled;
 use Carbon\CarbonImmutable;
@@ -39,6 +40,9 @@ class CancelVirtualStockIntake
 
         ($this->apportionVirtualStockCost)->removeForIntake($intake->refresh(), authorize: false);
 
-        return VirtualStockIntakeData::fromModel($intake->refresh());
+        $intake = $intake->refresh();
+        app(VirtualStockIntakeEventRecorder::class)->cancelled($intake, $reason);
+
+        return VirtualStockIntakeData::fromModel($intake);
     }
 }

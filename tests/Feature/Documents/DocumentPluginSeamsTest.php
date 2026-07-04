@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentTypeRegistry;
@@ -64,14 +65,19 @@ describe('core document type registry', function () {
                 'model_type' => Invoice::class,
                 'label' => 'Pro Forma Invoice',
             ],
+            'deposit' => [
+                'resolver_type' => 'invoice',
+                'model_type' => Invoice::class,
+                'label' => 'Deposit Invoice',
+            ],
             'damage_report' => [
                 'resolver_type' => 'opportunity',
                 'model_type' => Opportunity::class,
                 'label' => 'Damage Report',
             ],
             'purchase_order' => [
-                'resolver_type' => 'opportunity',
-                'model_type' => Opportunity::class,
+                'resolver_type' => 'purchase_order',
+                'model_type' => PurchaseOrder::class,
                 'label' => 'Purchase Order',
             ],
             'statement' => [

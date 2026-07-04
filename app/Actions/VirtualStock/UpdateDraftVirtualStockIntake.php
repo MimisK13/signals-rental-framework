@@ -7,6 +7,7 @@ use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
 use App\Services\VirtualStock\EnsuresVirtualStockIntakeIsDraft;
+use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeUpdated;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
@@ -43,6 +44,9 @@ class UpdateDraftVirtualStockIntake
             );
         });
 
-        return VirtualStockIntakeData::fromModel($intake->refresh());
+        $intake = $intake->refresh();
+        app(VirtualStockIntakeEventRecorder::class)->updated($intake);
+
+        return VirtualStockIntakeData::fromModel($intake);
     }
 }

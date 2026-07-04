@@ -59,7 +59,7 @@ class ProductSupplierCost extends Model implements HasSchema
         $builder->relation('store_id')->label('Store')
             ->relation('store', 'belongsTo', Store::class, 'name')
             ->filterable()->sortable();
-        $builder->integer('cost')->label('Cost')->required()->sortable();
+        $builder->currency('cost')->label('Cost')->required()->sortable();
         $builder->string('currency_code')->label('Currency')->required()->filterable();
         $builder->string('cost_basis')->label('Cost Basis')->required()->filterable()->sortable();
         $builder->string('supplier_sku')->label('Supplier SKU')->filterable();

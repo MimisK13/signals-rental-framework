@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Contracts\HasSchema;
 use App\Enums\PaymentMethod;
 use App\Models\Traits\FormatsMoney;
+use App\Services\SchemaBuilder;
 use Database\Factories\InvoicePaymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $notes
  * @property int|null $created_by
  */
-class InvoicePayment extends Model
+class InvoicePayment extends Model implements HasSchema
 {
     /** @use HasFactory<InvoicePaymentFactory> */
     use FormatsMoney, HasFactory;
@@ -83,5 +85,16 @@ class InvoicePayment extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->relation('invoice_id')->label('Invoice')
+            ->relation('invoice', 'belongsTo', Invoice::class, 'number')
+            ->filterable()->sortable();
+        $builder->currency('amount')->label('Amount')->sortable();
+        $builder->enum('payment_method')->label('Payment Method')->filterable()->groupable();
+        $builder->string('reference')->label('Reference')->searchable()->filterable();
+        $builder->datetime('paid_at')->label('Paid At')->sortable()->filterable();
     }
 }
