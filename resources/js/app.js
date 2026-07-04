@@ -13,6 +13,9 @@ import createProductSearch, {
 } from './opportunity-product-search';
 import createOpportunityLineItemsEditor from './opportunity-line-items-editor';
 import createDocumentTemplateEditor from './document-template-editor';
+import registerLivewireConfirm from './livewire-confirm';
+
+registerLivewireConfirm();
 
 window.signals = window.signals || {};
 window.signals.productSearch = { createProductSearch, buildIndex, merge, parseQuickAdd };

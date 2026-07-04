@@ -1453,7 +1453,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                                         :style="menuStyle"
                                                         style="position: fixed; z-index: 1000; min-width: 180px;">
                                                         {{-- The menu is teleported to <body>, OUTSIDE the Livewire
-                                                             component root, so `wire:click`/`wire:confirm` lose their
+                                                             component root, so bare `wire:click` loses its
                                                              component binding (Livewire 4) and become no-ops. Calls are
                                                              made through `$wire` (captured from the original Alpine scope,
                                                              preserved across the teleport) so the actions actually fire;

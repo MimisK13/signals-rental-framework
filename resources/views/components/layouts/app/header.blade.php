@@ -826,6 +826,8 @@
 
         <x-signals.command-palette x-on:open-command-palette.window="toggle()" />
 
+        <x-signals.confirm-modal />
+
         {{-- ============================================================ --}}
         {{--  LIVE TOAST STACK                                            --}}
         {{--  Renders auto-dismissing toasts in response to Livewire      --}}
