@@ -1,34 +1,30 @@
 <?php
 
 use App\Actions\Containers\DispatchContainer;
-use App\Actions\Containers\PackContainerItem;
+use App\Actions\Containers\DissolveContainer;
 use App\Actions\Containers\ReturnKitContainer;
 use App\Actions\Containers\SealContainer;
-use App\Actions\Containers\UnpackContainerItem;
+use App\Actions\Containers\TransferContainerItem;
 use App\Actions\Containers\UnsealContainer;
 use App\Actions\Containers\VerifyKitCheckin;
 use App\Data\Containers\DispatchContainerData;
-use App\Data\Containers\PackContainerItemData;
 use App\Data\Containers\ReturnKitContainerData;
-use App\Data\Containers\UnpackContainerItemData;
+use App\Data\Containers\TransferContainerItemData;
 use App\Data\Containers\UnsealContainerData;
-use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerCheckinMode;
-use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Enums\ContainerUnsealReason;
-use App\Enums\PackContainerResolution;
 use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
-use App\Exceptions\Containers\ContainerPackConflictException;
+use App\Livewire\Concerns\HasAuditTimeline;
 use App\Models\Container;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('components.layouts.app')] class extends Component {
-    public Container $container;
+    use HasAuditTimeline;
 
-    public string $packSerialisedItemId = '';
+    public Container $container;
 
     public string $dispatchOpportunityId = '';
 
@@ -37,55 +33,15 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public string $unsealReason = '';
 
-    /** @var array<string, mixed>|null */
-    public ?array $packConflict = null;
+    public string $transferTargetUuid = '';
+
+    public string $transferSerialisedItemId = '';
 
     public function mount(Container $container): void
     {
         Gate::authorize('view', $container);
-        $this->container = $container->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem']);
+        $this->container = $container->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem', 'children']);
         $this->unsealReason = ContainerUnsealReason::Manual->value;
-    }
-
-    public function pack(?string $resolve = null): void
-    {
-        Gate::authorize('pack', $this->container);
-
-        $this->packConflict = null;
-
-        try {
-            (new PackContainerItem)($this->container, PackContainerItemData::from([
-                'serialised_item_id' => (int) $this->packSerialisedItemId,
-                'resolve' => $resolve,
-            ]));
-
-            $this->packSerialisedItemId = '';
-            $this->refreshContainer();
-        } catch (ContainerPackConflictException $e) {
-            $this->packConflict = $e->payload();
-        }
-    }
-
-    public function resolvePackConflict(string $resolution): void
-    {
-        $this->pack($resolution);
-    }
-
-    public function dismissPackConflict(): void
-    {
-        $this->packConflict = null;
-    }
-
-    public function unpack(int $serialisedItemId): void
-    {
-        Gate::authorize('pack', $this->container);
-
-        (new UnpackContainerItem)($this->container, UnpackContainerItemData::from([
-            'serialised_item_id' => $serialisedItemId,
-            'reason' => ContainerItemUnpackReason::Manual->value,
-        ]));
-
-        $this->refreshContainer();
     }
 
     public function seal(): void
@@ -105,6 +61,31 @@ new #[Layout('components.layouts.app')] class extends Component {
             'reason' => $this->unsealReason,
         ]));
 
+        $this->refreshContainer();
+    }
+
+    public function dissolve(): void
+    {
+        Gate::authorize('dissolve', $this->container);
+
+        (new DissolveContainer)($this->container);
+
+        $this->refreshContainer();
+    }
+
+    public function transferItem(): void
+    {
+        $target = Container::query()->where('uuid', trim($this->transferTargetUuid))->firstOrFail();
+
+        Gate::authorize('transfer', $target);
+
+        (new TransferContainerItem)($target, TransferContainerItemData::from([
+            'serialised_item_id' => (int) $this->transferSerialisedItemId,
+            'source_container_id' => $this->container->id,
+        ]));
+
+        $this->transferTargetUuid = '';
+        $this->transferSerialisedItemId = '';
         $this->refreshContainer();
     }
 
@@ -161,18 +142,69 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->refreshContainer();
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function contentsTree(): array
+    {
+        return $this->buildContentsTree($this->container);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    protected function buildContentsTree(Container $container): array
+    {
+        $container->loadMissing(['activeItems.product', 'activeItems.serialisedItem', 'children']);
+
+        $nodes = [];
+
+        foreach ($container->activeItems as $item) {
+            $nodes[] = [
+                'type' => 'item',
+                'label' => ($item->product?->name ?? 'Item').' — '.($item->serialisedItem?->asset_number ?? $item->serialised_item_id),
+            ];
+        }
+
+        foreach ($container->children()->active()->get() as $child) {
+            $nodes[] = [
+                'type' => 'container',
+                'label' => $child->name,
+                'uuid' => $child->uuid,
+                'children' => $this->buildContentsTree($child),
+            ];
+        }
+
+        return $nodes;
+    }
+
+    protected function timelineColorMap(): array
+    {
+        return [
+            'green' => ['.created', '.sealed', '.dispatched', '.returned', '.repack.started', '.repack.item'],
+            'amber' => ['.unsealed'],
+            'red' => ['.dissolved'],
+            'blue' => ['.item.packed', '.item.unpacked', '.item.transferred', '.nested'],
+        ];
+    }
+
     protected function refreshContainer(): void
     {
-        $this->container->refresh()->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem']);
+        $this->container->refresh()->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem', 'children']);
     }
 
     public function with(): array
     {
+        $repackOpportunity = $this->container->previous_container_id !== null
+            && $this->container->status->acceptsPacking()
+            ? $this->container->opportunity_id
+            : null;
+
         return [
             'canPack' => Gate::check('pack', $this->container),
-            'canPackOverride' => Gate::check('packOverride', $this->container),
             'canTransfer' => Gate::check('transfer', $this->container),
-            'canNest' => Gate::check('nest', $this->container),
+            'canDissolve' => Gate::check('dissolve', $this->container)
+                && ! in_array($this->container->status, [ContainerStatus::Dispatched, ContainerStatus::Returned, ContainerStatus::Dissolved], true),
             'canSeal' => Gate::check('seal', $this->container),
             'canDispatch' => Gate::check('dispatch', $this->container)
                 && $this->container->status === ContainerStatus::Sealed,
@@ -182,13 +214,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                 && ($this->container->product?->container_checkin_mode ?? ContainerCheckinMode::Parent) !== ContainerCheckinMode::Individual,
             'canVerifyCheckin' => Gate::check('verifyCheckin', $this->container)
                 && $this->container->checkin_verification_required_at !== null,
+            'canApplyDispatchAmendments' => auth()->user()?->can('opportunities.dispatch_add_items') ?? false,
             'checkinModeLabel' => $this->container->product?->container_checkin_mode?->label(),
             'needsCheckinVerification' => $this->container->checkin_verification_required_at !== null,
             'unsealReasons' => ContainerUnsealReason::configValues(),
-            'packResolutions' => array_map(
-                static fn (PackContainerResolution $case): string => $case->value,
-                PackContainerResolution::cases(),
-            ),
+            'timeline' => $this->auditTimelineFor($this->container),
+            'repackOpportunityId' => $this->container->opportunity_id,
         ];
     }
 }; ?>
@@ -199,8 +230,17 @@ new #[Layout('components.layouts.app')] class extends Component {
             <a href="{{ route('containers.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Containers</a>
         </x-slot:meta>
         <x-slot:actions>
+            @if($canPack && $container->status->acceptsPacking())
+                <a href="{{ route('containers.pack', $container) }}" wire:navigate class="s-btn s-btn-primary">Pack items</a>
+            @endif
+            @if($repackOpportunityId)
+                <a href="{{ route('containers.repack', ['container' => $container, 'opportunity' => $repackOpportunityId]) }}" wire:navigate class="s-btn s-btn-ghost">Repack session</a>
+            @endif
             @if($canSeal && $container->status === ContainerStatus::Open)
-                <flux:button wire:click="seal" wire:loading.attr="disabled" variant="primary">Seal</flux:button>
+                <flux:button wire:click="seal" wire:loading.attr="disabled">Seal</flux:button>
+            @endif
+            @if($canDissolve)
+                <flux:button wire:click="dissolve" wire:loading.attr="disabled" wire:confirm="Dissolve this container and release all contents?">Dissolve</flux:button>
             @endif
             @if($canSeal && $container->status === ContainerStatus::Sealed)
                 <div class="flex flex-wrap items-end gap-2">
@@ -232,6 +272,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <span class="s-badge s-badge-amber ml-2">Verify check-in</span>
                     @endif
                 </div>
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Mode</div>
+                    <div>{{ $container->availabilityMode()->label() }}</div>
+                </div>
                 @if($checkinModeLabel)
                     <div>
                         <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Check-in mode</div>
@@ -246,37 +290,8 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Store</div>
                     <div>{{ $container->store?->name ?? '—' }}</div>
                 </div>
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Type</div>
-                    <div>{{ $container->is_temporary ? 'Temporary' : 'Product-backed' }}</div>
-                </div>
             </div>
         </x-signals.card>
-
-        @if($packConflict)
-            <x-signals.card>
-                <h2 class="text-sm font-semibold mb-2">Packing conflict</h2>
-                <p class="text-sm text-[var(--muted)] mb-3">{{ str($packConflict['conflict'] ?? '')->headline() }}</p>
-                <dl class="text-sm space-y-1 mb-4">
-                    @foreach($packConflict['details'] ?? [] as $key => $value)
-                        <div class="flex gap-2">
-                            <dt class="text-[var(--muted)]">{{ str($key)->headline() }}:</dt>
-                            <dd>{{ is_bool($value) ? ($value ? 'Yes' : 'No') : ($value ?? '—') }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
-                <div class="flex flex-wrap gap-2">
-                    @foreach($packConflict['resolutions'] ?? [] as $key => $resolution)
-                        @if($resolution['available'] ?? false)
-                            <flux:button wire:click="resolvePackConflict('{{ $key }}')" wire:loading.attr="disabled" variant="primary">
-                                {{ $resolution['description'] ?? str($key)->headline() }}
-                            </flux:button>
-                        @endif
-                    @endforeach
-                    <flux:button wire:click="dismissPackConflict" wire:loading.attr="disabled">Dismiss</flux:button>
-                </div>
-            </x-signals.card>
-        @endif
 
         @if($dispatchPrompt)
             <x-signals.card>
@@ -285,7 +300,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <div class="space-y-2 mb-4">
                     @foreach($dispatchPrompt['amendments'] ?? [] as $amendment)
                         <div class="text-sm border border-[var(--border)] rounded-md p-3" wire:key="dispatch-amendment-{{ $amendment['product_id'] }}">
-                            <div class="font-medium">{{ $amendment['product_name'] ?? 'Product' }}</div>
+                            <div class="font-medium">{{ $amendment['product_name'] ?? 'Product #'.$amendment['product_id'] }}</div>
                             <div class="text-[var(--muted)]">
                                 {{ str($amendment['reason'] ?? '')->headline() }} —
                                 suggest {{ $amendment['required_action'] ?? 'add' }}
@@ -293,23 +308,30 @@ new #[Layout('components.layouts.app')] class extends Component {
                             </div>
                         </div>
                     @endforeach
+                    @foreach($dispatchPrompt['validation'] ?? [] as $row)
+                        <div class="text-xs text-[var(--muted)] font-mono" wire:key="dispatch-validation-{{ $row['product_id'] ?? $loop->index }}">
+                            {{ $row['product_name'] ?? '' }}: {{ $row['verdict'] ?? '' }} (container {{ $row['container_quantity'] ?? '?' }} / opportunity {{ $row['opportunity_quantity'] ?? '?' }})
+                        </div>
+                    @endforeach
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <flux:button
-                        wire:click="confirmDispatchAmendments({{ json_encode(array_map(
-                            static fn (array $row): array => [
-                                'product_id' => $row['product_id'],
-                                'action' => $row['required_action'] ?? 'add',
-                                'quantity' => $row['suggested_quantity'] ?? '1',
-                                'price' => $row['suggested_price'] ?? null,
-                            ],
-                            $dispatchPrompt['amendments'] ?? [],
-                        )) }})"
-                        wire:loading.attr="disabled"
-                        variant="primary"
-                    >
-                        Apply amendments and dispatch
-                    </flux:button>
+                    @if($canApplyDispatchAmendments)
+                        <flux:button
+                            wire:click="confirmDispatchAmendments({{ json_encode(array_map(
+                                static fn (array $row): array => [
+                                    'product_id' => $row['product_id'],
+                                    'action' => $row['required_action'] ?? 'add',
+                                    'quantity' => $row['suggested_quantity'] ?? '1',
+                                    'price' => $row['suggested_price'] ?? null,
+                                ],
+                                $dispatchPrompt['amendments'] ?? [],
+                            )) }})"
+                            wire:loading.attr="disabled"
+                            variant="primary"
+                        >
+                            Apply amendments and dispatch
+                        </flux:button>
+                    @endif
                     <flux:button wire:click="dismissDispatchPrompt" wire:loading.attr="disabled">Dismiss</flux:button>
                 </div>
             </x-signals.card>
@@ -318,7 +340,6 @@ new #[Layout('components.layouts.app')] class extends Component {
         @if($canReturn)
             <x-signals.card>
                 <h2 class="text-sm font-semibold mb-3">Return kit</h2>
-                <p class="text-sm text-[var(--muted)] mb-3">Scan the container barcode to return all contents from the opportunity.</p>
                 <flux:button wire:click="returnKit" wire:loading.attr="disabled" variant="primary">Return kit</flux:button>
             </x-signals.card>
         @endif
@@ -326,7 +347,6 @@ new #[Layout('components.layouts.app')] class extends Component {
         @if($canVerifyCheckin)
             <x-signals.card>
                 <h2 class="text-sm font-semibold mb-3">Check-in verification</h2>
-                <p class="text-sm text-[var(--muted)] mb-3">Condition assessment is pending for this kit.</p>
                 <flux:button wire:click="verifyCheckin" wire:loading.attr="disabled" variant="primary">Mark verified</flux:button>
             </x-signals.card>
         @endif
@@ -344,53 +364,52 @@ new #[Layout('components.layouts.app')] class extends Component {
             </x-signals.card>
         @endif
 
-        @if($canPack && $container->status->acceptsPacking())
+        @if($canTransfer && $container->status->acceptsPacking())
             <x-signals.card>
-                <h2 class="text-sm font-semibold mb-3">Pack item</h2>
+                <h2 class="text-sm font-semibold mb-3">Transfer item out</h2>
                 <div class="flex flex-wrap items-end gap-3">
-                    <flux:field class="min-w-[12rem]">
-                        <flux:label>Serialised item ID</flux:label>
-                        <flux:input wire:model="packSerialisedItemId" type="number" min="1" />
+                    <flux:field class="min-w-[10rem]">
+                        <flux:label>Item ID</flux:label>
+                        <flux:input wire:model="transferSerialisedItemId" type="number" min="1" />
                     </flux:field>
-                    <flux:button wire:click="pack" wire:loading.attr="disabled" variant="primary">Pack</flux:button>
+                    <flux:field class="min-w-[12rem]">
+                        <flux:label>Target container UUID</flux:label>
+                        <flux:input wire:model="transferTargetUuid" class="font-mono" />
+                    </flux:field>
+                    <flux:button wire:click="transferItem" wire:loading.attr="disabled">Transfer</flux:button>
                 </div>
             </x-signals.card>
         @endif
 
         <x-signals.card>
-            <h2 class="text-sm font-semibold mb-3">Packed items</h2>
-            <x-signals.table-wrap>
-                <table class="s-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Serialised item</th>
-                            <th>Packed at</th>
-                            @if($canPack && $container->status->acceptsPacking())
-                                <th class="text-right">Actions</th>
+            <h2 class="text-sm font-semibold mb-3">Contents</h2>
+            @if($this->contentsTree() === [])
+                <p class="text-sm text-[var(--muted)]">No items packed.</p>
+            @else
+                @include('livewire.containers.partials.contents-tree', ['nodes' => $this->contentsTree(), 'depth' => 0])
+            @endif
+        </x-signals.card>
+
+        <x-signals.card>
+            <h2 class="text-sm font-semibold mb-3">Lifecycle</h2>
+            @if($timeline->isEmpty())
+                <p class="text-sm text-[var(--muted)]">No audit events recorded yet.</p>
+            @else
+                <x-signals.timeline>
+                    @foreach($timeline as $entry)
+                        <x-signals.timeline-item
+                            wire:key="timeline-{{ $loop->index }}"
+                            :color="$entry['color']"
+                            :title="$entry['title']"
+                            :meta="$entry['meta']"
+                        >
+                            @if($entry['body'])
+                                <p class="text-sm text-[var(--muted)]">{{ $entry['body'] }}</p>
                             @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($container->activeItems as $item)
-                            <tr wire:key="container-item-{{ $item->id }}">
-                                <td>{{ $item->product?->name ?? '—' }}</td>
-                                <td style="font-family: var(--font-mono);">{{ $item->serialised_item_id }}</td>
-                                <td>@localdatetime($item->packed_at)</td>
-                                @if($canPack && $container->status->acceptsPacking())
-                                    <td class="text-right">
-                                        <flux:button size="sm" wire:click="unpack({{ $item->serialised_item_id }})" wire:loading.attr="disabled">Unpack</flux:button>
-                                    </td>
-                                @endif
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $canPack && $container->status->acceptsPacking() ? 4 : 3 }}" class="text-center text-[var(--muted)] py-6">No items packed.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </x-signals.table-wrap>
+                        </x-signals.timeline-item>
+                    @endforeach
+                </x-signals.timeline>
+            @endif
         </x-signals.card>
     </div>
 </section>

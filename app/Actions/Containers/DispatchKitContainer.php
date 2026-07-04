@@ -10,6 +10,8 @@ use App\Data\Containers\ContainerDispatchResultData;
 use App\Data\Containers\DispatchContainerData;
 use App\Enums\ContainerStatus;
 use App\Enums\OpportunityState;
+use App\Events\Containers\BeforeContainerDispatched;
+use App\Events\Containers\ContainerDispatchedLifecycle;
 use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
 use App\Models\Container;
 use App\Models\Opportunity;
@@ -86,6 +88,8 @@ class DispatchKitContainer
         $autoAdded = [];
         $amended = [];
         $dispatchedAssetIds = [];
+
+        BeforeContainerDispatched::dispatch($container, $opportunity);
 
         try {
             DB::transaction(function () use (
@@ -170,8 +174,11 @@ class DispatchKitContainer
             throw $e;
         }
 
+        $fresh = $container->fresh() ?? $container;
+        ContainerDispatchedLifecycle::dispatch($fresh, $opportunity, count($dispatchedAssetIds));
+
         return new ContainerDispatchResultData(
-            container: ContainerData::fromModel($container->fresh() ?? $container),
+            container: ContainerData::fromModel($fresh),
             opportunity_id: $opportunity->id,
             assets_checked_out: count($dispatchedAssetIds),
             assets_dispatched: $dispatchedAssetIds,

@@ -11,6 +11,8 @@ use App\Enums\AssetAssignmentStatus;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
+use App\Events\Containers\BeforeContainerRepack;
+use App\Events\Containers\ContainerRepackStarted;
 use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
@@ -56,6 +58,8 @@ class StartRepackOnReturn
                 'serialised_item_id' => __('The housing item is not checked out on this opportunity.'),
             ]);
         }
+
+        BeforeContainerRepack::dispatch($opportunity, $housing);
 
         $predecessor = $this->findMostRecentDissolvedContainer($housing);
         $returnedAt = $data->returned_at ?? Carbon::now('UTC')->toIso8601String();
@@ -105,6 +109,7 @@ class StartRepackOnReturn
                         'serialised_item_id' => $housing->id,
                         'product_id' => $housing->product_id,
                         'previous_container_id' => $predecessor?->id,
+                        'opportunity_id' => $opportunity->id,
                         'is_temporary' => false,
                         'barcode' => $this->defaultBarcode($housing),
                         'store_id' => $housing->store_id,
@@ -135,6 +140,10 @@ class StartRepackOnReturn
         }
 
         $fresh = $container?->fresh() ?? $container;
+
+        if ($fresh !== null) {
+            ContainerRepackStarted::dispatch($fresh, $opportunity->id, $predecessor?->id);
+        }
 
         return new RepackOnReturnStartedResultData(
             container: ContainerData::fromModel($fresh),

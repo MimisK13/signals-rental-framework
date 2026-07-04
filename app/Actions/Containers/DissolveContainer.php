@@ -5,6 +5,8 @@ namespace App\Actions\Containers;
 use App\Data\Containers\ContainerData;
 use App\Enums\ContainerDissolveReason;
 use App\Enums\ContainerStatus;
+use App\Events\Containers\BeforeContainerDissolved;
+use App\Events\Containers\ContainerDissolved;
 use App\Models\Container;
 use App\Services\Containers\ContainerDissolveService;
 use App\Services\Containers\ContainerEventRecorder;
@@ -39,19 +41,25 @@ class DissolveContainer
             ]);
         }
 
+        BeforeContainerDissolved::dispatch($container);
+
         return DB::transaction(function () use ($container): ContainerData {
             $itemCount = app(ContainerDissolveService::class)->dissolveTree(
                 $container,
                 ContainerDissolveReason::Manual,
             );
 
+            $fresh = $container->fresh() ?? $container;
+
             app(ContainerEventRecorder::class)->dissolved(
-                $container->fresh() ?? $container,
+                $fresh,
                 ContainerDissolveReason::Manual,
                 $itemCount,
             );
 
-            return ContainerData::fromModel($container->fresh() ?? $container);
+            ContainerDissolved::dispatch($fresh, $itemCount);
+
+            return ContainerData::fromModel($fresh);
         });
     }
 }

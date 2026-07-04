@@ -42,20 +42,21 @@ it('renders the container show page with pack affordance', function () {
 
     Volt::test('containers.show', ['container' => $container])
         ->assertSee($container->name)
-        ->assertSee('Pack item')
+        ->assertSee('Pack items')
         ->assertSee((string) $asset->id);
 });
 
-it('packs an item from the show page', function () {
+it('packs an item from the pack page', function () {
     $container = Container::factory()->kit()->create(['store_id' => $this->store->id]);
     $asset = StockLevel::factory()->serialised()->create([
         'product_id' => Product::factory()->serialised()->create()->id,
         'store_id' => $this->store->id,
+        'asset_number' => 'PACK-ME',
     ]);
 
-    Volt::test('containers.show', ['container' => $container])
-        ->set('packSerialisedItemId', (string) $asset->id)
-        ->call('pack')
+    Volt::test('containers.pack', ['container' => $container])
+        ->set('scanInput', 'PACK-ME')
+        ->call('scanItem')
         ->assertHasNoErrors();
 
     expect(ContainerItem::query()

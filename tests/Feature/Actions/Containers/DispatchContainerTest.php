@@ -556,3 +556,38 @@ it('smokes the volt dispatch affordance', function () {
 
     expect($container->fresh()->status)->toBe(ContainerStatus::Dissolved);
 });
+
+it('surfaces dispatch amendments in the opportunity assets book-out scan', function () {
+    $missing = Product::factory()->serialised()->create(['is_warehouse_addable' => false]);
+    $container = p52TransportContainer($this->store);
+    p52PackAsset($container, StockLevel::factory()->serialised()->create([
+        'product_id' => $missing->id,
+        'store_id' => $this->store->id,
+    ]));
+    p52Seal($container);
+    $container->update(['barcode' => 'CASE-AMEND-SCAN']);
+
+    $opportunity = p52DispatchOrder($this->store, [
+        $container->product_id => '1',
+    ]);
+
+    $operator = User::factory()->create();
+    $operator->givePermissionTo([
+        'containers.view',
+        'opportunities.view',
+        'opportunities.edit',
+        'opportunities.dispatch_add_items',
+        'opportunities.create',
+        'stock.access',
+    ]);
+    p52GrantStoreAccess($operator, $this->store);
+    $this->actingAs($operator);
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+        ->set('subTab', 'book_out')
+        ->set('scanAsset', 'CASE-AMEND-SCAN')
+        ->call('scanBookOut')
+        ->assertSet('containerDispatchPrompt.message', fn (?string $message): bool => is_string($message) && $message !== '')
+        ->assertSee('Container dispatch amendments')
+        ->assertSee('Apply amendments and dispatch');
+});

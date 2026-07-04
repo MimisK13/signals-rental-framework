@@ -150,6 +150,8 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // Containers (P49 scaffold — full warehouse UI in P55)
     Volt::route('containers', 'containers.index')->name('containers.index');
     Volt::route('containers/{container}', 'containers.show')->name('containers.show');
+    Volt::route('containers/{container}/pack', 'containers.pack')->name('containers.pack');
+    Volt::route('containers/{container}/repack/{opportunity}', 'containers.repack')->name('containers.repack');
 
     // Opportunities
     //

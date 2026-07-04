@@ -474,9 +474,9 @@ describe('Livewire conflict dialog', function () {
         ]);
         p51PackAsset($source, $asset);
 
-        Volt::test('containers.show', ['container' => $target])
-            ->set('packSerialisedItemId', (string) $asset->id)
-            ->call('pack')
+        Volt::test('containers.pack', ['container' => $target])
+            ->set('scanInput', (string) $asset->id)
+            ->call('scanItem')
             ->assertSet('packConflict.conflict', 'already_in_container')
             ->assertSee('Move item from current container to this container');
     });

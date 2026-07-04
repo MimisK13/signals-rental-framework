@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Containers\DispatchContainer;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\CheckAsset;
 use App\Actions\Opportunities\ClearAssetContainer;
@@ -17,6 +18,7 @@ use App\Actions\Opportunities\RevertAssetStatus;
 use App\Actions\Opportunities\ReturnAsset;
 use App\Actions\Opportunities\SetAssetContainer;
 use App\Actions\Opportunities\SubstituteAsset;
+use App\Data\Containers\DispatchContainerData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\BulkDispatchData;
 use App\Data\Opportunities\CheckAssetData;
@@ -31,13 +33,17 @@ use App\Data\Opportunities\SetAssetContainerData;
 use App\Data\Opportunities\SubstituteAssetData;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AssetCondition;
+use App\Enums\ContainerStatus;
 use App\Enums\OpportunityState;
 use App\Enums\StockMethod;
+use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
+use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\StockLevel;
+use App\Services\Containers\ContainerBarcodeResolver;
 use App\ValueObjects\DispatchGateResult;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Arr;
@@ -116,6 +122,12 @@ new #[Layout('components.layouts.app')] class extends Component
 
     /** The container asset number the scan bar nests the asset into after the action. */
     public ?string $scanContainer = null;
+
+    /** @var array<string, mixed>|null */
+    public ?array $containerDispatchPrompt = null;
+
+    /** @var string|null */
+    public ?string $pendingContainerDispatchUuid = null;
 
     /** Allocate sub-tab: allow allocating a free asset not pre-listed against any line. */
     public bool $freeScan = false;
@@ -221,6 +233,12 @@ new #[Layout('components.layouts.app')] class extends Component
      */
     public function scanBookOut(): void
     {
+        $number = trim((string) $this->scanAsset);
+
+        if ($number !== '' && $this->tryDispatchScannedContainer($number)) {
+            return;
+        }
+
         $action = new DispatchAsset;
 
         $this->actOnScannedAssignment(function (OpportunityItemAsset $asset) use ($action): void {
@@ -229,6 +247,100 @@ new #[Layout('components.layouts.app')] class extends Component
         }, __('Asset booked out.'));
 
         $this->flashGateWarning($action->gateResult);
+    }
+
+    protected function tryDispatchScannedContainer(string $number): bool
+    {
+        $resolution = app(ContainerBarcodeResolver::class)->resolve($number);
+
+        if ($resolution === null) {
+            return false;
+        }
+
+        if ($resolution['type'] === 'container') {
+            $container = $resolution['container'];
+        } else {
+            $container = $resolution['container'];
+
+            if ($container === null) {
+                $stockLevel = $resolution['stock_level'];
+                $container = Container::query()
+                    ->active()
+                    ->where('serialised_item_id', $stockLevel->id)
+                    ->where('status', ContainerStatus::Sealed)
+                    ->first();
+            }
+        }
+
+        if ($container === null || $container->status !== ContainerStatus::Sealed) {
+            return false;
+        }
+
+        if (! Gate::check('dispatch', $container)) {
+            session()->flash('error', __('You do not have permission to dispatch this container.'));
+
+            return true;
+        }
+
+        try {
+            (new DispatchContainer)($container, DispatchContainerData::from([
+                'opportunity_id' => $this->opportunity->id,
+                'auto_add_missing' => true,
+            ]));
+
+            session()->flash('asset_status', __('Container dispatched.'));
+            $this->resetScanBar();
+            $this->opportunity->refresh();
+        } catch (ContainerDispatchAmendmentRequiredException $e) {
+            $this->containerDispatchPrompt = $e->payload();
+            $this->pendingContainerDispatchUuid = $container->uuid;
+            $this->dispatch('open-modal', 'container-dispatch-amendment');
+        } catch (ValidationException $e) {
+            session()->flash('error', $this->firstHumanError($e));
+        } catch (AuthorizationException) {
+            session()->flash('error', __('You do not have permission to perform this action.'));
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $amendments
+     */
+    public function confirmContainerDispatchAmendments(array $amendments): void
+    {
+        if ($this->pendingContainerDispatchUuid === null) {
+            return;
+        }
+
+        $container = Container::query()->where('uuid', $this->pendingContainerDispatchUuid)->firstOrFail();
+
+        Gate::authorize('dispatch', $container);
+
+        try {
+            (new DispatchContainer)($container, DispatchContainerData::from([
+                'opportunity_id' => $this->opportunity->id,
+                'auto_add_missing' => true,
+                'amendments' => $amendments,
+            ]));
+
+            $this->containerDispatchPrompt = null;
+            $this->pendingContainerDispatchUuid = null;
+            $this->dispatch('close-modal', 'container-dispatch-amendment');
+            session()->flash('asset_status', __('Container dispatched with amendments.'));
+            $this->opportunity->refresh();
+        } catch (ContainerDispatchAmendmentRequiredException $e) {
+            $this->containerDispatchPrompt = $e->payload();
+        } catch (ValidationException $e) {
+            session()->flash('error', $this->firstHumanError($e));
+        }
+    }
+
+    public function dismissContainerDispatchPrompt(): void
+    {
+        $this->containerDispatchPrompt = null;
+        $this->pendingContainerDispatchUuid = null;
+        $this->dispatch('close-modal', 'container-dispatch-amendment');
     }
 
     /** Check the scanned asset back in via {@see ReturnAsset}. */
@@ -1364,6 +1476,46 @@ new #[Layout('components.layouts.app')] class extends Component
             <button type="button" wire:click="confirmSubstitute" @disabled($freeAssets->isEmpty()) class="s-btn s-btn-primary">{{ __('Substitute') }}</button>
         </x-slot:footer>
     </x-signals.modal>
+
+    <x-signals.modal name="container-dispatch-amendment" title="{{ __('Container dispatch amendments') }}" size="lg" :teleport="false">
+        @if($containerDispatchPrompt)
+            <p class="text-sm text-[var(--muted)] mb-4">{{ $containerDispatchPrompt['message'] ?? '' }}</p>
+            <div class="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                @foreach($containerDispatchPrompt['amendments'] ?? [] as $amendment)
+                    <div class="text-sm border border-[var(--border)] rounded-md p-3" wire:key="asset-amendment-{{ $amendment['product_id'] }}">
+                        <div class="font-medium">{{ $amendment['product_name'] ?? 'Product #'.($amendment['product_id'] ?? '') }}</div>
+                        <div class="text-[var(--muted)]">
+                            {{ str($amendment['reason'] ?? '')->headline() }} —
+                            {{ $amendment['required_action'] ?? 'add' }} × {{ $amendment['suggested_quantity'] ?? '1' }}
+                        </div>
+                    </div>
+                @endforeach
+                @foreach($containerDispatchPrompt['validation'] ?? [] as $row)
+                    <div class="text-xs font-mono text-[var(--muted)]" wire:key="asset-validation-{{ $row['product_id'] ?? $loop->index }}">
+                        {{ $row['product_name'] ?? '' }}: {{ $row['verdict'] ?? '' }}
+                    </div>
+                @endforeach
+            </div>
+            <x-slot:footer>
+                <button type="button" class="s-btn s-btn-ghost" wire:click="dismissContainerDispatchPrompt">{{ __('Cancel') }}</button>
+                @if(auth()->user()?->can('opportunities.dispatch_add_items'))
+                    <button type="button" class="s-btn s-btn-primary"
+                        wire:click="confirmContainerDispatchAmendments({{ json_encode(array_map(
+                            static fn (array $row): array => [
+                                'product_id' => $row['product_id'],
+                                'action' => $row['required_action'] ?? 'add',
+                                'quantity' => $row['suggested_quantity'] ?? '1',
+                                'price' => $row['suggested_price'] ?? null,
+                            ],
+                            $containerDispatchPrompt['amendments'] ?? [],
+                        )) }})">
+                        {{ __('Apply amendments and dispatch') }}
+                    </button>
+                @endif
+            </x-slot:footer>
+        @endif
+    </x-signals.modal>
+
     @include('livewire.opportunities.partials.opportunity-action-modals')
 </section>
 

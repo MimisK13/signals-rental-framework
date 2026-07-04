@@ -12,6 +12,10 @@ use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerDissolveReason;
 use App\Enums\ContainerStatus;
 use App\Enums\OpportunityState;
+use App\Events\Containers\BeforeContainerDispatched;
+use App\Events\Containers\BeforeContainerDissolved;
+use App\Events\Containers\ContainerDispatchedLifecycle;
+use App\Events\Containers\ContainerDissolved;
 use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
 use App\Models\Container;
 use App\Models\Opportunity;
@@ -103,6 +107,8 @@ class DispatchContainer
 
         $containersInTree = count(app(ContainerManifestService::class)->containersInTree($container));
 
+        BeforeContainerDispatched::dispatch($container, $opportunity);
+
         try {
             DB::transaction(function () use (
                 $container,
@@ -155,17 +161,23 @@ class DispatchContainer
 
                 Verbs::commit();
 
+                BeforeContainerDissolved::dispatch($container);
+
                 $itemCount = app(ContainerDissolveService::class)->dissolveTree(
                     $container,
                     ContainerDissolveReason::Dispatched,
                     $opportunity->id,
                 );
 
+                $dissolved = $container->fresh() ?? $container;
+
                 app(ContainerEventRecorder::class)->dissolved(
-                    $container->fresh() ?? $container,
+                    $dissolved,
                     ContainerDissolveReason::Dispatched,
                     $itemCount,
                 );
+
+                ContainerDissolved::dispatch($dissolved, $itemCount);
 
                 $containersDissolved = $containersInTree;
             });
@@ -175,8 +187,11 @@ class DispatchContainer
             throw $e;
         }
 
+        $fresh = $container->fresh() ?? $container;
+        ContainerDispatchedLifecycle::dispatch($fresh, $opportunity, count($dispatchedAssetIds));
+
         return new ContainerDispatchResultData(
-            container: ContainerData::fromModel($container->fresh() ?? $container),
+            container: ContainerData::fromModel($fresh),
             opportunity_id: $opportunity->id,
             assets_checked_out: count($dispatchedAssetIds),
             assets_dispatched: $dispatchedAssetIds,

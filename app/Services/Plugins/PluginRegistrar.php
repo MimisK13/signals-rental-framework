@@ -6,6 +6,16 @@ use App\Contracts\Documents\DocumentDataResolver;
 use App\Contracts\Documents\PdfDriver;
 use App\Contracts\Notifications\ChannelDriver;
 use App\Contracts\Notifications\RecipientResolver;
+use App\Events\Containers\BeforeContainerDispatched;
+use App\Events\Containers\BeforeContainerDissolved;
+use App\Events\Containers\BeforeContainerPacked;
+use App\Events\Containers\BeforeContainerRepack;
+use App\Events\Containers\BeforeContainerSealed;
+use App\Events\Containers\ContainerDispatchedLifecycle;
+use App\Events\Containers\ContainerDissolved;
+use App\Events\Containers\ContainerPacked;
+use App\Events\Containers\ContainerRepackStarted;
+use App\Events\Containers\ContainerSealed;
 use App\Models\Store;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentTypeRegistry;
@@ -15,6 +25,7 @@ use App\Services\Notifications\MergeFieldFilterRegistry;
 use App\Services\Notifications\MergeFieldRenderContext;
 use App\Services\Notifications\RecipientResolverRegistry;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Event;
 
 /**
  * Fluent registration API for document-engine plugin extension points (P22).
@@ -123,6 +134,108 @@ class PluginRegistrar
     public function registerFilter(string $name, callable $filter): self
     {
         $this->mergeFieldFilters->register($name, $filter);
+
+        return $this;
+    }
+
+    /**
+     * Register a listener for `container.before_pack` (may veto via ValidationException).
+     *
+     * @param  callable(BeforeContainerPacked): void  $listener
+     */
+    public function onContainerBeforePack(callable $listener): self
+    {
+        Event::listen(BeforeContainerPacked::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(ContainerPacked): void  $listener
+     */
+    public function onContainerAfterPack(callable $listener): self
+    {
+        Event::listen(ContainerPacked::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(BeforeContainerSealed): void  $listener
+     */
+    public function onContainerBeforeSeal(callable $listener): self
+    {
+        Event::listen(BeforeContainerSealed::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(ContainerSealed): void  $listener
+     */
+    public function onContainerAfterSeal(callable $listener): self
+    {
+        Event::listen(ContainerSealed::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(BeforeContainerDissolved): void  $listener
+     */
+    public function onContainerBeforeDissolve(callable $listener): self
+    {
+        Event::listen(BeforeContainerDissolved::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(ContainerDissolved): void  $listener
+     */
+    public function onContainerAfterDissolve(callable $listener): self
+    {
+        Event::listen(ContainerDissolved::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(BeforeContainerDispatched): void  $listener
+     */
+    public function onContainerBeforeDispatch(callable $listener): self
+    {
+        Event::listen(BeforeContainerDispatched::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(ContainerDispatchedLifecycle): void  $listener
+     */
+    public function onContainerAfterDispatch(callable $listener): self
+    {
+        Event::listen(ContainerDispatchedLifecycle::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(BeforeContainerRepack): void  $listener
+     */
+    public function onContainerBeforeRepack(callable $listener): self
+    {
+        Event::listen(BeforeContainerRepack::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(ContainerRepackStarted): void  $listener
+     */
+    public function onContainerAfterRepack(callable $listener): self
+    {
+        Event::listen(ContainerRepackStarted::class, $listener);
 
         return $this;
     }

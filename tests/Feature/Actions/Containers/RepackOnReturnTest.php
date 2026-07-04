@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
+use Livewire\Volt\Volt;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -421,4 +422,23 @@ describe('Repack on return API', function () {
         ])->assertSuccessful()
             ->assertJsonPath('repack_item.packed', true);
     });
+});
+
+it('smokes the repack split view', function () {
+    ['housing' => $housing, 'component' => $component, 'opportunity' => $opportunity] = p54DispatchedTransportCase($this->store);
+
+    $repack = (new StartRepackOnReturn)(StartRepackOnReturnData::from([
+        'opportunity_id' => $opportunity->id,
+        'serialised_item_id' => $housing->id,
+    ]));
+
+    Volt::test('containers.repack', [
+        'container' => Container::query()->whereKey($repack->container->id)->firstOrFail(),
+        'opportunity' => $opportunity,
+    ])
+        ->assertSee('Outstanding on opportunity')
+        ->assertSee('Rebuilt container')
+        ->set('scanInput', $component->asset_number)
+        ->call('scanReturnItem')
+        ->assertHasNoErrors();
 });

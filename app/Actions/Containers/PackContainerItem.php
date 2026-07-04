@@ -10,6 +10,8 @@ use App\Data\Containers\PackContainerItemResultData;
 use App\Data\Containers\TransferContainerItemData;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\PackContainerResolution;
+use App\Events\Containers\BeforeContainerPacked;
+use App\Events\Containers\ContainerPacked;
 use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Models\Container;
 use App\Models\ContainerItem;
@@ -87,6 +89,8 @@ class PackContainerItem
         bool $confirmedNesting = false,
         ?int $returnedFromOpportunityId = null,
     ): ContainerItem {
+        BeforeContainerPacked::dispatch($container, $stockLevel);
+
         $item = new ContainerItem([
             'container_id' => $container->id,
             'serialised_item_id' => $stockLevel->id,
@@ -117,6 +121,7 @@ class PackContainerItem
         $item->setRelation('container', $container);
         app(ContainerDemandResolver::class)->syncDemands($item);
         app(ContainerEventRecorder::class)->itemPacked($container, $item);
+        ContainerPacked::dispatch($container, $item);
 
         if ($confirmedNesting) {
             $nested = Container::query()
