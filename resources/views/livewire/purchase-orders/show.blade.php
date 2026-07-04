@@ -2,7 +2,9 @@
 
 use App\Actions\PurchaseOrders\CancelPurchaseOrder;
 use App\Actions\PurchaseOrders\DeleteDraftPurchaseOrder;
+use App\Actions\PurchaseOrders\ReceivePurchaseOrder;
 use App\Actions\PurchaseOrders\SendPurchaseOrder;
+use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
 use Illuminate\Support\Facades\Gate;
@@ -15,6 +17,11 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public bool $showCancelModal = false;
 
+    public bool $showReceiveModal = false;
+
+    /** @var array<int, array{purchase_order_item_id: int, quantity: string}> */
+    public array $receiveLines = [];
+
     public ?string $cancelReason = null;
 
     public function mount(PurchaseOrder $purchaseOrder): void
@@ -22,6 +29,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         Gate::authorize('view', $purchaseOrder);
 
         $this->purchaseOrder = $purchaseOrder->load(['supplier', 'store', 'opportunity', 'items.product']);
+        $this->resetReceiveLines();
     }
 
     public function rendering(View $view): void
@@ -40,6 +48,47 @@ new #[Layout('components.layouts.app')] class extends Component {
         (new CancelPurchaseOrder)($this->purchaseOrder, $this->cancelReason);
         $this->showCancelModal = false;
         $this->refreshPurchaseOrder();
+    }
+
+    public function receive(): void
+    {
+        $lines = ReceivePurchaseOrderData::validateAndCreate([
+            'lines' => array_values($this->receiveLines),
+        ]);
+
+        app(ReceivePurchaseOrder::class)($this->purchaseOrder, $lines);
+
+        $this->showReceiveModal = false;
+        $this->refreshPurchaseOrder();
+        $this->resetReceiveLines();
+    }
+
+    public function openReceiveModal(): void
+    {
+        $this->resetReceiveLines();
+        $this->showReceiveModal = true;
+    }
+
+    private function resetReceiveLines(): void
+    {
+        $this->receiveLines = [];
+
+        foreach ($this->purchaseOrder->items as $item) {
+            $remaining = bcsub(
+                (string) $item->quantity,
+                bcadd((string) $item->received_quantity, '0', 2),
+                2,
+            );
+
+            if (bccomp($remaining, '0', 2) <= 0) {
+                continue;
+            }
+
+            $this->receiveLines[$item->id] = [
+                'purchase_order_item_id' => $item->id,
+                'quantity' => $remaining,
+            ];
+        }
     }
 
     public function deleteDraft(): void
@@ -63,6 +112,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         return [
             'statuses' => $registry->statuses(),
             'canSend' => Gate::check('send', $this->purchaseOrder),
+            'canReceive' => Gate::check('receive', $this->purchaseOrder),
             'canCancel' => Gate::check('cancel', $this->purchaseOrder)
                 && $registry->canTransitionTo($this->purchaseOrder->status, 'cancelled'),
             'canUpdate' => Gate::check('update', $this->purchaseOrder),
@@ -93,6 +143,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             @endif
             @if($canSend)
                 <button type="button" wire:click="send" wire:confirm="Send this purchase order to the supplier?" class="s-btn s-btn-sm s-btn-accent">Send</button>
+            @endif
+            @if($canReceive)
+                <button type="button" wire:click="openReceiveModal" class="s-btn s-btn-sm s-btn-accent">Receive</button>
             @endif
             @if($canCancel)
                 <button type="button" wire:click="$set('showCancelModal', true)" class="s-btn s-btn-sm s-btn-secondary">Cancel</button>
@@ -135,6 +188,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <tr>
                                 <th>Description</th>
                                 <th class="text-right">Qty</th>
+                                <th class="text-right">Received</th>
                                 <th class="text-right">Unit cost</th>
                                 <th class="text-right">Tax</th>
                                 <th class="text-right">Total</th>
@@ -153,6 +207,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         @endif
                                     </td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $item->quantity }}</td>
+                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $item->received_quantity }}</td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->unit_cost, $purchaseOrder->currency_code) }}</td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->tax, $purchaseOrder->currency_code) }}</td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->total, $purchaseOrder->currency_code) }}</td>
@@ -196,6 +251,41 @@ new #[Layout('components.layouts.app')] class extends Component {
             </ul>
         </x-signals.panel>
     </div>
+
+    @if($showReceiveModal)
+        <flux:modal wire:model="showReceiveModal" class="max-w-lg">
+            <flux:heading size="lg">Receive goods</flux:heading>
+            <p class="mt-2 text-sm text-[var(--text-muted)]">Enter the quantity received for each line.</p>
+            <div class="mt-4 space-y-3">
+                @foreach($purchaseOrder->items as $item)
+                    @php
+                        $remaining = bcsub(
+                            (string) $item->quantity,
+                            bcadd((string) $item->received_quantity, '0', 2),
+                            2,
+                        );
+                    @endphp
+                    @if(bccomp($remaining, '0', 2) > 0)
+                        <flux:field wire:key="receive-line-{{ $item->id }}">
+                            <flux:label>{{ $item->description }} (max {{ $remaining }})</flux:label>
+                            <flux:input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                max="{{ $remaining }}"
+                                wire:model="receiveLines.{{ $item->id }}.quantity"
+                            />
+                            <input type="hidden" wire:model="receiveLines.{{ $item->id }}.purchase_order_item_id" value="{{ $item->id }}" />
+                        </flux:field>
+                    @endif
+                @endforeach
+            </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <flux:button variant="ghost" wire:click="$set('showReceiveModal', false)">Close</flux:button>
+                <flux:button variant="primary" wire:click="receive">Record receipt</flux:button>
+            </div>
+        </flux:modal>
+    @endif
 
     @if($showCancelModal)
         <flux:modal wire:model="showCancelModal" class="max-w-md">

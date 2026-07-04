@@ -9,6 +9,7 @@ use App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData;
 use App\Models\PurchaseOrder;
 use App\Services\CurrencyService;
 use App\Services\PurchaseOrders\EnsuresPurchaseOrderIsDraft;
+use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
 use App\Services\PurchaseOrders\PurchaseOrderTotalsCalculator;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderUpdated;
@@ -34,6 +35,14 @@ class UpdateDraftPurchaseOrder
         $allocator = app(SequenceAllocator::class);
 
         $preparedLines = $this->buildLinePayloads($data->lines, $data->supplier_id, $data->store_id, $allocator);
+
+        $preparedLines = app(PurchaseOrderTaxCalculator::class)->applyExpectedLineTax(
+            $data->supplier_id,
+            $data->store_id,
+            $currency,
+            $preparedLines,
+            $updatedAt,
+        );
 
         $totals = app(PurchaseOrderTotalsCalculator::class)->calculate(
             $currency,

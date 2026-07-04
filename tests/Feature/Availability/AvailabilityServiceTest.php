@@ -236,6 +236,42 @@ describe('availableForItem reversed-window guard (bug #4)', function () {
     });
 });
 
+describe('availableForItem virtual stock supply', function () {
+    it('includes negative demand from virtual stock intakes in the worst slot', function () {
+        $product = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 1,
+        ]);
+
+        Demand::factory()
+            ->phase(DemandPhase::Committed)
+            ->window(
+                Carbon::parse('2026-07-01T09:00:00Z'),
+                Carbon::parse('2026-07-05T17:00:00Z'),
+            )
+            ->create([
+                'product_id' => $product->id,
+                'store_id' => $this->store->id,
+                'quantity' => -2,
+                'source_type' => 'virtual_stock_intake',
+                'source_id' => 1,
+            ]);
+
+        $available = $this->service->availableForItem(
+            $product->id,
+            $this->store->id,
+            Carbon::parse('2026-07-01T09:00:00Z'),
+            Carbon::parse('2026-07-05T17:00:00Z'),
+            'opportunity_item',
+            999999,
+        );
+
+        expect($available)->toBe(3);
+    });
+});
+
 describe('deferred methods', function () {
     it('returns a store-wide shortage sweep (implemented in P2)', function () {
         // getShortages was a BadMethodCallException stub until P2 implemented the

@@ -66,4 +66,11 @@ class PurchaseOrderState extends State
     public ?CarbonImmutable $created_at = null;
 
     public ?CarbonImmutable $last_event_at = null;
+
+    /**
+     * Cumulative received quantity per purchase_order_item_id (decimal strings).
+     *
+     * @var array<int, string>
+     */
+    public array $item_received_quantities = [];
 }

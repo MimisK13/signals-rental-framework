@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Actions\PurchaseOrders\CancelPurchaseOrder;
 use App\Actions\PurchaseOrders\CreatePurchaseOrder;
 use App\Actions\PurchaseOrders\DeleteDraftPurchaseOrder;
+use App\Actions\PurchaseOrders\ReceivePurchaseOrder;
 use App\Actions\PurchaseOrders\SendPurchaseOrder;
 use App\Actions\PurchaseOrders\UpdateDraftPurchaseOrder;
 use App\Data\PurchaseOrders\CreatePurchaseOrderData;
 use App\Data\PurchaseOrders\PurchaseOrderData;
+use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
 use App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
@@ -215,6 +217,20 @@ class PurchaseOrderController extends Controller
             $purchaseOrder,
             is_string($reason) ? $reason : null,
         );
+
+        return $this->respondWith($result->toArray(), $this->singularKey());
+    }
+
+    #[ApiResponse(200, 'Received purchase order goods', type: 'array{purchase_order: array<string, mixed>}')]
+    public function receive(Request $request, PurchaseOrder $purchaseOrder): JsonResponse
+    {
+        Gate::authorize('receive', $purchaseOrder);
+        $this->authorizeApi('purchase_orders.receive', $this->abilities()['write']);
+
+        $dto = ReceivePurchaseOrderData::validateAndCreate([
+            'lines' => $request->input('lines', []),
+        ]);
+        $result = app(ReceivePurchaseOrder::class)($purchaseOrder, $dto);
 
         return $this->respondWith($result->toArray(), $this->singularKey());
     }

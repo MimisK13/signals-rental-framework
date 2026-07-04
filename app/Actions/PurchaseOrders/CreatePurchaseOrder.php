@@ -10,6 +10,7 @@ use App\Models\PurchaseOrder;
 use App\Services\CurrencyService;
 use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
+use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
 use App\Services\PurchaseOrders\PurchaseOrderTotalsCalculator;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderCreated;
@@ -42,6 +43,14 @@ class CreatePurchaseOrder
 
         $rawLines = $data->lines ?? [];
         $preparedLines = $this->buildLinePayloads($rawLines, $data->supplier_id, $data->store_id, $allocator);
+
+        $preparedLines = app(PurchaseOrderTaxCalculator::class)->applyExpectedLineTax(
+            $data->supplier_id,
+            $data->store_id,
+            $currency,
+            $preparedLines,
+            $createdAt,
+        );
 
         $totals = app(PurchaseOrderTotalsCalculator::class)->calculate(
             $currency,

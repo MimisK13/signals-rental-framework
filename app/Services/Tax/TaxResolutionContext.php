@@ -21,6 +21,31 @@ class TaxResolutionContext
         public readonly bool $taxExempt,
     ) {}
 
+    /**
+     * Purchase-axis context: supplier is the seller, store is the buyer.
+     */
+    public static function fromPurchaseOrder(Member $supplier, Store $store): self
+    {
+        $supplier->loadMissing(['taxZone', 'addresses.country']);
+        $store->loadMissing(['taxZone', 'country']);
+
+        $resolver = app(TaxZoneResolver::class);
+        $fallback = TaxUnresolvedZoneFallback::tryFrom(
+            (string) settings('tax.unresolved_zone_fallback', TaxUnresolvedZoneFallback::SellerDomestic->value),
+        ) ?? TaxUnresolvedZoneFallback::SellerDomestic;
+
+        $sellerZoneId = self::resolveBuyerZoneId($supplier, $resolver, null, $fallback);
+        $buyerZoneId = self::resolveSellerZoneId($store, $resolver);
+
+        return new self(
+            sellerZoneId: $sellerZoneId,
+            buyerZoneId: $buyerZoneId,
+            buyerType: TaxBuyerType::B2b,
+            hasTaxId: self::memberHasTaxId($supplier),
+            taxExempt: (bool) ($supplier->tax_exempt ?? false),
+        );
+    }
+
     public static function fromOpportunity(Opportunity $opportunity): self
     {
         $opportunity->loadMissing([
@@ -41,9 +66,11 @@ class TaxResolutionContext
         return new self(
             sellerZoneId: $sellerZoneId,
             buyerZoneId: $buyerZoneId,
-            buyerType: $opportunity->member?->buyer_type ?? TaxBuyerType::B2b,
+            buyerType: $opportunity->member !== null
+                ? $opportunity->member->buyer_type
+                : TaxBuyerType::B2b,
             hasTaxId: self::memberHasTaxId($opportunity->member),
-            taxExempt: (bool) ($opportunity->member?->tax_exempt ?? false),
+            taxExempt: $opportunity->member !== null && (bool) $opportunity->member->tax_exempt,
         );
     }
 
@@ -88,11 +115,9 @@ class TaxResolutionContext
 
     private static function fallbackBuyerZoneId(?int $sellerZoneId, TaxUnresolvedZoneFallback $fallback): ?int
     {
-        if ($fallback === TaxUnresolvedZoneFallback::SellerDomestic && $sellerZoneId !== null) {
-            return $sellerZoneId;
-        }
-
-        return null;
+        return match ($fallback) {
+            TaxUnresolvedZoneFallback::SellerDomestic => $sellerZoneId,
+        };
     }
 
     private static function memberHasTaxId(?Member $member): bool

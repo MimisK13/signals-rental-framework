@@ -84,6 +84,7 @@ class PermissionSeeder extends Seeder
             'purchase_orders.delete' => ['label' => 'Delete Purchase Orders', 'description' => 'Delete draft purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
             'purchase_orders.send' => ['label' => 'Send Purchase Orders', 'description' => 'Send purchase orders to suppliers', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
             'purchase_orders.cancel' => ['label' => 'Cancel Purchase Orders', 'description' => 'Cancel purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
+            'purchase_orders.receive' => ['label' => 'Receive Purchase Orders', 'description' => 'Record goods received against purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
 
             // Virtual stock
             'virtual_stock.access' => ['label' => 'Access Virtual Stock', 'description' => 'Access the virtual stock area', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],

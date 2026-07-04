@@ -480,16 +480,17 @@ class AvailabilityService
             })
             ->get();
 
-        $worst = $totalStock;
+        $worst = null;
 
         foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
             $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
             [$demanded] = $this->sumDemandIn($demands, $slotStart, $slotEnd);
 
-            $worst = min($worst, $totalStock - $demanded);
+            $available = $totalStock - $demanded;
+            $worst = $worst === null ? $available : min($worst, $available);
         }
 
-        return $worst;
+        return $worst ?? $totalStock;
     }
 
     /**

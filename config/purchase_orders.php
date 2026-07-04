@@ -57,7 +57,7 @@ return [
 
     'transitions' => [
         'draft' => ['sent', 'cancelled'],
-        'sent' => ['partially_received', 'cancelled'],
+        'sent' => ['partially_received', 'received', 'cancelled'],
         'partially_received' => ['received'],
         'received' => [],
         'cancelled' => [],

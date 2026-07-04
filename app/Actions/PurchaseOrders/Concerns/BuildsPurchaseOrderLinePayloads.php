@@ -2,6 +2,7 @@
 
 namespace App\Actions\PurchaseOrders\Concerns;
 
+use App\Models\Product;
 use App\Services\PurchaseOrders\PurchaseOrderSupplierCostResolver;
 use App\Services\SequenceAllocator;
 use Illuminate\Validation\ValidationException;
@@ -46,13 +47,19 @@ trait BuildsPurchaseOrderLinePayloads
                 ]);
             }
 
+            $productTaxClassId = isset($line['product_tax_class_id']) ? (int) $line['product_tax_class_id'] : null;
+
+            if ($productTaxClassId === null && $productId !== null) {
+                $productTaxClassId = Product::query()->find($productId)?->purchase_tax_class_id;
+            }
+
             $prepared[] = [
                 'quantity' => bcadd((string) ($line['quantity'] ?? '1'), '0', 2),
                 'unit_cost' => $unitCost,
                 'tax' => (int) ($line['tax'] ?? 0),
                 'product_id' => $productId,
                 'description' => (string) ($line['description'] ?? ''),
-                'product_tax_class_id' => isset($line['product_tax_class_id']) ? (int) $line['product_tax_class_id'] : null,
+                'product_tax_class_id' => $productTaxClassId,
                 'supplier_cost_id' => $supplierCostId,
                 'purchase_order_item_id' => isset($line['id'])
                     ? (int) $line['id']

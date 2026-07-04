@@ -77,4 +77,17 @@ class PurchaseOrderPolicy
 
         return $this->canAccessStore($user, $purchaseOrder);
     }
+
+    public function receive(User $user, PurchaseOrder $purchaseOrder): bool
+    {
+        if (! $user->can('costs.view') || ! $user->can('purchase_orders.receive')) {
+            return false;
+        }
+
+        if (! in_array($purchaseOrder->status, ['sent', 'partially_received'], true)) {
+            return false;
+        }
+
+        return $this->canAccessStore($user, $purchaseOrder);
+    }
 }
