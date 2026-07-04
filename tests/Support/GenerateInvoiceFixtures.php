@@ -81,7 +81,7 @@ function giCreateOrderOpportunity(array $memberAttrs = [], array $oppAttrs = [],
     $member = Member::factory()->organisation()->create(array_merge([
         'sale_tax_class_id' => $zones['orgClass']->id,
         'tax_zone_id' => $zones['uk']->id,
-        'buyer_type' => TaxBuyerType::B2c->value,
+        'buyer_type' => TaxBuyerType::Individual->value,
     ], $memberAttrs));
 
     $created = (new CreateOpportunity)(CreateOpportunityData::from(array_merge([
@@ -127,7 +127,7 @@ function giCreateQuotationOpportunity(array $memberAttrs = [], array $oppAttrs =
     $member = Member::factory()->organisation()->create(array_merge([
         'sale_tax_class_id' => $zones['orgClass']->id,
         'tax_zone_id' => $zones['uk']->id,
-        'buyer_type' => TaxBuyerType::B2c->value,
+        'buyer_type' => TaxBuyerType::Individual->value,
     ], $memberAttrs));
 
     $created = (new CreateOpportunity)(CreateOpportunityData::from(array_merge([

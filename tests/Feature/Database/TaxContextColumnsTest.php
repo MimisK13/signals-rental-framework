@@ -10,25 +10,25 @@ it('persists member tax context columns', function () {
 
     $member = Member::factory()->organisation()->create([
         'tax_zone_id' => $zone->id,
-        'buyer_type' => TaxBuyerType::B2c->value,
+        'buyer_type' => TaxBuyerType::Individual->value,
         'tax_exempt' => true,
     ]);
 
     $member->refresh();
 
     expect($member->tax_zone_id)->toBe($zone->id)
-        ->and($member->buyer_type)->toBe(TaxBuyerType::B2c)
+        ->and($member->buyer_type)->toBe(TaxBuyerType::Individual)
         ->and($member->tax_exempt)->toBeTrue();
 });
 
-it('defaults member buyer_type to b2b and tax_exempt to false', function () {
+it('defaults member buyer_type to business and tax_exempt to false', function () {
     $member = Member::factory()->organisation()->create([
         'tax_zone_id' => null,
     ]);
 
     $member->refresh();
 
-    expect($member->buyer_type)->toBe(TaxBuyerType::B2b)
+    expect($member->buyer_type)->toBe(TaxBuyerType::Business)
         ->and($member->tax_exempt)->toBeFalse()
         ->and($member->tax_zone_id)->toBeNull();
 });

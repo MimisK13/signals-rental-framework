@@ -2,10 +2,12 @@
 
 namespace App\Data\Tax;
 
+use App\Data\Casts\TaxBuyerTypeCast;
 use App\Enums\TaxBuyerType;
 use App\Enums\TaxResultType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Sometimes;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 class UpdateZoneTaxRuleData extends Data
@@ -16,6 +18,7 @@ class UpdateZoneTaxRuleData extends Data
         public ?string $description = null,
         public ?int $seller_zone_id = null,
         public ?int $buyer_zone_id = null,
+        #[WithCast(TaxBuyerTypeCast::class)]
         public ?TaxBuyerType $buyer_type = null,
         public ?bool $has_tax_id = null,
         public ?int $tax_category_id = null,
@@ -35,7 +38,7 @@ class UpdateZoneTaxRuleData extends Data
             'description' => ['nullable', 'string'],
             'seller_zone_id' => ['sometimes', 'integer', 'exists:tax_zones,id'],
             'buyer_zone_id' => ['sometimes', 'integer', 'exists:tax_zones,id'],
-            'buyer_type' => ['nullable', 'string', 'in:b2b,b2c'],
+            'buyer_type' => ['nullable', 'string', 'in:'.implode(',', TaxBuyerType::validationValues())],
             'has_tax_id' => ['nullable', 'boolean'],
             'tax_category_id' => ['nullable', 'integer', 'exists:tax_categories,id'],
             'result_type' => ['sometimes', 'string', 'in:standard,reverse_charge,zero_rated,exempt,outside_scope'],

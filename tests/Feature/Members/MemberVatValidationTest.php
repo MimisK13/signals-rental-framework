@@ -255,7 +255,7 @@ describe('validated VAT and reverse charge eligibility', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'DE123456789',
             'tax_number_validated' => true,
         ]);
@@ -293,7 +293,7 @@ describe('validated VAT and reverse charge eligibility', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'DE123456789',
             'tax_number_validated' => $validatedState,
         ]);

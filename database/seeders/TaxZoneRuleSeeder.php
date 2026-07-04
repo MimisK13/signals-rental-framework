@@ -10,6 +10,15 @@ use Illuminate\Database\Seeder;
 
 /**
  * Seeds common UK-seller zone-matching rules for cross-border scenarios.
+ *
+ * Priority ladder (higher wins; null buyer_type / has_tax_id are wildcards):
+ *  110 — Tax exempt supply (government/charity, UK→UK)
+ *  100 — UK domestic (UK→UK, any buyer)
+ *   90 — UK to EU business reverse charge (business + validated tax ID)
+ *   80 — UK to EU business without tax ID
+ *   70 — UK to EU individual
+ *   65 — Outside scope supply (business + validated tax ID, UK→World)
+ *   60 — UK export zero rated (UK→World, any buyer)
  */
 class TaxZoneRuleSeeder extends Seeder
 {
@@ -37,7 +46,7 @@ class TaxZoneRuleSeeder extends Seeder
                 'name' => 'UK to EU B2B reverse charge',
                 'seller_zone_id' => $uk->id,
                 'buyer_zone_id' => $euMember->id,
-                'buyer_type' => TaxBuyerType::B2b,
+                'buyer_type' => TaxBuyerType::Business,
                 'has_tax_id' => true,
                 'result_type' => TaxResultType::ReverseCharge,
                 'legal_text' => 'Reverse charge: customer to account for VAT.',
@@ -47,7 +56,7 @@ class TaxZoneRuleSeeder extends Seeder
                 'name' => 'UK to EU B2B without tax ID',
                 'seller_zone_id' => $uk->id,
                 'buyer_zone_id' => $euMember->id,
-                'buyer_type' => TaxBuyerType::B2b,
+                'buyer_type' => TaxBuyerType::Business,
                 'has_tax_id' => false,
                 'result_type' => TaxResultType::Standard,
                 'priority' => 80,
@@ -56,7 +65,7 @@ class TaxZoneRuleSeeder extends Seeder
                 'name' => 'UK to EU B2C',
                 'seller_zone_id' => $uk->id,
                 'buyer_zone_id' => $euMember->id,
-                'buyer_type' => TaxBuyerType::B2c,
+                'buyer_type' => TaxBuyerType::Individual,
                 'has_tax_id' => null,
                 'result_type' => TaxResultType::Standard,
                 'priority' => 70,
@@ -72,24 +81,34 @@ class TaxZoneRuleSeeder extends Seeder
                 'priority' => 60,
             ],
             [
-                'name' => 'Tax exempt supply',
+                'name' => 'Tax exempt supply (government)',
                 'seller_zone_id' => $uk->id,
                 'buyer_zone_id' => $uk->id,
-                'buyer_type' => null,
+                'buyer_type' => TaxBuyerType::Government,
                 'has_tax_id' => null,
                 'result_type' => TaxResultType::Exempt,
                 'legal_text' => 'Exempt supply.',
-                'priority' => 50,
+                'priority' => 110,
+            ],
+            [
+                'name' => 'Tax exempt supply (charity)',
+                'seller_zone_id' => $uk->id,
+                'buyer_zone_id' => $uk->id,
+                'buyer_type' => TaxBuyerType::Charity,
+                'has_tax_id' => null,
+                'result_type' => TaxResultType::Exempt,
+                'legal_text' => 'Exempt supply.',
+                'priority' => 110,
             ],
             [
                 'name' => 'Outside scope supply',
                 'seller_zone_id' => $uk->id,
                 'buyer_zone_id' => $world->id,
-                'buyer_type' => TaxBuyerType::B2b,
+                'buyer_type' => TaxBuyerType::Business,
                 'has_tax_id' => true,
                 'result_type' => TaxResultType::OutsideScope,
                 'legal_text' => 'Outside the scope of UK VAT.',
-                'priority' => 40,
+                'priority' => 65,
             ],
         ];
 
@@ -113,5 +132,12 @@ class TaxZoneRuleSeeder extends Seeder
                 ],
             );
         }
+
+        TaxRule::query()
+            ->where('name', 'Tax exempt supply')
+            ->where('seller_zone_id', $uk->id)
+            ->where('buyer_zone_id', $uk->id)
+            ->whereNull('buyer_type')
+            ->delete();
     }
 }

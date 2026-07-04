@@ -100,7 +100,7 @@ describe('GenerateInvoiceFromOpportunity', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['uk']->id,
-            'buyer_type' => TaxBuyerType::B2c->value,
+            'buyer_type' => TaxBuyerType::Individual->value,
         ]);
 
         $created = (new CreateOpportunity)(CreateOpportunityData::from([
@@ -279,7 +279,7 @@ describe('GenerateInvoiceFromOpportunity tax matrix', function () {
         $zones = giWireZoneTaxInfrastructure();
         $opportunity = giCreateOrderOpportunity([
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'DE123456789',
             'tax_number_validated' => true,
         ], [], $zones);
@@ -299,7 +299,7 @@ describe('GenerateInvoiceFromOpportunity tax matrix', function () {
         $zones = giWireZoneTaxInfrastructure();
         $opportunity = giCreateOrderOpportunity([
             'tax_zone_id' => $zones['world']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
         ], [], $zones);
 
         $invoice = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([

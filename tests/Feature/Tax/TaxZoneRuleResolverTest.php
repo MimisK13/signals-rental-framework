@@ -18,7 +18,7 @@ dataset('zone rule result types', [
     'standard UK domestic B2C' => [
         'seller' => 'uk',
         'buyer' => 'uk',
-        'buyerType' => TaxBuyerType::B2c,
+        'buyerType' => TaxBuyerType::Individual,
         'hasTaxId' => false,
         'ruleBuyerType' => null,
         'ruleHasTaxId' => null,
@@ -28,9 +28,9 @@ dataset('zone rule result types', [
     'reverse charge EU B2B with tax id' => [
         'seller' => 'uk',
         'buyer' => 'euMember',
-        'buyerType' => TaxBuyerType::B2b,
+        'buyerType' => TaxBuyerType::Business,
         'hasTaxId' => true,
-        'ruleBuyerType' => TaxBuyerType::B2b,
+        'ruleBuyerType' => TaxBuyerType::Business,
         'ruleHasTaxId' => true,
         'resultType' => TaxResultType::ReverseCharge,
         'priority' => 90,
@@ -38,7 +38,7 @@ dataset('zone rule result types', [
     'zero rated export to world' => [
         'seller' => 'uk',
         'buyer' => 'world',
-        'buyerType' => TaxBuyerType::B2b,
+        'buyerType' => TaxBuyerType::Business,
         'hasTaxId' => false,
         'ruleBuyerType' => null,
         'ruleHasTaxId' => null,
@@ -48,9 +48,9 @@ dataset('zone rule result types', [
     'exempt domestic supply' => [
         'seller' => 'uk',
         'buyer' => 'uk',
-        'buyerType' => TaxBuyerType::B2b,
+        'buyerType' => TaxBuyerType::Business,
         'hasTaxId' => true,
-        'ruleBuyerType' => TaxBuyerType::B2b,
+        'ruleBuyerType' => TaxBuyerType::Business,
         'ruleHasTaxId' => true,
         'resultType' => TaxResultType::Exempt,
         'priority' => 70,
@@ -58,9 +58,9 @@ dataset('zone rule result types', [
     'outside scope EU other' => [
         'seller' => 'uk',
         'buyer' => 'euMember',
-        'buyerType' => TaxBuyerType::B2c,
+        'buyerType' => TaxBuyerType::Individual,
         'hasTaxId' => false,
-        'ruleBuyerType' => TaxBuyerType::B2c,
+        'ruleBuyerType' => TaxBuyerType::Individual,
         'ruleHasTaxId' => null,
         'resultType' => TaxResultType::OutsideScope,
         'priority' => 60,
@@ -105,7 +105,7 @@ it('prefers the highest priority matching rule', function () {
     TaxRule::factory()->zoneMatch([
         'seller_zone_id' => $this->uk->id,
         'buyer_zone_id' => $this->euMember->id,
-        'buyer_type' => TaxBuyerType::B2b,
+        'buyer_type' => TaxBuyerType::Business,
         'has_tax_id' => true,
         'result_type' => TaxResultType::Standard,
         'priority' => 10,
@@ -115,7 +115,7 @@ it('prefers the highest priority matching rule', function () {
     TaxRule::factory()->zoneMatch([
         'seller_zone_id' => $this->uk->id,
         'buyer_zone_id' => $this->euMember->id,
-        'buyer_type' => TaxBuyerType::B2b,
+        'buyer_type' => TaxBuyerType::Business,
         'has_tax_id' => true,
         'result_type' => TaxResultType::ReverseCharge,
         'priority' => 50,
@@ -125,7 +125,7 @@ it('prefers the highest priority matching rule', function () {
     $rule = $this->resolver->resolveFromContext(
         $this->uk->id,
         $this->euMember->id,
-        TaxBuyerType::B2b,
+        TaxBuyerType::Business,
         hasTaxId: true,
     );
 
@@ -143,8 +143,8 @@ it('treats null buyer_type on rule as matching any buyer type', function () {
         'priority' => 20,
     ])->create();
 
-    $b2b = $this->resolver->resolveFromContext($this->uk->id, $this->world->id, TaxBuyerType::B2b);
-    $b2c = $this->resolver->resolveFromContext($this->uk->id, $this->world->id, TaxBuyerType::B2c);
+    $b2b = $this->resolver->resolveFromContext($this->uk->id, $this->world->id, TaxBuyerType::Business);
+    $b2c = $this->resolver->resolveFromContext($this->uk->id, $this->world->id, TaxBuyerType::Individual);
 
     expect($b2b?->result_type)->toBe(TaxResultType::ZeroRated)
         ->and($b2c?->result_type)->toBe(TaxResultType::ZeroRated);
@@ -154,7 +154,7 @@ it('returns null when no active zone rule matches', function () {
     TaxRule::factory()->zoneMatch([
         'seller_zone_id' => $this->uk->id,
         'buyer_zone_id' => $this->euMember->id,
-        'buyer_type' => TaxBuyerType::B2b,
+        'buyer_type' => TaxBuyerType::Business,
         'has_tax_id' => true,
         'result_type' => TaxResultType::ReverseCharge,
         'is_active' => false,
@@ -163,7 +163,7 @@ it('returns null when no active zone rule matches', function () {
     $rule = $this->resolver->resolveFromContext(
         $this->uk->id,
         $this->euMember->id,
-        TaxBuyerType::B2b,
+        TaxBuyerType::Business,
         hasTaxId: true,
     );
 
@@ -180,7 +180,7 @@ it('does not match class-map rules without zone columns', function () {
     $rule = $this->resolver->resolveFromContext(
         $this->uk->id,
         $this->uk->id,
-        TaxBuyerType::B2c,
+        TaxBuyerType::Individual,
     );
 
     expect($rule)->toBeNull();

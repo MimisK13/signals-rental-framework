@@ -40,7 +40,7 @@ class TaxResolutionContext
         return new self(
             sellerZoneId: $sellerZoneId,
             buyerZoneId: $buyerZoneId,
-            buyerType: TaxBuyerType::B2b,
+            buyerType: TaxBuyerType::Business,
             hasTaxId: self::memberHasTaxId($supplier),
             taxExempt: (bool) ($supplier->tax_exempt ?? false),
         );
@@ -68,7 +68,7 @@ class TaxResolutionContext
             buyerZoneId: $buyerZoneId,
             buyerType: $opportunity->member !== null
                 ? $opportunity->member->buyer_type
-                : TaxBuyerType::B2b,
+                : TaxBuyerType::Business,
             hasTaxId: self::memberHasTaxId($opportunity->member),
             taxExempt: $opportunity->member !== null && (bool) $opportunity->member->tax_exempt,
         );

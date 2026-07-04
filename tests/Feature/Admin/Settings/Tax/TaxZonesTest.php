@@ -104,7 +104,7 @@ describe('zone tax rules admin', function () {
             ->set('name', 'UK to EU B2B RC')
             ->set('sellerZoneId', $seller->id)
             ->set('buyerZoneId', $buyer->id)
-            ->set('buyerType', TaxBuyerType::B2b->value)
+            ->set('buyerType', TaxBuyerType::Business->value)
             ->set('hasTaxId', true)
             ->set('resultType', TaxResultType::ReverseCharge->value)
             ->set('priority', 90)

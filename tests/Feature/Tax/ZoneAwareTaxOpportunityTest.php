@@ -111,7 +111,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['uk']->id,
-            'buyer_type' => TaxBuyerType::B2c->value,
+            'buyer_type' => TaxBuyerType::Individual->value,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
@@ -151,7 +151,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'DE123456789',
             'tax_number_validated' => true,
         ]);
@@ -192,7 +192,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2c->value,
+            'buyer_type' => TaxBuyerType::Individual->value,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
@@ -222,7 +222,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['world']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
@@ -290,22 +290,11 @@ describe('zone-aware opportunity tax totals', function () {
     it('marks outside scope supplies distinctly in the tax summary', function () {
         $zones = wireZoneTaxInfrastructure();
 
-        TaxRule::factory()->zoneMatch([
-            'name' => 'Outside scope override',
-            'seller_zone_id' => $zones['uk']->id,
-            'buyer_zone_id' => $zones['world']->id,
-            'buyer_type' => TaxBuyerType::B2b,
-            'has_tax_id' => true,
-            'result_type' => TaxResultType::OutsideScope,
-            'legal_text' => 'Outside the scope of UK VAT.',
-            'priority' => 200,
-        ])->create();
-
         $store = Store::factory()->create(['tax_zone_id' => $zones['uk']->id]);
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['world']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'US123456789',
             'tax_number_validated' => true,
         ]);
@@ -343,7 +332,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => null,
-            'buyer_type' => TaxBuyerType::B2c->value,
+            'buyer_type' => TaxBuyerType::Individual->value,
         ]);
         $product = Product::factory()->sale()->create(['tax_class_id' => $zones['productClass']->id]);
 
@@ -373,7 +362,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'DE999999999',
             'tax_number_validated' => true,
         ]);
@@ -426,7 +415,7 @@ describe('zone-aware opportunity tax totals', function () {
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $zones['orgClass']->id,
             'tax_zone_id' => $zones['euMember']->id,
-            'buyer_type' => TaxBuyerType::B2b->value,
+            'buyer_type' => TaxBuyerType::Business->value,
             'tax_number' => 'DE123456789',
             'tax_number_validated' => true,
         ]);
