@@ -43,7 +43,9 @@ class OpportunitySurchargeApplicator
 
         $surcharges = $this->evaluator->surchargesForGroups($activeGroupIds);
         $at = $this->evaluator->evaluationInstant($item, $opportunity);
-        $fallbackTaxClassId = $product?->tax_class_id ?? $this->evaluator->defaultProductTaxClassId();
+        $fallbackTaxClassId = $product !== null
+            ? $product->tax_class_id
+            : $this->evaluator->defaultProductTaxClassId();
 
         $autoEvaluated = $this->evaluator->evaluateForItem(
             $item,
@@ -112,10 +114,16 @@ class OpportunitySurchargeApplicator
                     continue;
                 }
 
-                $existing->forceFill([
+                $updates = [
                     'amount' => $evaluated->amount_minor,
                     'product_tax_class_id' => $evaluated->product_tax_class_id,
-                ])->saveQuietly();
+                ];
+
+                if ($existing->name === null) {
+                    $updates = array_merge($updates, $evaluated->snapshotAttributes());
+                }
+
+                $existing->forceFill($updates)->saveQuietly();
 
                 continue;
             }
@@ -123,6 +131,7 @@ class OpportunitySurchargeApplicator
             OpportunityItemSurcharge::query()->create([
                 'opportunity_item_id' => $item->id,
                 'surcharge_id' => $evaluated->surcharge_id,
+                ...$evaluated->snapshotAttributes(),
                 'amount' => $evaluated->amount_minor,
                 'product_tax_class_id' => $evaluated->product_tax_class_id,
                 'is_manual_override' => false,

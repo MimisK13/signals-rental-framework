@@ -111,7 +111,7 @@ class OpportunityInvoiceSnapshotter
                     invoice_item_id: 0,
                     line_key: $surchargeKey,
                     source_type: 'surcharge',
-                    description: $itemSurcharge->surcharge->name ?? 'Surcharge',
+                    description: $itemSurcharge->resolvedName(),
                     quantity: $item->quantity,
                     unit_price: $surchargeNet,
                     discount: 0,

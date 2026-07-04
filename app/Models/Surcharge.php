@@ -53,6 +53,31 @@ class Surcharge extends Model
         return $this->fixed_value_minor !== null;
     }
 
+    public function typeValue(): string
+    {
+        return $this->isPercent() ? 'percent' : 'fixed';
+    }
+
+    /**
+     * Snapshot attributes captured when a surcharge is applied to a line item.
+     *
+     * @return array{
+     *     name: string,
+     *     surcharge_type: string,
+     *     percent_value: string|null,
+     *     fixed_value_minor: int|null
+     * }
+     */
+    public function snapshotAttributes(): array
+    {
+        return [
+            'name' => $this->name,
+            'surcharge_type' => $this->typeValue(),
+            'percent_value' => $this->percent_value !== null ? (string) $this->percent_value : null,
+            'fixed_value_minor' => $this->fixed_value_minor,
+        ];
+    }
+
     /**
      * @return BelongsTo<SurchargeGroup, $this>
      */

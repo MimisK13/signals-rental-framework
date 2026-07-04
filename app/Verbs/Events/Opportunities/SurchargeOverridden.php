@@ -27,6 +27,10 @@ class SurchargeOverridden extends Event
         public ?int $amount_minor = null,
         public bool $is_disabled = false,
         public ?int $product_tax_class_id = null,
+        public string $snapshot_name = '',
+        public string $snapshot_surcharge_type = 'fixed',
+        public ?string $snapshot_percent_value = null,
+        public ?int $snapshot_fixed_value_minor = null,
     ) {}
 
     public function validate(OpportunityItemState $state): void
@@ -49,14 +53,19 @@ class SurchargeOverridden extends Event
 
         $surcharge = Surcharge::query()->find($this->surcharge_id);
 
-        if ($surcharge === null) {
-            return;
-        }
-
         $defaultTaxClassId = ProductTaxClass::query()->where('is_default', true)->value('id');
         $taxClassId = $this->product_tax_class_id
-            ?? $surcharge->product_tax_class_id
+            ?? ($surcharge !== null ? $surcharge->product_tax_class_id : null)
             ?? $defaultTaxClassId;
+
+        $snapshot = $this->snapshot_name !== ''
+            ? [
+                'name' => $this->snapshot_name,
+                'surcharge_type' => $this->snapshot_surcharge_type,
+                'percent_value' => $this->snapshot_percent_value,
+                'fixed_value_minor' => $this->snapshot_fixed_value_minor,
+            ]
+            : ($surcharge instanceof Surcharge ? $surcharge->snapshotAttributes() : []);
 
         OpportunityItemSurcharge::query()->updateOrCreate(
             [
@@ -64,6 +73,7 @@ class SurchargeOverridden extends Event
                 'surcharge_id' => $this->surcharge_id,
             ],
             [
+                ...$snapshot,
                 'amount' => $this->amount_minor ?? 0,
                 'product_tax_class_id' => $taxClassId,
                 'is_manual_override' => $this->amount_minor !== null && ! $this->is_disabled,

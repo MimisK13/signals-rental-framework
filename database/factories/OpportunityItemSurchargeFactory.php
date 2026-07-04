@@ -19,11 +19,30 @@ class OpportunityItemSurchargeFactory extends Factory
         return [
             'opportunity_item_id' => OpportunityItem::factory(),
             'surcharge_id' => Surcharge::factory(),
+            'name' => null,
+            'surcharge_type' => null,
+            'percent_value' => null,
+            'fixed_value_minor' => null,
             'amount' => 500,
             'product_tax_class_id' => null,
             'is_manual_override' => false,
             'is_disabled' => false,
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterMaking(function (OpportunityItemSurcharge $row): void {
+            if ($row->name !== null || $row->surcharge_id === null) {
+                return;
+            }
+
+            $surcharge = Surcharge::query()->find($row->surcharge_id);
+
+            if ($surcharge instanceof Surcharge) {
+                $row->fill($surcharge->snapshotAttributes());
+            }
+        });
     }
 
     public function manual(int $amount): static

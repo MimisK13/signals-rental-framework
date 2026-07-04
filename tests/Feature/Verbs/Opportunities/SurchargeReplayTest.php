@@ -98,8 +98,26 @@ it('rebuilds identical surcharge projections and totals after replay', function 
         'surcharge_rows' => OpportunityItemSurcharge::query()
             ->where('opportunity_item_id', $item->id)
             ->orderBy('surcharge_id')
-            ->get(['surcharge_id', 'amount', 'is_manual_override', 'is_disabled'])
-            ->map->only(['surcharge_id', 'amount', 'is_manual_override', 'is_disabled'])
+            ->get([
+                'surcharge_id',
+                'name',
+                'surcharge_type',
+                'percent_value',
+                'fixed_value_minor',
+                'amount',
+                'is_manual_override',
+                'is_disabled',
+            ])
+            ->map->only([
+                'surcharge_id',
+                'name',
+                'surcharge_type',
+                'percent_value',
+                'fixed_value_minor',
+                'amount',
+                'is_manual_override',
+                'is_disabled',
+            ])
             ->all(),
     ];
 

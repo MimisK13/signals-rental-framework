@@ -75,6 +75,9 @@ class SurchargeEvaluator
             $evaluated[] = new EvaluatedSurcharge(
                 surcharge_id: (int) $surcharge->id,
                 name: $surcharge->name,
+                surcharge_type: $surcharge->typeValue(),
+                percent_value: $surcharge->percent_value !== null ? (string) $surcharge->percent_value : null,
+                fixed_value_minor: $surcharge->fixed_value_minor,
                 amount_minor: $amount,
                 product_tax_class_id: $this->resolveTaxClassId(
                     $surcharge,
@@ -179,7 +182,10 @@ class SurchargeEvaluator
             if ($row->is_manual_override) {
                 $merged[] = new EvaluatedSurcharge(
                     surcharge_id: (int) $row->surcharge_id,
-                    name: $row->surcharge?->name ?? 'Surcharge',
+                    name: $row->resolvedName(),
+                    surcharge_type: $row->resolvedSurchargeType(),
+                    percent_value: $row->resolvedPercentValue(),
+                    fixed_value_minor: $row->resolvedFixedValueMinor(),
                     amount_minor: (int) $row->amount,
                     product_tax_class_id: $row->product_tax_class_id,
                 );
@@ -296,10 +302,16 @@ class SurchargeEvaluator
             if ($product instanceof Product) {
                 $productId = (int) $product->id;
                 $productGroupId = $product->product_group_id !== null ? (int) $product->product_group_id : null;
-                $tagNames = array_values(array_filter(
-                    is_array($product->tag_list) ? $product->tag_list : [],
-                    is_string(...),
-                ));
+                $tagNames = [];
+                $tags = $product->getAttribute('tag_list');
+
+                if (is_array($tags)) {
+                    foreach ($tags as $tag) {
+                        if (is_string($tag)) {
+                            $tagNames[] = $tag;
+                        }
+                    }
+                }
             }
         }
 
@@ -311,7 +323,7 @@ class SurchargeEvaluator
         );
     }
 
-    private function mapTransactionType(LineItemTransactionType $type): ?string
+    private function mapTransactionType(LineItemTransactionType $type): string
     {
         return match ($type) {
             LineItemTransactionType::Rental, LineItemTransactionType::SubRental => RateTransactionType::Rental->value,

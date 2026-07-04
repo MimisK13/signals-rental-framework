@@ -9,6 +9,7 @@ use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
+use App\Models\Surcharge;
 use App\Verbs\Events\Opportunities\SurchargeOverridden;
 use Illuminate\Support\Facades\Gate;
 
@@ -32,12 +33,19 @@ class OverrideOpportunityItemSurcharge
                 permission: 'opportunities.edit',
             ));
 
+            $surcharge = Surcharge::query()->findOrFail($data->surcharge_id);
+            $snapshot = $surcharge->snapshotAttributes();
+
             SurchargeOverridden::fire(
                 opportunity_item_id: $item->state_id,
                 surcharge_id: $data->surcharge_id,
                 amount_minor: $data->amount_minor,
                 is_disabled: $data->is_disabled,
                 product_tax_class_id: $data->product_tax_class_id,
+                snapshot_name: $snapshot['name'],
+                snapshot_surcharge_type: $snapshot['surcharge_type'],
+                snapshot_percent_value: $snapshot['percent_value'],
+                snapshot_fixed_value_minor: $snapshot['fixed_value_minor'],
             );
         });
 
