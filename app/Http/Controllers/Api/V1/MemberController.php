@@ -34,6 +34,7 @@ class MemberController extends Controller
         'membership_type',
         'is_active',
         'created_at',
+        'price_category_tier_id',
     ];
 
     /** @var array<string, string> */

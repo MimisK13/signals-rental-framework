@@ -19,6 +19,7 @@ use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\DiscountSourceRegistry;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
 use App\Services\Pricing\OpportunitySurchargeApplicator;
+use App\Services\Pricing\PriceCategoryTierMultiplier;
 use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\Pricing\RoundingStrategy;
 use App\Services\RateEngine\RateCalculator;
@@ -103,6 +104,7 @@ class OpportunityTotalsCalculator
         private readonly TaxResolutionContextHolder $taxResolutionContextHolder,
         private readonly BundlePricingApplicator $bundlePricingApplicator,
         private readonly OpportunitySurchargeApplicator $surchargeApplicator,
+        private readonly PriceCategoryTierMultiplier $tierMultiplier,
     ) {}
 
     /**
@@ -164,7 +166,7 @@ class OpportunityTotalsCalculator
         ?int $manualUnitPrice = null,
         bool $rollUp = true,
     ): void {
-        $opportunity->loadMissing(['items.item', 'member']);
+        $opportunity->loadMissing(['items.item', 'member.priceCategoryTier']);
         $items = $opportunity->items;
         $currency = $this->currencyFor($opportunity);
         $orgTaxClassId = $opportunity->member?->sale_tax_class_id;
@@ -172,7 +174,7 @@ class OpportunityTotalsCalculator
         /** @var array<int, int> $baseSubtotals */
         $baseSubtotals = [];
 
-        /** @var array<int, array{unit_price: int, product: ?Product}> $itemMeta */
+        /** @var array<int, array{unit_price: int, product: ?Product, tier_id: ?int, tier_multiplier: ?string}> $itemMeta */
         $itemMeta = [];
 
         foreach ($items as $item) {
@@ -188,7 +190,7 @@ class OpportunityTotalsCalculator
             [$start, $end] = $this->effectiveDates($item, $opportunity);
             $product = $this->resolveProduct($item);
 
-            [$unitPrice, $netSubtotal] = $this->resolveSubtotal(
+            $resolved = $this->resolveSubtotal(
                 $item,
                 $product,
                 $currency,
@@ -200,10 +202,12 @@ class OpportunityTotalsCalculator
                 $opportunity,
             );
 
-            $baseSubtotals[(int) $item->id] = $netSubtotal;
+            $baseSubtotals[(int) $item->id] = $resolved['net_subtotal'];
             $itemMeta[(int) $item->id] = [
-                'unit_price' => $unitPrice,
+                'unit_price' => $resolved['unit_price'],
                 'product' => $product,
+                'tier_id' => $resolved['tier_id'],
+                'tier_multiplier' => $resolved['tier_multiplier'],
             ];
         }
 
@@ -255,6 +259,8 @@ class OpportunityTotalsCalculator
 
             $item->forceFill([
                 'unit_price' => $meta['unit_price'],
+                'price_category_tier_id' => $meta['tier_id'],
+                'price_category_tier_multiplier' => $meta['tier_multiplier'],
                 'total' => $net,
                 'surcharge_total' => $surchargeResult['surcharge_total'],
                 'tax_rate' => $taxRate,
@@ -560,7 +566,7 @@ class OpportunityTotalsCalculator
     /**
      * Resolve the per-unit price and the NET subtotal (pre-discount) for a line.
      *
-     * @return array{0: int, 1: int} [unitPrice, netSubtotal] in minor units
+     * @return array{unit_price: int, net_subtotal: int, tier_id: ?int, tier_multiplier: ?string}
      */
     private function resolveSubtotal(
         OpportunityItem $item,
@@ -575,10 +581,10 @@ class OpportunityTotalsCalculator
     ): array {
         // A manual override always wins over the rate engine.
         if ($manualUnitPrice !== null) {
-            return [
+            return $this->resolvedSubtotal(
                 $manualUnitPrice,
                 $this->manualLineSubtotal($manualUnitPrice, $quantity, $item, $opportunity, $currency),
-            ];
+            );
         }
 
         $priceCategoryId = $opportunity->member?->price_category_id;
@@ -598,24 +604,34 @@ class OpportunityTotalsCalculator
             // (0 for a fresh ad-hoc line) times quantity and chargeable days.
             $unitPrice = $item->unit_price;
 
-            return [
+            return $this->resolvedSubtotal(
                 $unitPrice,
                 $this->manualLineSubtotal($unitPrice, $quantity, $item, $opportunity, $currency),
-            ];
+            );
         }
 
+        $tiered = $this->tierMultiplier->apply(
+            $rate->price,
+            $currency,
+            $priceCategoryId,
+            $opportunity->member?->priceCategoryTier,
+            $rate->price_category_id,
+        );
+
         if ($this->quantityMinor->quantityHasFraction($quantity)) {
-            return [
-                $rate->price,
-                $this->manualLineSubtotal($rate->price, $quantity, $item, $opportunity, $currency),
-            ];
+            return $this->resolvedSubtotal(
+                $tiered['unit_price'],
+                $this->manualLineSubtotal($tiered['unit_price'], $quantity, $item, $opportunity, $currency),
+                $tiered['tier_id'],
+                $tiered['tier_multiplier'],
+            );
         }
 
         $definition = $rate->rateDefinition;
         $wholeUnits = $this->quantityMinor->wholeUnitCountForRateEngine($quantity);
 
         $context = new CalculationContext(
-            unitPriceMinor: $rate->price,
+            unitPriceMinor: $tiered['unit_price'],
             currency: $currency,
             start: $start,
             end: $end,
@@ -633,7 +649,29 @@ class OpportunityTotalsCalculator
             $definition->modifier_configs,
         );
 
-        return [$rate->price, $breakdown->totalMinor()];
+        return $this->resolvedSubtotal(
+            $tiered['unit_price'],
+            $breakdown->totalMinor(),
+            $tiered['tier_id'],
+            $tiered['tier_multiplier'],
+        );
+    }
+
+    /**
+     * @return array{unit_price: int, net_subtotal: int, tier_id: ?int, tier_multiplier: ?string}
+     */
+    private function resolvedSubtotal(
+        int $unitPrice,
+        int $netSubtotal,
+        ?int $tierId = null,
+        ?string $tierMultiplier = null,
+    ): array {
+        return [
+            'unit_price' => $unitPrice,
+            'net_subtotal' => $netSubtotal,
+            'tier_id' => $tierId,
+            'tier_multiplier' => $tierMultiplier,
+        ];
     }
 
     /**
@@ -667,7 +705,7 @@ class OpportunityTotalsCalculator
      */
     public function baselinePostCategoryNets(Opportunity $opportunity, Collection $scopedItems): array
     {
-        $opportunity->loadMissing(['items.item', 'member']);
+        $opportunity->loadMissing(['items.item', 'member.priceCategoryTier']);
         $items = $opportunity->items;
         $currency = $this->currencyFor($opportunity);
 
@@ -683,7 +721,7 @@ class OpportunityTotalsCalculator
             [$start, $end] = $this->effectiveDates($item, $opportunity);
             $product = $this->resolveProduct($item);
 
-            [, $netSubtotal] = $this->resolveSubtotal(
+            $resolved = $this->resolveSubtotal(
                 $item,
                 $product,
                 $currency,
@@ -695,7 +733,7 @@ class OpportunityTotalsCalculator
                 $opportunity,
             );
 
-            $baseSubtotals[(int) $item->id] = $netSubtotal;
+            $baseSubtotals[(int) $item->id] = $resolved['net_subtotal'];
         }
 
         $preDiscountByItem = $this->bundlePricingApplicator->apply(

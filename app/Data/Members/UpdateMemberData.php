@@ -6,6 +6,7 @@ use App\Enums\MembershipType;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 class UpdateMemberData extends Data
 {
@@ -36,6 +37,7 @@ class UpdateMemberData extends Data
         public ?int $rating = null,
         public ?int $owned_by = null,
         public ?int $price_category_id = null,
+        public ?int $price_category_tier_id = null,
         public ?int $discount_category_id = null,
         public ?int $invoice_term_id = null,
         public ?int $invoice_term_length = null,
@@ -53,7 +55,7 @@ class UpdateMemberData extends Data
     /**
      * @return array<string, mixed>
      */
-    public static function rules(): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
@@ -81,6 +83,7 @@ class UpdateMemberData extends Data
             'rating' => ['sometimes', 'integer', 'min:0', 'max:5'],
             'owned_by' => ['sometimes', 'nullable', 'integer', Rule::exists('members', 'id')->withoutTrashed()],
             'price_category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('price_categories', 'id')],
+            'price_category_tier_id' => ['sometimes', 'nullable', 'integer', Rule::exists('price_category_tiers', 'id')],
             'discount_category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('discount_categories', 'id')->withoutTrashed()],
             'invoice_term_id' => ['sometimes', 'nullable', 'integer', 'exists:list_values,id'],
             'invoice_term_length' => ['sometimes', 'integer', 'min:0'],

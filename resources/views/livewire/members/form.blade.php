@@ -15,6 +15,7 @@ use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\OrganisationTaxClass;
 use App\Models\PriceCategory;
+use App\Models\PriceCategoryTier;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -82,6 +83,8 @@ new #[Layout('components.layouts.app')] class extends Component
 
     public ?int $priceCategoryId = null;
 
+    public ?int $priceCategoryTierId = null;
+
     public ?int $discountCategoryId = null;
 
     public ?int $invoiceTermId = null;
@@ -136,6 +139,7 @@ new #[Layout('components.layouts.app')] class extends Component
             $this->ratingId = $member->rating;
             $this->ownedBy = $member->owned_by;
             $this->priceCategoryId = $member->price_category_id;
+            $this->priceCategoryTierId = $member->price_category_tier_id;
             $this->discountCategoryId = $member->discount_category_id;
             $this->invoiceTermId = $member->invoice_term_id;
             $this->invoiceTermLength = $member->invoice_term_length ?? 0;
@@ -161,6 +165,11 @@ new #[Layout('components.layouts.app')] class extends Component
 
         $this->taxNumberValidated = $member->tax_number_validated;
         $this->taxNumberValidatedAt = $member->tax_number_validated_at?->toIso8601String();
+    }
+
+    public function updatedPriceCategoryId(): void
+    {
+        $this->priceCategoryTierId = null;
     }
 
     public function save(): void
@@ -234,6 +243,7 @@ new #[Layout('components.layouts.app')] class extends Component
             'rating' => (int) ($this->ratingId ?? 0),
             'owned_by' => $this->ownedBy,
             'price_category_id' => $this->priceCategoryId,
+            'price_category_tier_id' => $this->priceCategoryTierId,
             'discount_category_id' => $this->discountCategoryId,
             'invoice_term_id' => $this->invoiceTermId,
             'invoice_term_length' => $this->invoiceTermLength,
@@ -268,6 +278,20 @@ new #[Layout('components.layouts.app')] class extends Component
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->get() ?? collect();
+    }
+
+    #[Computed]
+    public function priceCategoryTierOptions(): Collection
+    {
+        if ($this->priceCategoryId === null) {
+            return collect();
+        }
+
+        return PriceCategoryTier::query()
+            ->where('price_category_id', $this->priceCategoryId)
+            ->orderBy('sort_order')
+            ->orderBy('tier_number')
+            ->get();
     }
 
     #[Computed]
@@ -313,6 +337,7 @@ new #[Layout('components.layouts.app')] class extends Component
             'isUserMember' => $this->membershipType === MembershipType::User->value,
             'taxClasses' => $ref['taxClasses'],
             'priceCategories' => $ref['priceCategories'],
+            'priceCategoryTierOptions' => $this->priceCategoryTierOptions,
             'discountCategories' => $ref['discountCategories'],
             'ownerOptions' => $ref['ownerOptions'],
             'lawfulBasisTypes' => $ref['lawfulBasisTypes'],
@@ -486,10 +511,17 @@ new #[Layout('components.layouts.app')] class extends Component
                                     @endforeach
                                 </flux:select>
 
-                                <flux:select wire:model="priceCategoryId" label="Price Category">
+                                <flux:select wire:model.live="priceCategoryId" label="Price Category">
                                     <option value="">None</option>
                                     @foreach($priceCategories as $priceCategory)
                                         <option value="{{ $priceCategory->id }}">{{ $priceCategory->name }}</option>
+                                    @endforeach
+                                </flux:select>
+
+                                <flux:select wire:model="priceCategoryTierId" label="Price Category Tier">
+                                    <option value="">Base pricing</option>
+                                    @foreach($priceCategoryTierOptions as $tier)
+                                        <option wire:key="tier-{{ $tier->id }}" value="{{ $tier->id }}">{{ $tier->label }} (×{{ $tier->multiplier }})</option>
                                     @endforeach
                                 </flux:select>
 

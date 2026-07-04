@@ -43,6 +43,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property string $quantity
  * @property int $unit_price
+ * @property int|null $price_category_tier_id
+ * @property string|null $price_category_tier_multiplier
  * @property ChargePeriod $charge_period
  * @property int $total
  * @property int $surcharge_total
@@ -97,6 +99,8 @@ class OpportunityItem extends Model implements HasSchema
         'description',
         'quantity',
         'unit_price',
+        'price_category_tier_id',
+        'price_category_tier_multiplier',
         'charge_period',
         'total',
         'surcharge_total',
@@ -131,6 +135,8 @@ class OpportunityItem extends Model implements HasSchema
             'revenue_group_id' => 'integer',
             'quantity' => 'decimal:2',
             'unit_price' => 'integer',
+            'price_category_tier_id' => 'integer',
+            'price_category_tier_multiplier' => 'decimal:4',
             'charge_period' => ChargePeriod::class,
             'total' => 'integer',
             'surcharge_total' => 'integer',

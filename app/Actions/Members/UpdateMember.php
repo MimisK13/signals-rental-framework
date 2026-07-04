@@ -21,6 +21,19 @@ class UpdateMember
 
         $attributes = array_filter($data->toArray(), fn ($v) => $v !== null);
 
+        if (array_key_exists('price_category_id', $attributes) && $attributes['price_category_id'] !== $member->price_category_id) {
+            if (! array_key_exists('price_category_tier_id', $attributes)) {
+                $attributes['price_category_tier_id'] = null;
+            }
+        }
+
+        $effectiveCategoryId = $attributes['price_category_id'] ?? $member->price_category_id;
+        $effectiveTierId = array_key_exists('price_category_tier_id', $attributes)
+            ? $attributes['price_category_tier_id']
+            : $member->price_category_tier_id;
+
+        MemberPriceCategoryTierValidator::assertTierBelongsToCategory($effectiveTierId, $effectiveCategoryId);
+
         // A user-type member's name, active state and location type are managed
         // from the linked user's profile and are read-only here. Reject any
         // attempt to change them; other updates (e.g. custom fields) are still

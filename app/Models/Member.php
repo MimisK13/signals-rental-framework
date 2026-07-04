@@ -22,9 +22,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 /**
  * @property MembershipType $membership_type
+ * @property Carbon|null $tax_number_validated_at
  */
 class Member extends Model implements HasSchema
 {
@@ -66,6 +68,7 @@ class Member extends Model implements HasSchema
         'rating',
         'owned_by',
         'price_category_id',
+        'price_category_tier_id',
         'discount_category_id',
         'tax_zone_id',
         'buyer_type',
@@ -259,6 +262,14 @@ class Member extends Model implements HasSchema
     public function priceCategory(): BelongsTo
     {
         return $this->belongsTo(PriceCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<PriceCategoryTier, $this>
+     */
+    public function priceCategoryTier(): BelongsTo
+    {
+        return $this->belongsTo(PriceCategoryTier::class);
     }
 
     /**

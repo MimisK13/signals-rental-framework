@@ -6,8 +6,10 @@ use App\Enums\PricingRoundingDirection;
 use App\Models\Currency;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Brick\Money\Context\CustomContext;
 use Brick\Money\Currency as BrickCurrency;
 use Brick\Money\Money;
+use Brick\Money\RationalMoney;
 
 /**
  * Single rounding seam for Phase 4 money calculations.
@@ -33,6 +35,19 @@ class RoundingStrategy
     public function roundMajorToMinorUnits(string $majorAmount, string $currencyCode): int
     {
         return Money::of($majorAmount, $currencyCode, null, $this->resolveRoundingMode())
+            ->getMinorAmount()
+            ->toInt();
+    }
+
+    /**
+     * Round a {@see RationalMoney} amount to whole minor units using the tenant
+     * rounding direction and the currency's minor-unit scale.
+     */
+    public function roundRationalToMinorUnits(RationalMoney $rational, string $currencyCode): int
+    {
+        $context = new CustomContext($this->fractionDigits($currencyCode));
+
+        return $rational->to($context, $this->resolveRoundingMode())
             ->getMinorAmount()
             ->toInt();
     }

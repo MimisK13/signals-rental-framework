@@ -213,6 +213,7 @@ class MemberData extends Data
                 'rating' => $member->rating,
                 'owned_by' => $member->owned_by,
                 'price_category_id' => $member->price_category_id,
+                'price_category_tier_id' => $member->price_category_tier_id,
                 'discount_category_id' => $member->discount_category_id,
                 'tax_number' => $member->tax_number ?? '',
                 'tax_number_validated' => $member->tax_number_validated,

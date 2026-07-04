@@ -19,6 +19,11 @@ class CreateMember
 
         app(CustomFieldValidator::class)->validate('Member', $data->custom_fields, enforceRequired: true);
 
+        MemberPriceCategoryTierValidator::assertTierBelongsToCategory(
+            $data->price_category_tier_id,
+            $data->price_category_id,
+        );
+
         $member = Member::create([
             'name' => $data->name,
             'membership_type' => $data->membership_type,
@@ -44,6 +49,7 @@ class CreateMember
             'rating' => $data->rating,
             'owned_by' => $data->owned_by,
             'price_category_id' => $data->price_category_id,
+            'price_category_tier_id' => $data->price_category_tier_id,
             'discount_category_id' => $data->discount_category_id,
             'invoice_term_id' => $data->invoice_term_id,
             'invoice_term_length' => $data->invoice_term_length,
