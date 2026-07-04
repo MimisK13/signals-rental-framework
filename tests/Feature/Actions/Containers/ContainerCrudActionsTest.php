@@ -150,6 +150,39 @@ it('rejects duplicate barcodes among active containers', function () {
     ]));
 })->throws(ValidationException::class);
 
+it('rejects temporary container barcodes that collide with serialised stock identifiers', function () {
+    StockLevel::factory()->serialised()->create([
+        'product_id' => Product::factory()->serialised()->create()->id,
+        'store_id' => $this->store->id,
+        'asset_number' => 'SCAN-COLLISION',
+    ]);
+
+    expect(fn () => (new CreateTemporaryContainer)(CreateTemporaryContainerData::from([
+        'barcode' => 'SCAN-COLLISION',
+        'store_id' => $this->store->id,
+    ])))->toThrow(ValidationException::class);
+
+    $result = (new CreateTemporaryContainer)(CreateTemporaryContainerData::from([
+        'barcode' => 'SCAN-COLLISION-TC',
+        'store_id' => $this->store->id,
+    ]));
+
+    expect($result->barcode)->toBe('SCAN-COLLISION-TC');
+});
+
+it('rejects temporary container barcodes that collide with serialised stock serial numbers', function () {
+    StockLevel::factory()->serialised()->create([
+        'product_id' => Product::factory()->serialised()->create()->id,
+        'store_id' => $this->store->id,
+        'serial_number' => 'SERIAL-COLLISION',
+    ]);
+
+    (new CreateTemporaryContainer)(CreateTemporaryContainerData::from([
+        'barcode' => 'SERIAL-COLLISION',
+        'store_id' => $this->store->id,
+    ]));
+})->throws(ValidationException::class);
+
 it('updates an open container and rejects sealed containers', function () {
     $container = Container::factory()->kit()->create(['store_id' => $this->store->id]);
 

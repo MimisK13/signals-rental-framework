@@ -7,6 +7,7 @@ use App\Data\Containers\CreateTemporaryContainerData;
 use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
+use App\Models\StockLevel;
 use App\Services\Containers\ContainerEventRecorder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,17 @@ class CreateTemporaryContainer
         if ($exists) {
             throw ValidationException::withMessages([
                 'barcode' => __('This barcode is already in use by an active container.'),
+            ]);
+        }
+
+        $collidesWithSerialisedStock = StockLevel::query()
+            ->serialized()
+            ->where(fn ($q) => $q->where('asset_number', $barcode)->orWhere('serial_number', $barcode))
+            ->exists();
+
+        if ($collidesWithSerialisedStock) {
+            throw ValidationException::withMessages([
+                'barcode' => __('This barcode conflicts with an existing serialised asset identifier.'),
             ]);
         }
     }
