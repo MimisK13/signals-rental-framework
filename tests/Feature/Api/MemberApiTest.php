@@ -53,6 +53,19 @@ describe('GET /api/v1/members', function () {
         expect($response->json('members.0.membership_type'))->toBe('Organisation');
     });
 
+    it('filters by exact number using Ransack', function () {
+        Member::factory()->organisation()->create(['number' => 'MEM-9001']);
+        Member::factory()->contact()->create(['number' => 'MEM-9002']);
+        $token = $this->owner->createToken('test', ['members:read'])->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/members?q[number_eq]=MEM-9001')
+            ->assertOk();
+
+        expect($response->json('members'))->toHaveCount(1)
+            ->and($response->json('members.0.number'))->toBe('MEM-9001');
+    });
+
     it('includes addresses when requested', function () {
         $member = Member::factory()->create();
         Address::factory()->for($member, 'addressable')->create();

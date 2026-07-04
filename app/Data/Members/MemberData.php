@@ -31,6 +31,7 @@ class MemberData extends Data
     public function __construct(
         public int $id,
         public string $name,
+        public ?string $number,
         public string $membership_type,
         #[MapOutputName('active')]
         public bool $is_active,
@@ -140,6 +141,7 @@ class MemberData extends Data
         return new self(
             id: $member->id,
             name: $member->name,
+            number: $member->number,
             membership_type: $memberType->label(),
             is_active: $member->is_active,
             description: $member->description ?? '',

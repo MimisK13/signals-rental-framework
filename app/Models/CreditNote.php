@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Models\Traits\FormatsMoney;
+use App\Models\Traits\HasStoreScoping;
 use App\Services\SchemaBuilder;
 use Database\Factories\CreditNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,7 +38,7 @@ use Illuminate\Support\Carbon;
 class CreditNote extends Model implements HasSchema
 {
     /** @use HasFactory<CreditNoteFactory> */
-    use FormatsMoney, HasFactory, SoftDeletes;
+    use FormatsMoney, HasFactory, HasStoreScoping, SoftDeletes;
 
     public $incrementing = false;
 

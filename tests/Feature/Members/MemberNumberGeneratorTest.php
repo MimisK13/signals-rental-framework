@@ -85,6 +85,14 @@ describe('MemberNumberGenerator', function () {
 
         expect(app(MemberNumberGenerator::class)->next())->toBe('MEM-05');
     });
+
+    it('returns null when no store exists to anchor the sequence', function () {
+        expect(Store::query()->count())->toBe(0);
+
+        $generator = app(MemberNumberGenerator::class);
+
+        expect($generator->nextOrCreate())->toBeNull();
+    });
 });
 
 describe('CreateMember numbering', function () {
@@ -115,6 +123,46 @@ describe('CreateMember numbering', function () {
         ]));
 
         expect($existing->refresh()->number)->toBeNull();
+    });
+});
+
+describe('CreateMember numbering without stores', function () {
+    beforeEach(function () {
+        $this->seed(PermissionSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->actingAs(User::factory()->owner()->create());
+    });
+
+    it('creates a member with a null number when no store exists', function () {
+        expect(Store::query()->count())->toBe(0);
+
+        $result = (new CreateMember)(CreateMemberData::from([
+            'name' => 'Storeless Corp',
+            'membership_type' => MembershipType::Organisation->value,
+        ]));
+
+        $member = Member::query()->findOrFail($result->id);
+
+        expect($member->number)->toBeNull();
+    });
+
+    it('allocates numbers once a store exists', function () {
+        expect(Store::query()->count())->toBe(0);
+
+        (new CreateMember)(CreateMemberData::from([
+            'name' => 'Early Corp',
+            'membership_type' => MembershipType::Organisation->value,
+        ]));
+
+        Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
+
+        $result = (new CreateMember)(CreateMemberData::from([
+            'name' => 'Later Corp',
+            'membership_type' => MembershipType::Organisation->value,
+        ]));
+
+        expect(Member::query()->where('name', 'Early Corp')->value('number'))->toBeNull()
+            ->and(Member::query()->findOrFail($result->id)->number)->toStartWith('MEM-');
     });
 });
 

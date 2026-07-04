@@ -14,6 +14,13 @@ class CreditNoteFactory extends Factory
 {
     protected $model = CreditNote::class;
 
+    public function configure(): static
+    {
+        return $this->afterCreating(function (CreditNote $creditNote): void {
+            $creditNote->update(['store_id' => $creditNote->invoice->store_id]);
+        });
+    }
+
     /**
      * @return array<string, mixed>
      */

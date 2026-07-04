@@ -43,6 +43,8 @@ final class CoreAbilityDefinitions
             'documents:write' => ['label' => 'Write documents', 'description' => 'Generate, finalise, and share documents'],
             'invoices:read' => ['label' => 'Read invoices', 'description' => 'Read invoices and payments'],
             'invoices:write' => ['label' => 'Write invoices', 'description' => 'Create and manage invoices'],
+            'credit-notes:read' => ['label' => 'Read credit notes', 'description' => 'Read credit notes'],
+            'credit-notes:write' => ['label' => 'Write credit notes', 'description' => 'Issue credit notes against invoices'],
             'purchase_orders:read' => ['label' => 'Read purchase orders', 'description' => 'Read purchase orders and lines'],
             'purchase_orders:write' => ['label' => 'Write purchase orders', 'description' => 'Create and manage purchase orders'],
             'virtual_stock:read' => ['label' => 'Read virtual stock', 'description' => 'Read virtual stock intakes'],

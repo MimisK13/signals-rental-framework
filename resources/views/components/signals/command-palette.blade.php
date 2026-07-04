@@ -15,6 +15,10 @@
         activityResults: [],
         opportunityResults: [],
         invoiceResults: [],
+        creditNoteResults: [],
+        purchaseOrderResults: [],
+        virtualStockIntakeResults: [],
+        invoicePaymentResults: [],
         badgeColors: { 'organisation': 's-badge-blue', 'venue': 's-badge-amber', 'contact': 's-badge-green' },
         avatarColors: { 'organisation': 's-avatar-blue', 'venue': 's-avatar-amber', 'contact': 's-avatar-green' },
         searching: false,
@@ -103,6 +107,14 @@
             @endcan
             @can('invoices.view')
             this.invoiceResults.forEach(i => results.push({ group: 'Invoices', label: i.name, hint: i.number, icon: 'document-currency-pound', url: i.url }));
+            this.creditNoteResults.forEach(c => results.push({ group: 'Credit Notes', label: c.name, hint: c.number, icon: 'document-currency-pound', url: c.url }));
+            this.invoicePaymentResults.forEach(p => results.push({ group: 'Payments', label: p.name, hint: p.number, icon: 'document-currency-pound', url: p.url }));
+            @endcan
+            @can('purchase_orders.view')
+            this.purchaseOrderResults.forEach(p => results.push({ group: 'Purchase Orders', label: p.name, hint: p.number, icon: 'briefcase', url: p.url }));
+            @endcan
+            @can('virtual_stock.view')
+            this.virtualStockIntakeResults.forEach(v => results.push({ group: 'Virtual Stock', label: v.name, hint: v.number, icon: 'archive', url: v.url }));
             @endcan
             this.filteredCommands.forEach(c => results.push(c));
             return results;
@@ -135,6 +147,10 @@
                     this.activityResults = data.activities || [];
                     this.opportunityResults = data.opportunities || [];
                     this.invoiceResults = data.invoices || [];
+                    this.creditNoteResults = data.credit_notes || [];
+                    this.purchaseOrderResults = data.purchase_orders || [];
+                    this.virtualStockIntakeResults = data.virtual_stock_intakes || [];
+                    this.invoicePaymentResults = data.invoice_payments || [];
                     this.searching = false;
                 })
                 .catch(() => {
@@ -145,6 +161,10 @@
                     this.activityResults = [];
                     this.opportunityResults = [];
                     this.invoiceResults = [];
+                    this.creditNoteResults = [];
+                    this.purchaseOrderResults = [];
+                    this.virtualStockIntakeResults = [];
+                    this.invoicePaymentResults = [];
                     this.searching = false;
                 });
             }, 200);
@@ -161,6 +181,10 @@
                 this.activityResults = [];
                 this.opportunityResults = [];
                 this.invoiceResults = [];
+                this.creditNoteResults = [];
+                this.purchaseOrderResults = [];
+                this.virtualStockIntakeResults = [];
+                this.invoicePaymentResults = [];
                 this.$nextTick(() => this.$refs.searchInput?.focus());
             }
         },

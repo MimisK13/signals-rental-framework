@@ -37,6 +37,11 @@ describe('GET /search (SQLite-safe paths)', function () {
                 'product_groups' => [],
                 'activities' => [],
                 'opportunities' => [],
+                'invoices' => [],
+                'credit_notes' => [],
+                'purchase_orders' => [],
+                'virtual_stock_intakes' => [],
+                'invoice_payments' => [],
             ]);
     });
 
@@ -51,6 +56,11 @@ describe('GET /search (SQLite-safe paths)', function () {
                 'product_groups' => [],
                 'activities' => [],
                 'opportunities' => [],
+                'invoices' => [],
+                'credit_notes' => [],
+                'purchase_orders' => [],
+                'virtual_stock_intakes' => [],
+                'invoice_payments' => [],
             ]);
     });
 
@@ -65,6 +75,11 @@ describe('GET /search (SQLite-safe paths)', function () {
                 'product_groups',
                 'activities',
                 'opportunities',
+                'invoices',
+                'credit_notes',
+                'purchase_orders',
+                'virtual_stock_intakes',
+                'invoice_payments',
             ])
             ->assertJsonCount(0, 'members')
             ->assertJsonCount(0, 'products')

@@ -31,6 +31,7 @@ class MemberController extends Controller
     /** @var list<string> */
     protected array $allowedFilters = [
         'name',
+        'number',
         'membership_type',
         'is_active',
         'created_at',

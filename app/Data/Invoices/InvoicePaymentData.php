@@ -16,6 +16,7 @@ class InvoicePaymentData extends Data
     public function __construct(
         public int $id,
         public int $invoice_id,
+        public ?string $number,
         public string $amount,
         public string $payment_method,
         public ?string $reference,
@@ -30,6 +31,7 @@ class InvoicePaymentData extends Data
         return new self(
             id: $payment->id,
             invoice_id: $payment->invoice_id,
+            number: $payment->number,
             amount: $payment->formatMoneyCost('amount'),
             payment_method: $payment->payment_method,
             reference: $payment->reference,

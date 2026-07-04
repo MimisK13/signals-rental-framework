@@ -26,6 +26,7 @@ class InvoicePaymentFactory extends Factory
             'invoice_id' => Invoice::factory(),
             'amount' => fake()->numberBetween(1000, 50000),
             'payment_method' => fake()->randomElement(array_column(PaymentMethod::cases(), 'value')),
+            'number' => 'PAY-'.fake()->unique()->numerify('########'),
             'reference' => fake()->optional()->bothify('PAY-########'),
             'paid_at' => now(),
             'notes' => fake()->optional()->sentence(),

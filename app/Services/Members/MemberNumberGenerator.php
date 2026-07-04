@@ -25,8 +25,14 @@ class MemberNumberGenerator
 
     public function next(?DateTimeInterface $at = null): string
     {
+        $storeId = $this->sequenceStoreId();
+
+        if ($storeId === null) {
+            throw new ModelNotFoundException('No store available to anchor the member number sequence.');
+        }
+
         return $this->documentNumberGenerator->next(
-            $this->sequenceStoreId(),
+            $storeId,
             self::DOCUMENT_TYPE,
             $at,
         );
@@ -35,6 +41,10 @@ class MemberNumberGenerator
     public function ensureSequence(): DocumentSequence
     {
         $storeId = $this->sequenceStoreId();
+
+        if ($storeId === null) {
+            throw new ModelNotFoundException('No store available to anchor the member number sequence.');
+        }
 
         $sequence = DocumentSequence::query()
             ->where('store_id', $storeId)
@@ -54,8 +64,12 @@ class MemberNumberGenerator
         ));
     }
 
-    public function nextOrCreate(?DateTimeInterface $at = null): string
+    public function nextOrCreate(?DateTimeInterface $at = null): ?string
     {
+        if ($this->sequenceStoreId() === null) {
+            return null;
+        }
+
         try {
             return $this->next($at);
         } catch (ModelNotFoundException) {
@@ -65,7 +79,7 @@ class MemberNumberGenerator
         }
     }
 
-    private function sequenceStoreId(): int
+    private function sequenceStoreId(): ?int
     {
         $defaultStoreId = Store::query()->where('is_default', true)->value('id');
 
@@ -73,6 +87,8 @@ class MemberNumberGenerator
             return $defaultStoreId;
         }
 
-        return (int) Store::query()->orderBy('id')->value('id');
+        $firstStoreId = Store::query()->orderBy('id')->value('id');
+
+        return is_int($firstStoreId) ? $firstStoreId : null;
     }
 }
