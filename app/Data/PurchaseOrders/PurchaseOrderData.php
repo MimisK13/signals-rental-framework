@@ -4,6 +4,7 @@ namespace App\Data\PurchaseOrders;
 
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
+use App\Data\Concerns\StripsCostFields;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\PurchaseOrder;
@@ -15,6 +16,13 @@ use Spatie\LaravelData\Lazy;
 class PurchaseOrderData extends Data
 {
     use FormatsTimestamps;
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['subtotal', 'tax_total', 'total', 'rounding_adjustment'];
+    }
 
     public function __construct(
         public int $id,

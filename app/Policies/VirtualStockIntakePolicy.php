@@ -14,12 +14,12 @@ class VirtualStockIntakePolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('costs.view') && $user->can('virtual_stock.view');
+        return $user->can('virtual_stock.view');
     }
 
     public function view(User $user, ?Model $model = null): bool
     {
-        if (! $user->can('costs.view') || ! $user->can('virtual_stock.view')) {
+        if (! $user->can('virtual_stock.view')) {
             return false;
         }
 

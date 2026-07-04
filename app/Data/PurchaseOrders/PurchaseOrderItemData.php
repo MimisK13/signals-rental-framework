@@ -2,11 +2,20 @@
 
 namespace App\Data\PurchaseOrders;
 
+use App\Data\Concerns\StripsCostFields;
 use App\Models\PurchaseOrderItem;
 use Spatie\LaravelData\Data;
 
 class PurchaseOrderItemData extends Data
 {
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['unit_cost', 'tax', 'total'];
+    }
+
     public function __construct(
         public int $id,
         public int $purchase_order_id,

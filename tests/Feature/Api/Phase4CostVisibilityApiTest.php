@@ -7,6 +7,7 @@ use App\Models\OpportunityCost;
 use App\Models\Product;
 use App\Models\ProductSupplierCost;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
@@ -49,26 +50,114 @@ function phase4CostVisibilityUser(array $permissions, ?int $storeId = null): Use
 }
 
 describe('Phase 4 cost visibility', function () {
-    it('denies purchase order API access without costs.view', function () {
-        $user = phase4CostVisibilityUser(['purchase_orders.access', 'purchase_orders.view']);
+    it('returns purchase orders without cost fields when costs.view is absent', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['purchase_orders.access', 'purchase_orders.view'], $store->id);
         $token = phase4CostVisibilityToken($user, ['purchase_orders:read']);
 
-        PurchaseOrder::factory()->create();
+        $po = PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'subtotal' => 10000,
+            'tax_total' => 2000,
+            'total' => 12000,
+            'rounding_adjustment' => 0,
+        ]);
+        PurchaseOrderItem::factory()->create([
+            'purchase_order_id' => $po->id,
+            'unit_cost' => 5000,
+            'tax' => 1000,
+            'total' => 6000,
+        ]);
+
+        $indexResponse = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/purchase_orders')
+            ->assertOk()
+            ->assertJsonPath('purchase_orders.0.id', $po->id)
+            ->assertJsonPath('purchase_orders.0.number', $po->number);
+
+        expect($indexResponse->json('purchase_orders.0'))->not->toHaveKeys(['subtotal', 'tax_total', 'total', 'rounding_adjustment']);
+
+        $showResponse = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/purchase_orders/{$po->id}?include=items")
+            ->assertOk()
+            ->assertJsonPath('purchase_order.id', $po->id);
+
+        expect($showResponse->json('purchase_order'))->not->toHaveKeys(['subtotal', 'tax_total', 'total', 'rounding_adjustment']);
+        expect($showResponse->json('purchase_order.items.0'))->not->toHaveKeys(['unit_cost', 'tax', 'total']);
+    });
+
+    it('includes purchase order cost fields when costs.view is present', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['purchase_orders.access', 'purchase_orders.view', 'costs.view'], $store->id);
+        $token = phase4CostVisibilityToken($user, ['purchase_orders:read']);
+
+        $po = PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'subtotal' => 10000,
+            'tax_total' => 2000,
+            'total' => 12000,
+            'rounding_adjustment' => 0,
+        ]);
+        PurchaseOrderItem::factory()->create([
+            'purchase_order_id' => $po->id,
+            'unit_cost' => 5000,
+            'tax' => 1000,
+            'total' => 6000,
+        ]);
 
         $this->withHeader('Authorization', "Bearer {$token}")
             ->getJson('/api/v1/purchase_orders')
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJsonPath('purchase_orders.0.total', '120.00');
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/purchase_orders/{$po->id}?include=items")
+            ->assertOk()
+            ->assertJsonPath('purchase_order.subtotal', '100.00')
+            ->assertJsonPath('purchase_order.items.0.unit_cost', '50.00')
+            ->assertJsonPath('purchase_order.items.0.total', '60.00');
     });
 
-    it('denies virtual stock API access without costs.view', function () {
+    it('returns virtual stock intakes without cost fields when costs.view is absent', function () {
         $store = Store::factory()->create();
         $user = phase4CostVisibilityUser(['virtual_stock.access', 'virtual_stock.view'], $store->id);
         Sanctum::actingAs($user, ['virtual_stock:read']);
 
-        VirtualStockIntake::factory()->create(['store_id' => $store->id]);
+        $intake = VirtualStockIntake::factory()->create([
+            'store_id' => $store->id,
+            'unit_cost' => 2500,
+        ]);
+
+        $indexResponse = $this->getJson('/api/v1/virtual_stock_intakes')
+            ->assertOk()
+            ->assertJsonPath('virtual_stock_intakes.0.id', $intake->id);
+
+        expect($indexResponse->json('virtual_stock_intakes.0'))->not->toHaveKey('unit_cost');
+
+        $showResponse = $this->getJson("/api/v1/virtual_stock_intakes/{$intake->id}")
+            ->assertOk()
+            ->assertJsonPath('virtual_stock_intake.id', $intake->id);
+
+        expect($showResponse->json('virtual_stock_intake'))->not->toHaveKey('unit_cost');
+    });
+
+    it('includes virtual stock unit_cost when costs.view is present', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['virtual_stock.access', 'virtual_stock.view', 'costs.view'], $store->id);
+        Sanctum::actingAs($user, ['virtual_stock:read']);
+
+        $intake = VirtualStockIntake::factory()->create([
+            'store_id' => $store->id,
+            'unit_cost' => 2500,
+        ]);
 
         $this->getJson('/api/v1/virtual_stock_intakes')
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJsonPath('virtual_stock_intakes.0.unit_cost', '25.00');
+
+        $this->getJson("/api/v1/virtual_stock_intakes/{$intake->id}")
+            ->assertOk()
+            ->assertJsonPath('virtual_stock_intake.unit_cost', '25.00');
     });
 
     it('denies supplier cost API access without costs.view', function () {
@@ -177,5 +266,91 @@ describe('Phase 4 cost visibility', function () {
             ->assertSee('Unique Van Hire Cost')
             ->assertDontSee('Amount')
             ->assertDontSee(app(Formatter::class)->money(5000));
+    });
+
+    it('hides purchase order cost figures on the show page without costs.view', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['purchase_orders.access', 'purchase_orders.view'], $store->id);
+        $this->actingAs($user);
+
+        $po = PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'number' => 'PO-COST-HIDE',
+            'subtotal' => 10000,
+            'tax_total' => 2000,
+            'total' => 12000,
+        ]);
+        PurchaseOrderItem::factory()->create([
+            'purchase_order_id' => $po->id,
+            'description' => 'Visible line item',
+            'unit_cost' => 5000,
+            'tax' => 1000,
+            'total' => 6000,
+        ]);
+
+        Volt::test('purchase-orders.show', ['purchaseOrder' => $po->load('items')])
+            ->assertSee('PO-COST-HIDE')
+            ->assertSee('Visible line item')
+            ->assertDontSee('Unit cost')
+            ->assertDontSee('Subtotal')
+            ->assertDontSee(app(Formatter::class)->money(12000));
+    });
+
+    it('shows purchase order cost figures on the show page with costs.view', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['purchase_orders.access', 'purchase_orders.view', 'costs.view'], $store->id);
+        $this->actingAs($user);
+
+        $po = PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'number' => 'PO-COST-SHOW',
+            'subtotal' => 10000,
+            'tax_total' => 2000,
+            'total' => 12000,
+        ]);
+        PurchaseOrderItem::factory()->create([
+            'purchase_order_id' => $po->id,
+            'description' => 'Costed line item',
+            'unit_cost' => 5000,
+            'tax' => 1000,
+            'total' => 6000,
+        ]);
+
+        Volt::test('purchase-orders.show', ['purchaseOrder' => $po->load('items')])
+            ->assertSee('Unit cost')
+            ->assertSee('Subtotal')
+            ->assertSee(app(Formatter::class)->money(12000));
+    });
+
+    it('hides virtual stock cost figures on the show page without costs.view', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['virtual_stock.access', 'virtual_stock.view'], $store->id);
+        $this->actingAs($user);
+
+        $intake = VirtualStockIntake::factory()->create([
+            'store_id' => $store->id,
+            'unit_cost' => 2500,
+        ]);
+
+        Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake])
+            ->assertSee($intake->number)
+            ->assertDontSee('Unit cost')
+            ->assertDontSee('Cost apportionment')
+            ->assertDontSee(app(Formatter::class)->money(2500));
+    });
+
+    it('shows virtual stock cost figures on the show page with costs.view', function () {
+        $store = Store::factory()->create();
+        $user = phase4CostVisibilityUser(['virtual_stock.access', 'virtual_stock.view', 'costs.view'], $store->id);
+        $this->actingAs($user);
+
+        $intake = VirtualStockIntake::factory()->create([
+            'store_id' => $store->id,
+            'unit_cost' => 2500,
+        ]);
+
+        Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake])
+            ->assertSee('Unit cost')
+            ->assertSee(app(Formatter::class)->money(2500));
     });
 });

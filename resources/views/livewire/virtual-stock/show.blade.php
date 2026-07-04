@@ -185,7 +185,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             <x-signals.panel title="Allocations"><p style="font-family: var(--font-mono);">{{ $allocationsCount }}</p></x-signals.panel>
         </div>
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <x-signals.panel title="Unit cost"><p style="font-family: var(--font-mono);">{{ $formatter->money($virtualStockIntake->unit_cost, $virtualStockIntake->currency_code) }}</p></x-signals.panel>
+            @costs
+                <x-signals.panel title="Unit cost"><p style="font-family: var(--font-mono);">{{ $formatter->money($virtualStockIntake->unit_cost, $virtualStockIntake->currency_code) }}</p></x-signals.panel>
+            @endcosts
             @if($virtualStockIntake->returned_at)
                 <x-signals.panel title="Returned">
                     <p>@localdatetime($virtualStockIntake->returned_at)</p>
@@ -199,52 +201,54 @@ new #[Layout('components.layouts.app')] class extends Component {
             <p>@localdatetime($virtualStockIntake->available_from) → @localdatetime($virtualStockIntake->available_until)</p>
         </x-signals.panel>
 
-        @if($canViewCosts && $profitAndLoss !== null)
-            <x-signals.panel title="Cost apportionment &amp; P&amp;L">
-                <div class="space-y-3">
-                    <div class="flex flex-wrap gap-4 text-sm">
-                        <div>
-                            <span class="text-[var(--text-muted)]">Strategy</span>
-                            <p>{{ $profitAndLoss['strategy_label'] ?? '—' }}</p>
+        @costs
+            @if($profitAndLoss !== null)
+                <x-signals.panel title="Cost apportionment &amp; P&amp;L">
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap gap-4 text-sm">
+                            <div>
+                                <span class="text-[var(--text-muted)]">Strategy</span>
+                                <p>{{ $profitAndLoss['strategy_label'] ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <span class="text-[var(--text-muted)]">Intake total</span>
+                                <p style="font-family: var(--font-mono);">{{ $formatter->money($profitAndLoss['intake_total_minor'], $virtualStockIntake->currency_code) }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <span class="text-[var(--text-muted)]">Intake total</span>
-                            <p style="font-family: var(--font-mono);">{{ $formatter->money($profitAndLoss['intake_total_minor'], $virtualStockIntake->currency_code) }}</p>
-                        </div>
-                    </div>
-                    @if($profitAndLoss['rows'] !== [])
-                        <x-signals.table-wrap>
-                            <table class="s-table">
-                                <thead>
-                                    <tr>
-                                        <th>Opportunity</th>
-                                        <th class="text-right">Charge-out</th>
-                                        <th class="text-right">Apportioned cost</th>
-                                        <th class="text-right">Margin</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($profitAndLoss['rows'] as $row)
-                                        <tr wire:key="pl-row-{{ $row['opportunity_id'] }}">
-                                            <td>
-                                                <a href="{{ route('opportunities.costs', $row['opportunity_id']) }}" wire:navigate class="text-[var(--link)] hover:underline">
-                                                    {{ $row['opportunity_subject'] }}
-                                                </a>
-                                            </td>
-                                            <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($row['revenue_minor'], $virtualStockIntake->currency_code) }}</td>
-                                            <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($row['apportioned_cost_minor'], $virtualStockIntake->currency_code) }}</td>
-                                            <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($row['margin_minor'], $virtualStockIntake->currency_code) }}</td>
+                        @if($profitAndLoss['rows'] !== [])
+                            <x-signals.table-wrap>
+                                <table class="s-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Opportunity</th>
+                                            <th class="text-right">Charge-out</th>
+                                            <th class="text-right">Apportioned cost</th>
+                                            <th class="text-right">Margin</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </x-signals.table-wrap>
-                    @else
-                        <p class="text-sm text-[var(--text-muted)]">No apportioned opportunity costs yet.</p>
-                    @endif
-                </div>
-            </x-signals.panel>
-        @endif
+                                    </thead>
+                                    <tbody>
+                                        @foreach($profitAndLoss['rows'] as $row)
+                                            <tr wire:key="pl-row-{{ $row['opportunity_id'] }}">
+                                                <td>
+                                                    <a href="{{ route('opportunities.costs', $row['opportunity_id']) }}" wire:navigate class="text-[var(--link)] hover:underline">
+                                                        {{ $row['opportunity_subject'] }}
+                                                    </a>
+                                                </td>
+                                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($row['revenue_minor'], $virtualStockIntake->currency_code) }}</td>
+                                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($row['apportioned_cost_minor'], $virtualStockIntake->currency_code) }}</td>
+                                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($row['margin_minor'], $virtualStockIntake->currency_code) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </x-signals.table-wrap>
+                        @else
+                            <p class="text-sm text-[var(--text-muted)]">No apportioned opportunity costs yet.</p>
+                        @endif
+                    </div>
+                </x-signals.panel>
+            @endif
+        @endcosts
     </div>
 
     @if($showReturnConfirmModal)

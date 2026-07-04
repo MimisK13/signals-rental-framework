@@ -15,7 +15,7 @@ beforeEach(function () {
     $this->policy = new VirtualStockIntakePolicy;
 });
 
-it('requires costs.view and virtual_stock.view to view', function () {
+it('allows view with virtual_stock.view without costs.view', function () {
     $intake = VirtualStockIntake::factory()->create();
 
     $member = Member::factory()->create();
@@ -27,9 +27,20 @@ it('requires costs.view and virtual_stock.view to view', function () {
         'created_at' => now(),
     ]);
 
-    expect($this->policy->view($viewer, $intake))->toBeFalse();
+    expect($this->policy->view($viewer, $intake))->toBeTrue();
+});
 
-    $viewer->givePermissionTo('costs.view');
+it('allows view with costs.view and virtual_stock.view', function () {
+    $intake = VirtualStockIntake::factory()->create();
+
+    $member = Member::factory()->create();
+    $viewer = User::factory()->create(['member_id' => $member->id, 'is_owner' => false]);
+    $viewer->givePermissionTo(['virtual_stock.view', 'virtual_stock.access', 'costs.view']);
+    MemberStore::create([
+        'member_id' => $member->id,
+        'store_id' => $intake->store_id,
+        'created_at' => now(),
+    ]);
 
     expect($this->policy->view($viewer, $intake))->toBeTrue();
 });

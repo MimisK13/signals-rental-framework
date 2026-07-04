@@ -13,12 +13,12 @@ class PurchaseOrderPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('costs.view') && $user->can('purchase_orders.view');
+        return $user->can('purchase_orders.view');
     }
 
     public function view(User $user, ?Model $model = null): bool
     {
-        if (! $user->can('costs.view') || ! $user->can('purchase_orders.view')) {
+        if (! $user->can('purchase_orders.view')) {
             return false;
         }
 

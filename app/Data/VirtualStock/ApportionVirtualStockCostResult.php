@@ -2,10 +2,19 @@
 
 namespace App\Data\VirtualStock;
 
+use App\Data\Concerns\StripsCostFields;
 use Spatie\LaravelData\Data;
 
 class ApportionVirtualStockCostResult extends Data
 {
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['allocations', 'intake_total_minor', 'allocated_total_minor'];
+    }
+
     /**
      * @param  array<int, int>  $allocations  opportunity_id => minor units
      */

@@ -4,6 +4,7 @@ use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;
 use App\Models\User;
+use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
@@ -38,7 +39,7 @@ it('lists virtual stock intakes', function () {
         ]);
 });
 
-it('returns 403 without costs.view', function () {
+it('strips unit_cost without costs.view', function () {
     $store = Store::factory()->create();
     $member = Member::factory()->create();
     $user = User::factory()->create(['member_id' => $member->id, 'is_owner' => false]);
@@ -46,9 +47,17 @@ it('returns 403 without costs.view', function () {
     MemberStore::create(['member_id' => $member->id, 'store_id' => $store->id, 'created_at' => now()]);
     $token = virtualStockApiToken($user);
 
-    $this->withHeader('Authorization', "Bearer {$token}")
+    $intake = VirtualStockIntake::factory()->create([
+        'store_id' => $store->id,
+        'unit_cost' => 2500,
+    ]);
+
+    $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->getJson('/api/v1/virtual_stock_intakes')
-        ->assertForbidden();
+        ->assertOk()
+        ->assertJsonPath('virtual_stock_intakes.0.id', $intake->id);
+
+    expect($response->json('virtual_stock_intakes.0'))->not->toHaveKey('unit_cost');
 });
 
 it('confirms a draft intake via API', function () {

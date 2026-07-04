@@ -71,14 +71,22 @@ describe('GET /api/v1/purchase_orders', function () {
             ->and($response->json('purchase_orders.0.status'))->toBe('draft');
     });
 
-    it('returns 403 without costs.view', function () {
+    it('strips cost fields without costs.view', function () {
         $store = Store::factory()->create();
         $user = purchaseOrderApiUser(['purchase_orders.access', 'purchase_orders.view'], $store->id);
         $token = purchaseOrderApiToken($user);
 
-        $this->withHeader('Authorization', "Bearer {$token}")
+        $po = PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'total' => 12000,
+        ]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->getJson('/api/v1/purchase_orders')
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJsonPath('purchase_orders.0.id', $po->id);
+
+        expect($response->json('purchase_orders.0'))->not->toHaveKey('total');
     });
 });
 

@@ -235,9 +235,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <th>Description</th>
                                 <th class="text-right">Qty</th>
                                 <th class="text-right">Received</th>
-                                <th class="text-right">Unit cost</th>
-                                <th class="text-right">Tax</th>
-                                <th class="text-right">Total</th>
+                                @costs
+                                    <th class="text-right">Unit cost</th>
+                                    <th class="text-right">Tax</th>
+                                    <th class="text-right">Total</th>
+                                @endcosts
                                 @if($purchaseOrder->po_type === 'sub_hire')
                                     <th></th>
                                 @endif
@@ -254,9 +256,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     </td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $item->quantity }}</td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $item->received_quantity }}</td>
-                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->unit_cost, $purchaseOrder->currency_code) }}</td>
-                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->tax, $purchaseOrder->currency_code) }}</td>
-                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->total, $purchaseOrder->currency_code) }}</td>
+                                    @costs
+                                        <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->unit_cost, $purchaseOrder->currency_code) }}</td>
+                                        <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->tax, $purchaseOrder->currency_code) }}</td>
+                                        <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->total, $purchaseOrder->currency_code) }}</td>
+                                    @endcosts
                                     @if($purchaseOrder->po_type === 'sub_hire' && $item->product_id)
                                         <td class="text-right">
                                             @can('create', App\Models\VirtualStockIntake::class)
@@ -315,13 +319,15 @@ new #[Layout('components.layouts.app')] class extends Component {
             </x-signals.card>
         @endif
 
-        <div class="flex justify-end">
-            <dl class="w-full max-w-sm space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-[var(--text-muted)]">Subtotal</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->subtotal, $purchaseOrder->currency_code) }}</dd></div>
-                <div class="flex justify-between"><dt class="text-[var(--text-muted)]">Tax</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->tax_total, $purchaseOrder->currency_code) }}</dd></div>
-                <div class="flex justify-between font-semibold border-t border-[var(--border)] pt-2"><dt>Total</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->total, $purchaseOrder->currency_code) }}</dd></div>
-            </dl>
-        </div>
+        @costs
+            <div class="flex justify-end">
+                <dl class="w-full max-w-sm space-y-2 text-sm">
+                    <div class="flex justify-between"><dt class="text-[var(--text-muted)]">Subtotal</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->subtotal, $purchaseOrder->currency_code) }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[var(--text-muted)]">Tax</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->tax_total, $purchaseOrder->currency_code) }}</dd></div>
+                    <div class="flex justify-between font-semibold border-t border-[var(--border)] pt-2"><dt>Total</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->total, $purchaseOrder->currency_code) }}</dd></div>
+                </dl>
+            </div>
+        @endcosts
 
         <x-signals.panel title="Status timeline">
             <ul class="space-y-2 text-sm">

@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->policy = new PurchaseOrderPolicy;
 });
 
-it('requires costs.view and purchase_orders.view to view', function () {
+it('allows view with purchase_orders.view without costs.view', function () {
     $po = PurchaseOrder::factory()->create();
 
     $member = Member::factory()->create();
@@ -28,9 +28,20 @@ it('requires costs.view and purchase_orders.view to view', function () {
         'created_at' => now(),
     ]);
 
-    expect($this->policy->view($viewer, $po))->toBeFalse();
+    expect($this->policy->view($viewer, $po))->toBeTrue();
+});
 
-    $viewer->givePermissionTo('costs.view');
+it('allows view with costs.view and purchase_orders.view', function () {
+    $po = PurchaseOrder::factory()->create();
+
+    $member = Member::factory()->create();
+    $viewer = User::factory()->create(['member_id' => $member->id, 'is_owner' => false]);
+    $viewer->givePermissionTo(['purchase_orders.view', 'purchase_orders.access', 'costs.view']);
+    MemberStore::create([
+        'member_id' => $member->id,
+        'store_id' => $po->store_id,
+        'created_at' => now(),
+    ]);
 
     expect($this->policy->view($viewer, $po))->toBeTrue();
 });

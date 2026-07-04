@@ -4,6 +4,7 @@ namespace App\Data\VirtualStock;
 
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
+use App\Data\Concerns\StripsCostFields;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
@@ -15,6 +16,13 @@ use Spatie\LaravelData\Lazy;
 class VirtualStockIntakeData extends Data
 {
     use FormatsTimestamps;
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['unit_cost'];
+    }
 
     public function __construct(
         public int $id,
