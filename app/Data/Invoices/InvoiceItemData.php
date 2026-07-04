@@ -2,7 +2,10 @@
 
 namespace App\Data\Invoices;
 
+use App\Data\Concerns\StripsCostFields;
 use App\Models\InvoiceItem;
+use Brick\Money\Currency;
+use Brick\Money\Money;
 use Spatie\LaravelData\Data;
 
 /**
@@ -10,6 +13,14 @@ use Spatie\LaravelData\Data;
  */
 class InvoiceItemData extends Data
 {
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['margin', 'margin_percent'];
+    }
+
     public function __construct(
         public int $id,
         public int $invoice_id,
@@ -25,9 +36,11 @@ class InvoiceItemData extends Data
         public string $tax_treatment,
         public ?int $product_tax_class_id,
         public int $sort_order,
+        public ?string $margin = null,
+        public ?string $margin_percent = null,
     ) {}
 
-    public static function fromModel(InvoiceItem $item): self
+    public static function fromModel(InvoiceItem $item, ?InvoiceLineMarginResult $lineMargin = null): self
     {
         return new self(
             id: $item->id,
@@ -44,6 +57,20 @@ class InvoiceItemData extends Data
             tax_treatment: $item->tax_treatment,
             product_tax_class_id: $item->product_tax_class_id,
             sort_order: $item->sort_order,
+            margin: $lineMargin?->has_basis
+                ? self::formatMinor($item, (int) ($lineMargin->margin_minor ?? 0))
+                : null,
+            margin_percent: $lineMargin?->margin_percent,
         );
+    }
+
+    private static function formatMinor(InvoiceItem $item, int $minor): string
+    {
+        $code = $item->currency_code !== '' ? $item->currency_code : 'GBP';
+        $currency = Currency::of($code);
+
+        return (string) Money::ofMinor($minor, $currency)
+            ->getAmount()
+            ->toScale($currency->getDefaultFractionDigits());
     }
 }

@@ -14,6 +14,8 @@ use App\Data\Invoices\RecordPaymentData;
 use App\Enums\BillingCommunicationKind;
 use App\Enums\PaymentMethod;
 use App\Models\Invoice;
+use App\Support\CostVisibility;
+use App\Services\Invoices\InvoiceMarginCalculator;
 use Brick\Money\Money;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\Gate;
@@ -46,8 +48,10 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->invoice = $invoice->load([
             'member',
             'store',
-            'opportunity',
+            'opportunity.costs',
+            'opportunity.items',
             'items.product',
+            'items.opportunityItem',
             'taxes',
             'payments',
             'creditNotes',
@@ -158,8 +162,10 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->invoice->refresh()->load([
             'member',
             'store',
-            'opportunity',
+            'opportunity.costs',
+            'opportunity.items',
             'items.product',
+            'items.opportunityItem',
             'taxes',
             'payments',
             'creditNotes',
@@ -182,6 +188,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             'canPay' => Gate::check('recordPayment', $this->invoice),
             'canCredit' => Gate::check('issueCredit', $this->invoice),
             'paymentMethods' => PaymentMethod::cases(),
+            'margin' => CostVisibility::canView()
+                ? app(InvoiceMarginCalculator::class)->calculate($this->invoice)
+                : null,
         ];
     }
 }; ?>
@@ -274,7 +283,15 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->tax, $item->currency_code) }}</td>
                                         <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->total, $item->currency_code) }}</td>
                                         @costs
-                                            <td class="text-right" style="font-family: var(--font-mono);">—</td>
+                                            @php($lineMargin = $margin?->line($item->id))
+                                            <td class="text-right" style="font-family: var(--font-mono);">
+                                                @if($lineMargin?->has_basis)
+                                                    {{ $formatter->money($lineMargin->margin_minor, $item->currency_code) }}
+                                                    <span class="text-[var(--text-muted)]">({{ $lineMargin->margin_percent }})</span>
+                                                @else
+                                                    <span title="No cost data">—</span>
+                                                @endif
+                                            </td>
                                         @endcosts
                                     </tr>
                                 @endforeach
@@ -366,6 +383,19 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <div class="s-data-list-label">Outstanding</div>
                         <div class="s-data-list-value" style="font-family: var(--font-mono);">{{ $formatter->money($invoice->amount_outstanding, $invoice->currency_code) }}</div>
                     </div>
+                    @costs
+                        @if($margin !== null)
+                            <div class="s-data-list-item">
+                                <div class="s-data-list-label">Margin</div>
+                                <div class="s-data-list-value" style="font-family: var(--font-mono);">
+                                    {{ $formatter->money($margin->margin_minor, $invoice->currency_code) }}
+                                    @if($margin->margin_percent !== null)
+                                        <span class="text-[var(--text-muted)]">({{ $margin->margin_percent }})</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @endcosts
                 </x-signals.data-list>
             </x-signals.panel>
 

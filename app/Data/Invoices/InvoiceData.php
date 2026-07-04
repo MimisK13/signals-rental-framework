@@ -4,6 +4,7 @@ namespace App\Data\Invoices;
 
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
+use App\Data\Concerns\StripsCostFields;
 use App\Enums\InvoiceType;
 use App\Models\CreditNote;
 use App\Models\Invoice;
@@ -13,6 +14,9 @@ use App\Models\InvoiceTax;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;
+use App\Services\Invoices\InvoiceMarginCalculator;
+use Brick\Money\Currency;
+use Brick\Money\Money;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Lazy;
 
@@ -24,6 +28,13 @@ use Spatie\LaravelData\Lazy;
 class InvoiceData extends Data
 {
     use FormatsTimestamps;
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['margin', 'margin_percent', 'attributable_cost_total'];
+    }
 
     public function __construct(
         public int $id,
@@ -63,12 +74,18 @@ class InvoiceData extends Data
         public Lazy|array $payments = [],
         /** @var Lazy|array<int, CreditNoteData> */
         public Lazy|array $credit_notes = [],
+        public ?string $margin = null,
+        public ?string $margin_percent = null,
+        public ?string $attributable_cost_total = null,
     ) {}
 
     public static function fromModel(Invoice $invoice): self
     {
         $type = InvoiceType::from($invoice->type);
         $statusLabel = (string) (config('invoices.statuses.'.$invoice->status.'.label') ?? $invoice->status);
+        $marginResult = $invoice->relationLoaded('items')
+            ? app(InvoiceMarginCalculator::class)->calculate($invoice)
+            : null;
 
         return new self(
             id: $invoice->id,
@@ -105,7 +122,10 @@ class InvoiceData extends Data
                 fn (): array => $invoice->items
                     ->sortBy('sort_order')
                     ->values()
-                    ->map(fn (InvoiceItem $item): InvoiceItemData => InvoiceItemData::fromModel($item))
+                    ->map(fn (InvoiceItem $item): InvoiceItemData => InvoiceItemData::fromModel(
+                        $item,
+                        $marginResult?->line((int) $item->id),
+                    ))
                     ->all(),
             ),
             taxes: Lazy::whenLoaded(
@@ -133,7 +153,24 @@ class InvoiceData extends Data
                     ->map(fn (CreditNote $creditNote): CreditNoteData => CreditNoteData::fromModel($creditNote))
                     ->all(),
             ),
+            margin: $marginResult !== null
+                ? self::formatInvoiceMinor($invoice, $marginResult->margin_minor)
+                : null,
+            margin_percent: $marginResult?->margin_percent,
+            attributable_cost_total: $marginResult !== null
+                ? self::formatInvoiceMinor($invoice, $marginResult->attributable_cost_minor)
+                : null,
         );
+    }
+
+    private static function formatInvoiceMinor(Invoice $invoice, int $minor): string
+    {
+        $code = $invoice->currency_code !== '' ? $invoice->currency_code : 'GBP';
+        $currency = Currency::of($code);
+
+        return (string) Money::ofMinor($minor, $currency)
+            ->getAmount()
+            ->toScale($currency->getDefaultFractionDigits());
     }
 
     private static function reference(Member|Store|Opportunity|null $model): ?EntityReferenceData
