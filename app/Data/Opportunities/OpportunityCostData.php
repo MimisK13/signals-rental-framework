@@ -3,6 +3,7 @@
 namespace App\Data\Opportunities;
 
 use App\Data\Concerns\FormatsTimestamps;
+use App\Data\Concerns\StripsCostFields;
 use App\Models\OpportunityCost;
 use Spatie\LaravelData\Data;
 
@@ -17,6 +18,13 @@ use Spatie\LaravelData\Data;
 class OpportunityCostData extends Data
 {
     use FormatsTimestamps;
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['amount'];
+    }
 
     public function __construct(
         public int $id,

@@ -196,11 +196,13 @@ new #[Layout('components.layouts.app')] class extends Component {
                             label="Sub-Rental Price"
                             :value="$product->sub_rental_price ? $formatter->money($product->sub_rental_price) : '—'"
                         />
-                        <x-signals.stat-card
-                            color="blue"
-                            label="Purchase Price"
-                            :value="$product->purchase_price ? $formatter->money($product->purchase_price) : '—'"
-                        />
+                        @costs
+                            <x-signals.stat-card
+                                color="blue"
+                                label="Purchase Price"
+                                :value="$product->purchase_price ? $formatter->money($product->purchase_price) : '—'"
+                            />
+                        @endcosts
                         <x-signals.stat-card
                             color="amber"
                             label="Replacement Charge"

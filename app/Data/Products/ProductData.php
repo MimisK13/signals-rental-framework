@@ -4,6 +4,7 @@ namespace App\Data\Products;
 
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
+use App\Data\Concerns\StripsCostFields;
 use App\Data\Rates\ProductRateData;
 use App\Enums\AllowedStockType;
 use App\Enums\ProductType;
@@ -18,6 +19,13 @@ use Spatie\LaravelData\Data;
 class ProductData extends Data
 {
     use FormatsTimestamps;
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['purchase_price'];
+    }
 
     /**
      * @param  list<string>  $tag_list

@@ -10,6 +10,7 @@ use App\Enums\ProductType;
 use App\Enums\StockMethod;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasAttachments;
+use App\Models\Traits\HasCostVisibility;
 use App\Models\Traits\HasCustomFields;
 use App\Services\SchemaBuilder;
 use Database\Factories\ProductFactory;
@@ -40,7 +41,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Product extends Model implements HasSchema
 {
     /** @use HasFactory<ProductFactory> */
-    use FormatsMoney, HasAttachments, HasCustomFields, HasFactory, SoftDeletes;
+    use FormatsMoney, HasAttachments, HasCostVisibility, HasCustomFields, HasFactory, SoftDeletes;
+
+    /** @var list<string> */
+    protected array $costColumns = ['purchase_price'];
 
     /** @var list<string> */
     protected $fillable = [

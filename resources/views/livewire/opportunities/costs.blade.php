@@ -54,7 +54,9 @@ new #[Layout('components.layouts.app')] class extends Component
                             <th>Description</th>
                             <th>Cost Type</th>
                             <th>Transaction Type</th>
-                            <th class="text-right">Amount</th>
+                            @costs
+                                <th class="text-right">Amount</th>
+                            @endcosts
                             <th class="text-right">Qty</th>
                             <th>Optional</th>
                         </tr>
@@ -72,7 +74,9 @@ new #[Layout('components.layouts.app')] class extends Component
                                 </td>
                                 <td>{{ $cost->cost_type->label() }}</td>
                                 <td>{{ $cost->transaction_type->label() }}</td>
-                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($cost->amount ?? 0) }}</td>
+                                @costs
+                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($cost->amount ?? 0) }}</td>
+                                @endcosts
                                 <td class="text-right" style="font-family: var(--font-mono);">{{ rtrim(rtrim(number_format((float) $cost->quantity, 2), '0'), '.') }}</td>
                                 <td>
                                     @if($cost->is_optional)

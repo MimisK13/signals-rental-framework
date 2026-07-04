@@ -17,6 +17,7 @@ use App\Models\ProductTaxClass;
 use App\Models\RevenueGroup;
 use App\Models\TaxCategory;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use App\Services\Api\RansackFilter;
 use Livewire\Attributes\Computed;
@@ -257,6 +258,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             'custom_fields' => $this->customFieldValues,
         ];
 
+        if (! Gate::check('costs.view')) {
+            unset($payload['purchase_price']);
+        }
+
         try {
             if ($this->productId) {
                 $product = Product::findOrFail($this->productId);
@@ -452,7 +457,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <flux:input wire:model.number="subRentalPrice" label="Sub-Rental Price" type="number" min="0" />
                             </div>
                             <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                                <flux:input wire:model.number="purchasePrice" label="Purchase Price" type="number" min="0" />
+                                @costs
+                                    <flux:input wire:model.number="purchasePrice" label="Purchase Price" type="number" min="0" />
+                                @endcosts
                                 <flux:input wire:model="bufferPercent" label="Buffer %" type="number" step="any" min="0" max="100" />
                             </div>
                             <flux:input wire:model.number="postRentUnavailability" label="Post-Rent Unavailability (days)" type="number" min="0" />
