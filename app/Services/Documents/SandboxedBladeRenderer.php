@@ -54,7 +54,9 @@ class SandboxedBladeRenderer
                 'message' => $exception->getMessage(),
             ]);
 
-            throw DocumentRenderException::compilationFailed();
+            throw DocumentRenderException::renderFailed(
+                DocumentRenderErrorSanitizer::sanitize($exception),
+            );
         }
     }
 

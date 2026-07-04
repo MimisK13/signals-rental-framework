@@ -103,7 +103,7 @@ new class extends Component
     }
 }; ?>
 
-<div>
+<div class="app-notifications-mount">
     @auth
         @if($member)
             <aside
@@ -163,7 +163,7 @@ new class extends Component
                     @endforelse
                 </div>
 
-                <div class="border-t border-[var(--border-subtle)] px-4 py-2">
+                <div class="app-notifications-footer border-t border-[var(--border-subtle)] px-4 py-2">
                     <a href="{{ route('settings.notifications') }}" wire:navigate class="text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)]">
                         {{ __('Notification preferences') }}
                     </a>

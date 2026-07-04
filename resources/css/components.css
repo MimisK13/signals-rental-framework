@@ -2543,7 +2543,7 @@
 /*  77. MODAL                                                        */
 /* ================================================================ */
 
-.s-modal-backdrop { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.s-modal-backdrop { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 24px; }
 .dark .s-modal-backdrop { background: rgba(0, 0, 0, 0.6); }
 .s-modal { background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--s-shadow-xl); display: flex; flex-direction: column; max-height: calc(100vh - 48px); overflow: hidden; }
 .s-modal-sm { width: 400px; }

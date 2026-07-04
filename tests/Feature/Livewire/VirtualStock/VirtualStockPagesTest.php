@@ -25,7 +25,8 @@ it('renders the virtual stock index page', function () {
         ->assertOk();
 
     Volt::test('virtual-stock.index')
-        ->assertSee('Virtual Stock');
+        ->assertSee('Virtual Stock')
+        ->assertSee('Catalogue');
 });
 
 it('renders the virtual stock show page', function () {

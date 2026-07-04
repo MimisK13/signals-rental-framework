@@ -10,7 +10,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.app')] #[Title('My Notifications')] class extends Component
+new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends Component
 {
     /** @var array<int, array{channels: list<string>, is_muted: bool}> */
     public array $preferences = [];
@@ -83,16 +83,13 @@ new #[Layout('components.layouts.app')] #[Title('My Notifications')] class exten
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="My Notifications" description="Choose how you receive alerts. You can only disable channels your organisation has enabled." />
-
-    <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
-        <form wire:submit="save" class="space-y-6">
+    <x-settings.layout
+        heading="Notifications"
+        subheading="Choose how you receive alerts. You can only disable channels your organisation has enabled."
+    >
+        <form wire:submit="save" class="space-y-8">
             @forelse($catalog as $category => $rows)
-                <x-signals.card>
-                    <x-slot:header>
-                        <h2 class="text-[13px] font-semibold text-[var(--text-primary)]">{{ $category }}</h2>
-                    </x-slot:header>
-
+                <x-signals.form-section :title="$category">
                     <div class="divide-y divide-[var(--border-subtle)]">
                         @foreach($rows as $row)
                             @php
@@ -107,12 +104,17 @@ new #[Layout('components.layouts.app')] #[Title('My Notifications')] class exten
                                             <p class="mt-0.5 text-[11px] text-[var(--text-muted)]">{{ $type->description }}</p>
                                         @endif
                                     </div>
-                                    <label class="flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
+                                    <label
+                                        class="flex cursor-pointer items-center gap-2 text-[11px] text-[var(--text-muted)]"
+                                        x-data="{ checked: @js($preferences[$typeId]['is_muted'] ?? false) }"
+                                    >
                                         <input
                                             type="checkbox"
-                                            class="rounded border-[var(--border-subtle)]"
+                                            class="hidden"
                                             wire:model.live="preferences.{{ $typeId }}.is_muted"
+                                            x-on:change="checked = $el.checked"
                                         />
+                                        <x-signals.checkbox x-bind:class="checked && 'checked'" />
                                         {{ __('Mute') }}
                                     </label>
                                 </div>
@@ -120,13 +122,19 @@ new #[Layout('components.layouts.app')] #[Title('My Notifications')] class exten
                                 @if(! ($preferences[$typeId]['is_muted'] ?? false))
                                     <div class="mt-3 flex flex-wrap gap-4">
                                         @foreach($row['tenant_channels'] as $channel)
-                                            <label wire:key="pref-{{ $typeId }}-{{ $channel }}" class="flex items-center gap-2 text-[12px]">
+                                            <label
+                                                wire:key="pref-{{ $typeId }}-{{ $channel }}"
+                                                class="flex cursor-pointer items-center gap-2 text-[12px]"
+                                                x-data="{ checked: @js(in_array($channel, $preferences[$typeId]['channels'] ?? [], true)) }"
+                                            >
                                                 <input
                                                     type="checkbox"
-                                                    class="rounded border-[var(--border-subtle)]"
+                                                    class="hidden"
                                                     value="{{ $channel }}"
                                                     wire:model="preferences.{{ $typeId }}.channels"
+                                                    x-on:change="checked = $el.checked"
                                                 />
+                                                <x-signals.checkbox x-bind:class="checked && 'checked'" />
                                                 {{ $channelLabels[$channel] ?? ucfirst($channel) }}
                                             </label>
                                         @endforeach
@@ -135,21 +143,21 @@ new #[Layout('components.layouts.app')] #[Title('My Notifications')] class exten
                             </div>
                         @endforeach
                     </div>
-                </x-signals.card>
+                </x-signals.form-section>
             @empty
-                <x-signals.card>
+                <x-signals.form-section title="Preferences">
                     <p class="text-[12px] text-[var(--text-muted)]">{{ __('No configurable notification types are available.') }}</p>
-                </x-signals.card>
+                </x-signals.form-section>
             @endforelse
 
             @if($catalog->isNotEmpty())
-                <div class="flex justify-end">
-                    <button type="submit" class="s-btn s-btn-primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="save">{{ __('Save preferences') }}</span>
+                <div class="flex items-center gap-4">
+                    <flux:button variant="primary" type="submit" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="save">{{ __('Save') }}</span>
                         <span wire:loading wire:target="save">{{ __('Saving…') }}</span>
-                    </button>
+                    </flux:button>
                 </div>
             @endif
         </form>
-    </div>
+    </x-settings.layout>
 </section>

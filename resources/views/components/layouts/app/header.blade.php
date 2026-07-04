@@ -159,13 +159,13 @@
 
                 {{-- Resources mega dropdown --}}
                 <div class="nav-dropdown-wrapper">
-                    <button class="header-nav-item {{ ActiveRoute::is('products.*', 'product-groups.*', 'stock-levels.*', 'containers.*') ? 'active' : '' }}" type="button">
+                    <button class="header-nav-item {{ ActiveRoute::is('products.*', 'product-groups.*', 'stock-levels.*', 'virtual-stock.*') ? 'active' : '' }}" type="button">
                         Resources
                         <svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
                     </button>
                     <div class="mega-dropdown mega-dropdown-cols-2">
                         <div class="mega-grid grid gap-x-8 gap-y-5">
-                            @canany(['products.access', 'stock.access'])
+                            @canany(['products.access', 'stock.access', 'virtual_stock.access'])
                             <div>
                                 <div class="mega-group-label">Catalogue</div>
                                 @can('products.access')
@@ -193,12 +193,12 @@
                                     </div>
                                 </a>
                                 @endcan
-                                @can('viewAny', App\Models\Container::class)
-                                <a href="{{ route('containers.index') }}" class="mega-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}" wire:navigate>
-                                    <flux:icon.cube-transparent class="mega-item-icon" />
+                                @can('viewAny', App\Models\VirtualStockIntake::class)
+                                <a href="{{ route('virtual-stock.index') }}" class="mega-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}" wire:navigate>
+                                    <flux:icon.arrow-down-circle class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
-                                        <span class="mega-item-label">Containers</span>
-                                        <span class="mega-item-desc">Cases, flightcases &amp; kits</span>
+                                        <span class="mega-item-label">Virtual Stock</span>
+                                        <span class="mega-item-desc">Sub-hire supply windows</span>
                                     </div>
                                 </a>
                                 @endcan
@@ -251,21 +251,21 @@
                                         <span class="mega-item-desc">Issue &amp; track invoices</span>
                                     </div>
                                 </a>
-                                @endcan
-                                <a href="#" class="mega-item">
+                                <a href="{{ route('credit-notes.index') }}" class="mega-item {{ ActiveRoute::is('credit-notes.*') ? 'active' : '' }}" wire:navigate>
                                     <flux:icon.receipt-refund class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Credit Notes</span>
                                         <span class="mega-item-desc">Refunds &amp; adjustments</span>
                                     </div>
                                 </a>
-                                <a href="#" class="mega-item">
+                                <a href="{{ route('payments.index') }}" class="mega-item {{ ActiveRoute::is('payments.*') ? 'active' : '' }}" wire:navigate>
                                     <flux:icon.banknotes class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Payments</span>
                                         <span class="mega-item-desc">Receipts &amp; reconciliation</span>
                                     </div>
                                 </a>
+                                @endcan
                             </div>
                             <div>
                                 <div class="mega-group-label">Purchasing</div>
@@ -275,15 +275,6 @@
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Purchase Orders</span>
                                         <span class="mega-item-desc">Supplier orders &amp; procurement</span>
-                                    </div>
-                                </a>
-                                @endcan
-                                @can('viewAny', App\Models\VirtualStockIntake::class)
-                                <a href="{{ route('virtual-stock.index') }}" class="mega-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}" wire:navigate>
-                                    <flux:icon.arrow-down-circle class="mega-item-icon" />
-                                    <div class="flex flex-col gap-px">
-                                        <span class="mega-item-label">Virtual Stock</span>
-                                        <span class="mega-item-desc">Sub-hire supply windows</span>
                                     </div>
                                 </a>
                                 @endcan
@@ -448,10 +439,6 @@
                                 <flux:icon.cog-6-tooth class="mega-item-icon" />
                                 <span class="mega-item-label">Settings</span>
                             </a>
-                            <a href="{{ route('settings.notifications') }}" class="mega-item" wire:navigate>
-                                <flux:icon.bell class="mega-item-icon" />
-                                <span class="mega-item-label">My Notifications</span>
-                            </a>
                             @if(auth()->user()?->hasAdminAccess())
                                 <a href="{{ route('admin.index') }}" class="mega-item" wire:navigate>
                                     <flux:icon.wrench-screwdriver class="mega-item-icon" />
@@ -521,6 +508,11 @@
                 @can('tax-classes.view')
                     <a class="sidebar-item {{ ActiveRoute::is('admin.settings.tax.*') ? 'active' : '' }}" href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate x-on:click="mobileNav = false">
                         <flux:icon.receipt-percent class="!size-[15px]" /> Tax
+                    </a>
+                @endcan
+                @can('document_templates.view')
+                    <a class="sidebar-item {{ ActiveRoute::is('admin.document-templates*') ? 'active' : '' }}" href="{{ route('admin.document-templates.index') }}" wire:navigate x-on:click="mobileNav = false">
+                        <flux:icon.document-text class="!size-[15px]" /> Documents
                     </a>
                 @endcan
                 @can('rates.view')
@@ -594,7 +586,7 @@
                     <flux:icon.folder class="!size-[15px]" /> Projects
                 </a>
 
-                @canany(['products.access', 'stock.access'])
+                @canany(['products.access', 'stock.access', 'virtual_stock.access'])
                     <div class="sidebar-group-label">Catalogue</div>
                     @can('products.access')
                         <a class="sidebar-item {{ ActiveRoute::is('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}" wire:navigate x-on:click="mobileNav = false">
@@ -609,14 +601,14 @@
                             <flux:icon.archive-box class="!size-[15px]" /> Stock Levels
                         </a>
                     @endcan
-                    @can('viewAny', App\Models\Container::class)
-                        <a class="sidebar-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}" href="{{ route('containers.index') }}" wire:navigate x-on:click="mobileNav = false">
-                            <flux:icon.cube-transparent class="!size-[15px]" /> Containers
+                    @can('viewAny', App\Models\VirtualStockIntake::class)
+                        <a class="sidebar-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}" href="{{ route('virtual-stock.index') }}" wire:navigate x-on:click="mobileNav = false">
+                            <flux:icon.arrow-down-circle class="!size-[15px]" /> Virtual Stock
                         </a>
                     @endcan
                 @endcanany
 
-                {{-- Services / Finance / Operations placeholders (ungated until modules ship). --}}
+                {{-- Services placeholders (ungated until modules ship). --}}
                 <div class="sidebar-group-label">Services</div>
                 <a class="sidebar-item" href="#">
                     <flux:icon.users class="!size-[15px]" /> Crew
@@ -633,23 +625,18 @@
                 <a class="sidebar-item {{ ActiveRoute::is('invoices.*') ? 'active' : '' }}" href="{{ route('invoices.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.document-currency-pound class="!size-[15px]" /> Invoices
                 </a>
-                @endcan
-                <a class="sidebar-item" href="#">
+                <a class="sidebar-item {{ ActiveRoute::is('credit-notes.*') ? 'active' : '' }}" href="{{ route('credit-notes.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.receipt-refund class="!size-[15px]" /> Credit Notes
                 </a>
-                <a class="sidebar-item" href="#">
+                <a class="sidebar-item {{ ActiveRoute::is('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.banknotes class="!size-[15px]" /> Payments
                 </a>
+                @endcan
 
                 @can('viewAny', App\Models\PurchaseOrder::class)
                 <div class="sidebar-group-label">Purchasing</div>
                 <a class="sidebar-item {{ ActiveRoute::is('purchase-orders.*') ? 'active' : '' }}" href="{{ route('purchase-orders.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.shopping-cart class="!size-[15px]" /> Purchase Orders
-                </a>
-                @endcan
-                @can('viewAny', App\Models\VirtualStockIntake::class)
-                <a class="sidebar-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}" href="{{ route('virtual-stock.index') }}" wire:navigate x-on:click="mobileNav = false">
-                    <flux:icon.arrow-down-circle class="!size-[15px]" /> Virtual Stock
                 </a>
                 @endcan
 
@@ -747,6 +734,13 @@
                         <a class="sidebar-item {{ ActiveRoute::is('admin.settings.tax.*') ? 'active' : '' }}" href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate>
                             <flux:icon.receipt-percent class="!size-[15px]" />
                             <span class="sidebar-label" x-show="sidebarOpen" x-cloak>Tax</span>
+                        </a>
+                    @endcan
+
+                    @can('document_templates.view')
+                        <a class="sidebar-item {{ ActiveRoute::is('admin.document-templates*') ? 'active' : '' }}" href="{{ route('admin.document-templates.index') }}" wire:navigate>
+                            <flux:icon.document-text class="!size-[15px]" />
+                            <span class="sidebar-label" x-show="sidebarOpen" x-cloak>Documents</span>
                         </a>
                     @endcan
 
@@ -896,7 +890,10 @@
             // `signals:toast` DOM event and renders auto-dismissing, click-to-dismiss
             // toasts. Using a DOM event (auto-cleaned by Alpine) means re-mounting this
             // component never accumulates duplicate listeners.
-            document.addEventListener('alpine:init', () => {
+            function registerSignalsToasts() {
+                if (window.__signalsToastsRegistered) { return; }
+                window.__signalsToastsRegistered = true;
+
                 Alpine.data('signalsToasts', () => ({
                     toasts: [],
                     _seq: 0,
@@ -947,7 +944,13 @@
                         }, 260);
                     },
                 }));
-            });
+            }
+
+            if (window.Alpine) {
+                registerSignalsToasts();
+            } else {
+                document.addEventListener('alpine:init', registerSignalsToasts);
+            }
         </script>
 
         @fluxScripts

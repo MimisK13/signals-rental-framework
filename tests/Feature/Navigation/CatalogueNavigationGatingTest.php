@@ -136,6 +136,78 @@ describe('Stock Levels nav gating on stock.access', function () use ($productsNa
 
 /*
 |--------------------------------------------------------------------------
+| Virtual Stock nav (Resources > Catalogue)
+|--------------------------------------------------------------------------
+|
+| Virtual Stock lives in the Catalogue column, gated on viewAny for
+| VirtualStockIntake (virtual_stock.view). The Catalogue group wrapper
+| also includes virtual_stock.access so virtual-stock-only users see the
+| group label without products/stock permissions.
+|
+*/
+
+$virtualStockNav = 'Sub-hire supply windows';
+
+describe('Virtual Stock nav gating in Catalogue', function () use ($virtualStockNav) {
+    it('shows the Virtual Stock link to a user with virtual_stock.view', function () use ($virtualStockNav) {
+        $user = User::factory()->create();
+        $user->givePermissionTo(['virtual_stock.access', 'virtual_stock.view']);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('virtual-stock.index'), false)
+            ->assertSee($virtualStockNav, false);
+    });
+
+    it('hides the Virtual Stock link from a user without virtual_stock.view', function () use ($virtualStockNav) {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee(route('virtual-stock.index'), false)
+            ->assertDontSee($virtualStockNav, false);
+    });
+
+    it('surfaces Virtual Stock in desktop and mobile catalogue nav', function () use ($virtualStockNav) {
+        $user = User::factory()->create();
+        $user->givePermissionTo(['virtual_stock.access', 'virtual_stock.view']);
+
+        $html = $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->getContent();
+
+        expect(substr_count($html, route('virtual-stock.index')))->toBe(2)
+            ->and(substr_count($html, $virtualStockNav))->toBe(1);
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Resources catalogue nav — containers live under Operations/Warehouse only
+|--------------------------------------------------------------------------
+*/
+
+describe('Resources catalogue nav excludes containers', function () {
+    $containersNav = 'Cases, flightcases &amp; kits';
+
+    it('does not duplicate containers inside the resources catalogue group', function () use ($containersNav) {
+        $user = User::factory()->owner()->create();
+
+        $html = $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->getContent();
+
+        expect(substr_count($html, route('containers.index')))->toBe(2)
+            ->and(substr_count($html, $containersNav))->toBe(1);
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
 | Tax admin nav link (gated on tax-classes.view)
 |--------------------------------------------------------------------------
 |

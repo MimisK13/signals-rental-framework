@@ -1,5 +1,5 @@
 import { EditorState, Compartment } from '@codemirror/state';
-import { EditorView, keymap, lineNumbers } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
@@ -24,7 +24,7 @@ function lightTheme() {
     return EditorView.theme({
         '&': {
             height: '100%',
-            fontSize: '12px',
+            fontSize: '11px',
             fontFamily: 'var(--font-mono, ui-monospace, monospace)',
             backgroundColor: 'var(--base, #ffffff)',
             color: 'var(--text-primary, #111827)',
@@ -39,15 +39,26 @@ function lightTheme() {
         },
         '.cm-gutters': {
             backgroundColor: 'var(--card-bg, #f9fafb)',
-            color: 'var(--text-muted, #6b7280)',
             border: 'none',
             borderRight: '1px solid var(--card-border, #e5e7eb)',
+            minWidth: '48px',
+        },
+        '.cm-lineNumbers .cm-gutterElement': {
+            textAlign: 'right',
+            paddingRight: '12px',
+            fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+            fontSize: '10px',
+            lineHeight: '1.7',
+            color: 'var(--text-muted, #6b7280)',
         },
         '.cm-activeLineGutter': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+            color: 'var(--text-primary, #111827)',
+            fontWeight: '600',
         },
         '.cm-activeLine': {
-            backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            boxShadow: 'inset 0 -1px var(--card-border, rgba(0, 0, 0, 0.06))',
         },
         '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
             backgroundColor: 'rgba(59, 130, 246, 0.25) !important',
@@ -155,55 +166,72 @@ export default function createDocumentTemplateEditor(config) {
         cmReady: false,
 
         init() {
-            const host = this.$refs.cmHost;
-            if (!host) {
+            const mount = () => {
+                const host = this.$refs.cmHost;
+                if (!host || view !== null) {
+                    if (!host && view === null) {
+                        console.warn('[dt-editor] CodeMirror host ref missing — textarea fallback active');
+                    }
+
+                    return;
+                }
+
+                try {
+                    trackedTab = this.activeTab ?? 'body';
+                    view = new EditorView({
+                        state: EditorState.create({
+                            doc: contents[trackedTab] ?? '',
+                            extensions: [
+                                lineNumbers(),
+                                highlightActiveLine(),
+                                highlightActiveLineGutter(),
+                                history(),
+                                keymap.of([...defaultKeymap, ...historyKeymap]),
+                                languageCompartment.of(languageForTab(trackedTab)),
+                                syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+                                lightTheme(),
+                                updateListener(),
+                                EditorView.lineWrapping,
+                            ],
+                        }),
+                        parent: host,
+                    });
+                    this.cmReady = true;
+
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.on('document-template-editor-sync', () => {
+                            if (pendingWireSync) {
+                                clearTimeout(pendingWireSync);
+                            }
+
+                            pendingWireSync = setTimeout(() => {
+                                pendingWireSync = null;
+                                syncFromWire({
+                                    body: wire.bodyHtml,
+                                    header: wire.headerHtml,
+                                    footer: wire.footerHtml,
+                                    styles: wire.stylesCss,
+                                });
+                            }, 0);
+                        });
+                    }
+
+                    this.$watch('activeTab', (nextTab) => {
+                        switchTab(nextTab);
+                    });
+                } catch (error) {
+                    console.error('[dt-editor] CodeMirror mount failed', error);
+                    this.cmReady = false;
+                }
+            };
+
+            if (this.$refs.cmHost) {
+                mount();
+
                 return;
             }
 
-            try {
-                trackedTab = this.activeTab ?? 'body';
-                view = new EditorView({
-                    state: EditorState.create({
-                        doc: contents[trackedTab] ?? '',
-                        extensions: [
-                            lineNumbers(),
-                            history(),
-                            keymap.of([...defaultKeymap, ...historyKeymap]),
-                            languageCompartment.of(languageForTab(trackedTab)),
-                            syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-                            lightTheme(),
-                            updateListener(),
-                            EditorView.lineWrapping,
-                        ],
-                    }),
-                    parent: host,
-                });
-                this.cmReady = true;
-
-                if (typeof Livewire !== 'undefined') {
-                    Livewire.on('document-template-editor-sync', () => {
-                        if (pendingWireSync) {
-                            clearTimeout(pendingWireSync);
-                        }
-
-                        pendingWireSync = setTimeout(() => {
-                            pendingWireSync = null;
-                            syncFromWire({
-                                body: wire.bodyHtml,
-                                header: wire.headerHtml,
-                                footer: wire.footerHtml,
-                                styles: wire.stylesCss,
-                            });
-                        }, 0);
-                    });
-                }
-
-                this.$watch('activeTab', (nextTab) => {
-                    switchTab(nextTab);
-                });
-            } catch {
-                this.cmReady = false;
-            }
+            this.$nextTick(() => mount());
         },
 
         destroy() {
@@ -213,6 +241,26 @@ export default function createDocumentTemplateEditor(config) {
 
             view?.destroy();
             view = null;
+        },
+
+        insertAtCursor(snippet) {
+            if (!snippet) {
+                return;
+            }
+
+            if (view) {
+                const { from, to } = view.state.selection.main;
+                view.dispatch({
+                    changes: { from, to, insert: snippet },
+                    selection: { anchor: from + snippet.length },
+                });
+                view.focus();
+
+                return;
+            }
+
+            console.warn('[dt-editor] CodeMirror view unavailable — falling back to server insertSnippet');
+            wire?.call('insertSnippet', snippet);
         },
     };
 }

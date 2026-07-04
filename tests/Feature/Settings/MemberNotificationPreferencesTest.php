@@ -31,8 +31,16 @@ test('my notifications page renders for any authenticated user', function () {
     $this->actingAs($this->user)
         ->get(route('settings.notifications'))
         ->assertOk()
-        ->assertSee('My Notifications')
+        ->assertSee('Notifications')
+        ->assertSee('Choose how you receive alerts')
         ->assertSee($this->type->name);
+});
+
+test('avatar menu does not include a separate my notifications link', function () {
+    $this->actingAs($this->user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertDontSee('My Notifications', false);
 });
 
 test('member can save muted preference', function () {

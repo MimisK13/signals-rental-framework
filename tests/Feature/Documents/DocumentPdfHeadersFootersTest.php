@@ -3,6 +3,7 @@
 use App\Contracts\Documents\PdfDriver;
 use App\Services\Documents\Drivers\BrowsershotDriver;
 use App\Services\Documents\Drivers\DompdfDriver;
+use App\Services\Documents\PageDimensions;
 use App\Services\Documents\PdfPageLayout;
 use App\ValueObjects\Documents\PdfDocumentParts;
 use Illuminate\Support\Str;
@@ -185,7 +186,7 @@ describe('BrowsershotDriver header and footer templates', function () {
 
                 return $this->renderWithBrowsershot(
                     html: $this->wrapBodyHtml($html, $parts),
-                    pageSize: (string) ($pageConfig['page_size'] ?? 'A4'),
+                    paper: PageDimensions::browsershotPaper($pageConfig),
                     orientation: (string) ($pageConfig['page_orientation'] ?? 'portrait'),
                     margins: $margins,
                     headerTemplate: $hasHeader
@@ -198,11 +199,12 @@ describe('BrowsershotDriver header and footer templates', function () {
             }
 
             /**
+             * @param  array{format: ?string, width: ?float, height: ?float, unit: ?string}  $paper
              * @param  array{top: float, right: float, bottom: float, left: float}  $margins
              */
             protected function renderWithBrowsershot(
                 string $html,
-                string $pageSize,
+                array $paper,
                 string $orientation,
                 array $margins,
                 ?string $headerTemplate,
@@ -210,7 +212,7 @@ describe('BrowsershotDriver header and footer templates', function () {
             ): string {
                 self::$captured = compact(
                     'html',
-                    'pageSize',
+                    'paper',
                     'orientation',
                     'margins',
                     'headerTemplate',

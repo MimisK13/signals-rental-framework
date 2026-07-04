@@ -80,7 +80,7 @@ class DocumentRenderPipeline implements DocumentRenderer
             report($exception);
 
             return DocumentRenderResult::failure(
-                'Unable to render document template.',
+                DocumentRenderErrorSanitizer::sanitize($exception),
                 $format,
             );
         }

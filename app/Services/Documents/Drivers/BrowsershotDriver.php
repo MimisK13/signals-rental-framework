@@ -3,6 +3,7 @@
 namespace App\Services\Documents\Drivers;
 
 use App\Contracts\Documents\PdfDriver;
+use App\Services\Documents\PageDimensions;
 use App\Services\Documents\PdfPageLayout;
 use App\ValueObjects\Documents\PdfDocumentParts;
 use RuntimeException;
@@ -23,13 +24,13 @@ class BrowsershotDriver implements PdfDriver
             );
         }
 
-        $pageSize = (string) ($pageConfig['page_size'] ?? config('documents.defaults.page_size', 'A4'));
+        $paper = PageDimensions::browsershotPaper($pageConfig);
         $orientation = (string) ($pageConfig['page_orientation'] ?? config('documents.defaults.page_orientation', 'portrait'));
 
         if ($parts === null) {
             return $this->renderWithBrowsershot(
                 html: $html,
-                pageSize: $pageSize,
+                paper: $paper,
                 orientation: $orientation,
                 margins: PdfPageLayout::baseMargins($pageConfig),
                 headerTemplate: null,
@@ -43,7 +44,7 @@ class BrowsershotDriver implements PdfDriver
 
         return $this->renderWithBrowsershot(
             html: $this->wrapBodyHtml($html, $parts),
-            pageSize: $pageSize,
+            paper: $paper,
             orientation: $orientation,
             margins: $margins,
             headerTemplate: $hasHeader
@@ -56,11 +57,12 @@ class BrowsershotDriver implements PdfDriver
     }
 
     /**
+     * @param  array{format: ?string, width: ?float, height: ?float, unit: ?string}  $paper
      * @param  array{top: float, right: float, bottom: float, left: float}  $margins
      */
     protected function renderWithBrowsershot(
         string $html,
-        string $pageSize,
+        array $paper,
         string $orientation,
         array $margins,
         ?string $headerTemplate,
@@ -68,9 +70,19 @@ class BrowsershotDriver implements PdfDriver
     ): string {
         $browsershotClass = 'Spatie\Browsershot\Browsershot';
 
-        $shot = $browsershotClass::html($html)
-            ->format($pageSize)
-            ->landscape($orientation === 'landscape')
+        $shot = $browsershotClass::html($html);
+
+        if ($paper['format'] !== null) {
+            $shot = $shot->format($paper['format']);
+        } else {
+            $shot = $shot->paperSize(
+                (float) $paper['width'],
+                (float) $paper['height'],
+                (string) $paper['unit'],
+            );
+        }
+
+        $shot = $shot->landscape($orientation === 'landscape')
             ->margins(
                 $margins['top'],
                 $margins['right'],

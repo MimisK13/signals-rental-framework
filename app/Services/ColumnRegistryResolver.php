@@ -10,6 +10,7 @@ use App\Views\ContainerColumnRegistry;
 use App\Views\CreditNoteColumnRegistry;
 use App\Views\DocumentTemplateColumnRegistry;
 use App\Views\InvoiceColumnRegistry;
+use App\Views\InvoicePaymentColumnRegistry;
 use App\Views\MemberColumnRegistry;
 use App\Views\OpportunityColumnRegistry;
 use App\Views\OpportunityCostColumnRegistry;
@@ -53,6 +54,7 @@ class ColumnRegistryResolver
         'shortage_resolutions' => ShortageResolutionColumnRegistry::class,
         'invoices' => InvoiceColumnRegistry::class,
         'credit_notes' => CreditNoteColumnRegistry::class,
+        'invoice_payments' => InvoicePaymentColumnRegistry::class,
         'purchase_orders' => PurchaseOrderColumnRegistry::class,
         'virtual_stock_intakes' => VirtualStockIntakeColumnRegistry::class,
         'document_templates' => DocumentTemplateColumnRegistry::class,

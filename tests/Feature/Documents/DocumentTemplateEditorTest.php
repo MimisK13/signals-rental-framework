@@ -40,8 +40,8 @@ beforeEach(function () {
 it('renders the document template editor with three panels', function () {
     $this->get(route('admin.document-templates.edit', $this->template))
         ->assertOk()
-        ->assertSee('Field browser')
-        ->assertSee('Live preview')
+        ->assertSee('Available fields')
+        ->assertSee('Preview')
         ->assertSee('data-testid="codemirror-host"', false);
 });
 

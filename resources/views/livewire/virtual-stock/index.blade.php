@@ -70,7 +70,7 @@ new #[Layout('components.layouts.app')] #[Title('Virtual Stock')] class extends 
 <section class="w-full">
     <x-signals.page-header title="Virtual Stock">
         <x-slot:meta>
-            <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Finance</span>
+            <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Catalogue</span>
         </x-slot:meta>
     </x-signals.page-header>
 

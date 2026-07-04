@@ -3,6 +3,7 @@
 namespace App\Services\Documents\Drivers;
 
 use App\Contracts\Documents\PdfDriver;
+use App\Services\Documents\PageDimensions;
 use App\Services\Documents\PdfPageLayout;
 use App\ValueObjects\Documents\PdfDocumentParts;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -26,11 +27,10 @@ class DompdfDriver implements PdfDriver
      */
     protected function renderPdfFromHtml(string $html, array $pageConfig): string
     {
-        $pageSize = (string) ($pageConfig['page_size'] ?? config('documents.defaults.page_size', 'A4'));
-        $orientation = (string) ($pageConfig['page_orientation'] ?? config('documents.defaults.page_orientation', 'portrait'));
+        [$paper, $orientation] = PageDimensions::dompdfPaper($pageConfig);
 
         return Pdf::loadHTML($html)
-            ->setPaper($pageSize, $orientation)
+            ->setPaper($paper, $orientation)
             ->output();
     }
 

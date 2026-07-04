@@ -6,6 +6,7 @@ use App\Contracts\HasSchema;
 use App\Models\Traits\FormatsMoney;
 use App\Services\SchemaBuilder;
 use Database\Factories\CreditNoteFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -83,6 +84,36 @@ class CreditNote extends Model implements HasSchema
     public function creditAmount(): int
     {
         return abs($this->total);
+    }
+
+    /**
+     * @param  Builder<CreditNote>  $query
+     * @return Builder<CreditNote>
+     */
+    public function scopeOfStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * @param  Builder<CreditNote>  $query
+     * @return Builder<CreditNote>
+     */
+    public function scopeForAccessibleStores(Builder $query): Builder
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return $query;
+        }
+
+        $storeIds = $user->accessibleStoreIds();
+
+        if ($storeIds === null) {
+            return $query;
+        }
+
+        return $query->whereHas('invoice', fn (Builder $invoiceQuery) => $invoiceQuery->whereIn('store_id', $storeIds));
     }
 
     /**

@@ -27,4 +27,9 @@ class DocumentRenderException extends RuntimeException
 
         return new self($message);
     }
+
+    public static function renderFailed(string $sanitizedMessage): self
+    {
+        return new self($sanitizedMessage);
+    }
 }

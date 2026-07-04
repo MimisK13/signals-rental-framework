@@ -7,6 +7,7 @@ use App\Enums\PaymentMethod;
 use App\Models\Traits\FormatsMoney;
 use App\Services\SchemaBuilder;
 use Database\Factories\InvoicePaymentFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,32 @@ class InvoicePayment extends Model implements HasSchema
     public function paymentMethodEnum(): PaymentMethod
     {
         return PaymentMethod::from($this->payment_method);
+    }
+
+    public function isRefund(): bool
+    {
+        return $this->amount < 0;
+    }
+
+    /**
+     * @param  Builder<InvoicePayment>  $query
+     * @return Builder<InvoicePayment>
+     */
+    public function scopeForAccessibleStores(Builder $query): Builder
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return $query;
+        }
+
+        $storeIds = $user->accessibleStoreIds();
+
+        if ($storeIds === null) {
+            return $query;
+        }
+
+        return $query->whereHas('invoice', fn (Builder $invoiceQuery) => $invoiceQuery->whereIn('store_id', $storeIds));
     }
 
     /**
