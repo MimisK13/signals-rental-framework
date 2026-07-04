@@ -3,6 +3,8 @@
 use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\DocumentTemplateVersion;
+use App\Models\Member;
+use App\Models\MemberStore;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\DocumentTemplateSeeder;
@@ -106,4 +108,112 @@ it('shows sandbox render errors inline instead of failing the request', function
         ->call('refreshPreview')
         ->assertSet('previewHtml', '')
         ->assertSet('previewError', fn (string $error): bool => str_contains($error, 'Scope resolution'));
+});
+
+it('shows a diff between a historical version and the saved template body', function () {
+    $originalBody = $this->template->body_html;
+
+    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+        ->set('bodyHtml', "<p>Updated body</p>\n<p>Second line</p>")
+        ->call('save');
+
+    $version = DocumentTemplateVersion::query()
+        ->where('document_template_id', $this->template->id)
+        ->where('body_html', $originalBody)
+        ->firstOrFail();
+
+    Volt::test('document-templates.edit', ['documentTemplate' => $this->template->fresh()])
+        ->call('showDiff', $version->id)
+        ->assertSet('showDiffPanel', true)
+        ->assertSet('diffLeftLabel', 'Version '.$version->version)
+        ->assertSet('diffRightLabel', 'Saved version (v'.$this->template->fresh()->version.')')
+        ->assertSet('diffOps', fn (array $ops): bool => collect($ops)->contains(
+            fn (array $op): bool => $op['type'] === 'insert'
+                && str_contains(implode("\n", $op['lines']), 'Updated body'),
+        ))
+        ->assertSee('data-testid="version-diff-panel"', false);
+});
+
+it('shows a diff between two historical versions', function () {
+    DocumentTemplateVersion::factory()->create([
+        'document_template_id' => $this->template->id,
+        'version' => 10,
+        'body_html' => "alpha\nbeta",
+    ]);
+
+    DocumentTemplateVersion::factory()->create([
+        'document_template_id' => $this->template->id,
+        'version' => 11,
+        'body_html' => "alpha\ndelta",
+    ]);
+
+    $left = DocumentTemplateVersion::query()
+        ->where('document_template_id', $this->template->id)
+        ->where('version', 10)
+        ->firstOrFail();
+
+    $right = DocumentTemplateVersion::query()
+        ->where('document_template_id', $this->template->id)
+        ->where('version', 11)
+        ->firstOrFail();
+
+    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+        ->call('showDiffBetween', $left->id, $right->id)
+        ->assertSet('showDiffPanel', true)
+        ->assertSet('diffOps', [
+            ['type' => 'equal', 'lines' => ['alpha']],
+            ['type' => 'delete', 'lines' => ['beta']],
+            ['type' => 'insert', 'lines' => ['delta']],
+        ]);
+});
+
+it('forbids version diff for users without template edit permission', function () {
+    $member = Member::factory()->create();
+    $viewer = User::factory()->create([
+        'member_id' => $member->id,
+        'is_owner' => false,
+        'is_active' => true,
+    ]);
+    $viewer->givePermissionTo('document_templates.view');
+    MemberStore::create([
+        'member_id' => $member->id,
+        'store_id' => $this->store->id,
+        'created_at' => now(),
+    ]);
+    $this->actingAs($viewer);
+
+    $version = DocumentTemplateVersion::factory()->create([
+        'document_template_id' => $this->template->id,
+        'version' => 1,
+        'body_html' => '<p>Older body</p>',
+    ]);
+
+    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+        ->call('showDiff', $version->id)
+        ->assertForbidden();
+});
+
+it('escapes xss-like template content in the rendered diff panel', function () {
+    $malicious = '<p>UNIQUE_XSS_MARKER_12345</p>';
+
+    DocumentTemplateVersion::factory()->create([
+        'document_template_id' => $this->template->id,
+        'version' => 1,
+        'body_html' => $malicious,
+    ]);
+
+    $version = DocumentTemplateVersion::query()
+        ->where('document_template_id', $this->template->id)
+        ->where('body_html', $malicious)
+        ->firstOrFail();
+
+    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+        ->call('showDiff', $version->id)
+        ->assertSet('diffOps', fn (array $ops): bool => collect($ops)->contains(
+            fn (array $op): bool => $op['type'] === 'delete'
+                && in_array($malicious, $op['lines'], true),
+        ))
+        ->assertSeeText('UNIQUE_XSS_MARKER_12345', false)
+        ->assertSeeHtml(e($malicious))
+        ->assertDontSeeHtml($malicious);
 });

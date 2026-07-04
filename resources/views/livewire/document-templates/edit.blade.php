@@ -14,6 +14,7 @@ use App\Models\Opportunity;
 use App\Services\Documents\DocumentFieldSnippetBuilder;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentSampleData;
+use App\Services\Documents\TemplateLineDiff;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -73,6 +74,19 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
 
     /** @var Collection<int, DocumentTemplateVersion> */
     public Collection $versions;
+
+    public bool $showDiffPanel = false;
+
+    public ?int $diffLeftVersionId = null;
+
+    public ?int $diffRightVersionId = null;
+
+    public string $diffLeftLabel = '';
+
+    public string $diffRightLabel = '';
+
+    /** @var list<array{type: string, lines: list<string>, count?: int}> */
+    public array $diffOps = [];
 
     /** @var list<array{name: string, fields: list<array<string, mixed>>}> */
     public array $fieldTree = [];
@@ -228,6 +242,52 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
         $this->dispatch('document-template-settings-saved');
     }
 
+    public function showDiff(int $versionId): void
+    {
+        Gate::authorize('update', $this->template);
+
+        $version = $this->findOwnedVersion($versionId);
+        $this->template->refresh();
+
+        $this->diffLeftLabel = 'Version '.$version->version;
+        $this->diffRightLabel = 'Saved version (v'.$this->template->version.')';
+        $this->diffLeftVersionId = $version->id;
+        $this->diffRightVersionId = null;
+        $this->diffOps = app(TemplateLineDiff::class)->diff(
+            (string) $version->body_html,
+            (string) $this->template->body_html,
+        );
+        $this->showDiffPanel = true;
+    }
+
+    public function showDiffBetween(int $leftVersionId, int $rightVersionId): void
+    {
+        Gate::authorize('update', $this->template);
+
+        $left = $this->findOwnedVersion($leftVersionId);
+        $right = $this->findOwnedVersion($rightVersionId);
+
+        $this->diffLeftLabel = 'Version '.$left->version;
+        $this->diffRightLabel = 'Version '.$right->version;
+        $this->diffLeftVersionId = $left->id;
+        $this->diffRightVersionId = $right->id;
+        $this->diffOps = app(TemplateLineDiff::class)->diff(
+            (string) $left->body_html,
+            (string) $right->body_html,
+        );
+        $this->showDiffPanel = true;
+    }
+
+    public function closeDiff(): void
+    {
+        $this->showDiffPanel = false;
+        $this->diffOps = [];
+        $this->diffLeftLabel = '';
+        $this->diffRightLabel = '';
+        $this->diffLeftVersionId = null;
+        $this->diffRightVersionId = null;
+    }
+
     public function restoreVersion(int $versionId): void
     {
         $version = DocumentTemplateVersion::query()->findOrFail($versionId);
@@ -319,6 +379,17 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
         }
 
         return $filtered;
+    }
+
+    private function findOwnedVersion(int $versionId): DocumentTemplateVersion
+    {
+        $version = DocumentTemplateVersion::query()->findOrFail($versionId);
+
+        if ($version->document_template_id !== $this->template->id) {
+            abort(404);
+        }
+
+        return $version;
     }
 
     private function insertIntoActiveTab(string $snippet): void
@@ -414,6 +485,18 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
     .dt-settings-panel { position: fixed; inset: 0 0 0 auto; width: min(420px, 100vw); background: var(--card-bg); border-left: 1px solid var(--card-border); z-index: 50; overflow: auto; padding: 16px; box-shadow: -8px 0 24px rgba(0,0,0,0.12); }
     .dt-settings-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 40; }
     .dt-versions { margin-top: 16px; border-top: 1px solid var(--card-border); padding-top: 12px; }
+    .dt-diff-panel { margin-top: 12px; border: 1px solid var(--card-border); border-radius: 4px; background: var(--base); overflow: hidden; }
+    .dt-diff-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--card-border); background: var(--card-bg); font-size: 12px; }
+    .dt-diff-meta { color: var(--text-muted); font-size: 11px; }
+    .dt-diff-body { max-height: 280px; overflow: auto; font-family: var(--font-mono); font-size: 11px; line-height: 1.45; }
+    .dt-diff-line { display: flex; gap: 8px; padding: 1px 10px; white-space: pre-wrap; word-break: break-word; }
+    .dt-diff-prefix { flex: 0 0 14px; user-select: none; color: var(--text-muted); }
+    .dt-diff-equal { color: var(--text-secondary); }
+    .dt-diff-insert { background: rgba(34, 197, 94, 0.12); color: var(--text-primary); }
+    .dt-diff-delete { background: rgba(239, 68, 68, 0.12); color: var(--text-primary); }
+    .dt-diff-collapsed { justify-content: center; padding: 6px 10px; color: var(--text-muted); font-style: italic; background: rgba(0, 0, 0, 0.03); }
+    .dark .dt-diff-collapsed { background: rgba(255, 255, 255, 0.04); }
+    .dt-version-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 </style>
 
 <div class="dt-editor" data-testid="document-template-editor">
@@ -545,24 +628,80 @@ new #[Layout('components.layouts.editor')] #[Title('Edit Document Template')] cl
                 <h3 class="text-sm font-semibold mb-2">Version history</h3>
                 @forelse($versions as $version)
                     <div class="flex items-center justify-between gap-2 py-2 border-b border-[var(--card-border)]" wire:key="version-{{ $version->id }}">
-                        <div class="text-sm">
+                        <div class="text-sm min-w-0">
                             <span class="font-medium">v{{ $version->version }}</span>
                             @if($version->change_note)
                                 <span class="text-[var(--text-muted)]"> — {{ $version->change_note }}</span>
                             @endif
                         </div>
                         @can('update', $template)
-                            <button type="button"
-                                    wire:click="restoreVersion({{ $version->id }})"
-                                    wire:confirm="Restore version {{ $version->version }}?"
-                                    class="s-btn s-btn-ghost s-btn-xs">
-                                Restore
-                            </button>
+                            <div class="dt-version-actions">
+                                <button type="button"
+                                        wire:click="showDiff({{ $version->id }})"
+                                        class="s-btn s-btn-ghost s-btn-xs">
+                                    View diff
+                                </button>
+                                <button type="button"
+                                        wire:click="restoreVersion({{ $version->id }})"
+                                        wire:confirm="Restore version {{ $version->version }}?"
+                                        class="s-btn s-btn-ghost s-btn-xs">
+                                    Restore
+                                </button>
+                            </div>
                         @endcan
                     </div>
                 @empty
                     <p class="text-sm text-[var(--text-muted)]">No previous versions yet.</p>
                 @endforelse
+
+                @if($showDiffPanel)
+                    <div class="dt-diff-panel" data-testid="version-diff-panel" wire:key="version-diff-panel">
+                        <div class="dt-diff-header">
+                            <div class="min-w-0">
+                                <div class="font-medium">Body diff</div>
+                                <div class="dt-diff-meta">{{ $diffLeftLabel }} → {{ $diffRightLabel }}</div>
+                            </div>
+                            <button type="button" wire:click="closeDiff" class="s-btn s-btn-ghost s-btn-xs">Close</button>
+                        </div>
+                        <div class="dt-diff-body">
+                            @if($diffOps === [])
+                                <div class="dt-diff-line dt-diff-equal">
+                                    <span class="dt-diff-prefix">&nbsp;</span>
+                                    <span>No differences in saved body content.</span>
+                                </div>
+                            @else
+                                @foreach($diffOps as $index => $op)
+                                    @if($op['type'] === 'collapsed')
+                                        <div class="dt-diff-line dt-diff-collapsed" wire:key="diff-op-{{ $index }}">
+                                            … {{ $op['count'] }} unchanged lines …
+                                        </div>
+                                    @elseif($op['type'] === 'equal')
+                                        @foreach($op['lines'] as $lineIndex => $line)
+                                            <div class="dt-diff-line dt-diff-equal" wire:key="diff-op-{{ $index }}-eq-{{ $lineIndex }}">
+                                                <span class="dt-diff-prefix">&nbsp;</span>
+                                                <span>{!! htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8') !!}</span>
+                                            </div>
+                                        @endforeach
+                                    @elseif($op['type'] === 'delete')
+                                        @foreach($op['lines'] as $lineIndex => $line)
+                                            <div class="dt-diff-line dt-diff-delete" wire:key="diff-op-{{ $index }}-del-{{ $lineIndex }}">
+                                                <span class="dt-diff-prefix">−</span>
+                                                <span>{!! htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8') !!}</span>
+                                            </div>
+                                        @endforeach
+                                    @elseif($op['type'] === 'insert')
+                                        @foreach($op['lines'] as $lineIndex => $line)
+                                            <div class="dt-diff-line dt-diff-insert" wire:key="diff-op-{{ $index }}-ins-{{ $lineIndex }}">
+                                                <span class="dt-diff-prefix">+</span>
+                                                <span>{!! htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8') !!}</span>
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
         </aside>
     </div>
