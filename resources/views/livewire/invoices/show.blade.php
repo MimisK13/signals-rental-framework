@@ -23,7 +23,6 @@ use Brick\Money\Money;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -76,8 +75,6 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function issue(): void
     {
-        Queue::fake();
-
         $this->runVerbsTransition(
             fn () => (new IssueInvoice)($this->invoice),
             fn () => $this->refreshInvoice(),

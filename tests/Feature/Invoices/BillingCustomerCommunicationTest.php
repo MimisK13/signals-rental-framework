@@ -18,6 +18,7 @@ use App\Models\CommunicationLog;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
+use App\Models\MemberRelationship;
 use App\Models\User;
 use App\ValueObjects\Documents\DocumentRenderResult;
 use Database\Seeders\CommunicationTemplateSeeder;
@@ -107,6 +108,31 @@ describe('invoice issue customer email', function () {
             ->and($log->recipient_address)->toBe('billing@example.com')
             ->and($log->status)->toBe('sent')
             ->and($log->attachments)->toHaveCount(1);
+    });
+
+    it('emails the primary contact when the billing organisation has no direct email', function () {
+        Mail::fake();
+
+        ['invoice' => $invoice, 'member' => $org] = billingCommunicationFixture();
+        $org->emails()->delete();
+
+        $contact = Member::factory()->contact()->create();
+        $contact->emails()->create(['address' => 'accounts@example.com', 'is_primary' => true]);
+
+        MemberRelationship::factory()->primary()->create([
+            'member_id' => $contact->id,
+            'related_member_id' => $org->id,
+        ]);
+
+        (new IssueInvoice)($invoice->refresh());
+
+        $log = CommunicationLog::query()
+            ->where('notification_type_key', 'invoice.created')
+            ->where('notifiable_id', $org->id)
+            ->sole();
+
+        expect($log->recipient_address)->toBe('accounts@example.com')
+            ->and($log->status)->toBe('sent');
     });
 
     it('does not email when auto_email_on_issue is disabled', function () {

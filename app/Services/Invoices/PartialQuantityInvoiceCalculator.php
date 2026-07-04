@@ -5,6 +5,7 @@ namespace App\Services\Invoices;
 use App\Data\Invoices\FrozenInvoiceLineData;
 use App\Data\Invoices\FrozenInvoiceTaxRowData;
 use App\Models\OpportunityItem;
+use App\Services\Shortages\MoneyApportionment;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use LogicException;
@@ -20,6 +21,10 @@ use LogicException;
  */
 class PartialQuantityInvoiceCalculator
 {
+    public function __construct(
+        private readonly MoneyApportionment $moneyApportionment,
+    ) {}
+
     /**
      * @param  list<FrozenInvoiceLineData>  $fullLines
      * @param  list<FrozenInvoiceTaxRowData>  $fullTaxRows
@@ -70,6 +75,12 @@ class PartialQuantityInvoiceCalculator
 
         $includeCosts = $allItemsFullyInvoiced;
 
+        $headlineNetByLineKey = $this->resolveHeadlineNetByLineKey(
+            $fullLines,
+            $fullSubtotal,
+            $includeCosts,
+        );
+
         $scaledLines = [];
         $partialSubtotal = 0;
         $partialLineTax = 0;
@@ -80,9 +91,11 @@ class PartialQuantityInvoiceCalculator
                     continue;
                 }
 
-                $scaledLines[] = $line;
-                $partialSubtotal += $line->net_total;
-                $partialLineTax += $line->tax;
+                $headlineNet = $headlineNetByLineKey[$line->line_key] ?? $line->net_total;
+                $scaled = $this->scaleLine($line, $line->quantity, '1', $headlineNet);
+                $scaledLines[] = $scaled;
+                $partialSubtotal += $scaled->net_total;
+                $partialLineTax += $scaled->tax;
 
                 continue;
             }
@@ -102,8 +115,9 @@ class PartialQuantityInvoiceCalculator
             $fullLineQty = (string) $item->quantity;
             $invoicedQty = $qtyByItemId[$itemId];
             $ratio = bcdiv($invoicedQty, $fullLineQty, 10);
+            $headlineNet = $headlineNetByLineKey[$line->line_key] ?? $line->net_total;
 
-            $scaled = $this->scaleLine($line, $invoicedQty, $ratio);
+            $scaled = $this->scaleLine($line, $invoicedQty, $ratio, $headlineNet);
             $scaledLines[] = $scaled;
             $partialSubtotal += $scaled->net_total;
             $partialLineTax += $scaled->tax;
@@ -232,9 +246,61 @@ class PartialQuantityInvoiceCalculator
         return $resolved;
     }
 
-    private function scaleLine(FrozenInvoiceLineData $line, string $invoicedQty, string $ratio): FrozenInvoiceLineData
-    {
+    /**
+     * @param  list<FrozenInvoiceLineData>  $fullLines
+     * @return array<string, int>
+     */
+    private function resolveHeadlineNetByLineKey(
+        array $fullLines,
+        int $fullSubtotal,
+        bool $includeCosts,
+    ): array {
+        /** @var array<string, int> $itemWeights */
+        $itemWeights = [];
+        /** @var array<string, int> $costNets */
+        $costNets = [];
+        $costNetSumAll = 0;
+
+        foreach ($fullLines as $line) {
+            if ($line->source_type === 'cost') {
+                $costNetSumAll += $line->net_total;
+
+                if ($includeCosts) {
+                    $costNets[$line->line_key] = $line->net_total;
+                }
+
+                continue;
+            }
+
+            $itemWeights[$line->line_key] = $line->net_total;
+        }
+
+        $itemWeightSum = array_sum($itemWeights);
+        $costSum = array_sum($costNets);
+        $itemTarget = $includeCosts
+            ? $fullSubtotal - $costSum
+            : $fullSubtotal - $costNetSumAll;
+
+        if ($itemWeights === [] || $itemWeightSum === $itemTarget) {
+            return array_merge($itemWeights, $costNets);
+        }
+
+        return array_merge(
+            $this->moneyApportionment->apportion($itemWeights, $itemTarget),
+            $costNets,
+        );
+    }
+
+    private function scaleLine(
+        FrozenInvoiceLineData $line,
+        string $invoicedQty,
+        string $ratio,
+        int $headlineNet,
+    ): FrozenInvoiceLineData {
         $lineInvoicedQty = $line->source_type === 'item' ? $invoicedQty : null;
+        $headlineRatio = $line->net_total !== 0
+            ? bcdiv((string) $headlineNet, (string) $line->net_total, 10)
+            : '1';
 
         if (bccomp($ratio, '1', 10) === 0) {
             return new FrozenInvoiceLineData(
@@ -244,8 +310,8 @@ class PartialQuantityInvoiceCalculator
                 description: $line->description,
                 quantity: $line->source_type === 'item' ? $invoicedQty : $line->quantity,
                 unit_price: $line->unit_price,
-                discount: $line->discount,
-                net_total: $line->net_total,
+                discount: $this->scaleAmount($line->discount, $headlineRatio),
+                net_total: $headlineNet,
                 tax: $line->tax,
                 product_tax_class_id: $line->product_tax_class_id,
                 tax_treatment: $line->tax_treatment,
@@ -266,8 +332,8 @@ class PartialQuantityInvoiceCalculator
             description: $line->description,
             quantity: $line->source_type === 'item' ? $invoicedQty : $line->quantity,
             unit_price: $line->unit_price,
-            discount: $this->scaleAmount($line->discount, $ratio),
-            net_total: $this->scaleAmount($line->net_total, $ratio),
+            discount: $this->scaleAmount($this->scaleAmount($line->discount, $headlineRatio), $ratio),
+            net_total: $this->scaleAmount($headlineNet, $ratio),
             tax: $this->scaleAmount($line->tax, $ratio),
             product_tax_class_id: $line->product_tax_class_id,
             tax_treatment: $line->tax_treatment,

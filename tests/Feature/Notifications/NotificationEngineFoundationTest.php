@@ -2,6 +2,7 @@
 
 use App\Enums\NotificationAudience;
 use App\Models\Member;
+use App\Models\MemberRelationship;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
 use App\Services\NotificationRegistry;
@@ -31,6 +32,19 @@ describe('member notifiable routing', function () {
         $member = Member::factory()->contact()->create();
 
         expect($member->routeNotificationForMail())->toBeNull();
+    });
+
+    it('falls back to the primary contact email for organisations without a direct address', function () {
+        $organisation = Member::factory()->organisation()->create();
+        $contact = Member::factory()->contact()->create();
+        $contact->emails()->create(['address' => 'billing-contact@example.com', 'is_primary' => true]);
+
+        MemberRelationship::factory()->primary()->create([
+            'member_id' => $contact->id,
+            'related_member_id' => $organisation->id,
+        ]);
+
+        expect($organisation->fresh()->routeNotificationForMail())->toBe('billing-contact@example.com');
     });
 
     it('delivers a mail notification to the member primary email route', function () {

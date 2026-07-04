@@ -7,6 +7,7 @@ use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Data\Invoices\IssueCreditNoteData;
 use App\Enums\PricingRoundingDirection;
 use App\Jobs\GenerateBillingIssueDocumentJob;
+use App\Jobs\SendBillingCustomerCommunicationJob;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Member;
@@ -53,6 +54,11 @@ it('issues an invoice from the show page', function () {
         ->assertHasNoErrors();
 
     expect($invoice->fresh()->status)->toBe('issued');
+
+    Queue::assertPushed(SendBillingCustomerCommunicationJob::class, function (SendBillingCustomerCommunicationJob $job) use ($invoice): bool {
+        return $job->queue === 'communications'
+            && $job->sourceId === (int) $invoice->id;
+    });
 });
 
 it('surfaces a notify toast when an owner attempts to issue a non-draft invoice', function () {

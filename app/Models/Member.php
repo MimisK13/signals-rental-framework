@@ -188,10 +188,46 @@ class Member extends Model implements HasSchema
 
     /**
      * Route mail-channel notifications to the member's primary email address.
+     *
+     * Organisations without a direct email fall back to the primary linked contact.
      */
     public function routeNotificationForMail(?Notification $notification = null): ?string
     {
-        return $this->primaryEmailAddress();
+        $address = $this->primaryEmailAddress();
+
+        if ($address !== null && $address !== '') {
+            return $address;
+        }
+
+        if ($this->membership_type !== MembershipType::Organisation) {
+            return null;
+        }
+
+        return $this->primaryContactEmailAddress();
+    }
+
+    /**
+     * Resolve the primary contact's email for organisation billing notifications.
+     */
+    public function primaryContactEmailAddress(): ?string
+    {
+        $contacts = $this->relationLoaded('contacts')
+            ? $this->contacts
+            : $this->contacts()
+                ->with(['emails' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('id')])
+                ->orderByPivot('is_primary', 'desc')
+                ->orderBy('members.id')
+                ->get();
+
+        foreach ($contacts as $contact) {
+            $email = $contact->primaryEmailAddress();
+
+            if ($email !== null && $email !== '') {
+                return $email;
+            }
+        }
+
+        return null;
     }
 
     /**
