@@ -163,7 +163,7 @@ class ContainerController extends Controller
     }
 
     /**
-     * Update an open container's name, barcode, or notes.
+     * Update an open container's name, barcode, notes, or scan mode.
      */
     #[ApiResponse(200, 'Container updated')]
     public function update(Request $request, Container $container): JsonResponse

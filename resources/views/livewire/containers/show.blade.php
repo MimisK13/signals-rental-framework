@@ -4,14 +4,19 @@ use App\Actions\Containers\DispatchContainer;
 use App\Actions\Containers\DissolveContainer;
 use App\Actions\Containers\ReturnKitContainer;
 use App\Actions\Containers\SealContainer;
+use App\Actions\Containers\StartRepackOnReturn;
 use App\Actions\Containers\TransferContainerItem;
 use App\Actions\Containers\UnsealContainer;
+use App\Actions\Containers\UpdateContainer;
 use App\Actions\Containers\VerifyKitCheckin;
 use App\Data\Containers\DispatchContainerData;
 use App\Data\Containers\ReturnKitContainerData;
+use App\Data\Containers\StartRepackOnReturnData;
 use App\Data\Containers\TransferContainerItemData;
 use App\Data\Containers\UnsealContainerData;
+use App\Data\Containers\UpdateContainerData;
 use App\Enums\ContainerCheckinMode;
+use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
 use App\Enums\ContainerUnsealReason;
 use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
@@ -37,11 +42,14 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public string $transferSerialisedItemId = '';
 
+    public string $editScanMode = '';
+
     public function mount(Container $container): void
     {
         Gate::authorize('view', $container);
         $this->container = $container->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem', 'children']);
         $this->unsealReason = ContainerUnsealReason::Manual->value;
+        $this->editScanMode = $container->scan_mode->value;
     }
 
     public function seal(): void
@@ -142,6 +150,18 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->refreshContainer();
     }
 
+    public function saveScanMode(): void
+    {
+        Gate::authorize('update', $this->container);
+
+        (new UpdateContainer)($this->container, UpdateContainerData::from([
+            'scan_mode' => $this->editScanMode,
+        ]));
+
+        $this->refreshContainer();
+        $this->editScanMode = $this->container->scan_mode->value;
+    }
+
     /**
      * @return list<array<string, mixed>>
      */
@@ -214,6 +234,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                 && ($this->container->product?->container_checkin_mode ?? ContainerCheckinMode::Parent) !== ContainerCheckinMode::Individual,
             'canVerifyCheckin' => Gate::check('verifyCheckin', $this->container)
                 && $this->container->checkin_verification_required_at !== null,
+            'canEdit' => Gate::check('update', $this->container)
+                && $this->container->status->acceptsPacking(),
+            'scanModes' => ContainerScanMode::cases(),
             'canApplyDispatchAmendments' => auth()->user()?->can('opportunities.dispatch_add_items') ?? false,
             'checkinModeLabel' => $this->container->product?->container_checkin_mode?->label(),
             'needsCheckinVerification' => $this->container->checkin_verification_required_at !== null,
@@ -284,7 +307,18 @@ new #[Layout('components.layouts.app')] class extends Component {
                 @endif
                 <div>
                     <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Scan mode</div>
-                    <div>{{ $container->scan_mode->label() }}</div>
+                    @if($canEdit)
+                        <form wire:submit="saveScanMode" class="mt-1 flex flex-wrap items-end gap-2">
+                            <flux:select wire:model="editScanMode" class="min-w-[8rem]">
+                                @foreach($scanModes as $mode)
+                                    <option value="{{ $mode->value }}" wire:key="scan-mode-{{ $mode->value }}">{{ $mode->label() }}</option>
+                                @endforeach
+                            </flux:select>
+                            <flux:button type="submit" size="sm" wire:loading.attr="disabled">{{ __('Save') }}</flux:button>
+                        </form>
+                    @else
+                        <div>{{ $container->scan_mode->label() }}</div>
+                    @endif
                 </div>
                 <div>
                     <div class="text-xs uppercase tracking-wide text-[var(--muted)]">Store</div>

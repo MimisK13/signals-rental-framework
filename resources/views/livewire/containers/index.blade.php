@@ -1,12 +1,17 @@
 <?php
 
 use App\Actions\Containers\CreateContainer;
+use App\Actions\Containers\StartRepackOnReturn;
 use App\Data\Containers\CreateContainerData;
+use App\Data\Containers\StartRepackOnReturnData;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
+use App\Models\Opportunity;
+use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Containers\ContainerBarcodeResolver;
+use App\Services\Containers\RepackOnReturnEligibility;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -27,6 +32,13 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
     public string $search = '';
 
     public string $scanBarcode = '';
+
+    public ?int $pendingRepackHousingId = null;
+
+    /** @var array<int, string> */
+    public array $repackOpportunityChoices = [];
+
+    public ?int $selectedRepackOpportunityId = null;
 
     public function mount(): void
     {
@@ -81,6 +93,10 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
             return;
         }
 
+        if ($this->tryStartRepackFromReturn($stockLevel)) {
+            return;
+        }
+
         if (! Gate::check('create', Container::class)) {
             $this->addError('scanBarcode', __('No active container exists for this housing and you cannot create one.'));
 
@@ -93,6 +109,80 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
 
         $this->scanBarcode = '';
         $this->redirect(route('containers.pack', $container->uuid), navigate: true);
+    }
+
+    protected function tryStartRepackFromReturn(StockLevel $stockLevel): bool
+    {
+        $eligibility = app(RepackOnReturnEligibility::class);
+
+        if (! $eligibility->isEligibleHousing($stockLevel)) {
+            return false;
+        }
+
+        $opportunities = $eligibility->checkedOutOpportunities($stockLevel);
+
+        if ($opportunities->isEmpty()) {
+            return false;
+        }
+
+        if (! Gate::check('create', Container::class) || ! Gate::check('opportunities.edit')) {
+            $this->addError('scanBarcode', __('You do not have permission to start a repack session.'));
+
+            return true;
+        }
+
+        if ($opportunities->count() === 1) {
+            $this->startRepackFromReturn($stockLevel->id, $opportunities->first()->id);
+
+            return true;
+        }
+
+        $this->pendingRepackHousingId = $stockLevel->id;
+        $this->repackOpportunityChoices = $opportunities
+            ->mapWithKeys(fn (Opportunity $opportunity): array => [
+                $opportunity->id => trim(($opportunity->reference ?: '#'.$opportunity->id).' — '.$opportunity->subject),
+            ])
+            ->all();
+        $this->selectedRepackOpportunityId = $opportunities->first()->id;
+        $this->dispatch('open-modal', 'repack-opportunity-picker');
+
+        return true;
+    }
+
+    public function confirmRepackFromReturn(): void
+    {
+        if ($this->pendingRepackHousingId === null || $this->selectedRepackOpportunityId === null) {
+            return;
+        }
+
+        Gate::authorize('create', Container::class);
+        Gate::authorize('opportunities.edit');
+
+        $this->startRepackFromReturn($this->pendingRepackHousingId, $this->selectedRepackOpportunityId);
+    }
+
+    public function dismissRepackOpportunityPicker(): void
+    {
+        $this->pendingRepackHousingId = null;
+        $this->repackOpportunityChoices = [];
+        $this->selectedRepackOpportunityId = null;
+        $this->dispatch('close-modal', 'repack-opportunity-picker');
+    }
+
+    protected function startRepackFromReturn(int $housingId, int $opportunityId): void
+    {
+        $result = (new StartRepackOnReturn)(StartRepackOnReturnData::from([
+            'opportunity_id' => $opportunityId,
+            'serialised_item_id' => $housingId,
+        ]));
+
+        $this->scanBarcode = '';
+        $this->dismissRepackOpportunityPicker();
+
+        $this->redirect(route('containers.repack', [
+            'container' => $result->container->uuid,
+            'opportunity' => $opportunityId,
+        ]), navigate: true);
     }
 
     public function containers()
@@ -147,6 +237,24 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
                 <p class="mt-2 text-sm text-[var(--danger)]">{{ $message }}</p>
             @enderror
         </x-signals.card>
+
+        <x-signals.modal name="repack-opportunity-picker" title="{{ __('Start repack from return') }}" size="md" :teleport="false">
+            <p class="text-sm text-[var(--muted)] mb-4">{{ __('This housing is checked out on multiple opportunities. Choose which return to process.') }}</p>
+            <flux:field>
+                <flux:label>{{ __('Opportunity') }}</flux:label>
+                <flux:select wire:model="selectedRepackOpportunityId">
+                    @foreach($repackOpportunityChoices as $id => $label)
+                        <option value="{{ $id }}" wire:key="repack-opp-{{ $id }}">{{ $label }}</option>
+                    @endforeach
+                </flux:select>
+            </flux:field>
+            <div class="mt-4 flex flex-wrap gap-2 justify-end">
+                <flux:button type="button" wire:click="dismissRepackOpportunityPicker">{{ __('Cancel') }}</flux:button>
+                <flux:button type="button" wire:click="confirmRepackFromReturn" wire:loading.attr="disabled" variant="primary">
+                    {{ __('Start repack session') }}
+                </flux:button>
+            </div>
+        </x-signals.modal>
 
         <div class="mb-4 flex flex-wrap items-center gap-3">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Search by name or barcode..." class="max-w-sm" />

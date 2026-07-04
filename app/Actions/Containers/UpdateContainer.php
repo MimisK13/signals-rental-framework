@@ -4,6 +4,7 @@ namespace App\Actions\Containers;
 
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\UpdateContainerData;
+use App\Enums\ContainerScanMode;
 use App\Models\Container;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -55,6 +56,18 @@ class UpdateContainer
 
         if ($data->notes !== null) {
             $attributes['notes'] = $data->notes;
+        }
+
+        if ($data->scan_mode !== null) {
+            $mode = ContainerScanMode::tryFrom($data->scan_mode);
+
+            if ($mode === null) {
+                throw ValidationException::withMessages([
+                    'scan_mode' => __('The selected scan mode is invalid.'),
+                ]);
+            }
+
+            $attributes['scan_mode'] = $mode;
         }
 
         if ($attributes === []) {

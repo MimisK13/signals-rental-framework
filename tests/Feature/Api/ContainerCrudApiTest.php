@@ -130,6 +130,32 @@ describe('PATCH /api/v1/containers/{container}', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors('container');
     });
+
+    it('updates scan mode on open containers only', function () {
+        $container = Container::factory()->kit()->create([
+            'store_id' => $this->store->id,
+            'scan_mode' => 'strict',
+        ]);
+
+        $this->withHeader('Authorization', "Bearer {$this->token}")
+            ->patchJson("/api/v1/containers/{$container->uuid}", [
+                'scan_mode' => 'free',
+            ])
+            ->assertOk()
+            ->assertJsonPath('container.scan_mode', 'free');
+
+        $sealed = Container::factory()->kit()->sealed()->create([
+            'store_id' => $this->store->id,
+            'scan_mode' => 'strict',
+        ]);
+
+        $this->withHeader('Authorization', "Bearer {$this->token}")
+            ->patchJson("/api/v1/containers/{$sealed->uuid}", [
+                'scan_mode' => 'free',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('container');
+    });
 });
 
 describe('route binding', function () {

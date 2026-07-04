@@ -7,6 +7,8 @@ use App\Data\Containers\TransferContainerItemData;
 use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Enums\ContainerUnsealReason;
+use App\Events\Containers\BeforeContainerItemTransferred;
+use App\Events\Containers\ContainerItemTransferred;
 use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\StockLevel;
@@ -56,6 +58,8 @@ class TransferContainerItem
 
         $stockLevel = StockLevel::query()->findOrFail($data->serialised_item_id);
 
+        BeforeContainerItemTransferred::dispatch($source, $target, $stockLevel, $membership);
+
         return DB::transaction(function () use ($source, $target, $membership, $stockLevel, $data): ContainerItemData {
             if ($source->status === ContainerStatus::Sealed) {
                 $source->update([
@@ -99,6 +103,8 @@ class TransferContainerItem
                 $target,
                 $packed,
             );
+
+            ContainerItemTransferred::dispatch($source, $target, $packed);
 
             return ContainerItemData::fromModel($packed->fresh() ?? $packed);
         });

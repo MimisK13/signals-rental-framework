@@ -8,11 +8,13 @@ use App\Contracts\Notifications\ChannelDriver;
 use App\Contracts\Notifications\RecipientResolver;
 use App\Events\Containers\BeforeContainerDispatched;
 use App\Events\Containers\BeforeContainerDissolved;
+use App\Events\Containers\BeforeContainerItemTransferred;
 use App\Events\Containers\BeforeContainerPacked;
 use App\Events\Containers\BeforeContainerRepack;
 use App\Events\Containers\BeforeContainerSealed;
 use App\Events\Containers\ContainerDispatchedLifecycle;
 use App\Events\Containers\ContainerDissolved;
+use App\Events\Containers\ContainerItemTransferred;
 use App\Events\Containers\ContainerPacked;
 use App\Events\Containers\ContainerRepackStarted;
 use App\Events\Containers\ContainerSealed;
@@ -236,6 +238,26 @@ class PluginRegistrar
     public function onContainerAfterRepack(callable $listener): self
     {
         Event::listen(ContainerRepackStarted::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(BeforeContainerItemTransferred): void  $listener
+     */
+    public function onContainerBeforeTransfer(callable $listener): self
+    {
+        Event::listen(BeforeContainerItemTransferred::class, $listener);
+
+        return $this;
+    }
+
+    /**
+     * @param  callable(ContainerItemTransferred): void  $listener
+     */
+    public function onContainerAfterTransfer(callable $listener): self
+    {
+        Event::listen(ContainerItemTransferred::class, $listener);
 
         return $this;
     }

@@ -13,6 +13,7 @@ use App\Data\Containers\UnpackContainerItemData;
 use App\Data\Containers\UpdateContainerData;
 use App\Enums\AvailabilityResolution;
 use App\Enums\ContainerItemUnpackReason;
+use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
@@ -164,6 +165,28 @@ it('updates an open container and rejects sealed containers', function () {
 
     (new UpdateContainer)($sealed, UpdateContainerData::from([
         'name' => 'Should fail',
+    ]));
+})->throws(ValidationException::class);
+
+it('updates scan mode on open containers only', function () {
+    $container = Container::factory()->kit()->create([
+        'store_id' => $this->store->id,
+        'scan_mode' => ContainerScanMode::Strict->value,
+    ]);
+
+    $result = (new UpdateContainer)($container, UpdateContainerData::from([
+        'scan_mode' => ContainerScanMode::Free->value,
+    ]));
+
+    expect($result->scan_mode)->toBe(ContainerScanMode::Free->value);
+
+    $sealed = Container::factory()->kit()->sealed()->create([
+        'store_id' => $this->store->id,
+        'scan_mode' => ContainerScanMode::Strict->value,
+    ]);
+
+    (new UpdateContainer)($sealed, UpdateContainerData::from([
+        'scan_mode' => ContainerScanMode::Free->value,
     ]));
 })->throws(ValidationException::class);
 

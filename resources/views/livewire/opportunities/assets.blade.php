@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Containers\DispatchContainer;
+use App\Actions\Containers\StartRepackOnReturn;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\CheckAsset;
 use App\Actions\Opportunities\ClearAssetContainer;
@@ -19,6 +20,7 @@ use App\Actions\Opportunities\ReturnAsset;
 use App\Actions\Opportunities\SetAssetContainer;
 use App\Actions\Opportunities\SubstituteAsset;
 use App\Data\Containers\DispatchContainerData;
+use App\Data\Containers\StartRepackOnReturnData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\BulkDispatchData;
 use App\Data\Opportunities\CheckAssetData;
@@ -44,6 +46,7 @@ use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Services\Containers\ContainerBarcodeResolver;
+use App\Services\Containers\RepackOnReturnEligibility;
 use App\ValueObjects\DispatchGateResult;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Arr;
@@ -343,13 +346,68 @@ new #[Layout('components.layouts.app')] class extends Component
         $this->dispatch('close-modal', 'container-dispatch-amendment');
     }
 
-    /** Check the scanned asset back in via {@see ReturnAsset}. */
+    /** Check the scanned asset back in via {@see ReturnAsset} or start repack-on-return. */
     public function scanCheckIn(): void
     {
+        $number = trim((string) $this->scanAsset);
+
+        if ($number === '') {
+            return;
+        }
+
+        if ($this->tryStartRepackFromCheckIn($number)) {
+            return;
+        }
+
         $this->actOnScannedAssignment(function (OpportunityItemAsset $asset): void {
             (new ReturnAsset)($asset, ReturnAssetData::from([]));
             $this->applyScanContainer($asset->id);
         }, __('Asset checked in.'));
+    }
+
+    protected function tryStartRepackFromCheckIn(string $assetNumber): bool
+    {
+        $assignment = OpportunityItemAsset::query()
+            ->whereHas('item', fn ($query) => $query->where('opportunity_id', $this->opportunity->id))
+            ->whereHas('stockLevel', fn ($query) => $query
+                ->where('asset_number', $assetNumber)
+                ->orWhere('serial_number', $assetNumber))
+            ->with('stockLevel.product')
+            ->first();
+
+        if ($assignment === null) {
+            return false;
+        }
+
+        $housing = $assignment->stockLevel;
+
+        if ($housing === null) {
+            return false;
+        }
+
+        $eligibility = app(RepackOnReturnEligibility::class);
+
+        if (! $eligibility->isEligibleHousing($housing)
+            || ! $eligibility->isCheckedOutOnOpportunity($housing, $this->opportunity->id)) {
+            return false;
+        }
+
+        Gate::authorize('create', Container::class);
+        Gate::authorize('opportunities.edit');
+
+        $result = (new StartRepackOnReturn)(StartRepackOnReturnData::from([
+            'opportunity_id' => $this->opportunity->id,
+            'serialised_item_id' => $housing->id,
+        ]));
+
+        $this->resetScanBar();
+
+        $this->redirect(route('containers.repack', [
+            'container' => $result->container->uuid,
+            'opportunity' => $this->opportunity->id,
+        ]), navigate: true);
+
+        return true;
     }
 
     /**
