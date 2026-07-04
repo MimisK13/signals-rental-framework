@@ -39,6 +39,7 @@ use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
 use App\Http\Controllers\Api\V1\ProductSupplierCostController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
+use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;
 use App\Http\Controllers\Api\V1\RateEngineMetaController;
@@ -355,6 +356,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('invoices/{invoice}/credit_notes', [InvoiceController::class, 'issueCreditNote'])->name('api.v1.invoices.credit_notes.store');
     Route::post('invoices/{invoice}/email', [InvoiceController::class, 'email'])->name('api.v1.invoices.email');
     Route::apiResource('invoices', InvoiceController::class)->names('api.v1.invoices');
+
+    Route::post('purchase_orders/{purchase_order}/send', [PurchaseOrderController::class, 'send'])->name('api.v1.purchase_orders.send');
+    Route::post('purchase_orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('api.v1.purchase_orders.cancel');
+    Route::apiResource('purchase_orders', PurchaseOrderController::class)->names('api.v1.purchase_orders');
 
     // Rate Definitions
     Route::post('rate_definitions/{rate_definition}/duplicate', [RateDefinitionController::class, 'duplicate'])->name('api.v1.rate_definitions.duplicate');

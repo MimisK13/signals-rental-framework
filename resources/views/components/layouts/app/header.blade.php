@@ -224,7 +224,7 @@
                 </div>
 
                 {{-- Finance mega dropdown --}}
-                @canany(['invoices.access', 'payments.record'])
+                @canany(['invoices.access', 'payments.record', 'purchase_orders.access'])
                 <div class="nav-dropdown-wrapper">
                     <button class="header-nav-item" type="button">
                         Finance
@@ -260,13 +260,15 @@
                             </div>
                             <div>
                                 <div class="mega-group-label">Purchasing</div>
-                                <a href="#" class="mega-item">
+                                @can('viewAny', App\Models\PurchaseOrder::class)
+                                <a href="{{ route('purchase-orders.index') }}" class="mega-item {{ ActiveRoute::is('purchase-orders.*') ? 'active' : '' }}" wire:navigate>
                                     <flux:icon.shopping-cart class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Purchase Orders</span>
                                         <span class="mega-item-desc">Supplier orders &amp; procurement</span>
                                     </div>
                                 </a>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -614,10 +616,12 @@
                     <flux:icon.banknotes class="!size-[15px]" /> Payments
                 </a>
 
+                @can('viewAny', App\Models\PurchaseOrder::class)
                 <div class="sidebar-group-label">Purchasing</div>
-                <a class="sidebar-item" href="#">
+                <a class="sidebar-item {{ ActiveRoute::is('purchase-orders.*') ? 'active' : '' }}" href="{{ route('purchase-orders.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.shopping-cart class="!size-[15px]" /> Purchase Orders
                 </a>
+                @endcan
 
                 <div class="sidebar-group-label">Warehouse</div>
                 <a class="sidebar-item" href="#">

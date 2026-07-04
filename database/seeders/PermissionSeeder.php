@@ -76,6 +76,15 @@ class PermissionSeeder extends Seeder
             // Payments
             'payments.record' => ['label' => 'Record Payments', 'description' => 'Record payments and refunds against invoices', 'group' => 'Invoices', 'sub_group' => 'Payments', 'layer' => 'action', 'dependencies' => ['invoices.view']],
 
+            // Purchase orders
+            'purchase_orders.access' => ['label' => 'Access Purchase Orders', 'description' => 'Access the purchase orders area', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'purchase_orders.view' => ['label' => 'View Purchase Orders', 'description' => 'View purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.access']],
+            'purchase_orders.create' => ['label' => 'Create Purchase Orders', 'description' => 'Create new purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.view']],
+            'purchase_orders.edit' => ['label' => 'Edit Purchase Orders', 'description' => 'Edit draft purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.view']],
+            'purchase_orders.delete' => ['label' => 'Delete Purchase Orders', 'description' => 'Delete draft purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
+            'purchase_orders.send' => ['label' => 'Send Purchase Orders', 'description' => 'Send purchase orders to suppliers', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
+            'purchase_orders.cancel' => ['label' => 'Cancel Purchase Orders', 'description' => 'Cancel purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
+
             // Products
             'products.access' => ['label' => 'Access Products', 'description' => 'Access the products area', 'group' => 'Products', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
             'products.view' => ['label' => 'View Products', 'description' => 'View product catalogue', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.access']],

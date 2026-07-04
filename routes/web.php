@@ -135,6 +135,12 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('invoices/{invoice}', 'invoices.show')->name('invoices.show');
     Volt::route('invoices/{invoice}/edit', 'invoices.form')->name('invoices.edit');
 
+    // Purchase orders
+    Volt::route('purchase-orders', 'purchase-orders.index')->name('purchase-orders.index');
+    Volt::route('purchase-orders/create', 'purchase-orders.form')->name('purchase-orders.create');
+    Volt::route('purchase-orders/{purchaseOrder}', 'purchase-orders.show')->name('purchase-orders.show');
+    Volt::route('purchase-orders/{purchaseOrder}/edit', 'purchase-orders.form')->name('purchase-orders.edit');
+
     // Opportunities
     //
     // Named web routes resolve now so route('opportunities.*') works everywhere

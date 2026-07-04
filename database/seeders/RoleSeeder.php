@@ -34,6 +34,7 @@ class RoleSeeder extends Seeder
             && $p !== 'opportunities.unlock_rates')
             || str_starts_with($p, 'activities.')
             || str_starts_with($p, 'invoices.')
+            || str_starts_with($p, 'purchase_orders.')
             || str_starts_with($p, 'payments.')
             || str_starts_with($p, 'members.')
             // Sales see and resolve shortages, but the hard-block override

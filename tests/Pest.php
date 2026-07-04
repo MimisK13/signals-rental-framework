@@ -1,5 +1,10 @@
 <?php
 
+use App\Actions\PurchaseOrders\CreatePurchaseOrder;
+use App\Data\PurchaseOrders\CreatePurchaseOrderData;
+use App\Models\Member;
+use App\Models\PurchaseOrder;
+use App\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -83,6 +88,26 @@ function something(): void
 }
 
 require_once __DIR__.'/Support/GenerateInvoiceFixtures.php';
+
+/**
+ * @param  array<string, mixed>  $overrides
+ */
+function createTestPurchaseOrder(array $overrides = []): PurchaseOrder
+{
+    $store = Store::factory()->create();
+    $supplier = Member::factory()->organisation()->create();
+
+    $result = (new CreatePurchaseOrder)(
+        CreatePurchaseOrderData::from([
+            'supplier_id' => $supplier->id,
+            'store_id' => $store->id,
+            'po_type' => 'purchase',
+            ...$overrides,
+        ]),
+    );
+
+    return PurchaseOrder::query()->findOrFail($result->id);
+}
 
 /**
  * Assert that the AuditableEvent → LogAction listener wrote an action_logs row
