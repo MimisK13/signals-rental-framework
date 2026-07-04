@@ -36,6 +36,10 @@ describe('FinanceSettings definition', function () {
         expect(settings('finance.partial_invoice_tax'))->toBe(PartialInvoiceTaxPolicy::Proportional->value);
     });
 
+    it('defaults vat_validation_validity_days to 30', function () {
+        expect(settings('finance.vat_validation_validity_days'))->toBe(30);
+    });
+
     it('is registered in the settings registry', function () {
         $registry = app(SettingsRegistry::class);
 
@@ -76,7 +80,8 @@ describe('FinanceSettings class metadata', function () {
             ->toHaveKey('tax_point_policy', 'string')
             ->toHaveKey('prices_include_tax_default', 'boolean')
             ->toHaveKey('show_tax_on_documents', 'boolean')
-            ->toHaveKey('partial_invoice_tax', 'string');
+            ->toHaveKey('partial_invoice_tax', 'string')
+            ->toHaveKey('vat_validation_validity_days', 'integer');
     });
 
     it('rejects invalid partial_invoice_tax values via definition rules', function () {
@@ -87,6 +92,15 @@ describe('FinanceSettings class metadata', function () {
 
         expect($validator->fails())->toBeTrue()
             ->and($validator->errors()->has('partial_invoice_tax'))->toBeTrue();
+    });
+
+    it('accepts zero for vat_validation_validity_days meaning never expire', function () {
+        $validator = Validator::make(
+            ['vat_validation_validity_days' => 0],
+            ['vat_validation_validity_days' => (new FinanceSettings)->rules()['vat_validation_validity_days']],
+        );
+
+        expect($validator->fails())->toBeFalse();
     });
 });
 

@@ -13,6 +13,8 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
 
     public bool $showTaxOnDocuments = true;
 
+    public ?int $vatValidationValidityDays = 30;
+
     public function mount(): void
     {
         $group = settings()->group('finance');
@@ -20,6 +22,9 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
         $this->taxPointPolicy = $group['tax_point_policy'];
         $this->pricesIncludeTaxDefault = (bool) $group['prices_include_tax_default'];
         $this->showTaxOnDocuments = (bool) $group['show_tax_on_documents'];
+        $this->vatValidationValidityDays = isset($group['vat_validation_validity_days'])
+            ? (int) $group['vat_validation_validity_days']
+            : 30;
     }
 
     public function save(): void
@@ -32,6 +37,7 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
             'taxPointPolicy' => $rules['tax_point_policy'],
             'pricesIncludeTaxDefault' => $rules['prices_include_tax_default'],
             'showTaxOnDocuments' => $rules['show_tax_on_documents'],
+            'vatValidationValidityDays' => $rules['vat_validation_validity_days'],
         ]);
 
         settings()->setMany([
@@ -43,6 +49,10 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
             'finance.show_tax_on_documents' => [
                 'value' => $validated['showTaxOnDocuments'],
                 'type' => $types['show_tax_on_documents'],
+            ],
+            'finance.vat_validation_validity_days' => [
+                'value' => $validated['vatValidationValidityDays'],
+                'type' => $types['vat_validation_validity_days'],
             ],
         ]);
 
@@ -69,6 +79,21 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
                 <div class="space-y-4">
                     <flux:switch wire:model="pricesIncludeTaxDefault" label="New opportunities default to prices include tax" />
                     <flux:switch wire:model="showTaxOnDocuments" label="Show tax breakdown on documents" />
+                </div>
+            </x-signals.form-section>
+
+            <x-signals.form-section title="VAT Validation">
+                <div class="space-y-4">
+                    <flux:input
+                        wire:model="vatValidationValidityDays"
+                        type="number"
+                        min="0"
+                        max="3650"
+                        label="VAT validation validity (days)"
+                    />
+                    <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
+                        How long a successful VIES/HMRC check remains trusted for reverse-charge eligibility. Set to 0 to never expire.
+                    </flux:text>
                 </div>
             </x-signals.form-section>
 

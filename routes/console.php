@@ -28,6 +28,14 @@ Schedule::command('api:prune-logs')->daily();
 Schedule::command('model:prune')->daily();
 Schedule::command('invoices:process-overdue')->dailyAt('06:00')->withoutOverlapping();
 
+// Re-queue VIES/HMRC checks for members whose cached validation has aged past
+// finance.vat_validation_validity_days (default 30). Does not mutate member
+// fields — the existing ValidateMemberVatNumber job persists outcomes.
+Schedule::command('members:revalidate-expired-vat')
+    ->dailyAt('04:00')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 /**
  * Build a cron expression for the overdue-demand sweep from the configured
  * interval (`availability.overdue_check_interval`, minutes; default 60 = hourly).

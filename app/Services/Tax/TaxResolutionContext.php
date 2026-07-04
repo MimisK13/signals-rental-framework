@@ -126,13 +126,7 @@ class TaxResolutionContext
             return false;
         }
 
-        $taxNumber = trim((string) ($member->tax_number ?? ''));
-
-        if ($taxNumber === '') {
-            return false;
-        }
-
-        return $member->tax_number_validated === true;
+        return app(MemberVatValidationService::class)->isValidatedForTaxResolution($member);
     }
 
     private static function memberCountryCode(Member $member): ?string

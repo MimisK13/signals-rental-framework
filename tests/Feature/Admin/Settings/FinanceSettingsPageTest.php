@@ -20,7 +20,8 @@ it('loads finance settings with defaults', function () {
     Volt::test('admin.settings.finance')
         ->assertSet('taxPointPolicy', TaxPointPolicy::SupplyDate->value)
         ->assertSet('pricesIncludeTaxDefault', false)
-        ->assertSet('showTaxOnDocuments', true);
+        ->assertSet('showTaxOnDocuments', true)
+        ->assertSet('vatValidationValidityDays', 30);
 });
 
 it('saves finance settings', function () {
@@ -35,6 +36,15 @@ it('saves finance settings', function () {
     expect(settings('finance.tax_point_policy'))->toBe('invoice_date')
         ->and(settings('finance.prices_include_tax_default'))->toBeTrue()
         ->and(settings('finance.show_tax_on_documents'))->toBeFalse();
+});
+
+it('saves vat validation validity days', function () {
+    Volt::test('admin.settings.finance')
+        ->set('vatValidationValidityDays', 14)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(settings('finance.vat_validation_validity_days'))->toBe(14);
 });
 
 it('validates tax_point_policy options', function () {

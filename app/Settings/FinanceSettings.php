@@ -24,6 +24,7 @@ class FinanceSettings extends SettingsDefinition
             'prices_include_tax_default' => false,
             'show_tax_on_documents' => true,
             'partial_invoice_tax' => 'proportional',
+            'vat_validation_validity_days' => 30,
         ];
     }
 
@@ -42,6 +43,7 @@ class FinanceSettings extends SettingsDefinition
                 'string',
                 Rule::in(['proportional', 'full']),
             ],
+            'vat_validation_validity_days' => ['nullable', 'integer', 'min:0', 'max:3650'],
         ];
     }
 
@@ -52,6 +54,7 @@ class FinanceSettings extends SettingsDefinition
             'prices_include_tax_default' => 'boolean',
             'show_tax_on_documents' => 'boolean',
             'partial_invoice_tax' => 'string',
+            'vat_validation_validity_days' => 'integer',
         ];
     }
 }
