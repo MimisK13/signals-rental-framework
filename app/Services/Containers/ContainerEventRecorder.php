@@ -205,4 +205,38 @@ class ContainerEventRecorder
             'user_id' => Auth::id(),
         ]);
     }
+
+    public function repackStarted(Container $container, ?int $previousContainerId, int $opportunityId): void
+    {
+        event(new AuditableEvent($container, 'container.repack.started', newValues: [
+            'previous_container_id' => $previousContainerId,
+            'opportunity_id' => $opportunityId,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.repack.started', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'previous_container_id' => $previousContainerId,
+            'opportunity_id' => $opportunityId,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function repackItem(Container $container, int $serialisedItemId, int $opportunityId): void
+    {
+        event(new AuditableEvent($container, 'container.repack.item', metadata: [
+            'serialised_item_id' => $serialisedItemId,
+            'opportunity_id' => $opportunityId,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.repack.item', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'serialised_item_id' => $serialisedItemId,
+            'opportunity_id' => $opportunityId,
+            'user_id' => Auth::id(),
+        ]);
+    }
 }

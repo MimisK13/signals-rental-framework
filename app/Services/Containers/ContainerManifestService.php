@@ -563,6 +563,44 @@ class ContainerManifestService
     }
 
     /**
+     * Serialised item IDs that were packed in a dissolved container tree before
+     * dissolution — used to decide repack-on-return eligibility.
+     *
+     * @return list<int>
+     */
+    public function dissolvedTreeSerialisedItemIds(Container $root): array
+    {
+        $ids = [];
+        $this->collectDissolvedTreeSerialisedItemIds($root, $ids);
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    protected function collectDissolvedTreeSerialisedItemIds(Container $container, array &$ids): void
+    {
+        foreach ($container->containerItems()->get() as $item) {
+            if ((int) $item->serialised_item_id === (int) $container->serialised_item_id) {
+                continue;
+            }
+
+            $ids[] = (int) $item->serialised_item_id;
+
+            $nested = Container::query()
+                ->where('serialised_item_id', $item->serialised_item_id)
+                ->where('status', 'dissolved')
+                ->where('opportunity_id', $container->opportunity_id)
+                ->first();
+
+            if ($nested !== null) {
+                $this->collectDissolvedTreeSerialisedItemIds($nested, $ids);
+            }
+        }
+    }
+
+    /**
      * @return array{slots?: list<array{product_id: int, quantity: int, binding?: string|null}>, max_items?: int|null}
      */
     protected function templateFor(Container $container): array

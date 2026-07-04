@@ -7,8 +7,10 @@ use App\Actions\Containers\CreateTemporaryContainer;
 use App\Actions\Containers\DispatchContainer;
 use App\Actions\Containers\DissolveContainer;
 use App\Actions\Containers\PackContainerItem;
+use App\Actions\Containers\RepackReturnItem;
 use App\Actions\Containers\ReturnKitContainer;
 use App\Actions\Containers\SealContainer;
+use App\Actions\Containers\StartRepackOnReturn;
 use App\Actions\Containers\TransferContainerItem;
 use App\Actions\Containers\UnpackContainerItem;
 use App\Actions\Containers\UnsealContainer;
@@ -19,7 +21,9 @@ use App\Data\Containers\CreateContainerData;
 use App\Data\Containers\CreateTemporaryContainerData;
 use App\Data\Containers\DispatchContainerData;
 use App\Data\Containers\PackContainerItemData;
+use App\Data\Containers\RepackReturnItemData;
 use App\Data\Containers\ReturnKitContainerData;
+use App\Data\Containers\StartRepackOnReturnData;
 use App\Data\Containers\TransferContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
 use App\Data\Containers\UnsealContainerData;
@@ -273,6 +277,42 @@ class ContainerController extends Controller
 
         return response()->json([
             'dispatch' => $result->toArray(),
+        ]);
+    }
+
+    /**
+     * Initiate repack-on-return for a transport container housing during check-in.
+     */
+    #[ApiResponse(200, 'Repack session started')]
+    #[ApiResponse(422, 'Repack validation failed')]
+    public function startRepack(Request $request): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('create', Container::class);
+
+        $data = StartRepackOnReturnData::from($request->validate(StartRepackOnReturnData::rules()));
+        $result = (new StartRepackOnReturn)($data);
+
+        return response()->json([
+            'repack' => $result->toArray(),
+        ]);
+    }
+
+    /**
+     * Return one item from an opportunity and pack it into a repack container when eligible.
+     */
+    #[ApiResponse(200, 'Item returned (and repacked when eligible)')]
+    #[ApiResponse(422, 'Repack item validation failed')]
+    public function repackItem(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('return', $container);
+
+        $data = RepackReturnItemData::from($request->validate(RepackReturnItemData::rules()));
+        $result = (new RepackReturnItem)($container, $data);
+
+        return response()->json([
+            'repack_item' => $result->toArray(),
         ]);
     }
 

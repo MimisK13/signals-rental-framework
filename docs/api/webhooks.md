@@ -64,6 +64,8 @@ Webhooks can be managed via the API (`/api/v1/webhooks`) or from the admin panel
 | `container.dissolved` | A container is manually or dispatch-dissolved |
 | `container.dispatched` | A kit/hybrid container is dispatched as a persistent unit |
 | `container.returned` | A kit/hybrid container is returned from an opportunity |
+| `container.repack.started` | Repack-on-return initiated for a transport container housing |
+| `container.repack.item` | An item is returned and repacked during a repack session |
 
 ### Activities
 

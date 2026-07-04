@@ -85,6 +85,7 @@ class PackContainerItem
         ?string $notes = null,
         ?int $autoReturnedFromOpportunityId = null,
         bool $confirmedNesting = false,
+        ?int $returnedFromOpportunityId = null,
     ): ContainerItem {
         $item = new ContainerItem([
             'container_id' => $container->id,
@@ -95,6 +96,7 @@ class PackContainerItem
             'position' => $position,
             'notes' => $notes,
             'auto_returned_from_opportunity_id' => $autoReturnedFromOpportunityId,
+            'returned_from_opportunity_id' => $returnedFromOpportunityId,
         ]);
 
         try {

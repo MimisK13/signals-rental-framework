@@ -56,6 +56,8 @@ class WebhookEventRegistry
         'container.dissolved',
         'container.dispatched',
         'container.returned',
+        'container.repack.started',
+        'container.repack.item',
         'activity.created',
         'activity.updated',
         'activity.deleted',
