@@ -208,6 +208,7 @@ it('rejects sealing when a nested container is still open', function () {
 
     (new PackContainerItem)($root, PackContainerItemData::from([
         'serialised_item_id' => $child->serialised_item_id,
+        'resolve' => 'confirm_nesting',
     ]));
 
     sealPackAsset($root, $this->store, Product::factory()->serialised()->create());
@@ -225,6 +226,7 @@ it('seals when nested containers are already sealed', function () {
 
     (new PackContainerItem)($root, PackContainerItemData::from([
         'serialised_item_id' => $child->serialised_item_id,
+        'resolve' => 'confirm_nesting',
     ]));
     sealPackAsset($root, $this->store, Product::factory()->serialised()->create());
 

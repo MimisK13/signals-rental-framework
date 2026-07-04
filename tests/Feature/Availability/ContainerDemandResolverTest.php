@@ -13,6 +13,7 @@ use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Enums\DemandPhase;
 use App\Enums\KitComponentBinding;
+use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\Demand;
@@ -24,6 +25,7 @@ use App\Models\User;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\AvailabilityService;
 use App\Services\DemandSourceRegistry;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -38,10 +40,9 @@ beforeEach(function () {
         }
     });
 
-    // Authenticate and allow packing — authorisation is exercised separately
-    // below. The actor also populates `packed_by_user_id`.
-    $this->actingAs(User::factory()->create());
-    Gate::define('containers.pack', fn (): bool => true);
+    // Authenticate with full container permissions — authorisation on individual
+    // abilities is exercised in dedicated policy tests below.
+    $this->actingAs(User::factory()->owner()->create());
 
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
     $this->resolver = app(ContainerDemandResolver::class);
@@ -63,12 +64,18 @@ function packableItem(Store $store, ?Product $product = null): StockLevel
 /**
  * Pack an item into a container via the action, returning the membership row.
  */
-function packItem(Container $container, StockLevel $item): ContainerItem
+function packItem(Container $container, StockLevel $item, ?string $resolve = null): ContainerItem
 {
-    $data = PackContainerItemData::from(['serialised_item_id' => $item->id]);
+    $payload = ['serialised_item_id' => $item->id];
+
+    if ($resolve !== null) {
+        $payload['resolve'] = $resolve;
+    }
+
+    $data = PackContainerItemData::from($payload);
     $result = (new PackContainerItem)($container, $data);
 
-    return ContainerItem::query()->findOrFail($result->id);
+    return ContainerItem::query()->findOrFail($result->container_item->id);
 }
 
 it('registers the container demand source in the registry', function () {
@@ -293,7 +300,7 @@ it('rejects packing an item already in an active container', function () {
 
     packItem($first, $item);
 
-    expect(fn () => packItem($second, $item))->toThrow(ValidationException::class);
+    expect(fn () => packItem($second, $item))->toThrow(ContainerPackConflictException::class);
 });
 
 it('rejects packing an item held at a different store', function () {
@@ -345,7 +352,11 @@ it('round-trips through the resolver: re-syncing an active membership converges'
 });
 
 it('requires the containers.pack ability to pack', function () {
-    Gate::define('containers.pack', fn (): bool => false);
+    $this->seed(PermissionSeeder::class);
+
+    $viewer = User::factory()->create();
+    $viewer->givePermissionTo(['containers.view', 'stock.access']);
+    $this->actingAs($viewer);
 
     $container = Container::factory()->kit()->create(['store_id' => $this->store->id]);
     $item = packableItem($this->store);

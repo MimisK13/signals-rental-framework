@@ -214,6 +214,44 @@ class ContainerManifestService
     }
 
     /**
+     * The resulting 1-based nesting depth after packing {@see $nested} into
+     * {@see $target} (target depth + 1).
+     */
+    public function nestingDepth(Container $target, Container $nested): int
+    {
+        return $this->depthOf($target) + 1;
+    }
+
+    /**
+     * Count of all serialised items inside a container tree (including nested).
+     */
+    public function recursiveItemCount(Container $container): int
+    {
+        return array_sum($this->manifestQuantities($container));
+    }
+
+    protected function depthOf(Container $container): int
+    {
+        $depth = 1;
+        $current = $container;
+        $guard = 0;
+
+        while ($current->parent_container_id !== null && $guard < 10) {
+            $parent = Container::query()->find($current->parent_container_id);
+
+            if ($parent === null) {
+                break;
+            }
+
+            $depth++;
+            $current = $parent;
+            $guard++;
+        }
+
+        return $depth;
+    }
+
+    /**
      * @return array{slots?: list<array{product_id: int, quantity: int, binding?: string|null}>, max_items?: int|null}
      */
     protected function templateFor(Container $container): array

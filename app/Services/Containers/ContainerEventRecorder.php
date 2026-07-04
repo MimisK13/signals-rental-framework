@@ -4,6 +4,7 @@ namespace App\Services\Containers;
 
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\ContainerItemData;
+use App\Enums\ContainerDissolveReason;
 use App\Enums\ContainerUnsealReason;
 use App\Events\AuditableEvent;
 use App\Models\Container;
@@ -97,6 +98,65 @@ class ContainerEventRecorder
             'container_id' => $container->id,
             'container_uuid' => $container->uuid,
             'reason' => $reason->value,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function dissolved(Container $container, ContainerDissolveReason $reason, int $itemCount): void
+    {
+        event(new AuditableEvent($container, 'container.dissolved', newValues: [
+            'status' => $container->status->value,
+            'reason' => $reason->value,
+            'item_count' => $itemCount,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.dissolved', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'reason' => $reason->value,
+            'opportunity_id' => $container->opportunity_id,
+            'item_count' => $itemCount,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function itemTransferred(Container $source, Container $target, ContainerItem $item): void
+    {
+        event(new AuditableEvent($item, 'container.item.transferred', metadata: [
+            'source_container_id' => $source->id,
+            'target_container_id' => $target->id,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.item.transferred', [
+            'source_container' => ContainerData::fromModel($source)->toArray(),
+            'target_container' => ContainerData::fromModel($target)->toArray(),
+            'container_item' => ContainerItemData::fromModel($item)->toArray(),
+            'source_container_id' => $source->id,
+            'source_container_uuid' => $source->uuid,
+            'target_container_id' => $target->id,
+            'target_container_uuid' => $target->uuid,
+            'serialised_item_id' => $item->serialised_item_id,
+            'product_id' => $item->product_id,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function nested(Container $parent, Container $child, int $depth): void
+    {
+        event(new AuditableEvent($child, 'container.nested', metadata: [
+            'parent_container_id' => $parent->id,
+            'depth' => $depth,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.nested', [
+            'parent_container' => ContainerData::fromModel($parent)->toArray(),
+            'child_container' => ContainerData::fromModel($child)->toArray(),
+            'parent_container_id' => $parent->id,
+            'parent_container_uuid' => $parent->uuid,
+            'child_container_id' => $child->id,
+            'child_container_uuid' => $child->uuid,
+            'depth' => $depth,
             'user_id' => Auth::id(),
         ]);
     }

@@ -57,8 +57,11 @@ Webhooks can be managed via the API (`/api/v1/webhooks`) or from the admin panel
 | `container.created` | A container is created (product-backed or temporary) |
 | `container.item.packed` | An item is packed into a container |
 | `container.item.unpacked` | An item is unpacked from a container |
+| `container.item.transferred` | An item is moved between containers in one step |
+| `container.nested` | A container is packed inside another container |
 | `container.sealed` | A container passes the seal gate and is sealed |
 | `container.unsealed` | A sealed container is reopened (manual or transfer-triggered) |
+| `container.dissolved` | A container is manually or dispatch-dissolved |
 
 ### Activities
 

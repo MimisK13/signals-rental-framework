@@ -67,9 +67,10 @@ it('packs a nested child container into the root without exceeding depth', funct
 
     $result = (new PackContainerItem)($root, PackContainerItemData::from([
         'serialised_item_id' => $child->serialised_item_id,
+        'resolve' => 'confirm_nesting',
     ]));
 
-    expect(ContainerItem::query()->whereKey($result->id)->exists())->toBeTrue();
+    expect(ContainerItem::query()->whereKey($result->container_item->id)->exists())->toBeTrue();
 });
 
 it('rejects nesting that exceeds the root container max nesting depth', function () {

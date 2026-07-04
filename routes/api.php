@@ -232,9 +232,11 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // temporary create routes are declared before the {container} segment routes.
     Route::post('containers/temporary', [ContainerController::class, 'storeTemporary'])->name('api.v1.containers.temporary.store');
     Route::post('containers/{container}/pack', [ContainerController::class, 'pack'])->name('api.v1.containers.pack');
+    Route::post('containers/{container}/transfer', [ContainerController::class, 'transfer'])->name('api.v1.containers.transfer');
     Route::post('containers/{container}/unpack', [ContainerController::class, 'unpack'])->name('api.v1.containers.unpack');
     Route::post('containers/{container}/seal', [ContainerController::class, 'seal'])->name('api.v1.containers.seal');
     Route::post('containers/{container}/unseal', [ContainerController::class, 'unseal'])->name('api.v1.containers.unseal');
+    Route::post('containers/{container}/dissolve', [ContainerController::class, 'dissolve'])->name('api.v1.containers.dissolve');
     Route::get('containers/{container}/compliance', [ContainerController::class, 'compliance'])->name('api.v1.containers.compliance');
     Route::get('containers', [ContainerController::class, 'index'])->name('api.v1.containers.index');
     Route::post('containers', [ContainerController::class, 'store'])->name('api.v1.containers.store');

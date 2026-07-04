@@ -2,16 +2,27 @@
 
 namespace App\Actions\Containers;
 
+use App\Actions\Opportunities\Concerns\RebuildsAvailabilitySnapshots;
+use App\Concerns\CommitsVerbsEvents;
 use App\Data\Containers\ContainerItemData;
 use App\Data\Containers\PackContainerItemData;
+use App\Data\Containers\PackContainerItemResultData;
+use App\Data\Containers\TransferContainerItemData;
+use App\Enums\AssetAssignmentStatus;
+use App\Enums\PackContainerResolution;
+use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\Demand;
+use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\AvailabilityService;
 use App\Services\Containers\ContainerEventRecorder;
+use App\Services\Containers\ContainerManifestService;
+use App\Services\Containers\ContainerSubHireNotice;
+use App\Verbs\Events\Opportunities\AssetReturned;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -20,98 +31,185 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Pack a single serialised item into an open container — the minimal write
- * surface M5-3b needs to create container demands and make availability correct.
+ * Pack a serialised item into an open container with warn-and-resolve conflict
+ * handling (serialised-containers.md §Containment Rules / §Pack Endpoint).
  *
- * Containers are plain Eloquent (NOT event-sourced): this is a straight Eloquent
- * insert plus a demand sync, wrapped in one transaction so the membership row and
- * its container demand are written atomically. The {@see ContainerDemandResolver}
- * then decides whether to actually hold the item from availability (kit / hybrid-
- * fixed) or not (transport / hybrid-pool).
- *
- * Guards (hard blocks — these are data-integrity invariants, not the warn-and-
- * resolve workflow which is Phase 4):
- *  - the container must be OPEN;
- *  - the item must be a SERIALISED stock level at the container's store;
- *  - the item must not already be in an ACTIVE container (one membership per item)
- *    — this also backstops the Postgres partial unique index for the SQLite lane;
- *  - the item must be free over the indefinite container window: packing an asset
- *    already committed to an opportunity would write an indefinite container demand
- *    overlapping the booking demand and trip the Postgres GiST exclusion constraint
- *    as a raw 500 — so it is rejected up-front as a field-scoped 422 instead;
- *  - nesting a container item respects the outermost container's
- *    `container_max_nesting_depth`.
- *
- * The guard runs INSIDE the same transaction as the write so the free-asset and
- * membership checks cannot be raced by a concurrent pack, and a partial-unique
- * violation that slips through is translated into a 422 rather than a raw 500.
- *
- * The container's full conflict-resolution surface (transfer, auto-return,
- * checked-out override, sealed-container handling) is Phase 4.
+ * Hard blocks remain for data-integrity invariants (wrong store, non-serialised,
+ * closed target container, nesting depth exceeded). Conflicts return HTTP 409 with
+ * structured resolutions: transfer, auto_return_and_pack, confirm_nesting.
  */
 class PackContainerItem
 {
-    public function __invoke(Container $container, PackContainerItemData $data): ContainerItemData
+    use CommitsVerbsEvents, RebuildsAvailabilitySnapshots;
+
+    public function __invoke(Container $container, PackContainerItemData $data): PackContainerItemResultData
     {
-        Gate::authorize('containers.pack');
+        Gate::authorize('pack', $container);
 
         $stockLevel = StockLevel::query()->findOrFail($data->serialised_item_id);
+        $resolve = $data->resolve !== null ? PackContainerResolution::tryFrom($data->resolve) : null;
 
-        $item = DB::transaction(function () use ($container, $stockLevel, $data): ContainerItem {
-            // Guard inside the transaction so the free-asset and membership checks
-            // cannot be raced by a concurrent pack between check and insert.
-            $this->guard($container, $stockLevel);
+        if ($resolve === PackContainerResolution::Transfer) {
+            return $this->resolveTransfer($container, $data, $stockLevel);
+        }
 
-            $item = new ContainerItem([
-                'container_id' => $container->id,
-                'serialised_item_id' => $stockLevel->id,
-                'product_id' => $stockLevel->product_id,
-                'packed_at' => Carbon::now('UTC'),
-                'packed_by_user_id' => Auth::id(),
-                'position' => $data->position,
-                'notes' => $data->notes,
-            ]);
+        $this->guardHardInvariants($container, $stockLevel, $resolve);
 
-            try {
-                $item->save();
-            } catch (QueryException) {
-                // A concurrent pack won the race on the Postgres partial-unique
-                // index (uq_container_items_active_membership). Surface it as a
-                // friendly 422 rather than a raw 500.
-                throw ValidationException::withMessages([
-                    'serialised_item_id' => __('The item is already packed in an active container.'),
-                ]);
-            }
+        if ($resolve === PackContainerResolution::AutoReturnAndPack) {
+            Gate::authorize('packOverride', $container);
 
-            // Mirror the CRMS-compat containment layer on the stock level so both
-            // the operational overlay and the legacy column agree.
-            if ($container->serialised_item_id !== null) {
-                $stockLevel->forceFill([
-                    'container_stock_level_id' => $container->serialised_item_id,
-                    'container_mode' => $container->availabilityMode()->value,
-                ])->save();
-            }
+            return $this->autoReturnAndPack($container, $data, $stockLevel);
+        }
 
-            // Create the container demand (or no-op for transport / hybrid-pool).
-            $item->setRelation('container', $container);
-            app(ContainerDemandResolver::class)->syncDemands($item);
+        $this->guardConflicts($container, $stockLevel, $resolve);
 
-            app(ContainerEventRecorder::class)->itemPacked($container, $item);
+        $item = DB::transaction(fn (): ContainerItem => $this->executePack(
+            $container,
+            $stockLevel,
+            $data->position,
+            $data->notes,
+            confirmedNesting: $resolve === PackContainerResolution::ConfirmNesting,
+        ));
 
-            return $item;
-        });
-
-        return ContainerItemData::fromModel($item->fresh() ?? $item);
+        return $this->buildResult($container, $item);
     }
 
     /**
-     * Enforce the hard packing invariants. Throws a validation exception with a
-     * field-scoped message so API/Livewire callers surface it inline.
-     *
+     * Core pack write — membership row, CRMS mirror, container demand, events.
+     * Called directly by {@see TransferContainerItem} after the source unpack.
+     */
+    public function executePack(
+        Container $container,
+        StockLevel $stockLevel,
+        ?string $position = null,
+        ?string $notes = null,
+        ?int $autoReturnedFromOpportunityId = null,
+        bool $confirmedNesting = false,
+    ): ContainerItem {
+        $item = new ContainerItem([
+            'container_id' => $container->id,
+            'serialised_item_id' => $stockLevel->id,
+            'product_id' => $stockLevel->product_id,
+            'packed_at' => Carbon::now('UTC'),
+            'packed_by_user_id' => Auth::id(),
+            'position' => $position,
+            'notes' => $notes,
+            'auto_returned_from_opportunity_id' => $autoReturnedFromOpportunityId,
+        ]);
+
+        try {
+            $item->save();
+        } catch (QueryException) {
+            throw ValidationException::withMessages([
+                'serialised_item_id' => __('The item is already packed in an active container.'),
+            ]);
+        }
+
+        if ($container->serialised_item_id !== null) {
+            $stockLevel->forceFill([
+                'container_stock_level_id' => $container->serialised_item_id,
+                'container_mode' => $container->availabilityMode()->value,
+            ])->save();
+        }
+
+        $item->setRelation('container', $container);
+        app(ContainerDemandResolver::class)->syncDemands($item);
+        app(ContainerEventRecorder::class)->itemPacked($container, $item);
+
+        if ($confirmedNesting) {
+            $nested = Container::query()
+                ->active()
+                ->where('serialised_item_id', $stockLevel->id)
+                ->first();
+
+            if ($nested !== null) {
+                $nested->update(['parent_container_id' => $container->id]);
+                $depth = app(ContainerManifestService::class)->nestingDepth($container, $nested);
+
+                app(ContainerEventRecorder::class)->nested($container, $nested, $depth);
+            }
+        }
+
+        return $item;
+    }
+
+    protected function resolveTransfer(
+        Container $target,
+        PackContainerItemData $data,
+        StockLevel $stockLevel,
+    ): PackContainerItemResultData {
+        Gate::authorize('transfer', $target);
+
+        $existing = ContainerItem::query()
+            ->where('serialised_item_id', $stockLevel->id)
+            ->whereNull('unpacked_at')
+            ->first();
+
+        if ($existing === null) {
+            throw ValidationException::withMessages([
+                'resolve' => __('No active container membership exists to transfer from.'),
+            ]);
+        }
+
+        $item = (new TransferContainerItem)($target, TransferContainerItemData::from([
+            'serialised_item_id' => $stockLevel->id,
+            'source_container_id' => $existing->container_id,
+            'position' => $data->position,
+            'notes' => $data->notes,
+        ]));
+
+        $notice = app(ContainerSubHireNotice::class)->forStockLevel($stockLevel);
+
+        return new PackContainerItemResultData(
+            container_item: $item,
+            notices: $notice !== null ? [$notice] : [],
+        );
+    }
+
+    protected function autoReturnAndPack(
+        Container $container,
+        PackContainerItemData $data,
+        StockLevel $stockLevel,
+    ): PackContainerItemResultData {
+        $assignment = $this->findCheckedOutAssignment($stockLevel);
+
+        if ($assignment === null) {
+            throw ValidationException::withMessages([
+                'resolve' => __('The item is not checked out on an opportunity.'),
+            ]);
+        }
+
+        $opportunityId = (int) $assignment->item?->opportunity_id;
+
+        $item = DB::transaction(function () use ($container, $data, $stockLevel, $assignment, $opportunityId): ContainerItem {
+            $this->commitVerbs(function () use ($assignment): void {
+                AssetReturned::fire(state_id: $assignment->state_id);
+            });
+
+            if ($assignment->item !== null) {
+                $this->rebuildSnapshotsForItems([$assignment->item]);
+            }
+
+            return $this->executePack(
+                $container,
+                $stockLevel,
+                $data->position,
+                $data->notes,
+                autoReturnedFromOpportunityId: $opportunityId > 0 ? $opportunityId : null,
+            );
+        });
+
+        return $this->buildResult($container, $item);
+    }
+
+    /**
      * @throws ValidationException
      */
-    protected function guard(Container $container, StockLevel $stockLevel): void
-    {
+    protected function guardHardInvariants(
+        Container $container,
+        StockLevel $stockLevel,
+        ?PackContainerResolution $resolve,
+    ): void {
         if (! $container->status->acceptsPacking()) {
             throw ValidationException::withMessages([
                 'container' => __('Items can only be packed into an open container.'),
@@ -133,67 +231,96 @@ class PackContainerItem
             ]);
         }
 
-        // One active membership per item (also enforced by the Postgres partial
-        // unique index; checked here for the SQLite lane and a friendlier error).
-        $alreadyPacked = ContainerItem::query()
-            ->where('serialised_item_id', $stockLevel->id)
-            ->whereNull('unpacked_at')
-            ->exists();
-
-        if ($alreadyPacked) {
-            throw ValidationException::withMessages([
-                'serialised_item_id' => __('The item is already packed in an active container.'),
-            ]);
+        if ($resolve !== PackContainerResolution::ConfirmNesting) {
+            $this->guardNestingDepthExceeded($container, $stockLevel);
+        } else {
+            Gate::authorize('nest', $container);
+            $this->guardNestingDepthExceeded($container, $stockLevel);
         }
-
-        $this->guardAssetFree($stockLevel);
-
-        $this->guardNestingDepth($container, $stockLevel);
     }
 
-    /**
-     * Reject packing an asset that is already committed to an opportunity.
-     *
-     * A kit / hybrid-fixed pack writes an INDEFINITE container demand
-     * (`asset_id = stock_level_id`, `[packed_at, ∞)`, active). If the asset already
-     * holds an active opportunity booking demand that overlaps that window, the two
-     * demands collide — on PostgreSQL the GiST exclusion constraint
-     * `excl_demands_asset_period` raises a raw 23P01 (an unhandled 500). This is the
-     * reverse of the pack-then-allocate direction already guarded by
-     * {@see App\Verbs\Events\Opportunities\AssetAllocated::validate()}; guard it here
-     * up-front as a friendly 422.
-     *
-     * The check spans `[now, sentinel)` — the indefinite container window — so any
-     * active asset-specific demand from now onward blocks the pack.
-     *
-     * @throws ValidationException
-     */
-    protected function guardAssetFree(StockLevel $stockLevel): void
-    {
-        $free = app(AvailabilityService::class)->checkAssetAvailable(
+    protected function guardConflicts(
+        Container $container,
+        StockLevel $stockLevel,
+        ?PackContainerResolution $resolve,
+    ): void {
+        $existing = ContainerItem::query()
+            ->where('serialised_item_id', $stockLevel->id)
+            ->whereNull('unpacked_at')
+            ->with('container')
+            ->first();
+
+        if ($existing !== null && (int) $existing->container_id !== (int) $container->id) {
+            throw $this->alreadyInContainerConflict($container, $existing);
+        }
+
+        if ($assignment = $this->findCheckedOutAssignment($stockLevel)) {
+            throw $this->checkedOutConflict($container, $assignment);
+        }
+
+        if ($resolve !== PackContainerResolution::ConfirmNesting) {
+            $this->guardNestingConfirmation($container, $stockLevel);
+        }
+
+        if (! app(AvailabilityService::class)->checkAssetAvailable(
             $stockLevel->id,
             Carbon::now('UTC'),
             Demand::sentinel(),
-        );
-
-        if (! $free) {
+        )) {
             throw ValidationException::withMessages([
                 'serialised_item_id' => __('This item is currently committed to an opportunity and cannot be packed into a container.'),
             ]);
         }
     }
 
-    /**
-     * When the packed item is itself a container housing, ensure nesting it does
-     * not exceed the outermost container's configured max depth.
-     *
-     * Depth is the recursion from the outermost (root) container down to the
-     * newly-nested child. A child container packed directly into a root is depth
-     * 2 (root → child); the limit defaults to 2.
-     *
-     * @throws ValidationException
-     */
-    protected function guardNestingDepth(Container $container, StockLevel $stockLevel): void
+    protected function alreadyInContainerConflict(Container $target, ContainerItem $existing): ContainerPackConflictException
+    {
+        $current = $existing->container;
+
+        return new ContainerPackConflictException(
+            conflict: 'already_in_container',
+            details: [
+                'current_container_id' => $current?->uuid,
+                'current_container_name' => $current?->name,
+                'current_container_status' => $current?->status->value,
+                'associated_opportunity_id' => $current?->opportunity_id,
+            ],
+            resolutions: [
+                'transfer' => [
+                    'available' => Gate::check('transfer', $target),
+                    'requires_permission' => 'containers.transfer',
+                    'description' => __('Move item from current container to this container'),
+                ],
+            ],
+        );
+    }
+
+    protected function checkedOutConflict(Container $target, OpportunityItemAsset $assignment): ContainerPackConflictException
+    {
+        $opportunity = $assignment->item?->opportunity;
+        $endsAt = $opportunity?->ends_at;
+        $isOverdue = $endsAt !== null && $endsAt->isPast();
+
+        return new ContainerPackConflictException(
+            conflict: 'checked_out',
+            details: [
+                'opportunity_id' => $opportunity?->id,
+                'opportunity_subject' => $opportunity?->subject,
+                'opportunity_ends_at' => $endsAt?->toIso8601String(),
+                'dispatched_at' => $assignment->dispatched_at?->toIso8601String(),
+                'is_overdue' => $isOverdue,
+            ],
+            resolutions: [
+                'auto_return_and_pack' => [
+                    'available' => Gate::check('packOverride', $target),
+                    'requires_permission' => 'containers.pack_override',
+                    'description' => __('Return item from opportunity and pack into container'),
+                ],
+            ],
+        );
+    }
+
+    protected function guardNestingConfirmation(Container $container, StockLevel $stockLevel): void
     {
         $nested = Container::query()
             ->active()
@@ -204,8 +331,69 @@ class PackContainerItem
             return;
         }
 
-        // Resolve the outermost container's configured ceiling, walking up the
-        // parent chain from the target container (bounded by a sane cycle guard).
+        $depth = app(ContainerManifestService::class)->nestingDepth($container, $nested);
+        $itemCount = app(ContainerManifestService::class)->recursiveItemCount($nested);
+
+        throw new ContainerPackConflictException(
+            conflict: 'confirm_nesting',
+            details: [
+                'nested_container_id' => $nested->uuid,
+                'nested_container_name' => $nested->name,
+                'recursive_item_count' => $itemCount,
+                'resulting_depth' => $depth,
+            ],
+            resolutions: [
+                'confirm_nesting' => [
+                    'available' => Gate::check('nest', $container),
+                    'requires_permission' => 'containers.nest',
+                    'description' => __('Confirm packing this container inside the target container'),
+                ],
+            ],
+        );
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    protected function guardNestingDepthExceeded(Container $container, StockLevel $stockLevel): void
+    {
+        $nested = Container::query()
+            ->active()
+            ->where('serialised_item_id', $stockLevel->id)
+            ->first();
+
+        if ($nested === null) {
+            return;
+        }
+
+        $root = $this->outermostContainer($container);
+        $maxDepth = max(1, (int) (Product::query()
+            ->whereKey($root->product_id)
+            ->value('container_max_nesting_depth') ?? config('containers.default_max_nesting_depth', 2)));
+
+        $currentDepth = $this->depthOf($container);
+
+        if ($currentDepth + 1 > $maxDepth) {
+            throw ValidationException::withMessages([
+                'serialised_item_id' => __('Nesting this container would exceed the maximum nesting depth.'),
+            ]);
+        }
+    }
+
+    protected function findCheckedOutAssignment(StockLevel $stockLevel): ?OpportunityItemAsset
+    {
+        return OpportunityItemAsset::query()
+            ->where('stock_level_id', $stockLevel->id)
+            ->whereIn('status', [
+                AssetAssignmentStatus::Dispatched,
+                AssetAssignmentStatus::OnHire,
+            ])
+            ->with('item.opportunity')
+            ->first();
+    }
+
+    protected function outermostContainer(Container $container): Container
+    {
         $root = $container;
         $guard = 0;
 
@@ -220,28 +408,9 @@ class PackContainerItem
             $guard++;
         }
 
-        // Resolve the root's backing product's depth ceiling — the FK is nullable
-        // (temporary containers have no product), so fall back to the default when
-        // absent. Read the single column so the absence is a plain null.
-        $maxDepth = max(1, (int) (Product::query()
-            ->whereKey($root->product_id)
-            ->value('container_max_nesting_depth') ?? 2));
-
-        // Depth of the target container within the hierarchy (root = 1).
-        $currentDepth = $this->depthOf($container);
-
-        // Nesting the child adds one more level beneath the target container.
-        if ($currentDepth + 1 > $maxDepth) {
-            throw ValidationException::withMessages([
-                'serialised_item_id' => __('Nesting this container would exceed the maximum nesting depth.'),
-            ]);
-        }
+        return $root;
     }
 
-    /**
-     * The 1-based depth of a container within its nesting hierarchy (a root
-     * container is depth 1). Bounded by a cycle guard.
-     */
     protected function depthOf(Container $container): int
     {
         $depth = 1;
@@ -261,5 +430,18 @@ class PackContainerItem
         }
 
         return $depth;
+    }
+
+    protected function buildResult(Container $container, ContainerItem $item): PackContainerItemResultData
+    {
+        $fresh = $item->fresh() ?? $item;
+        $notice = app(ContainerSubHireNotice::class)->forStockLevel(
+            StockLevel::query()->findOrFail($fresh->serialised_item_id),
+        );
+
+        return new PackContainerItemResultData(
+            container_item: ContainerItemData::fromModel($fresh),
+            notices: $notice !== null ? [$notice] : [],
+        );
     }
 }

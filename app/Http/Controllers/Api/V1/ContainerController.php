@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Containers\CreateContainer;
 use App\Actions\Containers\CreateTemporaryContainer;
+use App\Actions\Containers\DissolveContainer;
 use App\Actions\Containers\PackContainerItem;
 use App\Actions\Containers\SealContainer;
+use App\Actions\Containers\TransferContainerItem;
 use App\Actions\Containers\UnpackContainerItem;
 use App\Actions\Containers\UnsealContainer;
 use App\Actions\Containers\UpdateContainer;
@@ -13,9 +15,11 @@ use App\Data\Containers\ContainerData;
 use App\Data\Containers\CreateContainerData;
 use App\Data\Containers\CreateTemporaryContainerData;
 use App\Data\Containers\PackContainerItemData;
+use App\Data\Containers\TransferContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
 use App\Data\Containers\UnsealContainerData;
 use App\Data\Containers\UpdateContainerData;
+use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Models\Container;
@@ -167,20 +171,28 @@ class ContainerController extends Controller
      *
      * Creates the membership row and (for kit / hybrid-fixed containers) the
      * container demand that holds the item from individual availability. Packing
-     * a non-serialised item, an item at a different store, an item already in an
-     * active container, or an item already committed to an opportunity yields a
-     * 422.
+     * a non-serialised item, an item at a different store, or nesting depth
+     * exceeded yields a 422. Conflicts (already in container, checked out, nesting
+     * confirmation) yield 409 with resolution options.
      */
     #[ApiResponse(201, 'Item packed')]
+    #[ApiResponse(409, 'Pack conflict requiring resolution')]
     public function pack(Request $request, Container $container): JsonResponse
     {
         $this->authorizeApi('containers.pack', 'containers:write');
 
         $data = PackContainerItemData::from($request->validate(PackContainerItemData::rules()));
 
-        $item = (new PackContainerItem)($container, $data);
+        try {
+            $result = (new PackContainerItem)($container, $data);
+        } catch (ContainerPackConflictException $e) {
+            return response()->json($e->payload(), Response::HTTP_CONFLICT);
+        }
 
-        return $this->respondWith($item->toArray(), 'container_item', Response::HTTP_CREATED);
+        return response()->json([
+            'container_item' => $result->container_item->toArray(),
+            'notices' => $result->notices,
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -229,6 +241,35 @@ class ContainerController extends Controller
         $result = (new UnsealContainer)($container, $data);
 
         return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Manually dissolve a container, releasing all packed items and cascading
+     * to nested containers.
+     */
+    #[ApiResponse(200, 'Container dissolved')]
+    public function dissolve(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.dissolve', 'containers:write');
+
+        $result = (new DissolveContainer)($container);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Atomically transfer a serialised item from a source container into this one.
+     */
+    #[ApiResponse(201, 'Item transferred')]
+    public function transfer(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.transfer', 'containers:write');
+
+        $data = TransferContainerItemData::from($request->validate(TransferContainerItemData::rules()));
+
+        $item = (new TransferContainerItem)($container, $data);
+
+        return $this->respondWith($item->toArray(), 'container_item', Response::HTTP_CREATED);
     }
 
     /**

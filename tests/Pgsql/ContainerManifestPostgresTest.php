@@ -89,6 +89,7 @@ it('rolls up nested contents via recursive CTE at max depth', function () {
 
     (new PackContainerItem)($outer, PackContainerItemData::from([
         'serialised_item_id' => $inner->serialised_item_id,
+        'resolve' => 'confirm_nesting',
     ]));
 
     $manifest = app(ContainerManifestService::class)->manifestQuantities($outer);
@@ -111,6 +112,7 @@ it('excludes contents beyond the configured max nesting depth in the CTE path', 
     $depth2 = pgKitContainer($this->store);
     (new PackContainerItem)($depth2, PackContainerItemData::from([
         'serialised_item_id' => $depth3->serialised_item_id,
+        'resolve' => 'confirm_nesting',
     ]));
 
     $rootProduct = Product::factory()->containerable()->create([
@@ -127,6 +129,7 @@ it('excludes contents beyond the configured max nesting depth in the CTE path', 
 
     (new PackContainerItem)($root, PackContainerItemData::from([
         'serialised_item_id' => $depth2->serialised_item_id,
+        'resolve' => 'confirm_nesting',
     ]));
 
     $manifest = app(ContainerManifestService::class)->manifestQuantities($root);

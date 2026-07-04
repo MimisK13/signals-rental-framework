@@ -10,6 +10,8 @@ use App\Data\Containers\UnsealContainerData;
 use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Enums\ContainerUnsealReason;
+use App\Enums\PackContainerResolution;
+use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Models\Container;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -22,6 +24,9 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public string $unsealReason = '';
 
+    /** @var array<string, mixed>|null */
+    public ?array $packConflict = null;
+
     public function mount(Container $container): void
     {
         Gate::authorize('view', $container);
@@ -29,16 +34,33 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->unsealReason = ContainerUnsealReason::Manual->value;
     }
 
-    public function pack(): void
+    public function pack(?string $resolve = null): void
     {
         Gate::authorize('pack', $this->container);
 
-        (new PackContainerItem)($this->container, PackContainerItemData::from([
-            'serialised_item_id' => (int) $this->packSerialisedItemId,
-        ]));
+        $this->packConflict = null;
 
-        $this->packSerialisedItemId = '';
-        $this->refreshContainer();
+        try {
+            (new PackContainerItem)($this->container, PackContainerItemData::from([
+                'serialised_item_id' => (int) $this->packSerialisedItemId,
+                'resolve' => $resolve,
+            ]));
+
+            $this->packSerialisedItemId = '';
+            $this->refreshContainer();
+        } catch (ContainerPackConflictException $e) {
+            $this->packConflict = $e->payload();
+        }
+    }
+
+    public function resolvePackConflict(string $resolution): void
+    {
+        $this->pack($resolution);
+    }
+
+    public function dismissPackConflict(): void
+    {
+        $this->packConflict = null;
     }
 
     public function unpack(int $serialisedItemId): void
@@ -82,8 +104,15 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         return [
             'canPack' => Gate::check('pack', $this->container),
+            'canPackOverride' => Gate::check('packOverride', $this->container),
+            'canTransfer' => Gate::check('transfer', $this->container),
+            'canNest' => Gate::check('nest', $this->container),
             'canSeal' => Gate::check('seal', $this->container),
             'unsealReasons' => ContainerUnsealReason::configValues(),
+            'packResolutions' => array_map(
+                static fn (PackContainerResolution $case): string => $case->value,
+                PackContainerResolution::cases(),
+            ),
         ];
     }
 }; ?>
@@ -138,6 +167,31 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </div>
             </div>
         </x-signals.card>
+
+        @if($packConflict)
+            <x-signals.card>
+                <h2 class="text-sm font-semibold mb-2">Packing conflict</h2>
+                <p class="text-sm text-[var(--muted)] mb-3">{{ str($packConflict['conflict'] ?? '')->headline() }}</p>
+                <dl class="text-sm space-y-1 mb-4">
+                    @foreach($packConflict['details'] ?? [] as $key => $value)
+                        <div class="flex gap-2">
+                            <dt class="text-[var(--muted)]">{{ str($key)->headline() }}:</dt>
+                            <dd>{{ is_bool($value) ? ($value ? 'Yes' : 'No') : ($value ?? '—') }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($packConflict['resolutions'] ?? [] as $key => $resolution)
+                        @if($resolution['available'] ?? false)
+                            <flux:button wire:click="resolvePackConflict('{{ $key }}')" wire:loading.attr="disabled" variant="primary">
+                                {{ $resolution['description'] ?? str($key)->headline() }}
+                            </flux:button>
+                        @endif
+                    @endforeach
+                    <flux:button wire:click="dismissPackConflict" wire:loading.attr="disabled">Dismiss</flux:button>
+                </div>
+            </x-signals.card>
+        @endif
 
         @if($canPack && $container->status->acceptsPacking())
             <x-signals.card>

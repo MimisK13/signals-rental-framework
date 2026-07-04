@@ -31,4 +31,19 @@ return [
         'transfer_triggered',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Dissolve reasons
+    |--------------------------------------------------------------------------
+    |
+    | Config-driven allow-list for manual / dispatch dissolution audit fields.
+    |
+    | @var list<string>
+    */
+
+    'dissolve_reasons' => [
+        'dispatched',
+        'manual',
+    ],
+
 ];

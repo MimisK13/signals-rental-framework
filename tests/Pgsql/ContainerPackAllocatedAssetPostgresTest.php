@@ -115,6 +115,6 @@ it('allows packing a free asset (no opportunity commitment)', function () {
         'serialised_item_id' => $asset->id,
     ]));
 
-    expect(ContainerItem::query()->whereKey($result->id)->exists())->toBeTrue()
+    expect(ContainerItem::query()->whereKey($result->container_item->id)->exists())->toBeTrue()
         ->and(Demand::query()->where('source_type', 'container')->where('asset_id', $asset->id)->count())->toBe(1);
 });

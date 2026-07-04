@@ -238,6 +238,7 @@ describe('GET /api/v1/containers/{container}/compliance', function () {
         $this->withHeader('Authorization', "Bearer {$this->token}")
             ->postJson("/api/v1/containers/{$root->uuid}/pack", [
                 'serialised_item_id' => $child->serialised_item_id,
+                'resolve' => 'confirm_nesting',
             ])
             ->assertCreated();
 
@@ -310,6 +311,7 @@ describe('compliance service depth limit', function () {
         $this->withHeader('Authorization', "Bearer {$this->token}")
             ->postJson("/api/v1/containers/{$level2->uuid}/pack", [
                 'serialised_item_id' => $level3->serialised_item_id,
+                'resolve' => 'confirm_nesting',
             ])
             ->assertCreated();
 
@@ -324,6 +326,7 @@ describe('compliance service depth limit', function () {
         $this->withHeader('Authorization', "Bearer {$this->token}")
             ->postJson("/api/v1/containers/{$root->uuid}/pack", [
                 'serialised_item_id' => $level2->serialised_item_id,
+                'resolve' => 'confirm_nesting',
             ])
             ->assertCreated();
 
