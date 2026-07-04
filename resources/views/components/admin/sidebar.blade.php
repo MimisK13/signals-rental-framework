@@ -163,6 +163,13 @@
 
     @if($group === 'documents')
         <div class="s-admin-sidebar-title">Documents</div>
+        @can('numbering.view')
+            <a href="{{ route('admin.settings.numbering') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.numbering') ? 'active' : '' }}">
+                <flux:icon.hashtag class="s-admin-nav-icon" />
+                Numbering
+            </a>
+        @endcan
         @can('document_templates.view')
             <a href="{{ route('admin.document-templates.index') }}" wire:navigate
                class="s-admin-nav-item {{ ActiveRoute::is('admin.document-templates*') ? 'active' : '' }}">

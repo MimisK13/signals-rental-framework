@@ -398,6 +398,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/pricing/discount-categories', 'admin.settings.pricing.discount-categories')->name('admin.settings.pricing.discount-categories');
 
     // Documents
+    Volt::route('admin/settings/numbering', 'admin.settings.numbering')->name('admin.settings.numbering');
     Volt::route('admin/document-templates', 'document-templates.index')->name('admin.document-templates.index');
     Volt::route('admin/document-templates/{documentTemplate}/edit', 'document-templates.edit')->name('admin.document-templates.edit');
     Volt::route('admin/settings/pricing/discount-categories/create', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.create');

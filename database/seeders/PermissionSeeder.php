@@ -152,6 +152,8 @@ class PermissionSeeder extends Seeder
             'documents.delete' => ['label' => 'Delete Documents', 'description' => 'Delete generated documents', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
             'document_templates.view' => ['label' => 'View Document Templates', 'description' => 'View document template definitions', 'group' => 'Documents', 'sub_group' => 'Templates', 'layer' => 'action', 'dependencies' => ['documents.access']],
             'document_templates.edit' => ['label' => 'Edit Document Templates', 'description' => 'Create and edit document templates', 'group' => 'Documents', 'sub_group' => 'Templates', 'layer' => 'action', 'dependencies' => ['document_templates.view']],
+            'numbering.view' => ['label' => 'View Numbering Schemes', 'description' => 'View entity number format settings', 'group' => 'Documents', 'sub_group' => 'Numbering', 'layer' => 'action', 'dependencies' => ['documents.access']],
+            'numbering.edit' => ['label' => 'Edit Numbering Schemes', 'description' => 'Edit entity number format settings', 'group' => 'Documents', 'sub_group' => 'Numbering', 'layer' => 'action', 'dependencies' => ['numbering.view']],
 
             // System
             'system.read' => ['label' => 'Read System Info', 'description' => 'Access system health and diagnostics via API', 'group' => 'System', 'sub_group' => null, 'layer' => 'action', 'dependencies' => []],

@@ -10,6 +10,7 @@ use App\Services\Invoices\PaymentNumberGenerator;
 use App\Services\Members\MemberNumberGenerator;
 use App\Services\Opportunities\OpportunityNumberGenerator;
 use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
+use App\Services\VirtualStock\VirtualStockNumberGenerator;
 
 /**
  * Canonical default prefixes and sequence attributes for document numbering.
@@ -63,6 +64,13 @@ class DocumentSequenceDefaults
     {
         if (isset(self::PREFIXES[$documentType])) {
             return self::PREFIXES[$documentType];
+        }
+
+        if ($documentType === VirtualStockNumberGenerator::DOCUMENT_TYPE) {
+            return (string) settings(
+                'virtual_stock.fallback_number_prefix',
+                config('virtual_stock.fallback_number_prefix', 'VS-'),
+            );
         }
 
         if ($documentType === CreditNoteNumberGenerator::DOCUMENT_TYPE) {

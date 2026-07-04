@@ -68,6 +68,7 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                 'title' => 'Documents',
                 'description' => 'PDF templates, numbering, and print layouts.',
                 'items' => [
+                    ['label' => 'Numbering', 'description' => 'Entity number formats for invoices, orders, and members', 'icon' => 'hashtag', 'route' => 'admin.settings.numbering', 'gate' => 'numbering.view'],
                     ['label' => 'Document Templates', 'description' => 'Edit quote, invoice, and warehouse document templates', 'icon' => 'document-text', 'route' => 'admin.document-templates.index', 'gate' => 'document_templates.view'],
                 ],
             ],

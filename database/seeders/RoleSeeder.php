@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
         $opsManagerPermissions = array_filter($allPermissions, fn (string $p): bool => ! str_starts_with($p, 'settings.')
             && ! str_starts_with($p, 'users.')
             && ! str_starts_with($p, 'roles.')
+            && $p !== 'numbering.edit'
         );
 
         $salesPermissions = array_filter($allPermissions, fn (string $p): bool => (str_starts_with($p, 'opportunities.')
