@@ -21,7 +21,8 @@ it('loads finance settings with defaults', function () {
         ->assertSet('taxPointPolicy', TaxPointPolicy::SupplyDate->value)
         ->assertSet('pricesIncludeTaxDefault', false)
         ->assertSet('showTaxOnDocuments', true)
-        ->assertSet('vatValidationValidityDays', 30);
+        ->assertSet('vatValidationValidityDays', 30)
+        ->assertSet('reverseChargeLabel', 'Reverse charge');
 });
 
 it('saves finance settings', function () {
@@ -45,6 +46,15 @@ it('saves vat validation validity days', function () {
         ->assertHasNoErrors();
 
     expect(settings('finance.vat_validation_validity_days'))->toBe(14);
+});
+
+it('saves reverse charge label', function () {
+    Volt::test('admin.settings.finance')
+        ->set('reverseChargeLabel', 'Customer VAT due')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(settings('finance.reverse_charge_label'))->toBe('Customer VAT due');
 });
 
 it('validates tax_point_policy options', function () {

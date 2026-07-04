@@ -15,9 +15,22 @@ class UpdateZoneTaxRule
     {
         Gate::authorize('tax-classes.manage');
 
-        $taxRule->update(array_filter($data->toArray(), fn ($value): bool => $value !== null));
+        $attributes = array_filter($data->toArray(), fn ($value): bool => $value !== null);
 
-        event(new AuditableEvent($taxRule, 'tax_rule.updated'));
+        $oldValues = [];
+        $newValues = [];
+
+        foreach ($attributes as $key => $value) {
+            $old = $taxRule->getAttribute($key);
+            $oldValues[$key] = $old instanceof \BackedEnum ? $old->value : $old;
+            $newValues[$key] = $value instanceof \BackedEnum ? $value->value : $value;
+        }
+
+        $taxRule->update($attributes);
+
+        if ($attributes !== []) {
+            event(new AuditableEvent($taxRule, 'tax_rule.updated', $oldValues, $newValues));
+        }
 
         app(WebhookService::class)->dispatch('tax_rule.updated', [
             'tax_rule' => TaxRuleData::fromModel($taxRule->fresh())->toArray(),

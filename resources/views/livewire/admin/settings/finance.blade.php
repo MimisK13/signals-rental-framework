@@ -15,6 +15,8 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
 
     public ?int $vatValidationValidityDays = 30;
 
+    public string $reverseChargeLabel = 'Reverse charge';
+
     public function mount(): void
     {
         $group = settings()->group('finance');
@@ -25,6 +27,7 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
         $this->vatValidationValidityDays = isset($group['vat_validation_validity_days'])
             ? (int) $group['vat_validation_validity_days']
             : 30;
+        $this->reverseChargeLabel = (string) ($group['reverse_charge_label'] ?? 'Reverse charge');
     }
 
     public function save(): void
@@ -38,6 +41,7 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
             'pricesIncludeTaxDefault' => $rules['prices_include_tax_default'],
             'showTaxOnDocuments' => $rules['show_tax_on_documents'],
             'vatValidationValidityDays' => $rules['vat_validation_validity_days'],
+            'reverseChargeLabel' => $rules['reverse_charge_label'],
         ]);
 
         settings()->setMany([
@@ -54,6 +58,7 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
                 'value' => $validated['vatValidationValidityDays'],
                 'type' => $types['vat_validation_validity_days'],
             ],
+            'finance.reverse_charge_label' => $validated['reverseChargeLabel'],
         ]);
 
         $this->dispatch('finance-settings-saved');
@@ -93,6 +98,15 @@ new #[Layout('components.layouts.app')] #[Title('Finance')] class extends Compon
                     />
                     <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
                         How long a successful VIES/HMRC check remains trusted for reverse-charge eligibility. Set to 0 to never expire.
+                    </flux:text>
+                </div>
+            </x-signals.form-section>
+
+            <x-signals.form-section title="Reverse Charge Display">
+                <div class="space-y-4">
+                    <flux:input wire:model="reverseChargeLabel" label="Reverse charge label" maxlength="255" />
+                    <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
+                        Display name shown on tax breakdowns and documents when reverse charge applies.
                     </flux:text>
                 </div>
             </x-signals.form-section>

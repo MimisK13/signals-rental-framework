@@ -25,6 +25,7 @@ class FinanceSettings extends SettingsDefinition
             'show_tax_on_documents' => true,
             'partial_invoice_tax' => 'proportional',
             'vat_validation_validity_days' => 30,
+            'reverse_charge_label' => 'Reverse charge',
         ];
     }
 
@@ -44,6 +45,7 @@ class FinanceSettings extends SettingsDefinition
                 Rule::in(['proportional', 'full']),
             ],
             'vat_validation_validity_days' => ['nullable', 'integer', 'min:0', 'max:3650'],
+            'reverse_charge_label' => ['required', 'string', 'max:255'],
         ];
     }
 
@@ -55,6 +57,7 @@ class FinanceSettings extends SettingsDefinition
             'show_tax_on_documents' => 'boolean',
             'partial_invoice_tax' => 'string',
             'vat_validation_validity_days' => 'integer',
+            'reverse_charge_label' => 'string',
         ];
     }
 }

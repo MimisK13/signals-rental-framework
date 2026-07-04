@@ -183,11 +183,12 @@ class ZoneAwareTaxResolver implements TaxResolver
                 ),
                 $zoneRule,
             ),
+            // Compound-tax display is N/A while compound tax remains deferred per the Phase-4 binding decision.
             TaxResultType::ReverseCharge => $this->zeroTaxResult(
                 $isInclusiveInput ? $grossMinorUnits : $netMinorUnits,
                 $currencyCode,
                 TaxResultType::ReverseCharge,
-                taxRateName: 'Reverse charge',
+                taxRateName: $this->reverseChargeLabel(),
                 legalText: $zoneRule->legal_text,
                 zoneTaxRuleId: $zoneRule->id,
                 isInclusiveInput: $isInclusiveInput,
@@ -278,5 +279,10 @@ class ZoneAwareTaxResolver implements TaxResolver
     private function zoneRuleResultType(TaxRule $zoneRule): TaxResultType
     {
         return $zoneRule->result_type ?? TaxResultType::Standard;
+    }
+
+    private function reverseChargeLabel(): string
+    {
+        return (string) settings('finance.reverse_charge_label');
     }
 }

@@ -32,12 +32,41 @@ class CreateZoneTaxRule
             'is_active' => $data->is_active,
         ]);
 
-        event(new AuditableEvent($taxRule, 'tax_rule.created'));
+        event(new AuditableEvent(
+            $taxRule,
+            'tax_rule.created',
+            null,
+            $this->auditSnapshot($taxRule),
+        ));
 
         app(WebhookService::class)->dispatch('tax_rule.created', [
             'tax_rule' => TaxRuleData::fromModel($taxRule)->toArray(),
         ]);
 
         return TaxRuleData::fromModel($taxRule);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function auditSnapshot(TaxRule $taxRule): array
+    {
+        return [
+            'name' => $taxRule->name,
+            'seller_zone_id' => $taxRule->seller_zone_id,
+            'buyer_zone_id' => $taxRule->buyer_zone_id,
+            'buyer_type' => $this->backedEnumValue($taxRule->buyer_type),
+            'has_tax_id' => $taxRule->has_tax_id,
+            'tax_category_id' => $taxRule->tax_category_id,
+            'result_type' => $this->backedEnumValue($taxRule->result_type),
+            'legal_text' => $taxRule->legal_text,
+            'priority' => $taxRule->priority,
+            'is_active' => $taxRule->is_active,
+        ];
+    }
+
+    private function backedEnumValue(mixed $value): mixed
+    {
+        return $value instanceof \BackedEnum ? $value->value : $value;
     }
 }

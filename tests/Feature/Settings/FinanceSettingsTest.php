@@ -40,6 +40,10 @@ describe('FinanceSettings definition', function () {
         expect(settings('finance.vat_validation_validity_days'))->toBe(30);
     });
 
+    it('defaults reverse_charge_label to Reverse charge', function () {
+        expect(settings('finance.reverse_charge_label'))->toBe('Reverse charge');
+    });
+
     it('is registered in the settings registry', function () {
         $registry = app(SettingsRegistry::class);
 
@@ -81,7 +85,8 @@ describe('FinanceSettings class metadata', function () {
             ->toHaveKey('prices_include_tax_default', 'boolean')
             ->toHaveKey('show_tax_on_documents', 'boolean')
             ->toHaveKey('partial_invoice_tax', 'string')
-            ->toHaveKey('vat_validation_validity_days', 'integer');
+            ->toHaveKey('vat_validation_validity_days', 'integer')
+            ->toHaveKey('reverse_charge_label', 'string');
     });
 
     it('rejects invalid partial_invoice_tax values via definition rules', function () {
