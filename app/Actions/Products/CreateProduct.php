@@ -43,6 +43,8 @@ class CreateProduct
                 'discountable' => $data->discountable,
                 'tax_class_id' => $data->tax_class_id,
                 'purchase_tax_class_id' => $data->purchase_tax_class_id,
+                'sale_tax_category_id' => $data->sale_tax_category_id,
+                'purchase_tax_category_id' => $data->purchase_tax_category_id,
                 'rental_revenue_group_id' => $data->rental_revenue_group_id,
                 'sale_revenue_group_id' => $data->sale_revenue_group_id,
                 'sub_rental_cost_group_id' => $data->sub_rental_cost_group_id,

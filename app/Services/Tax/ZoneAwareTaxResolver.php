@@ -28,6 +28,7 @@ class ZoneAwareTaxResolver implements TaxResolver
         ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult {
         $context = $this->contextHolder->get();
 
@@ -38,6 +39,7 @@ class ZoneAwareTaxResolver implements TaxResolver
                 $organisationTaxClassId,
                 $productTaxClassId,
                 $effectiveAt,
+                $productTaxCategoryId,
             );
         }
 
@@ -56,6 +58,7 @@ class ZoneAwareTaxResolver implements TaxResolver
             buyer_zone_id: $context->buyerZoneId,
             buyer_type: $context->buyerType,
             has_tax_id: $context->hasTaxId,
+            tax_category_id: $productTaxCategoryId,
         ));
 
         if ($zoneRule === null) {
@@ -65,6 +68,7 @@ class ZoneAwareTaxResolver implements TaxResolver
                 $organisationTaxClassId,
                 $productTaxClassId,
                 $effectiveAt,
+                $productTaxCategoryId,
             );
         }
 
@@ -85,6 +89,7 @@ class ZoneAwareTaxResolver implements TaxResolver
         ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult {
         $context = $this->contextHolder->get();
 
@@ -95,6 +100,7 @@ class ZoneAwareTaxResolver implements TaxResolver
                 $organisationTaxClassId,
                 $productTaxClassId,
                 $effectiveAt,
+                $productTaxCategoryId,
             );
         }
 
@@ -114,6 +120,7 @@ class ZoneAwareTaxResolver implements TaxResolver
             buyer_zone_id: $context->buyerZoneId,
             buyer_type: $context->buyerType,
             has_tax_id: $context->hasTaxId,
+            tax_category_id: $productTaxCategoryId,
         ));
 
         if ($zoneRule === null) {
@@ -123,10 +130,11 @@ class ZoneAwareTaxResolver implements TaxResolver
                 $organisationTaxClassId,
                 $productTaxClassId,
                 $effectiveAt,
+                $productTaxCategoryId,
             );
         }
 
-        if ($zoneRule->result_type === TaxResultType::Standard) {
+        if ($this->zoneRuleResultType($zoneRule) === TaxResultType::Standard) {
             return $this->mergeZoneMetadata(
                 $this->matrixCalculator->calculateInclusive(
                     $grossMinorUnits,
@@ -134,6 +142,7 @@ class ZoneAwareTaxResolver implements TaxResolver
                     $organisationTaxClassId,
                     $productTaxClassId,
                     $effectiveAt,
+                    $productTaxCategoryId,
                 ),
                 $zoneRule,
             );
@@ -161,7 +170,7 @@ class ZoneAwareTaxResolver implements TaxResolver
         ?int $grossMinorUnits,
         bool $isInclusiveInput = false,
     ): TaxResult {
-        $resultType = $zoneRule->result_type ?? TaxResultType::Standard;
+        $resultType = $this->zoneRuleResultType($zoneRule);
 
         return match ($resultType) {
             TaxResultType::Standard => $this->mergeZoneMetadata(
@@ -264,5 +273,10 @@ class ZoneAwareTaxResolver implements TaxResolver
             resultType: $resultType,
             legalText: $legalText,
         );
+    }
+
+    private function zoneRuleResultType(TaxRule $zoneRule): TaxResultType
+    {
+        return $zoneRule->result_type ?? TaxResultType::Standard;
     }
 }

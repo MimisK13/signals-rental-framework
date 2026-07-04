@@ -3,6 +3,7 @@
 use App\Data\Tax\TaxZoneRuleMatchRequest;
 use App\Enums\TaxBuyerType;
 use App\Enums\TaxResultType;
+use App\Models\TaxCategory;
 use App\Models\TaxRule;
 use App\Models\TaxZone;
 use App\Services\Tax\TaxZoneRuleResolver;
@@ -181,6 +182,60 @@ it('does not match class-map rules without zone columns', function () {
         $this->uk->id,
         $this->uk->id,
         TaxBuyerType::Individual,
+    );
+
+    expect($rule)->toBeNull();
+});
+
+it('treats null tax_category_id on rule as matching any line category', function () {
+    $reducedCategory = TaxCategory::factory()->reduced()->create();
+
+    TaxRule::factory()->zoneMatch([
+        'seller_zone_id' => $this->uk->id,
+        'buyer_zone_id' => $this->uk->id,
+        'buyer_type' => null,
+        'has_tax_id' => null,
+        'tax_category_id' => null,
+        'result_type' => TaxResultType::Standard,
+        'priority' => 10,
+    ])->create();
+
+    $withCategory = $this->resolver->resolveFromContext(
+        $this->uk->id,
+        $this->uk->id,
+        TaxBuyerType::Individual,
+        taxCategoryId: $reducedCategory->id,
+    );
+
+    $withoutCategory = $this->resolver->resolveFromContext(
+        $this->uk->id,
+        $this->uk->id,
+        TaxBuyerType::Individual,
+        taxCategoryId: null,
+    );
+
+    expect($withCategory?->result_type)->toBe(TaxResultType::Standard)
+        ->and($withoutCategory?->result_type)->toBe(TaxResultType::Standard);
+});
+
+it('does not match category-scoped rules when the line category is null', function () {
+    $reducedCategory = TaxCategory::factory()->reduced()->create();
+
+    TaxRule::factory()->zoneMatch([
+        'seller_zone_id' => $this->uk->id,
+        'buyer_zone_id' => $this->uk->id,
+        'buyer_type' => null,
+        'has_tax_id' => null,
+        'tax_category_id' => $reducedCategory->id,
+        'result_type' => TaxResultType::ZeroRated,
+        'priority' => 100,
+    ])->create();
+
+    $rule = $this->resolver->resolveFromContext(
+        $this->uk->id,
+        $this->uk->id,
+        TaxBuyerType::Individual,
+        taxCategoryId: null,
     );
 
     expect($rule)->toBeNull();

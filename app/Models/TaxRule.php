@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property TaxResultType|null $result_type
+ */
 class TaxRule extends Model implements HasSchema
 {
     /** @use HasFactory<TaxRuleFactory> */

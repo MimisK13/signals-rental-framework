@@ -368,6 +368,7 @@ class OpportunityTotalsCalculator
                 lineKey: 'item:'.$item->id,
                 netMinor: $lineNet,
                 productTaxClassId: $product?->tax_class_id,
+                productTaxCategoryId: $product?->sale_tax_category_id,
                 quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
             );
 

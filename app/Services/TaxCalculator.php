@@ -61,6 +61,7 @@ class TaxCalculator implements TaxResolver
         ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult {
         $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId, $effectiveAt);
 
@@ -102,6 +103,7 @@ class TaxCalculator implements TaxResolver
         ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult {
         $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId, $effectiveAt);
 

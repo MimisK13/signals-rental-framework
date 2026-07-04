@@ -26,6 +26,7 @@ interface TaxResolver
         ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult;
 
     /**
@@ -37,5 +38,6 @@ interface TaxResolver
         ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
         ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult;
 }

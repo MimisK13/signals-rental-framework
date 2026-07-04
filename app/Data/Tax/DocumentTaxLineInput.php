@@ -13,6 +13,7 @@ class DocumentTaxLineInput extends Data
         public string $lineKey,
         public int $netMinor,
         public ?int $productTaxClassId = null,
+        public ?int $productTaxCategoryId = null,
         /** Decimal quantity string (same precision as opportunity_items.quantity). */
         public string $quantity = '1',
         public ?string $taxTreatment = null,

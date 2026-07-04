@@ -41,13 +41,16 @@ class TaxZoneRuleResolver
                 $query->whereNull('has_tax_id')
                     ->orWhere('has_tax_id', $request->has_tax_id);
             })
-            ->when(
-                $request->tax_category_id !== null,
-                fn (Builder $query): Builder => $query->where(function (Builder $inner) use ($request): void {
-                    $inner->whereNull('tax_category_id')
+            ->where(function (Builder $query) use ($request): void {
+                if ($request->tax_category_id !== null) {
+                    $query->whereNull('tax_category_id')
                         ->orWhere('tax_category_id', $request->tax_category_id);
-                }),
-            );
+
+                    return;
+                }
+
+                $query->whereNull('tax_category_id');
+            });
     }
 
     public function resolveFromContext(

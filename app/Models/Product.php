@@ -73,6 +73,8 @@ class Product extends Model implements HasSchema
         'discountable',
         'tax_class_id',
         'purchase_tax_class_id',
+        'sale_tax_category_id',
+        'purchase_tax_category_id',
         'rental_revenue_group_id',
         'sale_revenue_group_id',
         'sub_rental_cost_group_id',
@@ -152,6 +154,12 @@ class Product extends Model implements HasSchema
         $builder->relation('purchase_tax_class_id')->label('Purchase Tax Class')
             ->relation('purchaseTaxClass', 'belongsTo', ProductTaxClass::class, 'name')
             ->filterable();
+        $builder->relation('sale_tax_category_id')->label('Sale Tax Category')
+            ->relation('saleTaxCategory', 'belongsTo', TaxCategory::class, 'name')
+            ->filterable();
+        $builder->relation('purchase_tax_category_id')->label('Purchase Tax Category')
+            ->relation('purchaseTaxCategory', 'belongsTo', TaxCategory::class, 'name')
+            ->filterable();
         $builder->relation('rental_revenue_group_id')->label('Rental Revenue Group')
             ->relation('rentalRevenueGroup', 'belongsTo', RevenueGroup::class, 'name')
             ->filterable();
@@ -196,6 +204,22 @@ class Product extends Model implements HasSchema
     public function purchaseTaxClass(): BelongsTo
     {
         return $this->belongsTo(ProductTaxClass::class, 'purchase_tax_class_id');
+    }
+
+    /**
+     * @return BelongsTo<TaxCategory, $this>
+     */
+    public function saleTaxCategory(): BelongsTo
+    {
+        return $this->belongsTo(TaxCategory::class, 'sale_tax_category_id');
+    }
+
+    /**
+     * @return BelongsTo<TaxCategory, $this>
+     */
+    public function purchaseTaxCategory(): BelongsTo
+    {
+        return $this->belongsTo(TaxCategory::class, 'purchase_tax_category_id');
     }
 
     /**

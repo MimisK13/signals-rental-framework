@@ -5,7 +5,6 @@ namespace App\Services\Tax;
 use App\Contracts\Tax\TaxResolver;
 use App\Data\Tax\DocumentTaxLineInput;
 use App\Data\Tax\DocumentTaxRequest;
-use App\Services\Pricing\RoundingStrategy;
 use App\ValueObjects\Tax\DocumentTaxGroup;
 use App\ValueObjects\Tax\DocumentTaxLineAllocation;
 use App\ValueObjects\Tax\DocumentTaxSummary;
@@ -23,18 +22,17 @@ class DocumentTaxBreakdown
 {
     public function __construct(
         private readonly TaxResolver $taxResolver,
-        private readonly RoundingStrategy $roundingStrategy,
     ) {}
 
     public function summarize(DocumentTaxRequest $request): DocumentTaxSummary
     {
         $normalisedLines = $this->normaliseLines($request);
 
-        /** @var array<int, list<array{line: DocumentTaxLineInput, netMinor: int}>> $groupedLines */
+        /** @var array<string, list<array{line: DocumentTaxLineInput, netMinor: int}>> $groupedLines */
         $groupedLines = [];
 
         foreach ($normalisedLines as $line) {
-            $groupKey = $line->productTaxClassId ?? 0;
+            $groupKey = $this->groupKey($line->productTaxClassId, $line->productTaxCategoryId);
             $groupedLines[$groupKey] ??= [];
             $groupedLines[$groupKey][] = [
                 'line' => $line,
@@ -47,9 +45,12 @@ class DocumentTaxBreakdown
         $totalNet = 0;
         $totalTax = 0;
 
-        foreach ($groupedLines as $productTaxClassKey => $members) {
-            $groupNet = array_sum(array_column($members, 'netMinor'));
+        foreach ($groupedLines as $groupKey => $members) {
+            [$productTaxClassKey, $productTaxCategoryKey] = $this->decodeGroupKey($groupKey);
             $productTaxClassId = $productTaxClassKey === 0 ? null : $productTaxClassKey;
+            $productTaxCategoryId = $productTaxCategoryKey === 0 ? null : $productTaxCategoryKey;
+
+            $groupNet = array_sum(array_column($members, 'netMinor'));
 
             $groupTaxResult = $this->taxResolver->calculateExclusive(
                 $groupNet,
@@ -57,6 +58,7 @@ class DocumentTaxBreakdown
                 $request->organisationTaxClassId,
                 $productTaxClassId,
                 $request->effectiveAt,
+                $productTaxCategoryId,
             );
 
             $groupTax = $groupTaxResult->taxAmount;
@@ -101,7 +103,6 @@ class DocumentTaxBreakdown
     }
 
     /**
-     * @param  list<DocumentTaxLineInput>  $lines
      * @return list<DocumentTaxLineInput>
      */
     private function normaliseLines(DocumentTaxRequest $request): array
@@ -117,12 +118,14 @@ class DocumentTaxBreakdown
                 $request->organisationTaxClassId,
                 $line->productTaxClassId,
                 $request->effectiveAt,
+                $line->productTaxCategoryId,
             );
 
             return new DocumentTaxLineInput(
                 lineKey: $line->lineKey,
                 netMinor: $netResult->netAmount,
                 productTaxClassId: $line->productTaxClassId,
+                productTaxCategoryId: $line->productTaxCategoryId,
                 quantity: $line->quantity,
                 taxTreatment: $line->taxTreatment,
             );
@@ -210,5 +213,20 @@ class DocumentTaxBreakdown
         }
 
         return $allocations;
+    }
+
+    private function groupKey(?int $productTaxClassId, ?int $productTaxCategoryId): string
+    {
+        return ($productTaxClassId ?? 0).':'.($productTaxCategoryId ?? 0);
+    }
+
+    /**
+     * @return array{0: int, 1: int}
+     */
+    private function decodeGroupKey(string $groupKey): array
+    {
+        [$classKey, $categoryKey] = explode(':', $groupKey, 2);
+
+        return [(int) $classKey, (int) $categoryKey];
     }
 }

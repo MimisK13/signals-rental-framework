@@ -170,9 +170,18 @@ class PurchaseOrderTaxCalculator
 
             $productId = isset($line['product_id']) ? (int) $line['product_id'] : null;
             $productTaxClassId = $line['product_tax_class_id'] ?? null;
+            $productTaxCategoryId = $line['purchase_tax_category_id'] ?? null;
 
-            if ($productTaxClassId === null && $productId !== null) {
-                $productTaxClassId = $productsById->get($productId)?->purchase_tax_class_id;
+            if ($productId !== null) {
+                $product = $productsById->get($productId);
+
+                if ($productTaxClassId === null) {
+                    $productTaxClassId = $product?->purchase_tax_class_id;
+                }
+
+                if ($productTaxCategoryId === null) {
+                    $productTaxCategoryId = $product?->purchase_tax_category_id;
+                }
             }
 
             if ($productTaxClassId === null) {
@@ -193,6 +202,7 @@ class PurchaseOrderTaxCalculator
                 lineKey: $lineKey,
                 netMinor: $netMinor,
                 productTaxClassId: (int) $productTaxClassId,
+                productTaxCategoryId: $productTaxCategoryId !== null ? (int) $productTaxCategoryId : null,
                 quantity: $quantity,
             );
         }
@@ -234,7 +244,7 @@ class PurchaseOrderTaxCalculator
             $lineKey = (string) $line['purchase_order_item_id'];
             $line['tax'] = $taxByKey[$lineKey] ?? (int) ($line['tax'] ?? 0);
 
-            if ($line['product_tax_class_id'] === null && isset($line['product_id'])) {
+            if (($line['product_tax_class_id'] ?? null) === null && isset($line['product_id'])) {
                 $product = Product::query()->find((int) $line['product_id']);
                 $line['product_tax_class_id'] = $product?->purchase_tax_class_id;
             }
