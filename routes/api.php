@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\V1\OpportunityInvoiceController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
 use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
 use App\Http\Controllers\Api\V1\PriceCategoryController;
+use App\Http\Controllers\Api\V1\ProductContainerTemplateController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
@@ -215,6 +216,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['components' => 'component'])
         ->names('api.v1.products.components');
+    Route::get('products/{product}/container_template', [ProductContainerTemplateController::class, 'show'])
+        ->name('api.v1.products.container_template.show');
+    Route::put('products/{product}/container_template', [ProductContainerTemplateController::class, 'update'])
+        ->name('api.v1.products.container_template.update');
 
     // Product Groups
     Route::apiResource('product_groups', ProductGroupController::class)->names('api.v1.product_groups');

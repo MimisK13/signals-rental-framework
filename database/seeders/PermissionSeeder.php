@@ -49,6 +49,7 @@ class PermissionSeeder extends Seeder
             'opportunities.edit' => ['label' => 'Edit Opportunities', 'description' => 'Edit existing opportunities', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.view']],
             'opportunities.delete' => ['label' => 'Delete Opportunities', 'description' => 'Delete opportunities', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
             'opportunities.unlock_rates' => ['label' => 'Unlock Order Rates', 'description' => 'Release the FX/tax locks set when an order is confirmed, to re-price or re-tax it', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
+            'opportunities.dispatch_add_items' => ['label' => 'Add Items at Dispatch', 'description' => 'Add or increase opportunity line items during container dispatch validation', 'group' => 'Opportunities', 'sub_group' => 'Dispatch', 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
 
             // Shortages (detection, resolution, and the confirmation-gate override)
             'shortages.view' => ['label' => 'View Shortages', 'description' => 'View detected shortages and their resolutions', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['opportunities.view']],
@@ -125,9 +126,17 @@ class PermissionSeeder extends Seeder
             'stock.transfer' => ['label' => 'Transfer Stock', 'description' => 'Transfer stock between stores', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
             'availability.view' => ['label' => 'View Availability', 'description' => 'View product availability and shortages', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.access']],
 
-            // Containers (the availability-relevant subset; the full pack/seal/dispatch/transfer set lands in Phase 4)
+            // Containers (serialised-containers.md — full permission set; lifecycle actions land P49–P52)
             'containers.view' => ['label' => 'View Containers', 'description' => 'View container listings and contents', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['stock.access']],
+            'containers.create' => ['label' => 'Create Containers', 'description' => 'Create containers from containerable serialised items', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view']],
+            'containers.create_temporary' => ['label' => 'Create Temporary Containers', 'description' => 'Create barcode-only temporary containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view']],
             'containers.pack' => ['label' => 'Pack Containers', 'description' => 'Pack and unpack items in open containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view']],
+            'containers.pack_override' => ['label' => 'Pack Override', 'description' => 'Pack items that are checked out on another opportunity (auto-return)', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.transfer' => ['label' => 'Transfer Between Containers', 'description' => 'Move items between active containers in one step', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.nest' => ['label' => 'Nest Containers', 'description' => 'Place containers inside other containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.seal' => ['label' => 'Seal Containers', 'description' => 'Seal and unseal containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.dissolve' => ['label' => 'Dissolve Containers', 'description' => 'Manually dissolve containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.seal']],
+            'containers.manage_templates' => ['label' => 'Manage Container Templates', 'description' => 'Edit container templates and product container settings', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view', 'products.edit']],
 
             // Reports
             'reports.access' => ['label' => 'Access Reports', 'description' => 'Access the reports area', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],

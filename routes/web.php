@@ -113,6 +113,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('products/{product}/rates/create', 'products.rate-form')->name('products.rates.create');
     Volt::route('products/{product}/rates/{rate}/edit', 'products.rate-form')->name('products.rates.edit');
     Volt::route('products/{product}/supplier-costs', 'products.supplier-costs')->name('products.supplier-costs');
+    Volt::route('products/{product}/container-config', 'products.container-config')->name('products.container-config');
     Volt::route('products/{product}/custom-fields', 'products.custom-fields')->name('products.custom-fields');
     Volt::route('products/{product}/activities', 'products.activities')->name('products.activities');
     Volt::route('products/{product}/files', 'products.files')->name('products.files');
