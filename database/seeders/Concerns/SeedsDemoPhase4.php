@@ -48,6 +48,8 @@ use App\Enums\OpportunityItemType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\ProductType;
+use App\Enums\StockMethod;
 use App\Enums\TaxBuyerType;
 use App\Models\Container;
 use App\Models\DiscountCategory;
@@ -265,6 +267,73 @@ trait SeedsDemoPhase4
                 $this->seedDemoSerialisedAssets($parCan, $store, 'DEMO-PAR', 4);
             }
         });
+    }
+
+    private function seedDemoStockLevels(): void
+    {
+        $this->command->info('Seeding demo stock levels...');
+
+        $stores = Store::query()
+            ->where(function ($query): void {
+                $query->whereJsonContains('tag_list', self::DEMO_TAG)
+                    ->orWhere('is_default', true);
+            })
+            ->orderByDesc('is_default')
+            ->get();
+
+        if ($stores->isEmpty()) {
+            return;
+        }
+
+        $defaultStore = $stores->first();
+        $scarceSkus = ['DEMO-STG-DECK2X1', 'DEMO-VID-LED55'];
+
+        $this->actingAsDemoOwner(function () use ($stores, $defaultStore, $scarceSkus): void {
+            $products = Product::query()
+                ->whereJsonContains('tag_list', self::DEMO_TAG)
+                ->where('product_type', ProductType::Rental)
+                ->get();
+
+            foreach ($products as $product) {
+                $isScarce = in_array($product->sku, $scarceSkus, true);
+
+                if ($product->stock_method === StockMethod::Bulk) {
+                    $this->seedDemoBulkStockLevel(
+                        $product,
+                        $defaultStore,
+                        $isScarce ? '2' : '40',
+                    );
+
+                    continue;
+                }
+
+                if ($product->stock_method !== StockMethod::Serialised) {
+                    continue;
+                }
+
+                $assetCount = $isScarce ? 1 : 4;
+                $targetStores = $isScarce ? collect([$defaultStore]) : $stores;
+
+                foreach ($targetStores as $store) {
+                    $prefix = sprintf('DEMO-%s-S%d', strtoupper(str_replace('DEMO-', '', (string) $product->sku)), $store->id);
+                    $this->seedDemoSerialisedAssets($product, $store, $prefix, $assetCount);
+                }
+            }
+        });
+    }
+
+    private function seedDemoBulkStockLevel(Product $product, Store $store, string $quantityHeld): void
+    {
+        if (StockLevel::query()->where('product_id', $product->id)->exists()) {
+            return;
+        }
+
+        (new CreateStockLevel)(CreateStockLevelData::from([
+            'product_id' => $product->id,
+            'store_id' => $store->id,
+            'item_name' => $product->name,
+            'quantity_held' => $quantityHeld,
+        ]));
     }
 
     private function firstOrCreateDemoSupplier(string $name): Member
@@ -527,11 +596,6 @@ trait SeedsDemoPhase4
 
                     $invoice = Invoice::query()->findOrFail($draft->id);
                     (new IssueInvoice)($invoice);
-
-                    (new IssueCreditNote)($invoice->refresh(), IssueCreditNoteData::from([
-                        'lines' => null,
-                        'notes' => 'Demo full credit note on overdue invoice.',
-                    ]));
                 } finally {
                     CarbonImmutable::setTestNow();
                 }

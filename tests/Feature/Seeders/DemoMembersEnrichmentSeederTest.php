@@ -71,6 +71,23 @@ it('sets plausible tax zones and buyer types on tax-variant members', function (
         ->and($eu->tax_zone_id)->toBe($euZoneId);
 });
 
+it('assigns tax zones and GB country codes to demo stores', function () {
+    Store::factory()->create([
+        'name' => 'London Warehouse',
+        'tag_list' => ['demo-data'],
+        'country_code' => null,
+        'tax_zone_id' => null,
+    ]);
+
+    seedDemoMemberEnrichment();
+
+    $store = Store::query()->where('name', 'London Warehouse')->firstOrFail();
+    $ukZoneId = TaxZone::query()->where('slug', 'uk')->value('id');
+
+    expect($store->tax_zone_id)->toBe($ukZoneId)
+        ->and($store->country_code)->toBe('GB');
+});
+
 it('is idempotent on re-run', function () {
     seedDemoMemberEnrichment();
     $firstCount = Member::query()->whereJsonContains('tag_list', 'demo-data')->count();

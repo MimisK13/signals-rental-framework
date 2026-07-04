@@ -51,6 +51,11 @@ function seedDemoProductEnrichment(): void
     invokeDemoSeederMethod('enrichDemoProducts');
 }
 
+function seedDemoStockLevels(): void
+{
+    invokeDemoSeederMethod('seedDemoStockLevels');
+}
+
 function seedDemoInvoices(): void
 {
     invokeDemoSeederMethod('createDemoInvoices');

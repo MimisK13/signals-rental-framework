@@ -50,6 +50,7 @@ class DemoDataSeeder extends Seeder
         $this->enrichDemoMembers();
         $this->createDemoProducts();
         $this->enrichDemoProducts();
+        $this->seedDemoStockLevels();
         $this->createDemoOpportunities();
         $this->createDemoInvoices();
         $this->createDemoPurchaseOrders();

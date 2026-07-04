@@ -121,6 +121,17 @@ it('records partial payment, refund, and credit note on the partial demo invoice
         ->and(CreditNote::query()->where('invoice_id', $invoice->id)->exists())->toBeTrue();
 });
 
+it('leaves the overdue demo invoice issued and still outstanding', function () {
+    seedDemoInvoices();
+
+    $invoice = Invoice::query()->where('reference', 'DEMO-INV-OVERDUE')->firstOrFail();
+
+    expect($invoice->status)->toBe('issued')
+        ->and($invoice->amount_outstanding)->toBeGreaterThan(0)
+        ->and($invoice->due_at?->isPast())->toBeTrue()
+        ->and(CreditNote::query()->where('invoice_id', $invoice->id)->exists())->toBeFalse();
+});
+
 it('is idempotent on re-run', function () {
     seedDemoInvoices();
     $firstCount = Invoice::query()->whereJsonContains('tag_list', 'demo-data')->count();

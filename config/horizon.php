@@ -98,8 +98,13 @@ return [
 
     'waits' => [
         'redis:default' => 60,
+        'redis:availability' => 120,
+        'redis:webhooks' => 60,
         'redis:notifications' => 60,
         'redis:communications' => 60,
+        'redis:exports' => 120,
+        'redis:imports' => 120,
+        'redis:mail' => 60,
     ],
 
     /*
@@ -231,6 +236,31 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
+        'supervisor-webhooks-mail' => [
+            'connection' => 'redis',
+            'queue' => ['webhooks', 'mail'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 3,
+            'timeout' => 60,
+            'nice' => 0,
+        ],
+        'supervisor-exports-imports' => [
+            'connection' => 'redis',
+            'queue' => ['exports', 'imports'],
+            'balance' => 'simple',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 600,
+            'nice' => 0,
+        ],
     ],
 
     'environments' => [
@@ -245,6 +275,16 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'supervisor-webhooks-mail' => [
+                'maxProcesses' => 5,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+            'supervisor-exports-imports' => [
+                'maxProcesses' => 2,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
         ],
 
         'local' => [
@@ -253,6 +293,12 @@ return [
             ],
             'supervisor-notifications' => [
                 'maxProcesses' => 2,
+            ],
+            'supervisor-webhooks-mail' => [
+                'maxProcesses' => 2,
+            ],
+            'supervisor-exports-imports' => [
+                'maxProcesses' => 1,
             ],
         ],
     ],

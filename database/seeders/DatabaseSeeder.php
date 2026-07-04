@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             EmailTemplateSeeder::class,
             NotificationTypeSeeder::class,
+            DocumentTemplateSeeder::class,
+            CommunicationTemplateSeeder::class,
             ViewSeeder::class,
             RateDefinitionPresetSeeder::class,
             DiscountCategorySeeder::class,

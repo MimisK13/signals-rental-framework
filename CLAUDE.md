@@ -316,7 +316,7 @@ OSF ships single-tenant defaults (no-ops). Never add tenant awareness to core co
 ### Jobs & Queues
 
 - **Driver:** Redis primary, `database` fallback for self-hosted without Redis.
-- **Named queues:** `default`, `webhooks`, `notifications`, `exports`, `imports`, `mail`.
+- **Named queues:** `default`, `availability`, `webhooks`, `notifications`, `communications`, `exports`, `imports`, `mail`.
 - All jobs implement `ShouldQueue`. Use appropriate middleware:
   - `RateLimited` for external API calls
   - `WithoutOverlapping` for jobs that shouldn't run concurrently
