@@ -6,6 +6,8 @@ use App\Enums\InvoiceType;
 use App\Models\DocumentSequence;
 use App\Models\Store;
 use App\Services\Invoices\CreditNoteNumberGenerator;
+use App\Services\Invoices\PaymentNumberGenerator;
+use App\Services\Members\MemberNumberGenerator;
 use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
 
 /**
@@ -29,6 +31,8 @@ class DocumentSequenceDefaults
         'statement' => 'STM-',
         'receipt' => 'REC-',
         'purchase_order' => 'PO-',
+        'member' => 'MEM-',
+        'invoice_payment' => 'PAY-',
         'invoice_standard' => 'INV-',
         'invoice_deposit' => 'DEP-',
         'invoice_proforma' => 'PRO-',
@@ -45,6 +49,8 @@ class DocumentSequenceDefaults
                 InvoiceType::Standard->documentSequenceType(),
                 InvoiceType::Deposit->documentSequenceType(),
                 InvoiceType::Proforma->documentSequenceType(),
+                MemberNumberGenerator::DOCUMENT_TYPE,
+                PaymentNumberGenerator::DOCUMENT_TYPE,
             ],
         );
 
@@ -79,7 +85,8 @@ class DocumentSequenceDefaults
      *     include_month: bool,
      *     next_number: int,
      *     padding: int,
-     *     reset_frequency: string
+     *     reset_frequency: string,
+     *     is_entity_number: bool
      * }
      */
     public static function attributes(string $documentType): array
@@ -92,6 +99,7 @@ class DocumentSequenceDefaults
             'next_number' => 1,
             'padding' => 4,
             'reset_frequency' => 'never',
+            'is_entity_number' => DocumentSequenceEntityProjection::isEntityNumberType($documentType),
         ];
     }
 

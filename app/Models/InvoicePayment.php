@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $invoice_id
+ * @property string|null $number
  * @property int $amount
  * @property string $payment_method
  * @property string|null $reference
@@ -39,6 +40,7 @@ class InvoicePayment extends Model implements HasSchema
     protected $fillable = [
         'id',
         'invoice_id',
+        'number',
         'amount',
         'payment_method',
         'reference',

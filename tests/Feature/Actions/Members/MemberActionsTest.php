@@ -11,6 +11,7 @@ use App\Events\AuditableEvent;
 use App\Models\CustomField;
 use App\Models\CustomFieldValue;
 use App\Models\Member;
+use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -22,6 +23,7 @@ beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     $this->actingAs(User::factory()->owner()->create());
+    Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
 });
 
 it('creates a member', function () {
@@ -38,6 +40,7 @@ it('creates a member', function () {
     expect($result->membership_type)->toBe('Organisation');
     expect($result->is_active)->toBeTrue();
     expect(Member::where('name', 'Acme Corp')->exists())->toBeTrue();
+    expect(Member::where('name', 'Acme Corp')->value('number'))->toStartWith('MEM-');
 
     Event::assertDispatched(AuditableEvent::class);
 });

@@ -25,6 +25,7 @@ class PaymentRecorded extends Event
         public int $state_id,
         public int $payment_id,
         public int $amount,
+        public ?string $number = null,
         public string $payment_method = 'bank_transfer',
         public ?string $reference = null,
         public ?string $notes = null,
@@ -64,6 +65,7 @@ class PaymentRecorded extends Event
             ['id' => $this->payment_id],
             [
                 'invoice_id' => $state->invoice_id,
+                'number' => $this->resolvedNumber(),
                 'amount' => $this->amount,
                 'payment_method' => $this->payment_method,
                 'reference' => $this->reference,
@@ -92,6 +94,7 @@ class PaymentRecorded extends Event
             $this->audit_action,
             newValues: [
                 'payment_id' => $this->payment_id,
+                'number' => $this->resolvedNumber(),
                 'amount' => $this->amount,
                 'payment_method' => $this->payment_method,
                 'reference' => $this->reference,
@@ -103,5 +106,13 @@ class PaymentRecorded extends Event
             ],
             oldValues: $oldValues,
         );
+    }
+
+    /**
+     * Legacy PaymentRecorded payloads may omit number; treat missing values as null on replay.
+     */
+    private function resolvedNumber(): ?string
+    {
+        return isset($this->number) ? $this->number : null;
     }
 }

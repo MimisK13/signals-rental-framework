@@ -8,6 +8,7 @@ use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Services\Api\WebhookService;
 use App\Services\CustomFieldValidator;
+use App\Services\Members\MemberNumberGenerator;
 use App\Services\Tax\MemberVatValidationService;
 use Illuminate\Support\Facades\Gate;
 
@@ -24,7 +25,10 @@ class CreateMember
             $data->price_category_id,
         );
 
+        $number = app(MemberNumberGenerator::class)->nextOrCreate();
+
         $member = Member::create([
+            'number' => $number,
             'name' => $data->name,
             'membership_type' => $data->membership_type,
             'is_active' => $data->is_active,

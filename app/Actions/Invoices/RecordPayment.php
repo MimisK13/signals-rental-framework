@@ -10,6 +10,7 @@ use App\Enums\BillingCommunicationKind;
 use App\Models\Invoice;
 use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\Invoices\InvoiceStatusResolver;
+use App\Services\Invoices\PaymentNumberGenerator;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\Invoices\PaymentRecorded;
 use Carbon\CarbonImmutable;
@@ -85,9 +86,15 @@ class RecordPayment
             $paidAt,
             $auditAction,
         ): void {
+            $number = app(PaymentNumberGenerator::class)->nextOrCreate(
+                (int) $invoice->store_id,
+                $receivedAt,
+            );
+
             PaymentRecorded::fire(
                 state_id: (int) $invoice->state_id,
                 payment_id: $paymentId,
+                number: $number,
                 amount: $signedAmount,
                 payment_method: $data->payment_method->value,
                 reference: $data->reference,

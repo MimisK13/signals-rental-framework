@@ -44,6 +44,20 @@ class DocumentSequenceNextNumberGuard
 
     private function numberExistsOnProjection(string $table, DocumentSequence $sequence, string $formatted): bool
     {
+        if ($table === 'members') {
+            return DB::table($table)
+                ->where('number', $formatted)
+                ->exists();
+        }
+
+        if ($table === 'invoice_payments') {
+            return DB::table($table)
+                ->join('invoices', 'invoice_payments.invoice_id', '=', 'invoices.id')
+                ->where('invoices.store_id', $sequence->store_id)
+                ->where('invoice_payments.number', $formatted)
+                ->exists();
+        }
+
         $query = DB::table($table)
             ->where('store_id', $sequence->store_id)
             ->where('number', $formatted);

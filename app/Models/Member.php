@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property MembershipType $membership_type
+ * @property string|null $number
  * @property Carbon|null $tax_number_validated_at
  */
 class Member extends Model implements HasSchema
@@ -35,6 +36,7 @@ class Member extends Model implements HasSchema
 
     /** @var list<string> */
     protected $fillable = [
+        'number',
         'name',
         'membership_type',
         'is_active',
