@@ -4,9 +4,14 @@ use App\Actions\PurchaseOrders\CancelPurchaseOrder;
 use App\Actions\PurchaseOrders\DeleteDraftPurchaseOrder;
 use App\Actions\PurchaseOrders\ReceivePurchaseOrder;
 use App\Actions\PurchaseOrders\SendPurchaseOrder;
+use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
+use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Models\PurchaseOrder;
+use App\Models\VirtualStockIntake;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
+use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
+use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -19,6 +24,10 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public bool $showReceiveModal = false;
 
+    public bool $showReturnIntakeModal = false;
+
+    public ?int $returnIntakeId = null;
+
     /** @var array<int, array{purchase_order_item_id: int, quantity: string}> */
     public array $receiveLines = [];
 
@@ -28,7 +37,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         Gate::authorize('view', $purchaseOrder);
 
-        $this->purchaseOrder = $purchaseOrder->load(['supplier', 'store', 'opportunity', 'items.product']);
+        $this->purchaseOrder = $purchaseOrder->load(['supplier', 'store', 'opportunity', 'items.product', 'virtualStockIntakes.product']);
         $this->resetReceiveLines();
     }
 
@@ -97,9 +106,38 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->redirect(route('purchase-orders.index'), navigate: true);
     }
 
+    public function openReturnIntakeModal(int $intakeId): void
+    {
+        $this->returnIntakeId = $intakeId;
+        $this->showReturnIntakeModal = true;
+    }
+
+    public function returnIntakeToSupplier(bool $force = false): void
+    {
+        if ($this->returnIntakeId === null) {
+            return;
+        }
+
+        $intake = VirtualStockIntake::query()->findOrFail($this->returnIntakeId);
+
+        app(ReturnVirtualStockIntake::class)(
+            $intake,
+            new ReturnVirtualStockIntakeData(force: $force),
+        );
+
+        $this->showReturnIntakeModal = false;
+        $this->returnIntakeId = null;
+        $this->refreshPurchaseOrder();
+    }
+
+    public function confirmReturnIntakeToSupplier(): void
+    {
+        $this->returnIntakeToSupplier(force: true);
+    }
+
     private function refreshPurchaseOrder(): void
     {
-        $this->purchaseOrder->refresh()->load(['supplier', 'store', 'opportunity', 'items.product']);
+        $this->purchaseOrder->refresh()->load(['supplier', 'store', 'opportunity', 'items.product', 'virtualStockIntakes.product']);
     }
 
     /**
@@ -108,15 +146,23 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function with(): array
     {
         $registry = app(PurchaseOrderStatusRegistry::class);
+        $virtualStockStatuses = app(VirtualStockStatusRegistry::class)->statuses();
+        $returnIntake = $this->returnIntakeId !== null
+            ? VirtualStockIntake::query()->find($this->returnIntakeId)
+            : null;
 
         return [
             'statuses' => $registry->statuses(),
+            'virtualStockStatuses' => $virtualStockStatuses,
             'canSend' => Gate::check('send', $this->purchaseOrder),
             'canReceive' => Gate::check('receive', $this->purchaseOrder),
             'canCancel' => Gate::check('cancel', $this->purchaseOrder)
                 && $registry->canTransitionTo($this->purchaseOrder->status, 'cancelled'),
             'canUpdate' => Gate::check('update', $this->purchaseOrder),
             'canDelete' => Gate::check('delete', $this->purchaseOrder),
+            'outstandingAllocations' => $returnIntake !== null
+                ? app(VirtualStockIntakeReturnGuard::class)->outstandingAllocations($returnIntake)
+                : [],
         ];
     }
 }; ?>
@@ -228,6 +274,47 @@ new #[Layout('components.layouts.app')] class extends Component {
             @endif
         </x-signals.card>
 
+        @if($purchaseOrder->po_type === 'sub_hire' && $purchaseOrder->virtualStockIntakes->isNotEmpty())
+            <x-signals.card title="Virtual stock intakes">
+                <x-signals.table-wrap>
+                    <table class="s-table">
+                        <thead>
+                            <tr>
+                                <th>Intake</th>
+                                <th>Product</th>
+                                <th>Status</th>
+                                <th>Window</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($purchaseOrder->virtualStockIntakes as $intake)
+                                @php
+                                    $intakeStatus = $virtualStockStatuses[$intake->status] ?? [];
+                                @endphp
+                                <tr wire:key="po-intake-{{ $intake->id }}">
+                                    <td>
+                                        <a href="{{ route('virtual-stock.show', $intake) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $intake->number }}</a>
+                                        @if($intake->isLateReturn())
+                                            <span class="s-badge s-badge-amber ml-1">Late</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $intake->product?->name ?? '—' }}</td>
+                                    <td><span class="s-badge {{ $intakeStatus['badge_class'] ?? 's-badge-zinc' }}">{{ $intakeStatus['label'] ?? $intake->status }}</span></td>
+                                    <td class="text-sm">@localdate($intake->available_from) – @localdate($intake->available_until)</td>
+                                    <td class="text-right">
+                                        @can('return', $intake)
+                                            <button type="button" wire:click="openReturnIntakeModal({{ $intake->id }})" class="text-sm text-[var(--link)] hover:underline">Return to supplier</button>
+                                        @endcan
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </x-signals.table-wrap>
+            </x-signals.card>
+        @endif
+
         <div class="flex justify-end">
             <dl class="w-full max-w-sm space-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-[var(--text-muted)]">Subtotal</dt><dd style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->subtotal, $purchaseOrder->currency_code) }}</dd></div>
@@ -298,6 +385,36 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <flux:button variant="ghost" wire:click="$set('showCancelModal', false)">Close</flux:button>
                 <flux:button variant="danger" wire:click="cancel">Cancel PO</flux:button>
             </div>
+        </flux:modal>
+    @endif
+
+    @if($showReturnIntakeModal)
+        <flux:modal wire:model="showReturnIntakeModal" class="max-w-lg">
+            <flux:heading size="lg">Return intake to supplier?</flux:heading>
+            @if($outstandingAllocations !== [])
+                <p class="mt-2 text-sm text-[var(--text-muted)]">
+                    Linked opportunities still have quantity out on hire. Confirm to return anyway — opportunity allocations will not be changed.
+                </p>
+                <ul class="mt-4 space-y-2 text-sm">
+                    @foreach($outstandingAllocations as $allocation)
+                        <li wire:key="po-outstanding-{{ $allocation['opportunity_item_id'] }}">
+                            <span class="font-medium">{{ $allocation['opportunity_subject'] }}</span>
+                            — {{ $allocation['line_name'] }}
+                            <span style="font-family: var(--font-mono);">({{ $allocation['quantity_out'] }} out)</span>
+                        </li>
+                    @endforeach
+                </ul>
+                <div class="mt-4 flex justify-end gap-2">
+                    <flux:button variant="ghost" wire:click="$set('showReturnIntakeModal', false)">Cancel</flux:button>
+                    <flux:button variant="danger" wire:click="confirmReturnIntakeToSupplier">Return anyway</flux:button>
+                </div>
+            @else
+                <p class="mt-2 text-sm text-[var(--text-muted)]">This will void the intake supply window and remove apportioned costs.</p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <flux:button variant="ghost" wire:click="$set('showReturnIntakeModal', false)">Cancel</flux:button>
+                    <flux:button variant="primary" wire:click="returnIntakeToSupplier">Return to supplier</flux:button>
+                </div>
+            @endif
         </flux:modal>
     @endif
 </section>

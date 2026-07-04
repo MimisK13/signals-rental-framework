@@ -1,10 +1,7 @@
 <?php
 
-use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
-use App\Models\Product;
-use App\Models\Store;
 use App\Models\VirtualStockIntake;
+use App\Services\Shortages\CostApportionmentRegistry;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -35,7 +32,8 @@ new #[Layout('components.layouts.app')] #[Title('Virtual Stock')] class extends 
     public function intakes()
     {
         return VirtualStockIntake::query()
-            ->with(['product', 'store'])
+            ->with(['product', 'store', 'purchaseOrder'])
+            ->withCount('resolutionItems')
             ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->search !== '', fn ($q) => $q->where('number', 'ilike', '%'.$this->search.'%'))
             ->orderByDesc('created_at')
@@ -44,13 +42,20 @@ new #[Layout('components.layouts.app')] #[Title('Virtual Stock')] class extends 
 
     public function with(): array
     {
+        $canViewCosts = Gate::check('costs.view');
+
         return [
             'statuses' => app(\App\Services\VirtualStock\VirtualStockStatusRegistry::class)->statuses(),
+            'canViewCosts' => $canViewCosts,
         ];
     }
 }; ?>
 
 <section class="w-full">
+    @php
+        $formatter = app(\App\Support\Formatter::class);
+    @endphp
+
     <x-signals.page-header title="Virtual Stock">
         <x-slot:meta>
             <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Finance</span>
@@ -77,25 +82,46 @@ new #[Layout('components.layouts.app')] #[Title('Virtual Stock')] class extends 
                             <th>Store</th>
                             <th>Status</th>
                             <th>Window</th>
+                            <th class="text-right">Allocations</th>
+                            @if($canViewCosts)
+                                <th>Strategy</th>
+                                <th class="text-right">Total cost</th>
+                            @endif
                             <th class="text-right">Qty</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($this->intakes() as $intake)
+                            @php
+                                $statusMeta = $statuses[$intake->status] ?? [];
+                                $intakeTotalMinor = (int) $intake->unit_cost * (int) $intake->quantity;
+                                $strategyKey = $intake->cost_apportionment_strategy ?: (string) settings('shortages.cost_apportionment_strategy', config('shortages.cost_apportionment_strategy', 'primary_job'));
+                                $strategyLabel = $canViewCosts && app(CostApportionmentRegistry::class)->has($strategyKey)
+                                    ? app(CostApportionmentRegistry::class)->get($strategyKey)->name()
+                                    : ($canViewCosts ? $strategyKey : null);
+                            @endphp
                             <tr wire:key="vs-intake-{{ $intake->id }}">
                                 <td>
                                     <a href="{{ route('virtual-stock.show', $intake) }}" wire:navigate class="font-medium text-[var(--link)] hover:underline">
                                         {{ $intake->number }}
                                     </a>
+                                    @if($intake->isLateReturn())
+                                        <span class="s-badge s-badge-amber ml-1">Late</span>
+                                    @endif
                                 </td>
                                 <td>{{ $intake->product?->name ?? '—' }}</td>
                                 <td>{{ $intake->store?->name ?? '—' }}</td>
-                                <td><span class="s-badge {{ $statuses[$intake->status]['badge_class'] ?? 's-badge-zinc' }}">{{ $statuses[$intake->status]['label'] ?? $intake->status }}</span></td>
+                                <td><span class="s-badge {{ $statusMeta['badge_class'] ?? 's-badge-zinc' }}">{{ $statusMeta['label'] ?? $intake->status }}</span></td>
                                 <td class="text-sm">@localdate($intake->available_from) – @localdate($intake->available_until)</td>
+                                <td class="text-right" style="font-family: var(--font-mono);">{{ $intake->allocationsCount() }}</td>
+                                @if($canViewCosts)
+                                    <td class="text-sm">{{ $strategyLabel ?? '—' }}</td>
+                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($intakeTotalMinor, $intake->currency_code) }}</td>
+                                @endif
                                 <td class="text-right" style="font-family: var(--font-mono);">{{ $intake->quantity }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center text-sm text-[var(--text-muted)] py-8">No virtual stock intakes yet.</td></tr>
+                            <tr><td colspan="{{ $canViewCosts ? 9 : 7 }}" class="text-center text-sm text-[var(--text-muted)] py-8">No virtual stock intakes yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -156,4 +156,12 @@ class PurchaseOrder extends Model
     {
         return $this->hasMany(PurchaseOrderItem::class)->orderBy('sort_order');
     }
+
+    /**
+     * @return HasMany<VirtualStockIntake, $this>
+     */
+    public function virtualStockIntakes(): HasMany
+    {
+        return $this->hasMany(VirtualStockIntake::class)->orderBy('number');
+    }
 }

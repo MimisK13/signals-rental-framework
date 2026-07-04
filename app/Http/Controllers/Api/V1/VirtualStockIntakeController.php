@@ -13,6 +13,7 @@ use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Actions\VirtualStock\SetVirtualStockCostOverride;
 use App\Actions\VirtualStock\UpdateDraftVirtualStockIntake;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Data\VirtualStock\SetVirtualStockCostOverrideData;
 use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
 use App\Data\VirtualStock\VirtualStockIntakeData;
@@ -145,7 +146,40 @@ class VirtualStockIntakeController extends Controller
         Gate::authorize('viewAny', VirtualStockIntake::class);
         $this->authorizeApi($this->permissions()['view'], $this->abilities()['read']);
 
-        return $this->resourceIndex($request);
+        $lateReturn = $this->extractLateReturnFilter($request);
+
+        $query = VirtualStockIntake::query()->withCount('resolutionItems');
+        $query = $this->applyIncludes($query, $request);
+        ['query' => $query, 'view' => $view] = $this->applyViewOrFilters($query, $request, $this->entityType());
+
+        if ($lateReturn !== null) {
+            $query->lateReturn($lateReturn);
+        }
+
+        $paginator = $this->paginateQuery($query, $request);
+
+        $dataClass = $this->responseDataClass();
+        $items = $paginator->getCollection()->map(
+            fn (VirtualStockIntake $model): array => $dataClass::fromModel($model)->toArray()
+        )->all();
+
+        $meta = [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'page' => $paginator->currentPage(),
+        ];
+
+        if ($view !== null) {
+            $meta['view'] = [
+                'id' => $view->id,
+                'name' => $view->name,
+            ];
+        }
+
+        return response()->json([
+            $this->pluralKey() => $items,
+            'meta' => $meta,
+        ]);
     }
 
     #[ApiResponse(200, 'Virtual stock intake resource', type: 'array{virtual_stock_intake: array<string, mixed>}')]
@@ -217,12 +251,13 @@ class VirtualStockIntakeController extends Controller
     }
 
     #[ApiResponse(200, 'Returned virtual stock intake', type: 'array{virtual_stock_intake: array<string, mixed>}')]
-    public function return(VirtualStockIntake $virtualStockIntake): JsonResponse
+    public function return(Request $request, VirtualStockIntake $virtualStockIntake): JsonResponse
     {
         Gate::authorize('return', $virtualStockIntake);
         $this->authorizeApi('virtual_stock.return', $this->abilities()['write']);
 
-        $result = app(ReturnVirtualStockIntake::class)($virtualStockIntake);
+        $dto = ReturnVirtualStockIntakeData::validateAndCreate($request->all());
+        $result = app(ReturnVirtualStockIntake::class)($virtualStockIntake, $dto);
 
         return $this->respondWith($result->toArray(), $this->singularKey());
     }
@@ -280,5 +315,38 @@ class VirtualStockIntakeController extends Controller
         $result = app(ClearVirtualStockCostOverride::class)($virtualStockIntake, $opportunity);
 
         return $this->respondWith($result->toArray(), 'apportionment');
+    }
+
+    /**
+     * Extract `is_late_return_{predicate}` from the Ransack `q` bag before the
+     * generic filter whitelist runs — late return is derived, not a column.
+     */
+    protected function extractLateReturnFilter(Request $request): ?bool
+    {
+        $filters = $request->input('q', []);
+
+        if (! is_array($filters)) {
+            return null;
+        }
+
+        if (array_key_exists('is_late_return_true', $filters)) {
+            $request->merge(['q' => collect($filters)->except('is_late_return_true')->all()]);
+
+            return true;
+        }
+
+        if (array_key_exists('is_late_return_false', $filters)) {
+            $request->merge(['q' => collect($filters)->except('is_late_return_false')->all()]);
+
+            return false;
+        }
+
+        if (array_key_exists('is_late_return_eq', $filters)) {
+            $request->merge(['q' => collect($filters)->except('is_late_return_eq')->all()]);
+
+            return filter_var($filters['is_late_return_eq'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return null;
     }
 }

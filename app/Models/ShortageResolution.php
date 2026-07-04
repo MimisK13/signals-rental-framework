@@ -104,6 +104,14 @@ class ShortageResolution extends Model implements HasSchema
     }
 
     /**
+     * @return BelongsTo<VirtualStockIntake, $this>
+     */
+    public function virtualStockIntake(): BelongsTo
+    {
+        return $this->belongsTo(VirtualStockIntake::class, 'virtual_stock_intake_id');
+    }
+
+    /**
      * The application user (auth()->id()) who produced this resolution.
      *
      * @return BelongsTo<User, $this>

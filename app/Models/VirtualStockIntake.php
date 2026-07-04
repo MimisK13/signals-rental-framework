@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;
 use Database\Factories\VirtualStockIntakeFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -161,5 +164,106 @@ class VirtualStockIntake extends Model
     public function apportionedCosts(): HasMany
     {
         return $this->hasMany(OpportunityCost::class, 'virtual_stock_intake_id');
+    }
+
+    /**
+     * @return HasOne<ShortageResolution, $this>
+     */
+    public function shortageResolution(): HasOne
+    {
+        return $this->hasOne(ShortageResolution::class, 'virtual_stock_intake_id');
+    }
+
+    /**
+     * @return HasManyThrough<ShortageResolutionItem, ShortageResolution, $this>
+     */
+    public function resolutionItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            ShortageResolutionItem::class,
+            ShortageResolution::class,
+            'virtual_stock_intake_id',
+            'shortage_resolution_id',
+        );
+    }
+
+    public function isLateReturn(): bool
+    {
+        if ($this->returned_at === null) {
+            return false;
+        }
+
+        if ($this->returned_at->gt($this->available_until)) {
+            return true;
+        }
+
+        $this->loadMissing('purchaseOrder');
+
+        return $this->purchaseOrder?->ends_at !== null
+            && $this->returned_at->gt($this->purchaseOrder->ends_at);
+    }
+
+    public function allocationsCount(): int
+    {
+        if (array_key_exists('resolution_items_count', $this->attributes)) {
+            $count = (int) $this->resolution_items_count;
+
+            if ($count === 0) {
+                $this->loadMissing('purchaseOrder');
+
+                return $this->purchaseOrder?->opportunity_id !== null ? 1 : 0;
+            }
+
+            return $count;
+        }
+
+        $count = (int) $this->resolutionItems()->count();
+
+        if ($count === 0) {
+            $this->loadMissing('purchaseOrder');
+
+            return $this->purchaseOrder?->opportunity_id !== null ? 1 : 0;
+        }
+
+        return $count;
+    }
+
+    /**
+     * @param  Builder<VirtualStockIntake>  $query
+     * @return Builder<VirtualStockIntake>
+     */
+    public function scopeLateReturn(Builder $query, bool $isLate = true): Builder
+    {
+        if ($isLate) {
+            return $query
+                ->whereNotNull('returned_at')
+                ->where(function (Builder $late): void {
+                    $late->whereColumn('returned_at', '>', 'available_until')
+                        ->orWhereExists(function ($sub): void {
+                            $sub->selectRaw('1')
+                                ->from('purchase_orders')
+                                ->whereColumn('purchase_orders.id', 'virtual_stock_intakes.purchase_order_id')
+                                ->whereNotNull('purchase_orders.ends_at')
+                                ->whereColumn('virtual_stock_intakes.returned_at', '>', 'purchase_orders.ends_at');
+                        });
+                });
+        }
+
+        return $query->where(function (Builder $onTime): void {
+            $onTime->whereNull('returned_at')
+                ->orWhere(function (Builder $withinWindow): void {
+                    $withinWindow->whereColumn('returned_at', '<=', 'available_until')
+                        ->where(function (Builder $poWindow): void {
+                            $poWindow->whereNull('purchase_order_id')
+                                ->orWhereNotExists(function ($sub): void {
+                                    $sub->selectRaw('1')
+                                        ->from('purchase_orders')
+                                        ->whereColumn('purchase_orders.id', 'virtual_stock_intakes.purchase_order_id')
+                                        ->whereNotNull('purchase_orders.ends_at')
+                                        ->whereColumn('virtual_stock_intakes.returned_at', '>', 'purchase_orders.ends_at');
+                                });
+                        });
+                });
+        });
     }
 }
