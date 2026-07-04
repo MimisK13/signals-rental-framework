@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;
+use App\Services\SequenceAllocator;
 use App\Support\Database\StoreNumberUniqueConstraintPreflight;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
@@ -27,6 +28,15 @@ function numberingSchemeMigrationPaths(): array
     ];
 }
 
+function rollbackSingleMigration(string $path): void
+{
+    Artisan::call('migrate:rollback', [
+        '--path' => $path,
+        '--step' => 1,
+        '--force' => true,
+    ]);
+}
+
 describe('numbering scheme migrations (sqlite)', function () {
     it('adds is_entity_number to document_sequences and backfills entity types', function () {
         expect(Schema::hasColumn('document_sequences', 'is_entity_number'))->toBeTrue();
@@ -34,7 +44,7 @@ describe('numbering scheme migrations (sqlite)', function () {
 
     it('backfills is_entity_number for entity document types when migration runs', function () {
         foreach (numberingSchemeMigrationPaths() as $path) {
-            Artisan::call('migrate:rollback', ['--path' => $path, '--force' => true]);
+            rollbackSingleMigration($path);
         }
 
         $store = Store::factory()->create();
@@ -119,10 +129,7 @@ describe('numbering scheme migrations (sqlite)', function () {
     });
 
     it('detects duplicate same-type invoice numbers before adding unique indexes', function () {
-        Artisan::call('migrate:rollback', [
-            '--path' => 'database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php',
-            '--force' => true,
-        ]);
+        rollbackSingleMigration('database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php');
 
         $store = Store::factory()->create();
 
@@ -155,10 +162,7 @@ describe('numbering scheme migrations (sqlite)', function () {
     });
 
     it('allows legacy cross-type invoice number overlaps during preflight', function () {
-        Artisan::call('migrate:rollback', [
-            '--path' => 'database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php',
-            '--force' => true,
-        ]);
+        rollbackSingleMigration('database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php');
 
         $store = Store::factory()->create();
 
@@ -188,13 +192,22 @@ describe('numbering scheme migrations (sqlite)', function () {
     });
 
     it('backfills credit note store_id from invoice when unique indexes are applied', function () {
-        Artisan::call('migrate:rollback', [
-            '--path' => 'database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php',
-            '--force' => true,
-        ]);
+        rollbackSingleMigration('database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php');
 
         $invoice = Invoice::factory()->create();
-        $creditNote = CreditNote::factory()->create(['invoice_id' => $invoice->id]);
+        $creditNote = CreditNote::query()->create([
+            'id' => app(SequenceAllocator::class)->next('credit_notes'),
+            'invoice_id' => $invoice->id,
+            'number' => 'CN-BACKFILL-TEST',
+            'status' => 'issued',
+            'subtotal' => -1000,
+            'tax_total' => -200,
+            'total' => -1200,
+            'currency_code' => 'GBP',
+            'exchange_rate' => '1',
+            'prices_include_tax' => false,
+            'issued_at' => now(),
+        ]);
 
         Artisan::call('migrate', [
             '--path' => 'database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php',
@@ -206,10 +219,7 @@ describe('numbering scheme migrations (sqlite)', function () {
 
     it('rolls back and re-applies numbering scheme migrations cleanly', function () {
         foreach (numberingSchemeMigrationPaths() as $path) {
-            Artisan::call('migrate:rollback', [
-                '--path' => $path,
-                '--force' => true,
-            ]);
+            rollbackSingleMigration($path);
         }
 
         expect(Schema::hasColumn('document_sequences', 'is_entity_number'))->toBeFalse()

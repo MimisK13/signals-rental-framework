@@ -98,7 +98,7 @@ test('notification pane refreshes when bell polling detects a new unread count',
         ->assertSee('Stale sync');
 });
 
-test('mark read decrements unread count', function () {
+test('mark read decrements unread count and notifies bell to refresh', function () {
     $this->actingAs($this->user);
     $this->member->notify(new TestPipelineNotification(
         typeKey: 'test.alert',
@@ -108,12 +108,19 @@ test('mark read decrements unread count', function () {
 
     $notificationId = $this->member->fresh()->notifications->first()->id;
 
+    $bell = Volt::test('notifications.bell')
+        ->assertSet('unreadCount', 1);
+
     Volt::test('notifications.pane')
         ->call('markRead', $notificationId)
+        ->assertSet('unreadCount', 0)
+        ->assertDispatched('notifications-count-stale');
+
+    $bell->call('onNotificationsCountStale')
         ->assertSet('unreadCount', 0);
 });
 
-test('mark all read clears unread count', function () {
+test('mark all read clears unread count and notifies bell to refresh', function () {
     $this->actingAs($this->user);
     $this->member->notify(new TestPipelineNotification(
         typeKey: 'test.alert',
@@ -126,8 +133,15 @@ test('mark all read clears unread count', function () {
         payload: ['title' => 'Two', 'body' => 'B'],
     ));
 
+    $bell = Volt::test('notifications.bell')
+        ->assertSet('unreadCount', 2);
+
     Volt::test('notifications.pane')
         ->call('markAllRead')
+        ->assertSet('unreadCount', 0)
+        ->assertDispatched('notifications-count-stale');
+
+    $bell->call('onNotificationsCountStale')
         ->assertSet('unreadCount', 0);
 });
 

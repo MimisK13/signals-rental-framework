@@ -94,6 +94,7 @@ new class extends Component
 
         (new MarkNotificationRead)($user, $notificationId);
         $this->refreshNotifications();
+        $this->dispatch('notifications-count-stale');
     }
 
     public function markAllRead(): void
@@ -106,6 +107,7 @@ new class extends Component
 
         (new MarkNotificationRead)->markAll($user);
         $this->refreshNotifications();
+        $this->dispatch('notifications-count-stale');
     }
 }; ?>
 

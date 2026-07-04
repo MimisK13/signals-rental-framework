@@ -25,6 +25,12 @@ new class extends Component
         $this->refreshCount();
     }
 
+    #[On('notifications-count-stale')]
+    public function onNotificationsCountStale(): void
+    {
+        $this->refreshCount();
+    }
+
     public function refreshCount(): void
     {
         $user = Auth::user();

@@ -22,6 +22,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('members', function (Blueprint $table): void {
+            // Drop the explicit index before the FK/column: SQLite native DROP COLUMN
+            // fails when a separate index still references the column.
+            $table->dropIndex(['price_category_tier_id']);
             $table->dropConstrainedForeignId('price_category_tier_id');
         });
     }

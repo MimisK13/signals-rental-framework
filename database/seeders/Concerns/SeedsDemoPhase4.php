@@ -162,6 +162,17 @@ trait SeedsDemoPhase4
                 'tax_zone_id' => $tax['eu']->id,
                 'buyer_type' => TaxBuyerType::Business,
                 'tax_exempt' => false,
+                // Demo fixture: pre-validated EU B2B VAT for offline reverse-charge demos (no live VIES).
+                'demo_validated_vat' => true,
+            ],
+            [
+                'name' => 'Demo - Amsterdam Trade BV',
+                'tax_number' => 'NL123456789B01',
+                'tax_zone_id' => $tax['eu']->id,
+                'buyer_type' => TaxBuyerType::Business,
+                'tax_exempt' => false,
+                // Left genuinely pending so the VIES queue flow remains demoable.
+                'leave_vat_pending' => true,
             ],
             [
                 'name' => 'Demo - Riverside Community Trust',
@@ -192,13 +203,10 @@ trait SeedsDemoPhase4
                 ->where('name', $variant['name'])
                 ->first();
 
+            $taxAttributes = $this->demoTaxVariantAttributes($variant);
+
             if ($existing !== null) {
-                $existing->forceFill([
-                    'tax_zone_id' => $variant['tax_zone_id'],
-                    'buyer_type' => $variant['buyer_type'],
-                    'tax_exempt' => $variant['tax_exempt'],
-                    'tax_number' => $variant['tax_number'],
-                ])->save();
+                $existing->forceFill($taxAttributes)->save();
 
                 continue;
             }
@@ -211,12 +219,33 @@ trait SeedsDemoPhase4
                 'tag_list' => [self::DEMO_TAG],
             ]));
 
-            Member::query()->findOrFail($memberData->id)->forceFill([
-                'tax_zone_id' => $variant['tax_zone_id'],
-                'buyer_type' => $variant['buyer_type'],
-                'tax_exempt' => $variant['tax_exempt'],
-            ])->save();
+            Member::query()->findOrFail($memberData->id)->forceFill($taxAttributes)->save();
         }
+    }
+
+    /**
+     * @param  array{name: string, tax_number: ?string, tax_zone_id: int, buyer_type: TaxBuyerType, tax_exempt: bool, demo_validated_vat?: bool, leave_vat_pending?: bool}  $variant
+     * @return array<string, mixed>
+     */
+    private function demoTaxVariantAttributes(array $variant): array
+    {
+        $attributes = [
+            'tax_zone_id' => $variant['tax_zone_id'],
+            'buyer_type' => $variant['buyer_type'],
+            'tax_exempt' => $variant['tax_exempt'],
+            'tax_number' => $variant['tax_number'],
+        ];
+
+        if ($variant['demo_validated_vat'] ?? false) {
+            $attributes['tax_number_validated'] = true;
+            $attributes['tax_number_validated_at'] = now();
+        } elseif ($variant['leave_vat_pending'] ?? false) {
+            $attributes['tax_number_validated'] = null;
+            $attributes['tax_number_validated_at'] = null;
+            $attributes['tax_number_validation'] = null;
+        }
+
+        return $attributes;
     }
 
     private function enrichDemoProducts(): void
