@@ -39,9 +39,11 @@ class DispatchBulkQuantity
             // §7.4 dispatch gate — Block throws (rolling back); Warn/Allow proceed.
             $this->gateResult = app(DispatchShortageGate::class)->enforceForItem($item);
 
+            $quantity = $this->gateResult->clampBulkDispatchQuantity($item, $data->quantity);
+
             BulkQuantityDispatched::fire(
                 opportunity_item_id: $item->state_id,
-                quantity: $data->quantity,
+                quantity: $quantity,
                 dispatched_by: $data->dispatched_by,
             );
         });

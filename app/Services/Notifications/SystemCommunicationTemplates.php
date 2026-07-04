@@ -24,6 +24,7 @@ class SystemCommunicationTemplates
             'shortage.detected',
             'shortage.escalated',
             'shortage.waitlist.matched',
+            'virtual_stock.overrun',
             'invoice.created',
             'invoice.overdue',
             'invoice.payment_received',
@@ -172,6 +173,18 @@ class SystemCommunicationTemplates
                     '- **Product:** {{ shortage.product_name | default:"—" }}',
                     '- **Opportunity:** {{ opportunity.subject }}',
                     '- **Reference:** {{ opportunity.reference | default:"—" }}',
+                ],
+            ),
+            'virtual_stock.overrun' => self::emailDefinition(
+                key: $notificationTypeKey,
+                name: 'Virtual Stock Overrun Email',
+                subject: 'Virtual Stock Overrun — {{ virtual_stock_intake.number | default:"Intake" }}',
+                eyebrow: 'Virtual Stock Overrun',
+                intro: 'Virtual stock is still on hire past its intake window.',
+                fields: [
+                    '- **Intake:** {{ virtual_stock_intake.number | default:"—" }}',
+                    '- **Available until:** {{ virtual_stock_intake.available_until | date }}',
+                    '- **Quantity:** {{ virtual_stock_intake.quantity | number:0 }}',
                 ],
             ),
             'invoice.created' => self::emailDefinition(

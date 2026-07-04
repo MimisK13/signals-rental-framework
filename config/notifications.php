@@ -97,12 +97,20 @@ return [
             ['type' => 'shortage.waitlist.created'],
         ],
 
+        'shortage.escalated' => [
+            ['type' => 'shortage.escalated'],
+        ],
+
         'shortage.resolution.confirmed' => [
             ['type' => 'shortage.resolution.confirmed'],
         ],
 
         'invoice.overdue' => [
             ['type' => 'invoice.overdue'],
+        ],
+
+        'virtual_stock.overrun' => [
+            ['type' => 'virtual_stock.overrun'],
         ],
 
         // Billing customer emails are dispatched explicitly via SendBillingCustomerCommunication (P38).

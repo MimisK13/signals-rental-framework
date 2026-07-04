@@ -34,4 +34,17 @@ return [
 
     'cost_apportionment_strategy' => env('SHORTAGE_COST_APPORTIONMENT_STRATEGY', 'primary_job'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Escalation threshold
+    |--------------------------------------------------------------------------
+    |
+    | Days before an opportunity's dispatch/window start at which unresolved
+    | shortages on confirmed orders trigger shortage.escalated (default: 3).
+    | Override at runtime via settings('shortages.escalation_days_before_dispatch').
+    |
+    */
+
+    'escalation_days_before_dispatch' => (int) env('SHORTAGE_ESCALATION_DAYS_BEFORE_DISPATCH', 3),
+
 ];

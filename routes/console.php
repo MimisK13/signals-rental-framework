@@ -112,3 +112,15 @@ Schedule::job(new ExpireWaitlistMonitors)
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
+
+// Escalate unresolved shortages on confirmed orders approaching dispatch (P47).
+Schedule::command('shortages:escalate-unresolved')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Detect virtual stock intakes past available_until still on hire (P47).
+Schedule::command('virtual-stock:detect-overruns')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();

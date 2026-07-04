@@ -11,9 +11,11 @@ use App\Actions\Shortages\DetectOpportunityShortages;
 use App\Actions\Shortages\FailShortageResolution;
 use App\Actions\Shortages\FulfillShortageResolution;
 use App\Actions\Shortages\StartShortageResolution;
+use App\Actions\Shortages\TransitionShortageResolution;
 use App\Data\Shortages\AcknowledgeShortageData;
 use App\Data\Shortages\ApplyBatchResolutionData;
 use App\Data\Shortages\ApplyResolutionData;
+use App\Data\Shortages\ApplyShortageResolutionTransitionData;
 use App\Data\Shortages\ShortageData;
 use App\Data\Shortages\ShortageResolutionData;
 use App\Data\Shortages\TransitionShortageResolutionData;
@@ -318,6 +320,21 @@ class ShortageController extends Controller
      | to these transitions (e.g. via firstOpportunity()). Documented so the gap
      | is a recorded decision rather than an accidental omission.
      */
+
+    /**
+     * Apply a §8.3 status transition to a resolution (matrix-enforced).
+     */
+    #[ApiResponse(200, 'Resolution transitioned', type: 'array{resolution: array{id: int, status: string, status_label: string}}')]
+    public function transitionResolution(Request $request, ShortageResolution $resolution): JsonResponse
+    {
+        $this->authorizeApi('shortages.resolve', 'shortages:write');
+
+        $payload = ApplyShortageResolutionTransitionData::from($request->validate(ApplyShortageResolutionTransitionData::rules()));
+
+        $data = app(TransitionShortageResolution::class)($resolution, $payload);
+
+        return $this->respondWith($data->toArray(), 'resolution');
+    }
 
     /**
      * Confirm a pending/monitoring resolution (§8.3: pending → confirmed).

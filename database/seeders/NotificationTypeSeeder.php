@@ -341,6 +341,16 @@ class NotificationTypeSeeder extends Seeder
                 'default_recipients' => [['type' => 'subject_owner']],
                 'data_schema' => $schema,
             ],
+            'virtual_stock.overrun' => [
+                'category' => 'Virtual Stock',
+                'name' => 'Virtual Stock Overrun',
+                'description' => 'Sent when virtual stock is still on hire past the intake window.',
+                'audience' => NotificationAudience::Internal,
+                'available_channels' => ['database', 'mail'],
+                'default_channels' => ['database', 'mail'],
+                'default_recipients' => [['type' => 'role', 'role' => 'manager']],
+                'data_schema' => self::virtualStockIntakeSchema(),
+            ],
         ];
     }
 
@@ -505,6 +515,25 @@ class NotificationTypeSeeder extends Seeder
                     'label' => 'Contact',
                     'fields' => [
                         ['path' => 'contact.name', 'type' => 'string', 'label' => 'Name'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function virtualStockIntakeSchema(): array
+    {
+        return [
+            'groups' => [
+                [
+                    'label' => 'Virtual Stock Intake',
+                    'fields' => [
+                        ['path' => 'virtual_stock_intake.id', 'type' => 'number', 'label' => 'ID'],
+                        ['path' => 'virtual_stock_intake.number', 'type' => 'string', 'label' => 'Number'],
+                        ['path' => 'virtual_stock_intake.available_until', 'type' => 'datetime', 'label' => 'Available Until'],
                     ],
                 ],
             ],

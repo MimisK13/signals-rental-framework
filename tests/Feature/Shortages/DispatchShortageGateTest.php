@@ -134,6 +134,26 @@ it('proceeds silently under an AllowPartial policy with no held-item metadata', 
         ->and($action->gateResult->toHeldItemsMeta())->toBe([]);
 });
 
+it('clamps bulk dispatch quantity to available stock under partial policies', function () {
+    [, $item] = shortOrderForDispatch($this->store, ShortageDispatchPolicy::WarnPartial);
+
+    $action = new DispatchBulkQuantity;
+    $action($item->fresh(), BulkDispatchData::from(['quantity' => '3']));
+
+    expect((float) $item->fresh()->dispatched_quantity)->toBe(1.0)
+        ->and($action->gateResult->warned())->toBeTrue();
+});
+
+it('rejects bulk dispatch when nothing remains available on a short line under partial policies', function () {
+    [, $item] = shortOrderForDispatch($this->store, ShortageDispatchPolicy::AllowPartial);
+
+    $first = new DispatchBulkQuantity;
+    $first($item->fresh(), BulkDispatchData::from(['quantity' => '1']));
+
+    expect(fn () => (new DispatchBulkQuantity)($item->fresh(), BulkDispatchData::from(['quantity' => '1'])))
+        ->toThrow(ValidationException::class);
+});
+
 it('allows a non-short dispatch through any policy', function () {
     $this->store->update([
         'shortage_dispatch_policy' => ShortageDispatchPolicy::Block->value,

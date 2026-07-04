@@ -33,6 +33,7 @@ use Illuminate\Validation\ValidationException;
  * @property Carbon|null $confirmed_at
  * @property Carbon|null $received_at
  * @property Carbon|null $returned_at
+ * @property Carbon|null $overrun_notified_at
  * @property Carbon|null $cancelled_at
  * @property int $unit_cost
  * @property string $currency_code
@@ -70,6 +71,7 @@ class VirtualStockIntake extends Model
         'confirmed_at',
         'received_at',
         'returned_at',
+        'overrun_notified_at',
         'cancelled_at',
         'unit_cost',
         'currency_code',
@@ -92,6 +94,7 @@ class VirtualStockIntake extends Model
             'confirmed_at' => 'datetime',
             'received_at' => 'datetime',
             'returned_at' => 'datetime',
+            'overrun_notified_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
     }
@@ -201,6 +204,23 @@ class VirtualStockIntake extends Model
 
         return $this->purchaseOrder?->ends_at !== null
             && $this->returned_at->gt($this->purchaseOrder->ends_at);
+    }
+
+    /**
+     * Whether the intake window has passed while stock is still on hire (not returned
+     * or cancelled). Complements {@see isLateReturn()} which covers post-return lateness.
+     */
+    public function isOverrun(): bool
+    {
+        if ($this->returned_at !== null || $this->cancelled_at !== null) {
+            return false;
+        }
+
+        if (! in_array($this->status, ['confirmed', 'received'], true)) {
+            return false;
+        }
+
+        return $this->available_until->isPast();
     }
 
     public function allocationsCount(): int

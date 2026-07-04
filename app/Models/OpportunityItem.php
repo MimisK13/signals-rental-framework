@@ -58,6 +58,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $ends_at
  * @property string $dispatched_quantity
  * @property string $returned_quantity
+ * @property Carbon|null $shortage_escalated_at
  * @property string $invoiced_quantity
  * @property int|null $dispatch_store_id
  * @property int|null $return_store_id
@@ -111,6 +112,7 @@ class OpportunityItem extends Model implements HasSchema
         'ends_at',
         'dispatched_quantity',
         'returned_quantity',
+        'shortage_escalated_at',
         'invoiced_quantity',
         'dispatch_store_id',
         'return_store_id',
@@ -143,6 +145,7 @@ class OpportunityItem extends Model implements HasSchema
             'ends_at' => 'datetime',
             'dispatched_quantity' => 'decimal:2',
             'returned_quantity' => 'decimal:2',
+            'shortage_escalated_at' => 'datetime',
             'invoiced_quantity' => 'decimal:2',
             'dispatch_store_id' => 'integer',
             'return_store_id' => 'integer',
