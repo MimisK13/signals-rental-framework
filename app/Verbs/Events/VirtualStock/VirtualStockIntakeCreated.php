@@ -21,6 +21,7 @@ class VirtualStockIntakeCreated extends Event
         public string $status = 'draft',
         public ?int $purchase_order_id = null,
         public ?int $purchase_order_item_id = null,
+        public ?int $primary_opportunity_id = null,
         public int $product_id = 0,
         public int $store_id = 0,
         public int $quantity = 0,
@@ -40,6 +41,7 @@ class VirtualStockIntakeCreated extends Event
         $state->status = $this->status;
         $state->purchase_order_id = $this->purchase_order_id;
         $state->purchase_order_item_id = $this->purchase_order_item_id;
+        $state->primary_opportunity_id = $this->primary_opportunity_id;
         $state->product_id = $this->product_id;
         $state->store_id = $this->store_id;
         $state->quantity = $this->quantity;
@@ -69,6 +71,7 @@ class VirtualStockIntakeCreated extends Event
                 'status' => $state->status,
                 'purchase_order_id' => $state->purchase_order_id,
                 'purchase_order_item_id' => $state->purchase_order_item_id,
+                'primary_opportunity_id' => $state->primary_opportunity_id,
                 'product_id' => $state->product_id,
                 'store_id' => $state->store_id,
                 'quantity' => $state->quantity,

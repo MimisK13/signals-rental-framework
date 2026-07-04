@@ -7,8 +7,9 @@ use App\Services\Shortages\CostApportionmentContext;
 /**
  * Assigns the full intake cost to the primary opportunity.
  *
- * Primary = resolution metadata `opportunity_id`, else the first participating
- * opportunity (lowest id after deterministic sort).
+ * Primary = persisted intake `primary_opportunity_id`, else resolution metadata
+ * `opportunity_id`, else the first participating opportunity (lowest id after
+ * deterministic sort).
  */
 class PrimaryJobCostApportionmentStrategy extends AbstractCostApportionmentStrategy
 {

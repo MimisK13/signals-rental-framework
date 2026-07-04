@@ -27,6 +27,7 @@ use Illuminate\Validation\ValidationException;
  * @property string $status
  * @property int|null $purchase_order_id
  * @property int|null $purchase_order_item_id
+ * @property int|null $primary_opportunity_id
  * @property int $product_id
  * @property int $store_id
  * @property int $quantity
@@ -65,6 +66,7 @@ class VirtualStockIntake extends Model implements HasSchema
         'status',
         'purchase_order_id',
         'purchase_order_item_id',
+        'primary_opportunity_id',
         'product_id',
         'store_id',
         'quantity',
@@ -128,6 +130,9 @@ class VirtualStockIntake extends Model implements HasSchema
         $builder->relation('purchase_order_id')->label('Purchase Order')
             ->relation('purchaseOrder', 'belongsTo', PurchaseOrder::class, 'number')
             ->filterable();
+        $builder->relation('primary_opportunity_id')->label('Primary Opportunity')
+            ->relation('primaryOpportunity', 'belongsTo', Opportunity::class, 'subject')
+            ->filterable();
         $builder->integer('quantity')->label('Quantity')->sortable();
         $builder->currency('unit_cost')->label('Unit Cost')->sortable();
         $builder->string('currency_code')->label('Currency')->filterable();
@@ -169,6 +174,14 @@ class VirtualStockIntake extends Model implements HasSchema
     public function purchaseOrderItem(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrderItem::class);
+    }
+
+    /**
+     * @return BelongsTo<Opportunity, $this>
+     */
+    public function primaryOpportunity(): BelongsTo
+    {
+        return $this->belongsTo(Opportunity::class, 'primary_opportunity_id');
     }
 
     /**

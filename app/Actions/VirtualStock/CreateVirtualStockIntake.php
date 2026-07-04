@@ -26,7 +26,7 @@ class CreateVirtualStockIntake
     {
         Gate::authorize('create', VirtualStockIntake::class);
 
-        [$productId, $storeId, $quantity, $unitCost, $currency, $poId, $poItemId] = $this->resolveFields($data);
+        [$productId, $storeId, $quantity, $unitCost, $currency, $poId, $poItemId, $primaryOpportunityId] = $this->resolveFields($data);
 
         $status = app(VirtualStockStatusRegistry::class)->defaultStatus();
         app(VirtualStockStatusRegistry::class)->assertKnown($status);
@@ -43,6 +43,7 @@ class CreateVirtualStockIntake
             $currency,
             $poId,
             $poItemId,
+            $primaryOpportunityId,
             $status,
             $createdAt,
             $allocator,
@@ -60,6 +61,7 @@ class CreateVirtualStockIntake
                 status: $status,
                 purchase_order_id: $poId,
                 purchase_order_item_id: $poItemId,
+                primary_opportunity_id: $primaryOpportunityId,
                 product_id: $productId,
                 store_id: $storeId,
                 quantity: $quantity,
@@ -86,7 +88,7 @@ class CreateVirtualStockIntake
     }
 
     /**
-     * @return array{0: int, 1: int, 2: int, 3: int, 4: string, 5: ?int, 6: ?int}
+     * @return array{0: int, 1: int, 2: int, 3: int, 4: string, 5: ?int, 6: ?int, 7: ?int}
      */
     private function resolveFields(CreateVirtualStockIntakeData $data): array
     {
@@ -97,6 +99,7 @@ class CreateVirtualStockIntake
         $currency = $this->resolveCurrency($data->currency_code);
         $poId = $data->purchase_order_id;
         $poItemId = $data->purchase_order_item_id;
+        $primaryOpportunityId = null;
 
         if ($poItemId !== null) {
             $line = PurchaseOrderItem::query()->with('purchaseOrder')->findOrFail($poItemId);
@@ -115,6 +118,7 @@ class CreateVirtualStockIntake
             }
 
             $poId = $po->id;
+            $primaryOpportunityId = $po->opportunity_id;
 
             if ($line->product_id === null) {
                 throw ValidationException::withMessages([
@@ -127,9 +131,12 @@ class CreateVirtualStockIntake
             $quantity = max(1, (int) round((float) $line->quantity));
             $unitCost = $line->unit_cost;
             $currency = $po->currency_code;
+        } elseif ($poId !== null) {
+            $po = PurchaseOrder::query()->findOrFail($poId);
+            $primaryOpportunityId = $po->opportunity_id;
         }
 
-        return [$productId, $storeId, $quantity, $unitCost, $currency, $poId, $poItemId];
+        return [$productId, $storeId, $quantity, $unitCost, $currency, $poId, $poItemId, $primaryOpportunityId];
     }
 
     private function resolveCurrency(?string $currency): string

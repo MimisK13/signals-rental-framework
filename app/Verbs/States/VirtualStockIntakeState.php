@@ -20,6 +20,8 @@ class VirtualStockIntakeState extends State
 
     public ?int $purchase_order_item_id = null;
 
+    public ?int $primary_opportunity_id = null;
+
     public int $product_id = 0;
 
     public int $store_id = 0;

@@ -39,6 +39,7 @@ class VirtualStockIntakeController extends Controller
         'product_id',
         'store_id',
         'purchase_order_id',
+        'primary_opportunity_id',
         'available_from',
         'available_until',
         'confirmed_at',

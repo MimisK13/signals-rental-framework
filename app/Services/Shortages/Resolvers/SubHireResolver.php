@@ -409,6 +409,7 @@ class SubHireResolver extends AbstractShortageResolver implements BatchShortageR
                     status: $intakeStatus,
                     purchase_order_id: $purchaseOrderId,
                     purchase_order_item_id: $poItemId,
+                    primary_opportunity_id: $opportunityId,
                     product_id: $productId,
                     store_id: $storeId,
                     quantity: max(1, (int) round((float) $lineQuantity)),

@@ -14,6 +14,7 @@ class CostApportionmentContext
     /**
      * @param  array<int, int>  $quantitiesByOpportunity  opportunity_id => allocated quantity
      * @param  array<int, Opportunity>  $opportunities
+     * @param  array<int, array{from: Carbon, until: Carbon}>  $rentalWindowsByOpportunity
      */
     public function __construct(
         public readonly VirtualStockIntake $intake,
@@ -21,6 +22,7 @@ class CostApportionmentContext
         public readonly array $opportunities,
         public readonly ?int $primaryOpportunityId,
         public readonly int $totalCostMinor,
+        public readonly array $rentalWindowsByOpportunity = [],
     ) {}
 
     /**
@@ -36,6 +38,10 @@ class CostApportionmentContext
      */
     public function opportunityWindow(int $opportunityId): ?array
     {
+        if (isset($this->rentalWindowsByOpportunity[$opportunityId])) {
+            return $this->rentalWindowsByOpportunity[$opportunityId];
+        }
+
         $opportunity = $this->opportunities[$opportunityId] ?? null;
 
         if ($opportunity === null) {
