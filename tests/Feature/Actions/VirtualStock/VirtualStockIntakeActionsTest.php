@@ -103,20 +103,20 @@ it('updates draft intakes only', function () {
 it('runs the confirm receive return lifecycle', function () {
     $intake = createTestVirtualStockIntake();
 
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
     expect($intake->refresh()->status)->toBe('confirmed');
 
-    (new ReceiveVirtualStockIntake)($intake);
+    app(ReceiveVirtualStockIntake::class)($intake);
     expect($intake->refresh()->status)->toBe('received');
 
-    (new ReturnVirtualStockIntake)($intake);
+    app(ReturnVirtualStockIntake::class)($intake);
     expect($intake->refresh()->status)->toBe('returned');
 });
 
 it('rejects illegal transitions', function () {
     $intake = createTestVirtualStockIntake();
 
-    expect(fn () => (new ReceiveVirtualStockIntake)($intake))
+    expect(fn () => app(ReceiveVirtualStockIntake::class)($intake))
         ->toThrow(InvalidArgumentException::class);
 });
 
@@ -131,9 +131,9 @@ it('deletes draft intakes via event sourcing', function () {
 
 it('cancels confirmed intakes', function () {
     $intake = createTestVirtualStockIntake();
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
 
-    (new CancelVirtualStockIntake)($intake->refresh(), 'No longer needed');
+    app(CancelVirtualStockIntake::class)($intake->refresh(), 'No longer needed');
 
     expect($intake->refresh()->status)->toBe('cancelled');
 });

@@ -117,6 +117,11 @@ use App\Services\Shortages\Resolvers\WaitlistResolver;
 use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
 use App\Services\Shortages\ShortageResolverDefinition;
 use App\Services\Shortages\ShortageResolverRegistry;
+use App\Services\Shortages\Strategies\EvenSplitCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Services\Tax\DefaultVatNumberValidator;
 use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\Tax\TaxZoneRuleResolver;
@@ -400,12 +405,16 @@ class AppServiceProvider extends ServiceProvider
             return $registry;
         });
 
-        // Cost apportionment — STUB for later sub-hire (Phase 4). Ships the no-op
-        // strategy only; virtual stock and plugins register the real strategies.
+        // Cost apportionment strategies for virtual stock / sub-hire intakes.
         $this->app->singleton(CostApportionmentRegistry::class, function (): CostApportionmentRegistry {
             $registry = new CostApportionmentRegistry;
 
             $registry->register(new NullCostApportionmentStrategy);
+            $registry->register(app(PrimaryJobCostApportionmentStrategy::class));
+            $registry->register(app(EvenSplitCostApportionmentStrategy::class));
+            $registry->register(app(ProportionalQuantityCostApportionmentStrategy::class));
+            $registry->register(app(ProportionalQuantityDurationCostApportionmentStrategy::class));
+            $registry->register(app(ManualCostApportionmentStrategy::class));
 
             return $registry;
         });

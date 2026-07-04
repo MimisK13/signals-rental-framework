@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $state_id
  * @property int $opportunity_id
+ * @property int|null $virtual_stock_intake_id
  * @property string $description
  * @property OpportunityCostType $cost_type
  * @property LineItemTransactionType $transaction_type
@@ -61,6 +62,7 @@ class OpportunityCost extends Model implements HasSchema
         'id',
         'state_id',
         'opportunity_id',
+        'virtual_stock_intake_id',
         'description',
         'cost_type',
         'transaction_type',
@@ -110,6 +112,14 @@ class OpportunityCost extends Model implements HasSchema
     public function opportunity(): BelongsTo
     {
         return $this->belongsTo(Opportunity::class, 'opportunity_id');
+    }
+
+    /**
+     * @return BelongsTo<VirtualStockIntake, $this>
+     */
+    public function virtualStockIntake(): BelongsTo
+    {
+        return $this->belongsTo(VirtualStockIntake::class, 'virtual_stock_intake_id');
     }
 
     /**

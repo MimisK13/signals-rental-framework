@@ -14,6 +14,10 @@ class CancelVirtualStockIntake
 {
     use CommitsVerbsEvents;
 
+    public function __construct(
+        private readonly ApportionVirtualStockCost $apportionVirtualStockCost,
+    ) {}
+
     public function __invoke(VirtualStockIntake $intake, ?string $reason = null): VirtualStockIntakeData
     {
         Gate::authorize('cancel', $intake);
@@ -32,6 +36,8 @@ class CancelVirtualStockIntake
                 reason: $reason,
             );
         });
+
+        ($this->apportionVirtualStockCost)->removeForIntake($intake->refresh(), authorize: false);
 
         return VirtualStockIntakeData::fromModel($intake->refresh());
     }

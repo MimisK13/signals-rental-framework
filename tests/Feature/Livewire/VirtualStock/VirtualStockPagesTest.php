@@ -1,5 +1,10 @@
 <?php
 
+use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
+use App\Models\Opportunity;
+use App\Models\OpportunityItem;
+use App\Models\ShortageResolution;
+use App\Models\ShortageResolutionItem;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
@@ -28,6 +33,26 @@ it('renders the virtual stock show page', function () {
 
     Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake])
         ->assertSee($intake->number);
+});
+
+it('shows cost apportionment panel after confirm', function () {
+    $intake = createTestVirtualStockIntake(['quantity' => 2, 'unit_cost' => 1500]);
+    $opportunity = Opportunity::factory()->create();
+    $resolution = ShortageResolution::factory()->create([
+        'virtual_stock_intake_id' => $intake->id,
+        'metadata' => ['opportunity_id' => $opportunity->id],
+    ]);
+    ShortageResolutionItem::factory()->create([
+        'shortage_resolution_id' => $resolution->id,
+        'opportunity_item_id' => OpportunityItem::factory()->for($opportunity)->create()->id,
+        'quantity_allocated' => 2,
+    ]);
+
+    app(ConfirmVirtualStockIntake::class)($intake->refresh());
+
+    Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake->refresh()])
+        ->assertSee('Cost apportionment')
+        ->assertSee('Primary job');
 });
 
 it('renders the create form', function () {

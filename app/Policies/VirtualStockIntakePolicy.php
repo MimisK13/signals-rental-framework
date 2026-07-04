@@ -100,4 +100,17 @@ class VirtualStockIntakePolicy
         return $this->canAccessStore($user, $intake)
             && app(VirtualStockStatusRegistry::class)->canTransitionTo($intake->status, 'cancelled');
     }
+
+    public function manageCostOverrides(User $user, VirtualStockIntake $intake): bool
+    {
+        if (! $user->can('costs.view') || ! $user->can('virtual_stock.edit')) {
+            return false;
+        }
+
+        if (! in_array($intake->status, ['confirmed', 'received'], true)) {
+            return false;
+        }
+
+        return $this->canAccessStore($user, $intake);
+    }
 }

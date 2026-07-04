@@ -2,6 +2,7 @@
 
 namespace App\Actions\PurchaseOrders;
 
+use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\PurchaseOrders\PurchaseOrderData;
 use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
@@ -43,6 +44,7 @@ class ReceivePurchaseOrder
         private readonly PurchaseOrderTaxCalculator $taxCalculator,
         private readonly ShortageEventRecorder $shortageEvents,
         private readonly ItemShortageProbe $shortageProbe,
+        private readonly ApportionVirtualStockCost $apportionVirtualStockCost,
     ) {}
 
     public function __invoke(PurchaseOrder $purchaseOrder, ReceivePurchaseOrderData $data): PurchaseOrderData
@@ -266,6 +268,10 @@ class ReceivePurchaseOrder
 
         foreach ($resolutionTargets as $resolution) {
             $this->advanceResolution($resolution->fresh(), $resultingStatus);
+        }
+
+        foreach ($intakeActions as $action) {
+            ($this->apportionVirtualStockCost)($action['intake']->refresh(), authorize: false);
         }
 
         $this->probeAffectedShortages($purchaseOrder, $resolutionTargets);

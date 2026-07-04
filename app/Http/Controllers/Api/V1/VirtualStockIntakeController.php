@@ -2,19 +2,24 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Actions\VirtualStock\CancelVirtualStockIntake;
+use App\Actions\VirtualStock\ClearVirtualStockCostOverride;
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
 use App\Actions\VirtualStock\DeleteDraftVirtualStockIntake;
 use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
+use App\Actions\VirtualStock\SetVirtualStockCostOverride;
 use App\Actions\VirtualStock\UpdateDraftVirtualStockIntake;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Data\VirtualStock\SetVirtualStockCostOverrideData;
 use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Http\Traits\ResourceActions;
+use App\Models\Opportunity;
 use App\Models\VirtualStockIntake;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -195,7 +200,7 @@ class VirtualStockIntakeController extends Controller
         Gate::authorize('confirm', $virtualStockIntake);
         $this->authorizeApi('virtual_stock.confirm', $this->abilities()['write']);
 
-        $result = (new ConfirmVirtualStockIntake)($virtualStockIntake);
+        $result = app(ConfirmVirtualStockIntake::class)($virtualStockIntake);
 
         return $this->respondWith($result->toArray(), $this->singularKey());
     }
@@ -206,7 +211,7 @@ class VirtualStockIntakeController extends Controller
         Gate::authorize('receive', $virtualStockIntake);
         $this->authorizeApi('virtual_stock.receive', $this->abilities()['write']);
 
-        $result = (new ReceiveVirtualStockIntake)($virtualStockIntake);
+        $result = app(ReceiveVirtualStockIntake::class)($virtualStockIntake);
 
         return $this->respondWith($result->toArray(), $this->singularKey());
     }
@@ -217,7 +222,7 @@ class VirtualStockIntakeController extends Controller
         Gate::authorize('return', $virtualStockIntake);
         $this->authorizeApi('virtual_stock.return', $this->abilities()['write']);
 
-        $result = (new ReturnVirtualStockIntake)($virtualStockIntake);
+        $result = app(ReturnVirtualStockIntake::class)($virtualStockIntake);
 
         return $this->respondWith($result->toArray(), $this->singularKey());
     }
@@ -229,11 +234,51 @@ class VirtualStockIntakeController extends Controller
         $this->authorizeApi('virtual_stock.cancel', $this->abilities()['write']);
 
         $reason = $request->input('reason');
-        $result = (new CancelVirtualStockIntake)(
+        $result = app(CancelVirtualStockIntake::class)(
             $virtualStockIntake,
             is_string($reason) ? $reason : null,
         );
 
         return $this->respondWith($result->toArray(), $this->singularKey());
+    }
+
+    #[ApiResponse(200, 'Apportioned virtual stock costs', type: 'array{apportionment: array<string, mixed>}')]
+    public function apportion(VirtualStockIntake $virtualStockIntake, Request $request): JsonResponse
+    {
+        Gate::authorize('view', $virtualStockIntake);
+        $this->authorizeApi($this->permissions()['view'], $this->abilities()['read']);
+
+        $strategy = $request->input('strategy');
+        $result = app(ApportionVirtualStockCost::class)(
+            $virtualStockIntake,
+            is_string($strategy) ? $strategy : null,
+        );
+
+        return $this->respondWith($result->toArray(), 'apportionment');
+    }
+
+    #[ApiResponse(200, 'Cost override set and apportionment recalculated', type: 'array{apportionment: array<string, mixed>}')]
+    public function setCostOverride(Request $request, VirtualStockIntake $virtualStockIntake): JsonResponse
+    {
+        Gate::authorize('manageCostOverrides', $virtualStockIntake);
+        $this->authorizeApi($this->permissions()['edit'], $this->abilities()['write']);
+        Gate::authorize('costs.view');
+
+        $dto = SetVirtualStockCostOverrideData::validateAndCreate($request->all());
+        $result = app(SetVirtualStockCostOverride::class)($virtualStockIntake, $dto);
+
+        return $this->respondWith($result->toArray(), 'apportionment');
+    }
+
+    #[ApiResponse(200, 'Cost override cleared and apportionment recalculated', type: 'array{apportionment: array<string, mixed>}')]
+    public function clearCostOverride(VirtualStockIntake $virtualStockIntake, Opportunity $opportunity): JsonResponse
+    {
+        Gate::authorize('manageCostOverrides', $virtualStockIntake);
+        $this->authorizeApi($this->permissions()['edit'], $this->abilities()['write']);
+        Gate::authorize('costs.view');
+
+        $result = app(ClearVirtualStockCostOverride::class)($virtualStockIntake, $opportunity);
+
+        return $this->respondWith($result->toArray(), 'apportionment');
     }
 }

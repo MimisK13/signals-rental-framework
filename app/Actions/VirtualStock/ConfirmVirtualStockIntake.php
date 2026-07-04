@@ -15,6 +15,10 @@ class ConfirmVirtualStockIntake
 {
     use CommitsVerbsEvents;
 
+    public function __construct(
+        private readonly ApportionVirtualStockCost $apportionVirtualStockCost,
+    ) {}
+
     public function __invoke(VirtualStockIntake $intake): VirtualStockIntakeData
     {
         Gate::authorize('confirm', $intake);
@@ -34,6 +38,8 @@ class ConfirmVirtualStockIntake
                 confirmed_at: $confirmedAt->toIso8601String(),
             );
         });
+
+        ($this->apportionVirtualStockCost)($intake->refresh(), authorize: false);
 
         return VirtualStockIntakeData::fromModel($intake->refresh());
     }

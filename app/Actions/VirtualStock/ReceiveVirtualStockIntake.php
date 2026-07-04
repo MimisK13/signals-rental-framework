@@ -14,6 +14,10 @@ class ReceiveVirtualStockIntake
 {
     use CommitsVerbsEvents;
 
+    public function __construct(
+        private readonly ApportionVirtualStockCost $apportionVirtualStockCost,
+    ) {}
+
     public function __invoke(VirtualStockIntake $intake): VirtualStockIntakeData
     {
         Gate::authorize('receive', $intake);
@@ -31,6 +35,8 @@ class ReceiveVirtualStockIntake
                 received_at: $receivedAt->toIso8601String(),
             );
         });
+
+        ($this->apportionVirtualStockCost)($intake->refresh(), authorize: false);
 
         return VirtualStockIntakeData::fromModel($intake->refresh());
     }

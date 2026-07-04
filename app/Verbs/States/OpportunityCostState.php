@@ -31,6 +31,9 @@ class OpportunityCostState extends State
     /** Parent opportunity's small projection id. */
     public int $opportunity_id = 0;
 
+    /** Links apportioned sub-hire / virtual-stock costs back to their intake. */
+    public ?int $virtual_stock_intake_id = null;
+
     public ?string $description = null;
 
     /** Categorical cost type (delivery/labour/surcharge/insurance/loss-damage/misc). */

@@ -369,6 +369,9 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('virtual_stock_intakes/{virtual_stock_intake}/receive', [VirtualStockIntakeController::class, 'receive'])->name('api.v1.virtual_stock_intakes.receive');
     Route::post('virtual_stock_intakes/{virtual_stock_intake}/return', [VirtualStockIntakeController::class, 'return'])->name('api.v1.virtual_stock_intakes.return');
     Route::post('virtual_stock_intakes/{virtual_stock_intake}/cancel', [VirtualStockIntakeController::class, 'cancel'])->name('api.v1.virtual_stock_intakes.cancel');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/apportion', [VirtualStockIntakeController::class, 'apportion'])->name('api.v1.virtual_stock_intakes.apportion');
+    Route::put('virtual_stock_intakes/{virtual_stock_intake}/cost_overrides', [VirtualStockIntakeController::class, 'setCostOverride'])->name('api.v1.virtual_stock_intakes.cost_overrides.set');
+    Route::delete('virtual_stock_intakes/{virtual_stock_intake}/cost_overrides/{opportunity}', [VirtualStockIntakeController::class, 'clearCostOverride'])->name('api.v1.virtual_stock_intakes.cost_overrides.clear');
     Route::apiResource('virtual_stock_intakes', VirtualStockIntakeController::class)->names('api.v1.virtual_stock_intakes');
 
     // Rate Definitions

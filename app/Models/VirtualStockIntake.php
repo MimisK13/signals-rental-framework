@@ -33,6 +33,7 @@ use Illuminate\Validation\ValidationException;
  * @property Carbon|null $cancelled_at
  * @property int $unit_cost
  * @property string $currency_code
+ * @property string|null $cost_apportionment_strategy
  * @property string|null $notes
  * @property int|null $created_by
  * @property int|null $demand_id
@@ -69,6 +70,7 @@ class VirtualStockIntake extends Model
         'cancelled_at',
         'unit_cost',
         'currency_code',
+        'cost_apportionment_strategy',
         'notes',
         'created_by',
         'demand_id',
@@ -151,5 +153,13 @@ class VirtualStockIntake extends Model
     public function costOverrides(): HasMany
     {
         return $this->hasMany(VirtualStockCostOverride::class);
+    }
+
+    /**
+     * @return HasMany<OpportunityCost, $this>
+     */
+    public function apportionedCosts(): HasMany
+    {
+        return $this->hasMany(OpportunityCost::class, 'virtual_stock_intake_id');
     }
 }

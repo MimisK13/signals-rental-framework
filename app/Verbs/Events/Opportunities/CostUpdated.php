@@ -27,6 +27,7 @@ class CostUpdated extends Event
     public function __construct(
         #[StateId(OpportunityCostState::class)]
         public int $opportunity_cost_id,
+        public ?int $virtual_stock_intake_id = null,
         public string $description = '',
         public int $cost_type = 0,
         public int $transaction_type = 2,
@@ -44,6 +45,10 @@ class CostUpdated extends Event
 
     public function apply(OpportunityCostState $state): void
     {
+        // Null means "not specified" (e.g. a user editing description via
+        // UpdateOpportunityCost) — the intake link survives. Apportionment
+        // clears stale costs via CostRemoved, never by nulling this field.
+        $state->virtual_stock_intake_id = $this->virtual_stock_intake_id ?? $state->virtual_stock_intake_id;
         $state->description = $this->description;
         $state->cost_type = $this->cost_type;
         $state->transaction_type = $this->transaction_type;
@@ -66,6 +71,7 @@ class CostUpdated extends Event
         $oldSnapshot = $this->costSnapshot($cost);
 
         $cost->forceFill([
+            'virtual_stock_intake_id' => $state->virtual_stock_intake_id,
             'description' => $state->description,
             'cost_type' => $state->cost_type,
             'transaction_type' => $state->transaction_type,

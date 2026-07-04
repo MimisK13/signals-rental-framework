@@ -34,16 +34,19 @@ it('registers NotificationRegistry as singleton', function () {
     expect($registry)->toBeInstanceOf(NotificationRegistry::class);
 });
 
-it('registers CostApportionmentRegistry as a singleton with the null strategy', function () {
-    // Resolving the registry runs the binding closure (lines 195-199), which
-    // registers the no-op NullCostApportionmentStrategy keyed 'none'.
+it('registers CostApportionmentRegistry as a singleton with all strategies', function () {
     $a = app(CostApportionmentRegistry::class);
     $b = app(CostApportionmentRegistry::class);
 
     expect($a)->toBe($b)
         ->and($a)->toBeInstanceOf(CostApportionmentRegistry::class)
         ->and($a->has('none'))->toBeTrue()
-        ->and($a->get('none'))->toBeInstanceOf(NullCostApportionmentStrategy::class);
+        ->and($a->get('none'))->toBeInstanceOf(NullCostApportionmentStrategy::class)
+        ->and($a->has('primary_job'))->toBeTrue()
+        ->and($a->has('even_split'))->toBeTrue()
+        ->and($a->has('proportional_quantity'))->toBeTrue()
+        ->and($a->has('proportional_quantity_duration'))->toBeTrue()
+        ->and($a->has('manual'))->toBeTrue();
 });
 
 it('throws when CostApportionmentRegistry is asked for an unknown strategy key', function () {
@@ -63,7 +66,14 @@ it('exposes the null cost apportionment strategy contract surface', function () 
 it('lists every registered cost apportionment strategy via all()', function () {
     $registry = app(CostApportionmentRegistry::class);
 
-    expect($registry->all())->toHaveKey('none')
+    expect($registry->all())->toHaveKeys([
+        'none',
+        'primary_job',
+        'even_split',
+        'proportional_quantity',
+        'proportional_quantity_duration',
+        'manual',
+    ])
         ->and($registry->all()['none'])->toBeInstanceOf(NullCostApportionmentStrategy::class);
 });
 

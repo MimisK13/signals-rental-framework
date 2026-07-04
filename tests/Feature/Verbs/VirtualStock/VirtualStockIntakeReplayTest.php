@@ -65,9 +65,9 @@ it('reconstructs virtual stock intake and demand projections byte-identically af
 
     $intake = VirtualStockIntake::query()->findOrFail($created->id);
 
-    (new ConfirmVirtualStockIntake)($intake);
-    (new ReceiveVirtualStockIntake)($intake->refresh());
-    (new ReturnVirtualStockIntake)($intake->refresh());
+    app(ConfirmVirtualStockIntake::class)($intake);
+    app(ReceiveVirtualStockIntake::class)($intake->refresh());
+    app(ReturnVirtualStockIntake::class)($intake->refresh());
 
     $intakesBefore = VirtualStockIntake::withTrashed()->orderBy('id')->get()->map(
         fn (VirtualStockIntake $row): array => $row->getAttributes(),
@@ -145,7 +145,7 @@ it('creates negative supply demand on confirm and voids it on return and cancel'
         ->where('slot_start', Carbon::parse('2026-08-02T00:00:00Z'))
         ->value('available');
 
-    (new ConfirmVirtualStockIntake)($intake->refresh());
+    app(ConfirmVirtualStockIntake::class)($intake->refresh());
 
     $demand = Demand::query()
         ->where('source_type', 'virtual_stock_intake')
@@ -177,8 +177,8 @@ it('creates negative supply demand on confirm and voids it on return and cancel'
     expect($insideAvailable)->toBe(5)
         ->and($boundaryAvailable)->toBe($baselineAvailable);
 
-    (new ReceiveVirtualStockIntake)($intake->refresh());
-    (new ReturnVirtualStockIntake)($intake->refresh());
+    app(ReceiveVirtualStockIntake::class)($intake->refresh());
+    app(ReturnVirtualStockIntake::class)($intake->refresh());
 
     $demand->refresh();
 
@@ -207,9 +207,9 @@ it('creates negative supply demand on confirm and voids it on return and cancel'
         'available_until' => '2026-09-04T00:00:00Z',
     ]);
 
-    (new ConfirmVirtualStockIntake)($cancelIntake);
+    app(ConfirmVirtualStockIntake::class)($cancelIntake);
     $cancelDemand = Demand::query()->where('source_id', $cancelIntake->id)->firstOrFail();
-    (new CancelVirtualStockIntake)($cancelIntake->refresh());
+    app(CancelVirtualStockIntake::class)($cancelIntake->refresh());
 
     expect($cancelDemand->refresh()->is_active)->toBeFalse();
 });
