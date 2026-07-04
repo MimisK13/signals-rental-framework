@@ -37,6 +37,7 @@ use App\Http\Controllers\Api\V1\PriceCategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
+use App\Http\Controllers\Api\V1\ProductSupplierCostController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;
@@ -201,6 +202,11 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('products/{product}/merge', [ProductController::class, 'merge'])->name('api.v1.products.merge');
     Route::apiResource('products.accessories', AccessoryController::class)->only(['index', 'store', 'update', 'destroy'])->names('api.v1.products.accessories');
     Route::apiResource('products.rates', ProductRateController::class)->names('api.v1.products.rates');
+    Route::post('products/{product}/supplier_costs/{supplierCost}/set_preferred', [ProductSupplierCostController::class, 'setPreferred'])
+        ->name('api.v1.products.supplier_costs.set_preferred');
+    Route::apiResource('products.supplier_costs', ProductSupplierCostController::class)
+        ->parameters(['supplier_costs' => 'supplierCost'])
+        ->names('api.v1.products.supplier_costs');
     Route::post('products/{product}/calculate_rate', [RateCalculationController::class, 'calculate'])->name('api.v1.products.calculate_rate');
     // Kit composition (serialised_components — the product's bill-of-materials)
     Route::apiResource('products.components', SerialisedComponentController::class)

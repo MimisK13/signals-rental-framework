@@ -82,6 +82,7 @@ class PermissionSeeder extends Seeder
             'products.create' => ['label' => 'Create Products', 'description' => 'Create new products', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.view']],
             'products.edit' => ['label' => 'Edit Products', 'description' => 'Edit existing products', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.view']],
             'products.delete' => ['label' => 'Delete Products', 'description' => 'Delete products', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.edit']],
+            'products.supplier_costs' => ['label' => 'Manage Supplier Costs', 'description' => 'Create, edit, and delete product supplier costs', 'group' => 'Products', 'sub_group' => 'Supplier Costs', 'layer' => 'action', 'dependencies' => ['products.view', 'costs.view']],
 
             // Kits (the product bill-of-materials — serialised_components composition)
             'kits.view' => ['label' => 'View Kit Compositions', 'description' => 'View a product\'s kit bill-of-materials', 'group' => 'Products', 'sub_group' => 'Kits', 'layer' => 'action', 'dependencies' => ['products.view']],

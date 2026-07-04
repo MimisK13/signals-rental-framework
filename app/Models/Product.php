@@ -257,6 +257,16 @@ class Product extends Model implements HasSchema
     }
 
     /**
+     * Supplier cost records for sub-hire sourcing.
+     *
+     * @return HasMany<ProductSupplierCost, $this>
+     */
+    public function supplierCosts(): HasMany
+    {
+        return $this->hasMany(ProductSupplierCost::class);
+    }
+
+    /**
      * Accessories attached to this product.
      *
      * @return HasMany<Accessory, $this>
