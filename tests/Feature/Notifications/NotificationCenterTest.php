@@ -48,6 +48,56 @@ test('notification bell shows unread badge count', function () {
         ->assertSee('1');
 });
 
+test('notification pane refreshes when opened and stays consistent with bell', function () {
+    $this->actingAs($this->user);
+
+    $pane = Volt::test('notifications.pane')
+        ->assertSet('unreadCount', 0);
+
+    $this->member->notify(new TestPipelineNotification(
+        typeKey: 'test.alert',
+        laravelChannels: ['database'],
+        payload: ['title' => 'Live ping', 'body' => 'From polling'],
+    ));
+
+    $pane->set('items', [])->set('unreadCount', 0);
+
+    Volt::test('notifications.bell')
+        ->call('refreshCount')
+        ->assertSet('unreadCount', 1);
+
+    $pane->call('refreshNotifications')
+        ->assertSet('unreadCount', 1)
+        ->assertSee('Live ping')
+        ->assertSee('From polling');
+});
+
+test('notification pane refreshes when bell polling detects a new unread count', function () {
+    $this->actingAs($this->user);
+
+    $bell = Volt::test('notifications.bell')
+        ->assertSet('unreadCount', 0);
+
+    $pane = Volt::test('notifications.pane')
+        ->assertSet('unreadCount', 0);
+
+    $this->member->notify(new TestPipelineNotification(
+        typeKey: 'test.alert',
+        laravelChannels: ['database'],
+        payload: ['title' => 'Stale sync', 'body' => 'Updated from bell poll'],
+    ));
+
+    $pane->set('items', [])->set('unreadCount', 0);
+
+    $bell->call('refreshCount')
+        ->assertSet('unreadCount', 1)
+        ->assertDispatched('notifications-stale');
+
+    $pane->call('onNotificationsStale')
+        ->assertSet('unreadCount', 1)
+        ->assertSee('Stale sync');
+});
+
 test('mark read decrements unread count', function () {
     $this->actingAs($this->user);
     $this->member->notify(new TestPipelineNotification(

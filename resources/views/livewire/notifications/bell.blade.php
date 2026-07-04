@@ -30,12 +30,22 @@ new class extends Component
         $user = Auth::user();
 
         if (! $user instanceof User || $user->member === null) {
+            $previousCount = $this->unreadCount;
             $this->unreadCount = 0;
+
+            if ($previousCount !== 0) {
+                $this->dispatch('notifications-stale');
+            }
 
             return;
         }
 
+        $previousCount = $this->unreadCount;
         $this->unreadCount = $user->member->unreadNotifications()->count();
+
+        if ($this->unreadCount !== $previousCount) {
+            $this->dispatch('notifications-stale');
+        }
     }
 
     /**

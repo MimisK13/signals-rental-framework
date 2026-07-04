@@ -50,31 +50,13 @@ new class extends Component
         $this->refreshNotifications();
     }
 
-    public function markRead(string $notificationId): void
+    #[On('notifications-stale')]
+    public function onNotificationsStale(): void
     {
-        $user = Auth::user();
-
-        if (! $user instanceof User) {
-            return;
-        }
-
-        (new MarkNotificationRead)($user, $notificationId);
         $this->refreshNotifications();
     }
 
-    public function markAllRead(): void
-    {
-        $user = Auth::user();
-
-        if (! $user instanceof User) {
-            return;
-        }
-
-        (new MarkNotificationRead)->markAll($user);
-        $this->refreshNotifications();
-    }
-
-    private function refreshNotifications(): void
+    public function refreshNotifications(): void
     {
         if (! isset($this->member)) {
             return;
@@ -101,6 +83,30 @@ new class extends Component
 
         $this->unreadCount = $this->member->unreadNotifications()->count();
     }
+
+    public function markRead(string $notificationId): void
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            return;
+        }
+
+        (new MarkNotificationRead)($user, $notificationId);
+        $this->refreshNotifications();
+    }
+
+    public function markAllRead(): void
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            return;
+        }
+
+        (new MarkNotificationRead)->markAll($user);
+        $this->refreshNotifications();
+    }
 }; ?>
 
 <div class="app-notifications-mount">
@@ -109,6 +115,8 @@ new class extends Component
             <aside
                 class="app-notifications-pane"
                 :class="{ 'open': notificationsOpen, 'ready': notificationsReady }"
+                x-effect="if (notificationsOpen) { $wire.refreshNotifications() }"
+                wire:poll.60s="refreshNotifications"
             >
                 <div class="app-notifications-header">
                     <span class="app-notifications-title">{{ __('Notifications') }}</span>

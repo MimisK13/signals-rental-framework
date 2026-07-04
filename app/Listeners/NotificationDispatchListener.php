@@ -5,12 +5,17 @@ namespace App\Listeners;
 use App\Actions\Notifications\DispatchNotification;
 use App\Data\Notifications\DispatchNotificationData;
 use App\Events\AuditableEvent;
+use App\Models\Invoice;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
+use App\Models\ShortageResolution;
+use App\Models\ShortageWaitlistMonitor;
 use App\Models\User;
+use App\Models\VirtualStockIntake;
 use App\Notifications\DomainEventNotification;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
 use App\Services\Notifications\EventNotificationMapRegistry;
+use App\Services\Notifications\InAppNotificationContentBuilder;
 use Thunk\Verbs\Facades\Verbs;
 
 /**
@@ -37,6 +42,7 @@ class NotificationDispatchListener
         private readonly EventNotificationMapRegistry $map,
         private readonly EventNotificationConditionEvaluator $evaluator,
         private readonly DispatchNotification $dispatch,
+        private readonly InAppNotificationContentBuilder $contentBuilder,
     ) {}
 
     public function handle(AuditableEvent $event): void
@@ -57,11 +63,19 @@ class NotificationDispatchListener
             }
 
             foreach ($this->map->notificationTypesForEntry($entry) as $typeKey) {
+                $type = NotificationType::query()->where('key', $typeKey)->first();
+
+                if ($type === null) {
+                    continue;
+                }
+
+                $content = $this->contentBuilder->build($event, $type);
+
                 ($this->dispatch)(new DispatchNotificationData(
                     notificationTypeKey: $typeKey,
                     notificationClass: DomainEventNotification::class,
                     subject: $event->model,
-                    payload: $this->payloadFor($event, $typeKey),
+                    payload: $this->payloadFor($event, $content),
                     actorMemberId: $this->actorMemberId($event->userId),
                 ));
             }
@@ -69,20 +83,19 @@ class NotificationDispatchListener
     }
 
     /**
+     * @param  array{title: string, body: string}  $content
      * @return array<string, mixed>
      */
-    private function payloadFor(AuditableEvent $event, string $typeKey): array
+    private function payloadFor(AuditableEvent $event, array $content): array
     {
-        $type = NotificationType::query()->where('key', $typeKey)->first();
-
-        $title = $type !== null ? $type->name : $typeKey;
-        $body = $type !== null ? $type->description : $event->action;
+        $payload = [
+            'title' => $content['title'],
+            'body' => $content['body'],
+            'action' => $event->action,
+        ];
 
         if ($event->model instanceof Opportunity) {
-            return [
-                'title' => $title,
-                'body' => $body,
-                'action' => $event->action,
+            return $payload + [
                 'opportunity' => [
                     'id' => $event->model->getKey(),
                     'subject' => $event->model->subject,
@@ -91,10 +104,46 @@ class NotificationDispatchListener
             ];
         }
 
-        return [
-            'title' => $title,
-            'body' => $body,
-            'action' => $event->action,
+        if ($event->model instanceof Invoice) {
+            return $payload + [
+                'invoice' => [
+                    'id' => $event->model->getKey(),
+                    'number' => $event->model->number,
+                    'total' => $event->model->formatMoneyCost('total'),
+                ],
+            ];
+        }
+
+        if ($event->model instanceof ShortageWaitlistMonitor) {
+            $event->model->loadMissing('product');
+
+            return $payload + [
+                'shortage' => [
+                    'product_name' => $event->model->product?->name,
+                    'quantity' => $event->model->quantity_needed,
+                ],
+            ];
+        }
+
+        if ($event->model instanceof ShortageResolution) {
+            return $payload + [
+                'shortage_resolution' => [
+                    'id' => $event->model->getKey(),
+                    'quantity_resolved' => $event->model->quantity_resolved,
+                ],
+            ];
+        }
+
+        if ($event->model instanceof VirtualStockIntake) {
+            return $payload + [
+                'virtual_stock_intake' => [
+                    'id' => $event->model->getKey(),
+                    'number' => $event->model->number,
+                ],
+            ];
+        }
+
+        return $payload + [
             'subject_type' => $event->model::class,
             'subject_id' => $event->model->getKey(),
         ];
