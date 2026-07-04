@@ -6,6 +6,7 @@ use App\Enums\PaymentMethod;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\User;
+use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,6 +22,7 @@ class InvoicePaymentFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => app(SequenceAllocator::class)->next('invoice_payments'),
             'invoice_id' => Invoice::factory(),
             'amount' => fake()->numberBetween(1000, 50000),
             'payment_method' => fake()->randomElement(array_column(PaymentMethod::cases(), 'value')),
