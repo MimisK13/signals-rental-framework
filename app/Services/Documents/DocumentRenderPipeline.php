@@ -8,6 +8,7 @@ use App\Enums\DocumentOutputFormat;
 use App\Exceptions\Documents\DocumentRenderException;
 use App\Models\DocumentTemplate;
 use App\ValueObjects\Documents\DocumentRenderResult;
+use App\ValueObjects\Documents\PdfDocumentParts;
 use Throwable;
 
 /**
@@ -69,10 +70,10 @@ class DocumentRenderPipeline implements DocumentRenderer
 
             $compiled = $this->compileSections($template, $renderedData);
             $branding = $this->brandingResolver->resolve($template, $template->store);
-            $html = $this->assemble($compiled, $template, $branding);
-            $pdfBinary = $this->output($html, $template, $format);
+            $assembled = $this->assemble($compiled, $template, $branding);
+            $pdfBinary = $this->output($assembled, $template, $format);
 
-            return DocumentRenderResult::success($html, $renderedData, $format, $pdfBinary);
+            return DocumentRenderResult::success($assembled['preview_html'], $renderedData, $format, $pdfBinary);
         } catch (DocumentRenderException $exception) {
             return DocumentRenderResult::failure($exception->getMessage(), $format);
         } catch (Throwable $exception) {
@@ -115,12 +116,17 @@ class DocumentRenderPipeline implements DocumentRenderer
     /**
      * @param  array{header: string, body: string, footer: string}  $compiled
      * @param  array{primary_colour: string, secondary_colour: string, font_family: string, logo_url: ?string, css: string}  $branding
+     * @return array{
+     *     preview_html: string,
+     *     body: string,
+     *     parts: PdfDocumentParts
+     * }
      */
-    private function assemble(array $compiled, DocumentTemplate $template, array $branding): string
+    private function assemble(array $compiled, DocumentTemplate $template, array $branding): array
     {
         $styles = (string) ($template->styles_css ?? '');
 
-        return <<<HTML
+        $previewHtml = <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -138,10 +144,28 @@ class DocumentRenderPipeline implements DocumentRenderer
 </body>
 </html>
 HTML;
+
+        return [
+            'preview_html' => $previewHtml,
+            'body' => $compiled['body'],
+            'parts' => new PdfDocumentParts(
+                header: $compiled['header'],
+                footer: $compiled['footer'],
+                brandingCss: $branding['css'],
+                stylesCss: $styles,
+            ),
+        ];
     }
 
+    /**
+     * @param  array{
+     *     preview_html: string,
+     *     body: string,
+     *     parts: PdfDocumentParts
+     * }  $assembled
+     */
     private function output(
-        string $html,
+        array $assembled,
         DocumentTemplate $template,
         DocumentOutputFormat $format,
     ): ?string {
@@ -151,6 +175,10 @@ HTML;
 
         $pageConfig = $template->page_config ?? config('documents.defaults.page', []);
 
-        return $this->pdfDriverManager->driver()->render($html, $pageConfig);
+        return $this->pdfDriverManager->driver()->render(
+            $assembled['body'],
+            $pageConfig,
+            $assembled['parts'],
+        );
     }
 }

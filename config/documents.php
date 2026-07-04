@@ -72,6 +72,8 @@ return [
             'page_size' => 'A4',
             'page_orientation' => 'portrait',
             'margins' => ['top' => 10, 'right' => 10, 'bottom' => 10, 'left' => 10],
+            'header_height_mm' => 25,
+            'footer_height_mm' => 15,
         ],
         'branding' => [
             'primary_colour' => '#1f2937',

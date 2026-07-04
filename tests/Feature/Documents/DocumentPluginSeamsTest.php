@@ -16,6 +16,7 @@ use App\Services\Documents\PdfDriverManager;
 use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
 use App\Services\Plugins\PluginRegistrar;
 use App\Services\SchemaBuilder;
+use App\ValueObjects\Documents\PdfDocumentParts;
 use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -150,7 +151,7 @@ class FakePluginPdfDriver implements PdfDriver
 {
     public static bool $called = false;
 
-    public function render(string $html, array $pageConfig): string
+    public function render(string $html, array $pageConfig, ?PdfDocumentParts $parts = null): string
     {
         self::$called = true;
 
