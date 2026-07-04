@@ -17,6 +17,7 @@ class DocumentSequence extends Model
     protected $fillable = [
         'store_id',
         'document_type',
+        'is_entity_number',
         'prefix',
         'suffix',
         'include_year',
@@ -36,6 +37,7 @@ class DocumentSequence extends Model
         return [
             'include_year' => 'boolean',
             'include_month' => 'boolean',
+            'is_entity_number' => 'boolean',
             'next_number' => 'integer',
             'padding' => 'integer',
             'current_period_year' => 'integer',

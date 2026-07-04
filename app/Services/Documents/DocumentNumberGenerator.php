@@ -74,6 +74,16 @@ class DocumentNumberGenerator
     }
 
     /**
+     * Format a sequence counter value using prefix, date tokens, padding, and suffix.
+     */
+    public function formatNumber(DocumentSequence $sequence, int $number, ?DateTimeInterface $at = null): string
+    {
+        $instant = $this->resolveInstant($sequence, $at);
+
+        return $this->format($sequence, $number, $instant);
+    }
+
+    /**
      * Ensure a manually assigned number is unique within the store and type.
      *
      * Manual numbers do not advance the automatic sequence counter.

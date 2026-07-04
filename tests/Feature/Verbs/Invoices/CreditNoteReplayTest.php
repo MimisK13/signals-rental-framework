@@ -110,6 +110,8 @@ it('reconstructs credit note projections byte-identically after replay', functio
 
     expect($invoicesAfter)->toBe($invoicesBefore)
         ->and($creditNotesAfter)->toBe($creditNotesBefore)
+        ->and($creditNotesBefore)->not->toBeEmpty()
+        ->and($creditNotesBefore[0]['store_id'])->toBe($invoicesBefore[0]['store_id'])
         ->and($creditNoteItemsAfter)->toBe($creditNoteItemsBefore)
         ->and($creditNoteTaxesAfter)->toBe($creditNoteTaxesBefore);
 });

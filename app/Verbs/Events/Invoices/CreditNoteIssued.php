@@ -71,6 +71,7 @@ class CreditNoteIssued extends Event
             ['id' => $this->credit_note_id],
             [
                 'invoice_id' => $state->invoice_id,
+                'store_id' => $state->store_id,
                 'number' => $this->number,
                 'status' => $this->credit_note_status,
                 'subtotal' => $this->subtotal,

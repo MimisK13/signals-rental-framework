@@ -5,6 +5,7 @@ namespace App\Actions\Documents;
 use App\Data\Documents\DocumentSequenceData;
 use App\Data\Documents\UpdateDocumentSequenceData;
 use App\Models\DocumentSequence;
+use App\Services\Documents\DocumentSequenceNextNumberGuard;
 use Illuminate\Support\Facades\Gate;
 
 class UpdateDocumentSequence
@@ -12,6 +13,15 @@ class UpdateDocumentSequence
     public function __invoke(DocumentSequence $sequence, UpdateDocumentSequenceData $data): DocumentSequenceData
     {
         Gate::authorize('update', $sequence);
+
+        if ($data->next_number !== null || $data->padding !== null) {
+            UpdateDocumentSequenceData::assertNextNumberFitsPadding(
+                $data->next_number ?? $sequence->next_number,
+                $data->padding ?? $sequence->padding,
+            );
+        }
+
+        app(DocumentSequenceNextNumberGuard::class)->assertBackwardsSetSafe($sequence, $data);
 
         $attributes = array_filter([
             'prefix' => $data->prefix,

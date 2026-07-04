@@ -72,6 +72,7 @@ it('issues a full credit note with negated mirror matching invoice tax exactly',
     expect($creditNote->total)->toBe(-$invoice->total)
         ->and($creditNote->subtotal)->toBe(-$invoice->subtotal)
         ->and($creditNote->tax_total)->toBe(-$invoice->tax_total)
+        ->and($creditNote->store_id)->toBe($invoice->store_id)
         ->and($invoice->credited_total)->toBe($invoice->total)
         ->and($invoice->amount_outstanding)->toBe(0)
         ->and($invoice->status)->toBe('credited');

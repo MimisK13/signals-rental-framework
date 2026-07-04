@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $invoice_id
+ * @property int $store_id
  * @property string $number
  * @property string $status
  * @property int $subtotal
@@ -47,6 +48,7 @@ class CreditNote extends Model implements HasSchema
     protected $fillable = [
         'id',
         'invoice_id',
+        'store_id',
         'number',
         'status',
         'subtotal',
@@ -122,6 +124,14 @@ class CreditNote extends Model implements HasSchema
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * @return BelongsTo<Store, $this>
+     */
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
     }
 
     /**
