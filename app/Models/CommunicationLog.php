@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
+ * @property list<string>|null $attachments
  * @property Carbon|null $queued_at
  * @property Carbon|null $sent_at
  * @property Carbon|null $delivered_at

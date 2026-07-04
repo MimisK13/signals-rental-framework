@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BundleRuleController;
+use App\Http\Controllers\Api\V1\CommunicationLogController;
+use App\Http\Controllers\Api\V1\CommunicationTemplateController;
 use App\Http\Controllers\Api\V1\ContainerController;
 use App\Http\Controllers\Api\V1\CountryController;
 use App\Http\Controllers\Api\V1\CurrencyController;
@@ -103,6 +105,11 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('document_templates/{documentTemplate}/duplicate', [DocumentTemplateController::class, 'duplicate'])->name('api.v1.document_templates.duplicate');
     Route::post('document_templates/{documentTemplate}/restore_default', [DocumentTemplateController::class, 'restoreDefault'])->name('api.v1.document_templates.restore_default');
     Route::post('document_templates/{documentTemplate}/versions/{version}/restore', [DocumentTemplateController::class, 'restoreVersion'])->name('api.v1.document_templates.restore_version');
+
+    Route::apiResource('communication_log', CommunicationLogController::class)->only(['index', 'show'])->names('api.v1.communication_log');
+    Route::get('communication_templates/{communicationTemplate}/versions', [CommunicationTemplateController::class, 'versions'])->name('api.v1.communication_templates.versions');
+    Route::post('communication_templates/{communicationTemplate}/versions/{version}/restore', [CommunicationTemplateController::class, 'restoreVersion'])->name('api.v1.communication_templates.restore_version');
+    Route::apiResource('communication_templates', CommunicationTemplateController::class)->names('api.v1.communication_templates');
 
     Route::get('documents', [DocumentController::class, 'index'])->name('api.v1.documents.index');
     Route::post('documents/generate', [DocumentController::class, 'generate'])->name('api.v1.documents.generate');
