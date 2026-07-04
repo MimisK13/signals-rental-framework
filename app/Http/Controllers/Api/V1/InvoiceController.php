@@ -24,6 +24,7 @@ use App\Http\Traits\ResourceActions;
 use App\Models\Document;
 use App\Models\Invoice;
 use App\Services\FileService;
+use Dedoc\Scramble\Attributes\HeaderParameter;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -296,8 +297,24 @@ class InvoiceController extends Controller
 
     /**
      * Record a payment against an issued invoice.
+     *
+     * Supports optional idempotent submission via the `Idempotency-Key` header.
+     * When present, the first successful or validation-failed (422) response is
+     * stored and replayed verbatim on subsequent requests with the same key and
+     * payload fingerprint. Replays include the `Idempotency-Replayed: true`
+     * response header. Reusing the key with a different payload returns 409.
+     * Concurrent requests with the same new key return 425 while the first is
+     * still processing. Keys are scoped to the bearer token.
      */
+    #[HeaderParameter(
+        'Idempotency-Key',
+        'Optional client-generated key for safe request retries. Scoped to the bearer token; replays stored 2xx/422 responses for up to 24 hours.',
+        required: false,
+        type: 'string',
+    )]
     #[ApiResponse(200, 'Invoice after payment', type: 'array{invoice: array<string, mixed>}')]
+    #[ApiResponse(409, 'Idempotency key reused with a different payload', type: 'array{message: string, errors: array<string, list<string>>}')]
+    #[ApiResponse(425, 'Original request with this key is still processing', type: 'array{message: string}')]
     public function recordPayment(Request $request, Invoice $invoice): JsonResponse
     {
         $this->authorizeApi('payments.record', 'payments:write');
@@ -310,8 +327,24 @@ class InvoiceController extends Controller
 
     /**
      * Record a refund against a paid or partially paid invoice.
+     *
+     * Supports optional idempotent submission via the `Idempotency-Key` header.
+     * When present, the first successful or validation-failed (422) response is
+     * stored and replayed verbatim on subsequent requests with the same key and
+     * payload fingerprint. Replays include the `Idempotency-Replayed: true`
+     * response header. Reusing the key with a different payload returns 409.
+     * Concurrent requests with the same new key return 425 while the first is
+     * still processing. Keys are scoped to the bearer token.
      */
+    #[HeaderParameter(
+        'Idempotency-Key',
+        'Optional client-generated key for safe request retries. Scoped to the bearer token; replays stored 2xx/422 responses for up to 24 hours.',
+        required: false,
+        type: 'string',
+    )]
     #[ApiResponse(200, 'Invoice after refund', type: 'array{invoice: array<string, mixed>}')]
+    #[ApiResponse(409, 'Idempotency key reused with a different payload', type: 'array{message: string, errors: array<string, list<string>>}')]
+    #[ApiResponse(425, 'Original request with this key is still processing', type: 'array{message: string}')]
     public function recordRefund(Request $request, Invoice $invoice): JsonResponse
     {
         $this->authorizeApi('payments.record', 'payments:write');

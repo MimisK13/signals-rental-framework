@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureSetupComplete;
 use App\Http\Middleware\EnsureSetupRequired;
 use App\Http\Middleware\EnsureTwoFactorAuthenticated;
+use App\Http\Middleware\HandleIdempotencyKey;
 use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -48,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'signals.active-user' => EnsureActiveUser::class,
             'signals.session-timeout' => EnforceSessionTimeout::class,
             '2fa' => EnsureTwoFactorAuthenticated::class,
+            'idempotency' => HandleIdempotencyKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
