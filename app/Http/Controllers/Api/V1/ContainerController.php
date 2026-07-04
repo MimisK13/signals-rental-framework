@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Containers\CreateContainer;
 use App\Actions\Containers\CreateTemporaryContainer;
+use App\Actions\Containers\DispatchContainer;
 use App\Actions\Containers\DissolveContainer;
 use App\Actions\Containers\PackContainerItem;
 use App\Actions\Containers\SealContainer;
@@ -14,11 +15,13 @@ use App\Actions\Containers\UpdateContainer;
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\CreateContainerData;
 use App\Data\Containers\CreateTemporaryContainerData;
+use App\Data\Containers\DispatchContainerData;
 use App\Data\Containers\PackContainerItemData;
 use App\Data\Containers\TransferContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
 use App\Data\Containers\UnsealContainerData;
 use App\Data\Containers\UpdateContainerData;
+use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
 use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
@@ -27,12 +30,13 @@ use App\Services\Containers\ContainerManifestService;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * API surface for containers (serialised-containers.md). Read, create,
- * update, pack/unpack, seal, and unseal are exposed here — dissolve, dispatch,
- * return, and repack stay in later Phase-4 slices.
+ * update, pack/unpack, seal, unseal, dissolve, and transport dispatch are exposed
+ * here — return and repack stay in later Phase-4 slices.
  *
  * Pack/unpack delegate to the existing {@see PackContainerItem} /
  * {@see UnpackContainerItem} actions, which create/release the container demand
@@ -241,6 +245,33 @@ class ContainerController extends Controller
         $result = (new UnsealContainer)($container, $data);
 
         return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Dispatch a sealed transport container against an opportunity. Validates the
+     * manifest, optionally auto-adds warehouse-addable products, and atomically
+     * checks out every asset before dissolving the container tree.
+     */
+    #[ApiResponse(200, 'Container dispatched and dissolved')]
+    #[ApiResponse(409, 'Dispatch requires opportunity amendments')]
+    #[ApiResponse(422, 'Dispatch validation failed')]
+    public function dispatch(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('dispatch', $container);
+
+        $data = DispatchContainerData::from($request->validate(DispatchContainerData::rules()));
+
+        try {
+            $action = new DispatchContainer;
+            $result = $action($container, $data);
+        } catch (ContainerDispatchAmendmentRequiredException $e) {
+            return response()->json($e->payload(), Response::HTTP_CONFLICT);
+        }
+
+        return response()->json([
+            'dispatch' => $result->toArray(),
+        ]);
     }
 
     /**

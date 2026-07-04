@@ -4,15 +4,10 @@ namespace App\Actions\Containers;
 
 use App\Data\Containers\ContainerData;
 use App\Enums\ContainerDissolveReason;
-use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
-use App\Models\ContainerItem;
-use App\Models\StockLevel;
-use App\Services\Availability\ContainerDemandResolver;
+use App\Services\Containers\ContainerDissolveService;
 use App\Services\Containers\ContainerEventRecorder;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -45,7 +40,10 @@ class DissolveContainer
         }
 
         return DB::transaction(function () use ($container): ContainerData {
-            $itemCount = $this->dissolveTree($container);
+            $itemCount = app(ContainerDissolveService::class)->dissolveTree(
+                $container,
+                ContainerDissolveReason::Manual,
+            );
 
             app(ContainerEventRecorder::class)->dissolved(
                 $container->fresh() ?? $container,
@@ -55,58 +53,5 @@ class DissolveContainer
 
             return ContainerData::fromModel($container->fresh() ?? $container);
         });
-    }
-
-    /**
-     * Depth-first dissolve of a container and any nested active containers.
-     */
-    protected function dissolveTree(Container $container): int
-    {
-        $container->refresh();
-        $closed = 0;
-
-        foreach ($container->activeItems()->with('serialisedItem')->get() as $item) {
-            $nested = Container::query()
-                ->active()
-                ->where('serialised_item_id', $item->serialised_item_id)
-                ->first();
-
-            if ($nested !== null && $nested->id !== $container->id) {
-                $closed += $this->dissolveTree($nested);
-            }
-        }
-
-        foreach ($container->activeItems()->get() as $item) {
-            $this->closeMembership($container, $item);
-            $closed++;
-        }
-
-        $container->update([
-            'status' => ContainerStatus::Dissolved,
-            'dissolved_at' => Carbon::now('UTC'),
-            'dissolved_by_user_id' => Auth::id(),
-            'dissolved_reason' => ContainerDissolveReason::Manual->value,
-            'parent_container_id' => null,
-        ]);
-
-        return $closed;
-    }
-
-    protected function closeMembership(Container $container, ContainerItem $item): void
-    {
-        $item->forceFill([
-            'unpacked_at' => Carbon::now('UTC'),
-            'unpacked_reason' => ContainerItemUnpackReason::Dissolved,
-        ])->save();
-
-        StockLevel::query()
-            ->whereKey($item->serialised_item_id)
-            ->update([
-                'container_stock_level_id' => null,
-                'container_mode' => null,
-            ]);
-
-        $item->setRelation('container', $container);
-        app(ContainerDemandResolver::class)->releaseDemands($item);
     }
 }

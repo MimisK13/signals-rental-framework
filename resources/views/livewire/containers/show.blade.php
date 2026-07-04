@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Containers\DispatchContainer;
 use App\Actions\Containers\PackContainerItem;
 use App\Actions\Containers\SealContainer;
 use App\Actions\Containers\UnpackContainerItem;
@@ -7,10 +8,13 @@ use App\Actions\Containers\UnsealContainer;
 use App\Data\Containers\PackContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
 use App\Data\Containers\UnsealContainerData;
+use App\Data\Containers\DispatchContainerData;
+use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Enums\ContainerUnsealReason;
 use App\Enums\PackContainerResolution;
+use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
 use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Models\Container;
 use Illuminate\Support\Facades\Gate;
@@ -21,6 +25,11 @@ new #[Layout('components.layouts.app')] class extends Component {
     public Container $container;
 
     public string $packSerialisedItemId = '';
+
+    public string $dispatchOpportunityId = '';
+
+    /** @var array<string, mixed>|null */
+    public ?array $dispatchPrompt = null;
 
     public string $unsealReason = '';
 
@@ -95,6 +104,43 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->refreshContainer();
     }
 
+    public function dispatchContainer(?array $amendments = null): void
+    {
+        Gate::authorize('dispatch', $this->container);
+
+        $this->dispatchPrompt = null;
+
+        $payload = [
+            'opportunity_id' => (int) $this->dispatchOpportunityId,
+            'auto_add_missing' => true,
+        ];
+
+        if ($amendments !== null) {
+            $payload['amendments'] = $amendments;
+        }
+
+        try {
+            (new DispatchContainer)($this->container, DispatchContainerData::from($payload));
+            $this->dispatchOpportunityId = '';
+            $this->refreshContainer();
+        } catch (ContainerDispatchAmendmentRequiredException $e) {
+            $this->dispatchPrompt = $e->payload();
+        }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $amendments
+     */
+    public function confirmDispatchAmendments(array $amendments): void
+    {
+        $this->dispatchContainer($amendments);
+    }
+
+    public function dismissDispatchPrompt(): void
+    {
+        $this->dispatchPrompt = null;
+    }
+
     protected function refreshContainer(): void
     {
         $this->container->refresh()->load(['product', 'store', 'activeItems.product', 'activeItems.serialisedItem']);
@@ -108,6 +154,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             'canTransfer' => Gate::check('transfer', $this->container),
             'canNest' => Gate::check('nest', $this->container),
             'canSeal' => Gate::check('seal', $this->container),
+            'canDispatch' => Gate::check('dispatch', $this->container)
+                && $this->container->status === ContainerStatus::Sealed
+                && $this->container->availabilityMode() === ContainerAvailabilityMode::Transport,
             'unsealReasons' => ContainerUnsealReason::configValues(),
             'packResolutions' => array_map(
                 static fn (PackContainerResolution $case): string => $case->value,
@@ -189,6 +238,56 @@ new #[Layout('components.layouts.app')] class extends Component {
                         @endif
                     @endforeach
                     <flux:button wire:click="dismissPackConflict" wire:loading.attr="disabled">Dismiss</flux:button>
+                </div>
+            </x-signals.card>
+        @endif
+
+        @if($dispatchPrompt)
+            <x-signals.card>
+                <h2 class="text-sm font-semibold mb-2">Dispatch requires opportunity amendments</h2>
+                <p class="text-sm text-[var(--muted)] mb-3">{{ $dispatchPrompt['message'] ?? '' }}</p>
+                <div class="space-y-2 mb-4">
+                    @foreach($dispatchPrompt['amendments'] ?? [] as $amendment)
+                        <div class="text-sm border border-[var(--border)] rounded-md p-3" wire:key="dispatch-amendment-{{ $amendment['product_id'] }}">
+                            <div class="font-medium">{{ $amendment['product_name'] ?? 'Product' }}</div>
+                            <div class="text-[var(--muted)]">
+                                {{ str($amendment['reason'] ?? '')->headline() }} —
+                                suggest {{ $amendment['required_action'] ?? 'add' }}
+                                × {{ $amendment['suggested_quantity'] ?? '1' }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <flux:button
+                        wire:click="confirmDispatchAmendments({{ json_encode(array_map(
+                            static fn (array $row): array => [
+                                'product_id' => $row['product_id'],
+                                'action' => $row['required_action'] ?? 'add',
+                                'quantity' => $row['suggested_quantity'] ?? '1',
+                                'price' => $row['suggested_price'] ?? null,
+                            ],
+                            $dispatchPrompt['amendments'] ?? [],
+                        )) }})"
+                        wire:loading.attr="disabled"
+                        variant="primary"
+                    >
+                        Apply amendments and dispatch
+                    </flux:button>
+                    <flux:button wire:click="dismissDispatchPrompt" wire:loading.attr="disabled">Dismiss</flux:button>
+                </div>
+            </x-signals.card>
+        @endif
+
+        @if($canDispatch)
+            <x-signals.card>
+                <h2 class="text-sm font-semibold mb-3">Dispatch to opportunity</h2>
+                <div class="flex flex-wrap items-end gap-3">
+                    <flux:field class="min-w-[12rem]">
+                        <flux:label>Opportunity ID</flux:label>
+                        <flux:input wire:model="dispatchOpportunityId" type="number" min="1" />
+                    </flux:field>
+                    <flux:button wire:click="dispatchContainer" wire:loading.attr="disabled" variant="primary">Dispatch</flux:button>
                 </div>
             </x-signals.card>
         @endif

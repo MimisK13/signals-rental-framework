@@ -230,6 +230,212 @@ class ContainerManifestService
         return array_sum($this->manifestQuantities($container));
     }
 
+    /**
+     * Product-quantity manifest for transport dispatch validation — rolled-up contents
+     * plus one count per housing asset in the nesting tree.
+     *
+     * @return array<int, int> product_id => quantity
+     */
+    public function dispatchProductQuantities(Container $container): array
+    {
+        $maxDepth = $this->resolveMaxDepth($container);
+        $quantities = $this->dispatchContentQuantities($container, $maxDepth);
+        $this->accumulateHousingProducts($container, $maxDepth, 1, $quantities);
+
+        return $quantities;
+    }
+
+    /**
+     * Leaf contents rolled up for dispatch validation — nested container housings
+     * are excluded here because {@see accumulateHousingProducts()} counts each
+     * housing product once (serialised-containers.md §Step 3).
+     *
+     * @return array<int, int>
+     */
+    protected function dispatchContentQuantities(Container $container, int $maxDepth): array
+    {
+        return $this->collectDispatchContentQuantitiesRecursive($container, $maxDepth, 1);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function collectDispatchContentQuantitiesRecursive(Container $container, int $maxDepth, int $currentDepth): array
+    {
+        if ($currentDepth > $maxDepth) {
+            return [];
+        }
+
+        $container->loadMissing('activeItems');
+        $quantities = [];
+
+        foreach ($container->activeItems as $item) {
+            $nested = Container::query()
+                ->active()
+                ->where('serialised_item_id', $item->serialised_item_id)
+                ->first();
+
+            if ($nested !== null && $currentDepth < $maxDepth) {
+                $nestedQuantities = $this->collectDispatchContentQuantitiesRecursive(
+                    $nested,
+                    $maxDepth,
+                    $currentDepth + 1,
+                );
+
+                foreach ($nestedQuantities as $nestedProductId => $qty) {
+                    $quantities[$nestedProductId] = ($quantities[$nestedProductId] ?? 0) + $qty;
+                }
+
+                continue;
+            }
+
+            $productId = (int) $item->product_id;
+            $quantities[$productId] = ($quantities[$productId] ?? 0) + 1;
+        }
+
+        return $quantities;
+    }
+
+    /**
+     * Full recursive asset manifest for transport dispatch execution — every contained
+     * serialised asset and every nested housing asset with its direct container
+     * stock level for {@see AssetContainerSet}.
+     *
+     * @return list<array{serialised_item_id: int, product_id: int, container_stock_level_id: int|null}>
+     */
+    public function dispatchAssets(Container $container): array
+    {
+        $assets = [];
+        $this->collectDispatchAssets($container, $this->resolveMaxDepth($container), 1, null, $assets);
+
+        return $assets;
+    }
+
+    /**
+     * @param  array<int, int>  $quantities
+     */
+    protected function accumulateHousingProducts(
+        Container $container,
+        int $maxDepth,
+        int $currentDepth,
+        array &$quantities,
+    ): void {
+        if ($container->product_id !== null) {
+            $productId = (int) $container->product_id;
+            $quantities[$productId] = ($quantities[$productId] ?? 0) + 1;
+        }
+
+        $container->loadMissing('activeItems');
+
+        foreach ($container->activeItems as $item) {
+            $nested = Container::query()
+                ->active()
+                ->where('serialised_item_id', $item->serialised_item_id)
+                ->first();
+
+            if ($nested === null || $currentDepth >= $maxDepth) {
+                continue;
+            }
+
+            $this->accumulateHousingProducts($nested, $maxDepth, $currentDepth + 1, $quantities);
+        }
+    }
+
+    /**
+     * @param  list<array{serialised_item_id: int, product_id: int, container_stock_level_id: int|null}>  $assets
+     */
+    protected function collectDispatchAssets(
+        Container $container,
+        int $maxDepth,
+        int $currentDepth,
+        ?int $parentHousingStockLevelId,
+        array &$assets,
+    ): void {
+        if ($currentDepth > $maxDepth) {
+            return;
+        }
+
+        $container->loadMissing(['activeItems', 'product']);
+
+        if ($container->serialised_item_id !== null && $container->product_id !== null) {
+            $assets[] = [
+                'serialised_item_id' => (int) $container->serialised_item_id,
+                'product_id' => (int) $container->product_id,
+                'container_stock_level_id' => $parentHousingStockLevelId,
+            ];
+        }
+
+        $housingStockLevelId = $container->serialised_item_id;
+
+        foreach ($container->activeItems as $item) {
+            $nested = Container::query()
+                ->active()
+                ->where('serialised_item_id', $item->serialised_item_id)
+                ->first();
+
+            if ($nested !== null && $currentDepth < $maxDepth) {
+                $this->collectDispatchAssets(
+                    $nested,
+                    $maxDepth,
+                    $currentDepth + 1,
+                    $housingStockLevelId !== null ? (int) $housingStockLevelId : null,
+                    $assets,
+                );
+
+                continue;
+            }
+
+            $assets[] = [
+                'serialised_item_id' => (int) $item->serialised_item_id,
+                'product_id' => (int) $item->product_id,
+                'container_stock_level_id' => $housingStockLevelId !== null ? (int) $housingStockLevelId : null,
+            ];
+        }
+    }
+
+    /**
+     * All containers in the nesting tree (root first, then nested housings).
+     *
+     * @return list<Container>
+     */
+    public function containersInTree(Container $container): array
+    {
+        $containers = [$container];
+        $this->collectNestedContainers($container, $this->resolveMaxDepth($container), 1, $containers);
+
+        return $containers;
+    }
+
+    /**
+     * @param  list<Container>  $containers
+     */
+    protected function collectNestedContainers(
+        Container $container,
+        int $maxDepth,
+        int $currentDepth,
+        array &$containers,
+    ): void {
+        if ($currentDepth >= $maxDepth) {
+            return;
+        }
+
+        $container->loadMissing('activeItems');
+
+        foreach ($container->activeItems as $item) {
+            $nested = Container::query()
+                ->active()
+                ->where('serialised_item_id', $item->serialised_item_id)
+                ->first();
+
+            if ($nested === null) {
+                continue;
+            }
+
+            $containers[] = $nested;
+            $this->collectNestedContainers($nested, $maxDepth, $currentDepth + 1, $containers);
+        }
+    }
+
     protected function depthOf(Container $container): int
     {
         $depth = 1;

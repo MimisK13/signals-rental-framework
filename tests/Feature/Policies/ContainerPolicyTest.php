@@ -60,6 +60,7 @@ it('maps elevated actions to their permissions', function () {
         ->and($this->policy->seal($user, $container))->toBeTrue()
         ->and($this->policy->unseal($user, $container))->toBeTrue()
         ->and($this->policy->dissolve($user, $container))->toBeTrue()
+        ->and($this->policy->dispatch($user, $container))->toBeTrue()
         ->and($this->policy->manageTemplates($user))->toBeTrue();
 });
 

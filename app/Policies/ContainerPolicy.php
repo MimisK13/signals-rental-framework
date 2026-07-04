@@ -70,6 +70,19 @@ class ContainerPolicy
         return $user->can('containers.dissolve') && $this->canAccessContainerStore($user, $container);
     }
 
+    /**
+     * Transport-mode dispatch against an opportunity (serialised-containers.md §Permissions).
+     *
+     * Requires opportunity dispatch permission ({@see opportunities.edit}) plus
+     * {@see containers.view}. Does not require {@see containers.dissolve}.
+     */
+    public function dispatch(User $user, Container $container): bool
+    {
+        return $user->can('containers.view')
+            && $user->can('opportunities.edit')
+            && $this->canAccessContainerStore($user, $container);
+    }
+
     public function manageTemplates(User $user): bool
     {
         return $user->can('containers.manage_templates');
