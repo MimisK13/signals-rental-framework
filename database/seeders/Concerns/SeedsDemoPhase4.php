@@ -16,6 +16,7 @@ use App\Actions\Members\CreateMember;
 use App\Actions\Members\UpdateMember;
 use App\Actions\Opportunities\ChangeItemQuantity;
 use App\Actions\Opportunities\ChangeOpportunityStatus;
+use App\Actions\Opportunities\RecalculateOpportunity;
 use App\Actions\Opportunities\SetDealPrice;
 use App\Actions\Opportunities\ToggleOpportunitySurchargeGroup;
 use App\Actions\Opportunities\UnlockOpportunity;
@@ -35,6 +36,7 @@ use App\Data\Invoices\RecordPaymentData;
 use App\Data\Members\CreateMemberData;
 use App\Data\Members\UpdateMemberData;
 use App\Data\Opportunities\ChangeItemQuantityData;
+use App\Data\Opportunities\RecalculateOpportunityData;
 use App\Data\Opportunities\SetDealPriceData;
 use App\Data\Opportunities\ToggleOpportunitySurchargeGroupData;
 use App\Data\Products\CreateStockLevelData;
@@ -228,13 +230,6 @@ trait SeedsDemoPhase4
             return;
         }
 
-        $reducedCategory = TaxCategory::query()->where('slug', 'reduced')->first();
-        $gaffer = Product::query()->where('sku', 'DEMO-CON-GAF50')->first();
-
-        if ($gaffer !== null && $reducedCategory !== null) {
-            $gaffer->forceFill(['sale_tax_category_id' => $reducedCategory->id])->save();
-        }
-
         $this->actingAsDemoOwner(function () use ($store): void {
             $supplierA = $this->firstOrCreateDemoSupplier('Demo - Supplier Audio Ltd');
             $supplierB = $this->firstOrCreateDemoSupplier('Demo - Supplier Lighting Co');
@@ -267,6 +262,52 @@ trait SeedsDemoPhase4
                 $this->seedDemoSerialisedAssets($parCan, $store, 'DEMO-PAR', 4);
             }
         });
+    }
+
+    /**
+     * Assign catalogue tax-category showcases after opportunities and invoices are
+     * seeded so locked order tax snapshots stay aligned with checkout.
+     */
+    private function applyDeferredDemoProductTaxCategories(): void
+    {
+        $reducedCategory = TaxCategory::query()->where('slug', 'reduced')->first();
+        $gaffer = Product::query()->where('sku', 'DEMO-CON-GAF50')->first();
+
+        if ($gaffer === null || $reducedCategory === null) {
+            return;
+        }
+
+        $gaffer->forceFill(['sale_tax_category_id' => $reducedCategory->id])->save();
+    }
+
+    private function isDemoPricingSpecial(string $special): bool
+    {
+        return in_array($special, ['surcharge', 'deal_price', 'quantity_break'], true);
+    }
+
+    private function isDemoStatusSpecial(string $special): bool
+    {
+        return in_array($special, ['dispatched', 'returned'], true);
+    }
+
+    private function finalizeDemoOpportunityTotalsBeforeLifecycleConversion(Opportunity $opportunity): void
+    {
+        app(OpportunityTotalsCalculator::class)->rollUp(
+            $opportunity->fresh(['items.itemSurcharges', 'costs', 'member']),
+        );
+    }
+
+    private function recalculateDemoOpportunityBeforeInvoicing(Opportunity $opportunity): void
+    {
+        $opportunity = $opportunity->fresh(['items.itemSurcharges', 'costs', 'member']);
+
+        if (! $opportunity->tax_locked) {
+            (new RecalculateOpportunity)($opportunity, RecalculateOpportunityData::from());
+
+            return;
+        }
+
+        app(OpportunityTotalsCalculator::class)->rollUp($opportunity);
     }
 
     private function seedDemoStockLevels(): void
@@ -643,7 +684,7 @@ trait SeedsDemoPhase4
             return;
         }
 
-        app(OpportunityTotalsCalculator::class)->rollUp($opportunity->fresh(['items.itemSurcharges', 'costs', 'member']));
+        $this->recalculateDemoOpportunityBeforeInvoicing($opportunity);
 
         $seed($opportunity->fresh());
     }

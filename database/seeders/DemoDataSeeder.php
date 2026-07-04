@@ -53,6 +53,7 @@ class DemoDataSeeder extends Seeder
         $this->seedDemoStockLevels();
         $this->createDemoOpportunities();
         $this->createDemoInvoices();
+        $this->applyDeferredDemoProductTaxCategories();
         $this->createDemoPurchaseOrders();
         $this->createDemoContainers();
         $this->createDemoCustomFields();
@@ -95,7 +96,9 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($demoStores as $storeData) {
-            Store::create($storeData);
+            $store = Store::create($storeData);
+
+            $this->seedDemoStoreDocumentAndCommunicationTemplates($store);
         }
     }
 
@@ -477,6 +480,8 @@ class DemoDataSeeder extends Seeder
         $products = Product::query()
             ->whereJsonContains('tag_list', self::DEMO_TAG)
             ->whereIn('product_type', [ProductType::Rental, ProductType::Sale])
+            ->where('sku', '!=', 'DEMO-CON-GAF50')
+            ->orderBy('id')
             ->get();
 
         if ($owner === null || $store === null || $organisations->isEmpty() || $products->isEmpty()) {
@@ -518,6 +523,13 @@ class DemoDataSeeder extends Seeder
 
                 $opportunity->refresh();
 
+                if ($special !== null && $this->isDemoPricingSpecial($special)) {
+                    $this->applyDemoOpportunitySpecial($opportunity->fresh(), $special, $owner);
+                    $opportunity->refresh();
+                }
+
+                $this->finalizeDemoOpportunityTotalsBeforeLifecycleConversion($opportunity->fresh());
+
                 if ($stage === 'quotation' || $stage === 'order') {
                     (new ConvertToQuotation)($opportunity);
                     $opportunity->refresh();
@@ -528,7 +540,7 @@ class DemoDataSeeder extends Seeder
                     $opportunity->refresh();
                 }
 
-                if ($special !== null) {
+                if ($special !== null && $this->isDemoStatusSpecial($special)) {
                     $this->applyDemoOpportunitySpecial($opportunity->fresh(), $special, $owner);
                 }
 
@@ -628,7 +640,11 @@ class DemoDataSeeder extends Seeder
         }
 
         if ($index % 3 === 1) {
-            foreach ($lineProducts->shuffle()->take(2) as $position => $product) {
+            $count = max(1, $lineProducts->count());
+            $offset = ($index * 2) % $count;
+
+            foreach ([0, 1] as $position) {
+                $product = $lineProducts[($offset + $position) % $count];
                 $this->addDemoProductLine(
                     $opportunity,
                     $product,

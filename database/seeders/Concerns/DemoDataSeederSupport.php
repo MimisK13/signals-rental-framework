@@ -2,9 +2,13 @@
 
 namespace Database\Seeders\Concerns;
 
+use App\Actions\Stores\CreateStore;
 use App\Models\OrganisationTaxClass;
+use App\Models\Store;
 use App\Models\TaxZone;
 use App\Models\User;
+use Database\Seeders\CommunicationTemplateSeeder;
+use Database\Seeders\DocumentTemplateSeeder;
 use Illuminate\Support\Facades\Auth;
 
 trait DemoDataSeederSupport
@@ -74,6 +78,16 @@ trait DemoDataSeederSupport
         if (settings('invoices.due_days') === null || settings('invoices.due_days') === '') {
             settings()->set('invoices.due_days', 30);
         }
+    }
+
+    /**
+     * Mirror {@see CreateStore}: provision system document
+     * templates, communication templates, and document sequences for one store.
+     */
+    private function seedDemoStoreDocumentAndCommunicationTemplates(Store $store): void
+    {
+        app(DocumentTemplateSeeder::class)->seedForStore($store);
+        app(CommunicationTemplateSeeder::class)->seedForStore($store);
     }
 
     /**

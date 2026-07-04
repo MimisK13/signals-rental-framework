@@ -46,8 +46,9 @@ it('marks one supplier cost as preferred per product where multiple exist', func
         ->and($costs->where('is_preferred', true))->toHaveCount(1);
 });
 
-it('assigns a reduced sale tax category to gaffer tape', function () {
+it('assigns a reduced sale tax category to gaffer tape after deferred showcase assignment', function () {
     seedDemoProductEnrichment();
+    applyDeferredDemoProductTaxCategories();
 
     $reduced = TaxCategory::query()->where('slug', 'reduced')->firstOrFail();
     $gaffer = Product::query()->where('sku', 'DEMO-CON-GAF50')->firstOrFail();

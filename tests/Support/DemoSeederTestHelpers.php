@@ -32,6 +32,11 @@ function seedDemoProducts(): void
     invokeDemoSeederMethod('createDemoProducts');
 }
 
+function seedDemoStores(): void
+{
+    invokeDemoSeederMethod('createDemoStores');
+}
+
 /**
  * Invoke DemoDataSeeder::createDemoOpportunities() in isolation (a private
  * method) without triggering the multi-thousand-row member seed in run().
@@ -59,6 +64,11 @@ function seedDemoStockLevels(): void
 function seedDemoInvoices(): void
 {
     invokeDemoSeederMethod('createDemoInvoices');
+}
+
+function applyDeferredDemoProductTaxCategories(): void
+{
+    invokeDemoSeederMethod('applyDeferredDemoProductTaxCategories');
 }
 
 function seedDemoPurchaseOrders(): void
