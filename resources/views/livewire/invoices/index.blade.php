@@ -43,7 +43,9 @@ new #[Layout('components.layouts.app')] #[Title('Invoices')] class extends Compo
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $this->totalCount = (int) $this->statusCounts->sum();
+        $this->statusCounts['overdue'] = Invoice::query()->overdue()->count();
+
+        $this->totalCount = (int) Invoice::query()->count();
     }
 
     /**
@@ -79,7 +81,11 @@ new #[Layout('components.layouts.app')] #[Title('Invoices')] class extends Compo
                 ['key' => 'amount_outstanding', 'label' => 'Outstanding', ...$columnMeta('amount_outstanding'), 'view' => 'livewire.invoices.partials.column-outstanding'],
                 ['key' => 'issued_at', 'label' => 'Issued', ...$columnMeta('issued_at'), 'view' => 'livewire.invoices.partials.column-issued'],
             ],
-            'scopes' => $this->statusFilter !== '' ? ['ofStatus' => $this->statusFilter] : [],
+            'scopes' => match (true) {
+                $this->statusFilter === 'overdue' => ['overdue' => true],
+                $this->statusFilter !== '' => ['ofStatus' => $this->statusFilter],
+                default => [],
+            },
         ];
     }
 }; ?>
