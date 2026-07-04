@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\CreditNote;
-use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\Invoice;
 use App\Models\Store;
@@ -116,11 +115,6 @@ it('round-trips page setup through template storage and pdf layout', function ()
         ->where('store_id', $this->store->id)
         ->where('document_type', 'quote')
         ->firstOrFail();
-
-    DocumentSequence::factory()->create([
-        'store_id' => $this->store->id,
-        'document_type' => 'quote',
-    ]);
 
     Volt::test('document-templates.edit', ['documentTemplate' => $template])
         ->set('pageConfig.page_size', 'Letter')

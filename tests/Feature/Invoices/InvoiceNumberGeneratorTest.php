@@ -57,11 +57,19 @@ describe('InvoiceNumberGenerator', function () {
         $generator = app(InvoiceNumberGenerator::class);
 
         expect($generator->nextOrCreate($store->id, InvoiceType::Proforma))
-            ->toBe('INV-'.now()->format('Y').'-0001');
+            ->toBe('PRO-'.now()->format('Y').'-0001');
 
         expect(DocumentSequence::query()
             ->where('store_id', $store->id)
             ->where('document_type', InvoiceType::Proforma->documentSequenceType())
             ->exists())->toBeTrue();
+    });
+
+    it('uses DEP- prefix for deposit invoices on first use', function () {
+        $store = Store::factory()->create(['timezone' => 'UTC']);
+        $generator = app(InvoiceNumberGenerator::class);
+
+        expect($generator->nextOrCreate($store->id, InvoiceType::Deposit))
+            ->toBe('DEP-'.now()->format('Y').'-0001');
     });
 });

@@ -6,7 +6,6 @@ use App\Actions\Invoices\IssueInvoice;
 use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Document;
-use App\Models\DocumentSequence;
 use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
@@ -36,13 +35,6 @@ function invoicePdfApiFixture(): array
 
     $opportunity = giCreateOrderOpportunity();
     app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
-    DocumentSequence::factory()->create([
-        'store_id' => $opportunity->store_id,
-        'document_type' => 'invoice',
-        'prefix' => 'INV-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,

@@ -3,8 +3,10 @@
 use App\Actions\Invoices\DeleteDraftInvoice;
 use App\Actions\Invoices\IssueCreditNote;
 use App\Actions\Invoices\IssueInvoice;
+use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\Document;
 use App\Enums\DocumentStatus;
+use App\Services\Documents\DocumentTemplateResolver;
 use App\Services\FileService;
 use App\Actions\Invoices\RecordPayment;
 use App\Actions\Invoices\VoidInvoice;
@@ -19,8 +21,10 @@ use App\Support\CostVisibility;
 use App\Services\Invoices\InvoiceMarginCalculator;
 use Brick\Money\Money;
 use Brick\Math\RoundingMode;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -123,7 +127,32 @@ new #[Layout('components.layouts.app')] class extends Component {
             }
         }
 
-        $this->dispatch('notify', message: 'Invoice PDF is not available yet. It may still be generating.');
+        $hasTemplate = app(DocumentTemplateResolver::class)->hasActiveTemplate(
+            (int) $this->invoice->store_id,
+            $documentType,
+        );
+
+        if (! $hasTemplate) {
+            $this->dispatch('notify', message: 'Invoice PDF is not available yet. It may still be generating.');
+
+            return;
+        }
+
+        $jobId = (string) Str::uuid();
+
+        Cache::put(IssueInvoice::pdfStatusCacheKey((int) $this->invoice->id), [
+            'status' => 'queued',
+            'job_id' => $jobId,
+        ], now()->addHours(1));
+
+        GenerateBillingIssueDocumentJob::dispatch(
+            $jobId,
+            'invoice',
+            (int) $this->invoice->id,
+            auth()->id(),
+        );
+
+        $this->dispatch('notify', message: 'Generating — try again shortly.');
     }
 
     public function openPaymentModal(): void

@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\DocumentTemplateVersion;
 use App\Models\Member;
@@ -27,14 +26,6 @@ beforeEach(function () {
         ->where('store_id', $this->store->id)
         ->where('document_type', 'quote')
         ->firstOrFail();
-
-    DocumentSequence::factory()->create([
-        'store_id' => $this->store->id,
-        'document_type' => 'quote',
-        'prefix' => 'QUO-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 });
 
 it('renders the document template editor with three panels', function () {

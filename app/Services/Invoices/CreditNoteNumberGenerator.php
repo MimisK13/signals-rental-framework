@@ -4,6 +4,7 @@ namespace App\Services\Invoices;
 
 use App\Models\DocumentSequence;
 use App\Services\Documents\DocumentNumberGenerator;
+use App\Services\Documents\DocumentSequenceDefaults;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -37,17 +38,13 @@ class CreditNoteNumberGenerator
             return $sequence;
         }
 
-        return DocumentSequence::query()->create([
-            'store_id' => $storeId,
-            'document_type' => self::DOCUMENT_TYPE,
-            'prefix' => (string) config('credit_notes.fallback_number_prefix', 'CN-'),
-            'suffix' => '',
-            'include_year' => true,
-            'include_month' => false,
-            'next_number' => 1,
-            'padding' => 4,
-            'reset_frequency' => 'never',
-        ]);
+        return DocumentSequence::query()->create(array_merge(
+            [
+                'store_id' => $storeId,
+                'document_type' => self::DOCUMENT_TYPE,
+            ],
+            DocumentSequenceDefaults::attributes(self::DOCUMENT_TYPE),
+        ));
     }
 
     public function nextOrCreate(int $storeId, ?DateTimeInterface $at = null): string

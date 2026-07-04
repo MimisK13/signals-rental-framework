@@ -20,7 +20,6 @@ use App\Enums\DocumentOutputFormat;
 use App\Enums\PaymentMethod;
 use App\Enums\PricingRoundingDirection;
 use App\Models\CreditNote;
-use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
@@ -121,17 +120,6 @@ function seededTemplateRenderFixture(): array
         'unit_price' => 10_000,
         'total' => 10_000,
     ]);
-
-    foreach (SystemDocumentTemplates::CORE_TYPES as $documentType) {
-        DocumentSequence::factory()->create([
-            'store_id' => $store->id,
-            'document_type' => $documentType,
-            'prefix' => strtoupper(substr(str_replace('_', '', $documentType), 0, 3)).'-',
-            'include_year' => false,
-            'padding' => 4,
-            'next_number' => 1,
-        ]);
-    }
 
     (new ConvertToQuotation)($opportunity->refresh());
     (new ConvertToOrder)($opportunity->refresh());

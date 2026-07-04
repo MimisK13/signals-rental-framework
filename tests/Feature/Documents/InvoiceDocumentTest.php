@@ -49,16 +49,6 @@ function invoiceDocumentFixture(): array
 
     app(DocumentTemplateSeeder::class)->seedForStore($store);
 
-    foreach (['invoice', 'credit_note'] as $documentType) {
-        DocumentSequence::factory()->create([
-            'store_id' => $store->id,
-            'document_type' => $documentType,
-            'prefix' => strtoupper(substr($documentType, 0, 3)).'-',
-            'padding' => 4,
-            'next_number' => 1,
-        ]);
-    }
-
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,
     ]));
@@ -111,13 +101,6 @@ it('renders reverse charge legal text from projected tax metadata', function () 
     ], [], $zones);
 
     app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
-    DocumentSequence::factory()->create([
-        'store_id' => $opportunity->store_id,
-        'document_type' => 'invoice',
-        'prefix' => 'INV-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,
@@ -160,6 +143,7 @@ it('generates an invoice PDF through the billing issue document action', functio
     $document = app(GenerateBillingIssueDocument::class)->forInvoice($invoice);
 
     expect($document->document_type)->toBe('invoice')
+        ->and($document->document_number)->toBe($invoice->number)
         ->and(Document::query()->whereKey($document->id)->exists())->toBeTrue()
         ->and($document->rendered_data)->toHaveKeys(['invoice', 'lines', 'tax_summary', 'member', 'store'])
         ->and($document->download_url)->not->toBeNull();
@@ -186,8 +170,38 @@ it('generates a credit note PDF with original invoice reference', function () {
     $document = app(GenerateBillingIssueDocument::class)->forCreditNote($creditNote);
 
     expect($document->document_type)->toBe('credit_note')
+        ->and($document->document_number)->toBe($creditNote->number)
         ->and($document->rendered_data['invoice']['number'] ?? null)->toBe($invoice->number)
         ->and($document->rendered_data['credit_note']['total'] ?? null)->toBeString();
+});
+
+it('does not advance the credit note entity sequence when generating its PDF', function () {
+    ['invoice' => $invoice] = invoiceDocumentFixture();
+
+    $creditNoteData = (new IssueCreditNote)(
+        $invoice->load('items'),
+        IssueCreditNoteData::from([
+            'lines' => [[
+                'invoice_item_id' => $invoice->items->first()->id,
+                'quantity' => '0.50',
+            ]],
+        ]),
+    );
+
+    $creditNote = CreditNote::query()->findOrFail($creditNoteData->id);
+    $sequenceBefore = DocumentSequence::query()
+        ->where('store_id', $invoice->store_id)
+        ->where('document_type', 'credit_note')
+        ->value('next_number');
+
+    app(GenerateBillingIssueDocument::class)->forCreditNote($creditNote);
+
+    $sequenceAfter = DocumentSequence::query()
+        ->where('store_id', $invoice->store_id)
+        ->where('document_type', 'credit_note')
+        ->value('next_number');
+
+    expect($sequenceAfter)->toBe($sequenceBefore);
 });
 
 it('dispatches a queued billing document job when an invoice is issued', function () {

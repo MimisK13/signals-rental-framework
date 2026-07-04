@@ -4,7 +4,6 @@ use App\Contracts\Documents\DocumentRenderer;
 use App\Enums\DocumentOutputFormat;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
-use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -79,16 +78,6 @@ function returnListStatementFixture(): array
         'name' => 'Returned Widget',
         'quantity' => '2',
     ]);
-
-    foreach (['return_list', 'statement'] as $documentType) {
-        DocumentSequence::factory()->create([
-            'store_id' => $store->id,
-            'document_type' => $documentType,
-            'prefix' => strtoupper(substr(str_replace('_', '', $documentType), 0, 3)).'-',
-            'padding' => 4,
-            'next_number' => 1,
-        ]);
-    }
 
     return compact('store', 'member', 'opportunity');
 }

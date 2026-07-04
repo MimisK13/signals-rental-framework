@@ -9,7 +9,6 @@ use App\Models\DocumentSequence;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
  * Allocates formatted document numbers from per-store, per-type sequences.
@@ -33,7 +32,19 @@ class DocumentNumberGenerator
                 ->first();
 
             if ($sequence === null) {
-                throw (new ModelNotFoundException)->setModel(DocumentSequence::class);
+                DocumentSequence::query()->create(array_merge(
+                    [
+                        'store_id' => $storeId,
+                        'document_type' => $documentType,
+                    ],
+                    DocumentSequenceDefaults::attributes($documentType),
+                ));
+
+                $sequence = DocumentSequence::query()
+                    ->where('store_id', $storeId)
+                    ->where('document_type', $documentType)
+                    ->lockForUpdate()
+                    ->firstOrFail();
             }
 
             $instant = $this->resolveInstant($sequence, $at);
@@ -54,10 +65,7 @@ class DocumentNumberGenerator
      */
     public function preview(int $storeId, string $documentType, ?DateTimeInterface $at = null): string
     {
-        $sequence = DocumentSequence::query()
-            ->where('store_id', $storeId)
-            ->where('document_type', $documentType)
-            ->firstOrFail();
+        $sequence = DocumentSequenceDefaults::ensureExists($storeId, $documentType);
 
         $instant = $this->resolveInstant($sequence, $at);
         $number = $this->nextNumberAfterPeriodCheck($sequence, $instant);

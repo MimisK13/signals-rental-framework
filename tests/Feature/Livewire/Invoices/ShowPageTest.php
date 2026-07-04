@@ -4,10 +4,12 @@ use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
 use App\Actions\Invoices\IssueInvoice;
 use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Enums\PricingRoundingDirection;
+use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\User;
+use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
@@ -154,4 +156,26 @@ it('shows margin column with costs.view permission', function () {
 
     Volt::test('invoices.show', ['invoice' => $invoice])
         ->assertSee('Margin');
+});
+
+it('queues PDF generation when download is clicked without an existing document', function () {
+    Queue::fake();
+
+    $opportunity = giCreateOrderOpportunity();
+    app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
+
+    $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        'opportunity_id' => $opportunity->id,
+    ]));
+    $invoice = Invoice::query()->findOrFail($draft->id);
+    (new IssueInvoice)($invoice);
+
+    Volt::test('invoices.show', ['invoice' => $invoice->refresh()])
+        ->call('downloadPdf')
+        ->assertDispatched('notify');
+
+    Queue::assertPushed(GenerateBillingIssueDocumentJob::class, function (GenerateBillingIssueDocumentJob $job) use ($invoice): bool {
+        return $job->sourceType === 'invoice'
+            && $job->sourceId === $invoice->id;
+    });
 });

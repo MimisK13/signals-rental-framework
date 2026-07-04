@@ -7,7 +7,6 @@ use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Enums\PricingRoundingDirection;
 use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Models\Document;
-use App\Models\DocumentSequence;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceTax;
@@ -34,13 +33,6 @@ it('does not duplicate invoice PDF documents or append events during replay', fu
 
     $opportunity = giCreateOrderOpportunity();
     app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
-    DocumentSequence::factory()->create([
-        'store_id' => $opportunity->store_id,
-        'document_type' => 'invoice',
-        'prefix' => 'INV-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,
@@ -79,13 +71,6 @@ it('skips billing document job execution while verbs is replaying', function () 
 
     $opportunity = giCreateOrderOpportunity();
     app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
-    DocumentSequence::factory()->create([
-        'store_id' => $opportunity->store_id,
-        'document_type' => 'invoice',
-        'prefix' => 'INV-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,

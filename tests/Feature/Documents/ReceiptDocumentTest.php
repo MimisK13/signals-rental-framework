@@ -11,7 +11,6 @@ use App\Enums\DocumentOutputFormat;
 use App\Enums\PaymentMethod;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Document;
-use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
@@ -48,14 +47,6 @@ function receiptDocumentFixture(): array
     $store = $opportunity->store;
 
     app(DocumentTemplateSeeder::class)->seedForStore($store);
-
-    DocumentSequence::factory()->create([
-        'store_id' => $store->id,
-        'document_type' => 'receipt',
-        'prefix' => 'RCT-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,

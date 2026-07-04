@@ -6,7 +6,6 @@ use App\Models\DocumentSequence;
 use App\Models\Store;
 use App\Services\Documents\DocumentNumberGenerator;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 describe('DocumentNumberGenerator', function () {
     it('formats prefix, year, padding, and suffix', function () {
@@ -179,10 +178,22 @@ describe('DocumentNumberGenerator', function () {
         expect(DocumentSequence::query()->where('store_id', $store->id)->value('next_number'))->toBe(10);
     });
 
-    it('throws when no sequence exists for the store and type', function () {
-        $store = Store::factory()->create();
+    it('auto-provisions a sequence with defaults when none exists', function () {
+        $store = Store::factory()->create(['timezone' => 'UTC']);
 
-        expect(fn () => app(DocumentNumberGenerator::class)->next($store->id, 'invoice'))
-            ->toThrow(ModelNotFoundException::class);
+        $number = app(DocumentNumberGenerator::class)->next($store->id, 'invoice');
+
+        expect($number)->toBe('INV-'.now()->format('Y').'-0001');
+
+        $sequence = DocumentSequence::query()
+            ->where('store_id', $store->id)
+            ->where('document_type', 'invoice')
+            ->first();
+
+        expect($sequence)->not->toBeNull()
+            ->and($sequence->prefix)->toBe('INV-')
+            ->and($sequence->padding)->toBe(4)
+            ->and($sequence->include_year)->toBeTrue()
+            ->and($sequence->next_number)->toBe(2);
     });
 });

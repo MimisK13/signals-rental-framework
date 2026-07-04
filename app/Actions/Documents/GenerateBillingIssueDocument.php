@@ -138,7 +138,7 @@ class GenerateBillingIssueDocument
             ]);
         }
 
-        $documentNumber = $this->numberGenerator->next($template->store_id, $documentType);
+        $documentNumber = $this->resolveDocumentNumber($documentType, $source, $template->store_id);
 
         $document = Document::query()->create([
             'store_id' => $template->store_id,
@@ -169,6 +169,24 @@ class GenerateBillingIssueDocument
         app(DocumentEventDispatcher::class)->pdfGenerated($document);
 
         return DocumentData::fromModel($document, includeDownloadUrl: true);
+    }
+
+    /**
+     * Billing documents tied to numbered entities reuse that entity's number.
+     * Standalone types (statements) and payments without entity numbers allocate
+     * from their document-type sequence.
+     */
+    private function resolveDocumentNumber(string $documentType, Model $source, int $storeId): string
+    {
+        if ($source instanceof Invoice) {
+            return $source->number;
+        }
+
+        if ($source instanceof CreditNote) {
+            return $source->number;
+        }
+
+        return $this->numberGenerator->next($storeId, $documentType);
     }
 
     private function resolveCurrencyCode(Model $source): string

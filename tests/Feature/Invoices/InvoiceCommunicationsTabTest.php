@@ -7,7 +7,6 @@ use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Enums\DocumentOutputFormat;
 use App\Models\CommunicationLog;
 use App\Models\Document;
-use App\Models\DocumentSequence;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Notifications\CommunicationLogQuery;
@@ -53,14 +52,6 @@ it('lists invoice billing communications on the communications tab', function ()
 
     app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
     app(CommunicationTemplateSeeder::class)->seedForStore($opportunity->store);
-
-    DocumentSequence::factory()->create([
-        'store_id' => $opportunity->store_id,
-        'document_type' => 'invoice',
-        'prefix' => 'INV-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,

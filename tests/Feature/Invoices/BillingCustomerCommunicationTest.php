@@ -15,7 +15,6 @@ use App\Enums\PaymentMethod;
 use App\Enums\PricingRoundingDirection;
 use App\Jobs\SendBillingCustomerCommunicationJob;
 use App\Models\CommunicationLog;
-use App\Models\DocumentSequence;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
@@ -75,16 +74,6 @@ function billingCommunicationFixture(): array
 
     app(DocumentTemplateSeeder::class)->seedForStore($opportunity->store);
     app(CommunicationTemplateSeeder::class)->seedForStore($opportunity->store);
-
-    foreach (['invoice', 'credit_note', 'receipt', 'statement'] as $documentType) {
-        DocumentSequence::factory()->create([
-            'store_id' => $opportunity->store_id,
-            'document_type' => $documentType,
-            'prefix' => strtoupper(substr(str_replace('_', '', $documentType), 0, 3)).'-',
-            'padding' => 4,
-            'next_number' => 1,
-        ]);
-    }
 
     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
         'opportunity_id' => $opportunity->id,

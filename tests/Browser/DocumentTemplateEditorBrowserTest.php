@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\Store;
 use App\Models\User;
@@ -27,14 +26,6 @@ beforeEach(function () {
         ->where('store_id', $this->store->id)
         ->where('document_type', 'quote')
         ->firstOrFail();
-
-    DocumentSequence::factory()->create([
-        'store_id' => $this->store->id,
-        'document_type' => 'quote',
-        'prefix' => 'QUO-',
-        'padding' => 4,
-        'next_number' => 1,
-    ]);
 });
 
 it('shows the three-panel editor and renders a preview iframe', function () {

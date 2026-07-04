@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\DocumentTemplate;
 use App\Models\Store;
+use App\Services\Documents\DocumentSequenceDefaults;
 use App\Services\Documents\SystemDocumentTemplates;
 use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
 use Illuminate\Database\Seeder;
@@ -57,5 +58,6 @@ class DocumentTemplateSeeder extends Seeder
         }
 
         $this->pluginSeeders->seedForStore($store);
+        DocumentSequenceDefaults::seedForStore($store);
     }
 }
