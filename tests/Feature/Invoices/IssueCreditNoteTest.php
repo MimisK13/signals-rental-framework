@@ -200,7 +200,7 @@ it('rejects credit notes against draft invoices with 422', function () {
         $invoice,
         IssueCreditNoteData::from(['lines' => null]),
     );
-})->throws(ValidationException::class, 'issued invoices');
+})->throws(AuthorizationException::class);
 
 it('rejects credit notes against void invoices with 422', function () {
     ['invoice' => $invoice] = issuedCreditNoteFixture();
@@ -211,7 +211,7 @@ it('rejects credit notes against void invoices with 422', function () {
         $invoice->refresh(),
         IssueCreditNoteData::from(['lines' => null]),
     );
-})->throws(ValidationException::class, 'issued invoices');
+})->throws(AuthorizationException::class);
 
 it('maintains link integrity between credit note rows and invoice rows', function () {
     ['invoice' => $invoice] = issuedCreditNoteFixture();

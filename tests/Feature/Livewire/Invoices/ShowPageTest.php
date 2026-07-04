@@ -50,6 +50,49 @@ it('issues an invoice from the show page', function () {
     expect($invoice->fresh()->status)->toBe('issued');
 });
 
+it('surfaces a notify toast when an owner attempts to issue a non-draft invoice', function () {
+    Queue::fake();
+    $opportunity = giCreateOrderOpportunity();
+    $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        'opportunity_id' => $opportunity->id,
+    ]));
+    $invoice = Invoice::query()->findOrFail($draft->id);
+    (new IssueInvoice)($invoice);
+    $invoice->refresh();
+
+    expect($invoice->status)->toBe('issued');
+
+    Volt::test('invoices.show', ['invoice' => $invoice])
+        ->call('issue')
+        ->assertHasNoErrors()
+        ->assertDispatched('notify');
+
+    expect($invoice->fresh()->status)->toBe('issued');
+});
+
+it('does not show issue on a paid invoice for owners', function () {
+    Queue::fake();
+    $opportunity = giCreateOrderOpportunity();
+    $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        'opportunity_id' => $opportunity->id,
+    ]));
+    $invoice = Invoice::query()->findOrFail($draft->id);
+    (new IssueInvoice)($invoice);
+    $invoice->refresh();
+
+    Volt::test('invoices.show', ['invoice' => $invoice])
+        ->call('openPaymentModal')
+        ->set('paymentAmount', $invoice->formatMoneyCost('amount_outstanding'))
+        ->call('recordPayment')
+        ->assertHasNoErrors();
+
+    $paid = $invoice->fresh();
+    expect($paid->status)->toBe('paid');
+
+    Volt::test('invoices.show', ['invoice' => $paid])
+        ->assertDontSee('wire:click="issue"');
+});
+
 it('records a payment via the modal', function () {
     Queue::fake();
     $opportunity = giCreateOrderOpportunity();

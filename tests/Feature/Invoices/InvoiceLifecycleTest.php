@@ -153,7 +153,7 @@ it('rejects draft updates once issued with 422', function () {
         $invoice->refresh(),
         UpdateDraftInvoiceData::fromNotesAndReference('Updated notes', 'REF-2'),
     );
-})->throws(ValidationException::class);
+})->throws(AuthorizationException::class);
 
 it('allows draft updates before issue', function () {
     ['store' => $store, 'member' => $member] = invoiceLifecycleFixture();

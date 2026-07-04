@@ -13,6 +13,7 @@ use App\Data\Invoices\IssueCreditNoteData;
 use App\Data\Invoices\RecordPaymentData;
 use App\Enums\BillingCommunicationKind;
 use App\Enums\PaymentMethod;
+use App\Livewire\Concerns\HandlesVerbsStateErrors;
 use App\Models\Invoice;
 use App\Support\CostVisibility;
 use App\Services\Invoices\InvoiceMarginCalculator;
@@ -25,6 +26,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('components.layouts.app')] class extends Component {
+    use HandlesVerbsStateErrors;
+
     public Invoice $invoice;
 
     public bool $showPaymentModal = false;
@@ -66,20 +69,27 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function issue(): void
     {
         Queue::fake();
-        (new IssueInvoice)($this->invoice);
-        $this->refreshInvoice();
+
+        $this->runVerbsTransition(
+            fn () => (new IssueInvoice)($this->invoice),
+            fn () => $this->refreshInvoice(),
+        );
     }
 
     public function voidInvoice(): void
     {
-        (new VoidInvoice)($this->invoice);
-        $this->refreshInvoice();
+        $this->runVerbsTransition(
+            fn () => (new VoidInvoice)($this->invoice),
+            fn () => $this->refreshInvoice(),
+        );
     }
 
     public function deleteDraft(): void
     {
-        (new DeleteDraftInvoice)($this->invoice);
-        $this->redirect(route('invoices.index'), navigate: true);
+        $this->runVerbsTransition(
+            fn () => (new DeleteDraftInvoice)($this->invoice),
+            fn () => $this->redirect(route('invoices.index'), navigate: true),
+        );
     }
 
     public function emailInvoice(): void
@@ -134,27 +144,31 @@ new #[Layout('components.layouts.app')] class extends Component {
             ->getMinorAmount()
             ->toInt();
 
-        (new RecordPayment)($this->invoice, RecordPaymentData::from([
-            'amount' => $minor,
-            'payment_method' => $this->paymentMethod,
-            'reference' => $this->paymentReference,
-        ]));
+        $this->runVerbsTransition(function () use ($minor): void {
+            (new RecordPayment)($this->invoice, RecordPaymentData::from([
+                'amount' => $minor,
+                'payment_method' => $this->paymentMethod,
+                'reference' => $this->paymentReference,
+            ]));
 
-        $this->showPaymentModal = false;
-        $this->refreshInvoice();
+            $this->showPaymentModal = false;
+            $this->refreshInvoice();
+        });
     }
 
     public function issueCreditNote(): void
     {
         $lines = $this->fullCreditNote ? null : [];
 
-        (new IssueCreditNote)($this->invoice, IssueCreditNoteData::from([
-            'lines' => $lines,
-            'notes' => $this->creditNoteNotes,
-        ]));
+        $this->runVerbsTransition(function () use ($lines): void {
+            (new IssueCreditNote)($this->invoice, IssueCreditNoteData::from([
+                'lines' => $lines,
+                'notes' => $this->creditNoteNotes,
+            ]));
 
-        $this->showCreditNoteModal = false;
-        $this->refreshInvoice();
+            $this->showCreditNoteModal = false;
+            $this->refreshInvoice();
+        });
     }
 
     private function refreshInvoice(): void

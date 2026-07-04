@@ -7,6 +7,7 @@ use App\Actions\PurchaseOrders\SendPurchaseOrder;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
 use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
+use App\Livewire\Concerns\HandlesVerbsStateErrors;
 use App\Models\PurchaseOrder;
 use App\Models\VirtualStockIntake;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
@@ -18,6 +19,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('components.layouts.app')] class extends Component {
+    use HandlesVerbsStateErrors;
+
     public PurchaseOrder $purchaseOrder;
 
     public bool $showCancelModal = false;
@@ -48,15 +51,19 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function send(): void
     {
-        (new SendPurchaseOrder)($this->purchaseOrder);
-        $this->refreshPurchaseOrder();
+        $this->runVerbsTransition(
+            fn () => (new SendPurchaseOrder)($this->purchaseOrder),
+            fn () => $this->refreshPurchaseOrder(),
+        );
     }
 
     public function cancel(): void
     {
-        (new CancelPurchaseOrder)($this->purchaseOrder, $this->cancelReason);
-        $this->showCancelModal = false;
-        $this->refreshPurchaseOrder();
+        $this->runVerbsTransition(function (): void {
+            (new CancelPurchaseOrder)($this->purchaseOrder, $this->cancelReason);
+            $this->showCancelModal = false;
+            $this->refreshPurchaseOrder();
+        });
     }
 
     public function receive(): void
@@ -65,11 +72,13 @@ new #[Layout('components.layouts.app')] class extends Component {
             'lines' => array_values($this->receiveLines),
         ]);
 
-        app(ReceivePurchaseOrder::class)($this->purchaseOrder, $lines);
+        $this->runVerbsTransition(function () use ($lines): void {
+            app(ReceivePurchaseOrder::class)($this->purchaseOrder, $lines);
 
-        $this->showReceiveModal = false;
-        $this->refreshPurchaseOrder();
-        $this->resetReceiveLines();
+            $this->showReceiveModal = false;
+            $this->refreshPurchaseOrder();
+            $this->resetReceiveLines();
+        });
     }
 
     public function openReceiveModal(): void
@@ -102,8 +111,10 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function deleteDraft(): void
     {
-        (new DeleteDraftPurchaseOrder)($this->purchaseOrder);
-        $this->redirect(route('purchase-orders.index'), navigate: true);
+        $this->runVerbsTransition(
+            fn () => (new DeleteDraftPurchaseOrder)($this->purchaseOrder),
+            fn () => $this->redirect(route('purchase-orders.index'), navigate: true),
+        );
     }
 
     public function openReturnIntakeModal(int $intakeId): void

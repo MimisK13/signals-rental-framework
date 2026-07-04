@@ -6,6 +6,7 @@ use App\Actions\VirtualStock\DeleteDraftVirtualStockIntake;
 use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
+use App\Livewire\Concerns\HandlesVerbsStateErrors;
 use App\Models\OpportunityCost;
 use App\Models\ShortageResolution;
 use App\Models\VirtualStockIntake;
@@ -18,6 +19,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('components.layouts.app')] class extends Component {
+    use HandlesVerbsStateErrors;
+
     public VirtualStockIntake $virtualStockIntake;
 
     public bool $showReturnConfirmModal = false;
@@ -30,14 +33,18 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function confirm(): void
     {
-        app(ConfirmVirtualStockIntake::class)($this->virtualStockIntake);
-        $this->virtualStockIntake->refresh()->load(['product', 'store']);
+        $this->runVerbsTransition(
+            fn () => app(ConfirmVirtualStockIntake::class)($this->virtualStockIntake),
+            fn () => $this->virtualStockIntake->refresh()->load(['product', 'store']),
+        );
     }
 
     public function receive(): void
     {
-        app(ReceiveVirtualStockIntake::class)($this->virtualStockIntake);
-        $this->virtualStockIntake->refresh();
+        $this->runVerbsTransition(
+            fn () => app(ReceiveVirtualStockIntake::class)($this->virtualStockIntake),
+            fn () => $this->virtualStockIntake->refresh(),
+        );
     }
 
     public function openReturnToSupplier(): void
@@ -59,23 +66,29 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function returnToSupplier(bool $force = false): void
     {
-        app(ReturnVirtualStockIntake::class)(
-            $this->virtualStockIntake,
-            new ReturnVirtualStockIntakeData(force: $force),
+        $this->runVerbsTransition(
+            fn () => app(ReturnVirtualStockIntake::class)(
+                $this->virtualStockIntake,
+                new ReturnVirtualStockIntakeData(force: $force),
+            ),
+            fn () => $this->virtualStockIntake->refresh(),
         );
-        $this->virtualStockIntake->refresh();
     }
 
     public function cancel(): void
     {
-        app(CancelVirtualStockIntake::class)($this->virtualStockIntake);
-        $this->virtualStockIntake->refresh();
+        $this->runVerbsTransition(
+            fn () => app(CancelVirtualStockIntake::class)($this->virtualStockIntake),
+            fn () => $this->virtualStockIntake->refresh(),
+        );
     }
 
     public function deleteDraft(): void
     {
-        (new DeleteDraftVirtualStockIntake)($this->virtualStockIntake);
-        $this->redirect(route('virtual-stock.index'), navigate: true);
+        $this->runVerbsTransition(
+            fn () => (new DeleteDraftVirtualStockIntake)($this->virtualStockIntake),
+            fn () => $this->redirect(route('virtual-stock.index'), navigate: true),
+        );
     }
 
     public function with(): array

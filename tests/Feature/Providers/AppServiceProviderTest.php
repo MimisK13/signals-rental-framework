@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Invoice;
 use App\Models\User;
 use App\Services\DocsService;
 use App\Services\NotificationRegistry;
@@ -77,12 +78,23 @@ it('lists every registered cost apportionment strategy via all()', function () {
         ->and($registry->all()['none'])->toBeInstanceOf(NullCostApportionmentStrategy::class);
 });
 
-it('grants owner users full access via Gate::before', function () {
+it('grants owner users full access via Gate::before for permission-only checks', function () {
     $owner = User::factory()->owner()->create();
 
     $this->actingAs($owner);
 
-    expect(Gate::allows('some-random-ability'))->toBeTrue();
+    expect(Gate::allows('some-random-ability'))->toBeTrue()
+        ->and(Gate::allows('invoices.view'))->toBeTrue();
+});
+
+it('does not let owners bypass model-policy state checks via Gate::before', function () {
+    $owner = User::factory()->owner()->create();
+    $issued = Invoice::factory()->issued()->create();
+
+    $this->actingAs($owner);
+
+    expect(Gate::allows('issue', $issued))->toBeFalse()
+        ->and(Gate::allows('update', $issued))->toBeFalse();
 });
 
 it('does not grant non-owner users full access', function () {

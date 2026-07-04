@@ -583,12 +583,18 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Owner users bypass all permission checks.
+     * Owner users bypass Spatie permission checks (empty Gate arguments) but not
+     * model-policy rules that depend on entity state — those still run so owners
+     * cannot issue/edit/delete invoices (etc.) in invalid statuses.
      */
     protected function configureAuthorization(): void
     {
-        Gate::before(function (User $user): ?bool {
-            return $user->isOwner() ? true : null;
+        Gate::before(function (User $user, string $ability, array $arguments): ?bool {
+            if (! $user->isOwner()) {
+                return null;
+            }
+
+            return $arguments === [] ? true : null;
         });
 
         Gate::define('owner', function (User $user): bool {

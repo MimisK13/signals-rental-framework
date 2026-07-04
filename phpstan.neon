@@ -18,6 +18,7 @@ parameters:
             message: '#Trait .+ is used zero times and is not analysed#'
             paths:
                 - app/Models/Traits/HasStoreScoping.php
+                - app/Livewire/Concerns/HandlesVerbsStateErrors.php
                 - tests/Concerns/UsesPostgres.php
         -
             identifier: argument.templateType

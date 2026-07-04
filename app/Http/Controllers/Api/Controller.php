@@ -144,8 +144,8 @@ abstract class Controller
      * notation (e.g. "system:read") and are checked against the Sanctum token's
      * granted abilities.
      *
-     * Owner users bypass Gate checks (via Gate::before in AppServiceProvider)
-     * but must still hold the correct token ability.
+     * Owner users bypass Spatie permission Gate checks (empty arguments) via
+     * Gate::before in AppServiceProvider but must still hold the correct token ability.
      */
     protected function authorizeApi(string $permission, string $ability): void
     {

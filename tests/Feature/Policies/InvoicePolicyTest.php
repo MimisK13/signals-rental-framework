@@ -15,15 +15,24 @@ beforeEach(function () {
 });
 
 describe('InvoicePolicy', function () {
-    it('grants every ability to an owner', function () {
+    it('grants owners permission-only checks but enforces state rules on model abilities', function () {
         $owner = User::factory()->owner()->create();
-        $invoice = Invoice::factory()->create();
+        $draft = Invoice::factory()->create(['status' => 'draft', 'is_locked' => false]);
+        $issued = Invoice::factory()->issued()->create(['is_locked' => true]);
 
-        expect($owner->can('viewAny', Invoice::class))->toBeTrue()
-            ->and($owner->can('view', $invoice))->toBeTrue()
+        expect($owner->can('invoices.view'))->toBeTrue()
+            ->and($owner->can('invoices.issue'))->toBeTrue()
+            ->and($owner->can('viewAny', Invoice::class))->toBeTrue()
+            ->and($owner->can('view', $draft))->toBeTrue()
             ->and($owner->can('create', Invoice::class))->toBeTrue()
-            ->and($owner->can('update', $invoice))->toBeTrue()
-            ->and($owner->can('delete', $invoice))->toBeTrue();
+            ->and($owner->can('update', $draft))->toBeTrue()
+            ->and($owner->can('delete', $draft))->toBeTrue()
+            ->and($owner->can('issue', $draft))->toBeTrue()
+            ->and($owner->can('update', $issued))->toBeFalse()
+            ->and($owner->can('delete', $issued))->toBeFalse()
+            ->and($owner->can('issue', $issued))->toBeFalse()
+            ->and($owner->can('recordPayment', $issued))->toBeTrue()
+            ->and($owner->can('issueCredit', $issued))->toBeTrue();
     });
 
     it('maps each ability to the correct invoices.* permission', function () {

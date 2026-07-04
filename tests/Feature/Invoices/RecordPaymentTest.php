@@ -129,7 +129,7 @@ it('rejects payment against draft invoices with 422', function () {
             'payment_method' => PaymentMethod::Cash->value,
         ]),
     );
-})->throws(ValidationException::class, 'issued invoices');
+})->throws(AuthorizationException::class);
 
 it('rejects payment against void invoices with 422', function () {
     ['invoice' => $invoice] = issuedInvoicePaymentFixture();
@@ -143,7 +143,7 @@ it('rejects payment against void invoices with 422', function () {
             'payment_method' => PaymentMethod::Cash->value,
         ]),
     );
-})->throws(ValidationException::class, 'issued invoices');
+})->throws(AuthorizationException::class);
 
 it('records a refund that re-opens the balance to issued', function () {
     ['invoice' => $invoice, 'total' => $total] = issuedInvoicePaymentFixture();
@@ -288,4 +288,4 @@ it('rejects draft invoice creation path without issue', function () {
             'payment_method' => PaymentMethod::Cash->value,
         ]),
     );
-})->throws(ValidationException::class);
+})->throws(AuthorizationException::class);

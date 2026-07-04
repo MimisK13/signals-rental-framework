@@ -296,6 +296,27 @@ describe('invoice lifecycle endpoints', function () {
             ->assertAccepted();
     });
 
+    it('returns 422 when a Verbs state guard rejects the transition', function () {
+        Queue::fake();
+        $this->actingAs($this->owner);
+        $invoice = apiCreateDraftInvoice();
+        (new IssueInvoice)($invoice);
+        $invoice->refresh();
+
+        expect($invoice->status)->toBe('issued');
+
+        // Desync the projection from the aggregate so policy pre-checks pass but Verbs rejects.
+        $invoice->forceFill(['status' => 'draft', 'is_locked' => false])->save();
+
+        $token = invoiceApiToken($this->owner);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/invoices/{$invoice->id}/issue")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Only draft invoices can be issued.')
+            ->assertJsonPath('errors.state.0', 'Only draft invoices can be issued.');
+    });
+
     it('voids a draft invoice', function () {
         $this->actingAs($this->owner);
         $invoice = apiCreateDraftInvoice();

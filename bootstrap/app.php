@@ -53,13 +53,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // A Verbs event guard (`validate()` → `assert()`) throws EventNotValid when
-        // a state-mutating event is fired against an invalid state — e.g. converting
-        // an Order back to a quotation. That is a client-input error, not a server
-        // fault, so map it to a 422 across every current and future event-sourced
-        // transition endpoint, in the project's standard validation JSON shape
-        // ({"message": ..., "errors": {...}}). The guard message is surfaced under
-        // the `state` key, since it always describes an invalid lifecycle position.
+        // A Verbs event guard (`validate()` → `assert()`) throws EventNotValid (or
+        // the more specific EventNotValidForCurrentState subclass) when a
+        // state-mutating event is fired against an invalid aggregate state — e.g.
+        // issuing a non-draft invoice or converting an Order back to a quotation.
+        // That is a client-input error, not a server fault, so map it to a 422
+        // across every current and future event-sourced transition endpoint, in the
+        // project's standard validation JSON shape ({"message": ..., "errors": {...}}).
+        // The guard message is surfaced under the `state` key, since it always
+        // describes an invalid lifecycle position.
         $exceptions->render(function (EventNotValid $e, Request $request): ?JsonResponse {
             if (! $request->expectsJson()) {
                 return null;
