@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
+use App\Models\Store;
 use App\Models\User;
 use App\Services\Notifications\InAppNotificationContentBuilder;
 use Database\Seeders\NotificationTypeSeeder;
@@ -18,6 +19,8 @@ beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     $this->seed(NotificationTypeSeeder::class);
+
+    Store::factory()->create(['is_default' => true]);
 
     $this->builder = app(InAppNotificationContentBuilder::class);
 });

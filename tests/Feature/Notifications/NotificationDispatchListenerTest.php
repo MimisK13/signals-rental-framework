@@ -41,6 +41,8 @@ beforeEach(function () {
     $this->seed(RoleSeeder::class);
     $this->seed(NotificationTypeSeeder::class);
 
+    Store::factory()->create(['is_default' => true]);
+
     $this->actor = User::factory()->owner()->create();
     $this->actingAs($this->actor);
 });

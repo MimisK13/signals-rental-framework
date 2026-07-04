@@ -13,7 +13,9 @@ use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Tests\Concerns\UsesPostgres;
 
 /*
@@ -50,7 +52,19 @@ it('adds a line item without poisoning the Verbs transaction (25P02) on Postgres
     // Engage the DATABASE cache lock store so the ShouldBeUnique lock acquisition
     // INSERTs into cache_locks — the exact statement that aborted the transaction
     // pre-fix. The recompute runs synchronously (sync queue) once dispatched.
+    //
+    // config(['cache.default' => ...]) is NOT enough: UniqueLock resolves the
+    // Cache Repository contract, and the underlying `cache.store` singleton was
+    // already resolved to phpunit's array store during boot — swap the resolved
+    // instance, exactly reproducing a production boot with CACHE_STORE=database.
     config(['cache.default' => 'database', 'queue.default' => 'sync']);
+    $this->app->instance(
+        Repository::class,
+        Cache::store('database'),
+    );
+    $this->app->instance('cache.store', Cache::store('database'));
+
+    config(['availability.suppress_stock_recalc' => false]);
 
     $from = Carbon::parse('2026-09-01T09:00:00Z');
     $to = Carbon::parse('2026-09-05T17:00:00Z');

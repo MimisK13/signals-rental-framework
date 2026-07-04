@@ -262,7 +262,7 @@ describe('opportunity rollUp #238 proof', function () {
             ->and($opportunity->charge_including_tax_total)->toBe(19_136 + $expectedTax);
     });
 
-    it('preserves tax_total for ad-hoc lines without a product class', function () {
+    it('preserves tax_total for ad-hoc lines without a product class via default class fallback', function () {
         ['member' => $member, 'store' => $store, 'productClass' => $productClass] = wireSingleClassTax();
         $product = Product::factory()->rental()->create(['tax_class_id' => $productClass->id]);
 
@@ -296,8 +296,9 @@ describe('opportunity rollUp #238 proof', function () {
         rollupCalculator()->rollUp($opportunity->refresh());
         $opportunity->refresh();
 
+        // Batch B: classless lines inherit the default product tax class, so both lines are taxed.
         expect($opportunity->tax_total)->toBe($expectedTax)
-            ->and($opportunity->tax_total)->toBe(200);
+            ->and($opportunity->tax_total)->toBe(1_200);
     });
 
     it('preserves tax_total for costs using the default product class fallback', function () {

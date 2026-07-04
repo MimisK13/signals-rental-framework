@@ -12,7 +12,8 @@ beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
-    $this->actingAs(User::factory()->owner()->create());
+    $this->user = User::factory()->owner()->create();
+    $this->actingAs($this->user);
 });
 
 it('creates a draft invoice from the form', function () {

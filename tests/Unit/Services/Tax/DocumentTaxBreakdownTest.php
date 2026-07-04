@@ -10,6 +10,7 @@ use App\Models\ProductTaxClass;
 use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Services\Tax\DocumentTaxBreakdown;
+use App\Services\Tax\ZoneAwareTaxResolver;
 use App\Services\TaxCalculator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -129,7 +130,7 @@ describe('grouped tax totals (#238 regression)', function () {
             ->and($legacy)->toBe(2_469 + 339);
     });
 
-    it('matches legacy grouped tax when lines have no product class (zero-tax bucket)', function () {
+    it('matches legacy grouped tax when lines have no product class (default class fallback)', function () {
         [$orgClass, $productClass] = wireStandardTaxRule();
 
         $summary = taxBreakdown()->summarize(new DocumentTaxRequest(
@@ -146,8 +147,10 @@ describe('grouped tax totals (#238 regression)', function () {
             $productClass->id => 1_000,
         ], 'GBP', $orgClass->id);
 
+        // Batch B: null product class resolves to the default product tax class via TaxCalculator,
+        // so the classless £50 line is taxed at 20% alongside the classified £10 line.
         expect($summary->totalTax)->toBe($legacy)
-            ->and($summary->totalTax)->toBe(200);
+            ->and($summary->totalTax)->toBe(1_200);
     });
 
     it('extracts inclusive line amounts before taxing when pricesIncludeTax is true', function () {
@@ -292,7 +295,7 @@ describe('currency scales', function () {
 });
 
 describe('TaxResolver seam', function () {
-    it('binds the matrix TaxCalculator as the default resolver', function () {
-        expect(app(TaxResolver::class))->toBeInstanceOf(TaxCalculator::class);
+    it('binds the zone-aware resolver as the default TaxResolver implementation', function () {
+        expect(app(TaxResolver::class))->toBeInstanceOf(ZoneAwareTaxResolver::class);
     });
 });

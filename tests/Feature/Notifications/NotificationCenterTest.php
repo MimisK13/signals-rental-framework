@@ -75,6 +75,8 @@ test('notification pane refreshes when opened and stays consistent with bell', f
 test('notification pane refreshes when bell polling detects a new unread count', function () {
     $this->actingAs($this->user);
 
+    $this->member->notifications()->delete();
+
     $bell = Volt::test('notifications.bell')
         ->assertSet('unreadCount', 0);
 
@@ -88,6 +90,7 @@ test('notification pane refreshes when bell polling detects a new unread count',
     ));
 
     $pane->set('items', [])->set('unreadCount', 0);
+    $bell->set('unreadCount', 0);
 
     $bell->call('refreshCount')
         ->assertSet('unreadCount', 1)

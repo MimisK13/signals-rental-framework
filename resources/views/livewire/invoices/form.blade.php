@@ -29,7 +29,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function mount(?Invoice $invoice = null): void
     {
-        if ($invoice !== null) {
+        if ($invoice?->exists) {
             Gate::authorize('update', $invoice);
             $invoice->ensureDraft();
             $this->invoiceId = $invoice->id;
@@ -107,9 +107,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             <flux:field>
                 <flux:label>Member (Organisation)</flux:label>
                 <flux:select wire:model="memberId" :disabled="$isEditing">
-                    <flux:select.option value="0">Select member…</flux:select.option>
+                    <option value="0">Select member…</option>
                     @foreach($members as $member)
-                        <flux:select.option :value="$member->id">{{ $member->name }}</flux:select.option>
+                        <option value="{{ $member->id }}">{{ $member->name }}</option>
                     @endforeach
                 </flux:select>
                 <flux:error name="memberId" />
@@ -119,7 +119,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <flux:label>Store</flux:label>
                 <flux:select wire:model="storeId" :disabled="$isEditing">
                     @foreach($stores as $store)
-                        <flux:select.option :value="$store->id">{{ $store->name }}</flux:select.option>
+                        <option value="{{ $store->id }}">{{ $store->name }}</option>
                     @endforeach
                 </flux:select>
                 <flux:error name="storeId" />
@@ -129,7 +129,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <flux:label>Type</flux:label>
                 <flux:select wire:model="type" :disabled="$isEditing">
                     @foreach($types as $invoiceType)
-                        <flux:select.option :value="$invoiceType->value">{{ $invoiceType->label() }}</flux:select.option>
+                        <option value="{{ $invoiceType->value }}">{{ $invoiceType->label() }}</option>
                     @endforeach
                 </flux:select>
                 <flux:error name="type" />
