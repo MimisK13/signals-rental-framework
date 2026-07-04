@@ -91,6 +91,21 @@ trait SeedsDemoPhase4
             ])->save();
         }
 
+        Store::query()
+            ->whereJsonContains('tag_list', self::DEMO_TAG)
+            ->whereNull('tax_zone_id')
+            ->update([
+                'tax_zone_id' => $tax['uk']->id,
+            ]);
+
+        Store::query()
+            ->whereJsonContains('tag_list', self::DEMO_TAG)
+            ->where(function ($query): void {
+                $query->whereNull('country_code')
+                    ->orWhere('country_code', '');
+            })
+            ->update(['country_code' => 'GB']);
+
         Member::query()
             ->whereJsonContains('tag_list', self::DEMO_TAG)
             ->where('membership_type', MembershipType::Organisation)

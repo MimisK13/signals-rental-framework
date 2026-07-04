@@ -4,7 +4,10 @@ namespace App\Services\Tax;
 
 use App\Contracts\Tax\TaxResolver;
 use App\Data\Tax\TaxZoneRuleMatchRequest;
+use App\Enums\TaxCategoryType;
 use App\Enums\TaxResultType;
+use App\Models\TaxCategory;
+use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Services\TaxCalculator;
 use App\ValueObjects\TaxResult;
@@ -13,6 +16,10 @@ use DateTimeInterface;
 /**
  * Zone-aware tax resolver: matches cross-border zone rules first, then falls back
  * to the org × product class matrix via {@see TaxCalculator}.
+ *
+ * When a zone rule resolves to a taxable result type but the class matrix cannot
+ * refine a rate (typically because tax classes were not assigned), the resolver
+ * falls back to the seeded Standard / Reduced / Zero {@see TaxRate} rows.
  */
 class ZoneAwareTaxResolver implements TaxResolver
 {
@@ -20,6 +27,7 @@ class ZoneAwareTaxResolver implements TaxResolver
         private readonly TaxCalculator $matrixCalculator,
         private readonly TaxZoneRuleResolver $zoneRuleResolver,
         private readonly TaxResolutionContextHolder $contextHolder,
+        private readonly TaxRateFallbackResolver $rateFallbackResolver,
     ) {}
 
     public function calculateExclusive(
@@ -79,6 +87,7 @@ class ZoneAwareTaxResolver implements TaxResolver
             $organisationTaxClassId,
             $productTaxClassId,
             $effectiveAt,
+            $productTaxCategoryId,
             grossMinorUnits: null,
         );
     }
@@ -135,16 +144,16 @@ class ZoneAwareTaxResolver implements TaxResolver
         }
 
         if ($this->zoneRuleResultType($zoneRule) === TaxResultType::Standard) {
-            return $this->mergeZoneMetadata(
-                $this->matrixCalculator->calculateInclusive(
-                    $grossMinorUnits,
-                    $currencyCode,
-                    $organisationTaxClassId,
-                    $productTaxClassId,
-                    $effectiveAt,
-                    $productTaxCategoryId,
-                ),
+            return $this->applyStandardZoneRule(
                 $zoneRule,
+                netMinorUnits: $grossMinorUnits,
+                currencyCode: $currencyCode,
+                organisationTaxClassId: $organisationTaxClassId,
+                productTaxClassId: $productTaxClassId,
+                effectiveAt: $effectiveAt,
+                productTaxCategoryId: $productTaxCategoryId,
+                grossMinorUnits: $grossMinorUnits,
+                isInclusiveInput: true,
             );
         }
 
@@ -155,6 +164,7 @@ class ZoneAwareTaxResolver implements TaxResolver
             organisationTaxClassId: $organisationTaxClassId,
             productTaxClassId: $productTaxClassId,
             effectiveAt: $effectiveAt,
+            productTaxCategoryId: $productTaxCategoryId,
             grossMinorUnits: $grossMinorUnits,
             isInclusiveInput: true,
         );
@@ -167,21 +177,23 @@ class ZoneAwareTaxResolver implements TaxResolver
         ?int $organisationTaxClassId,
         ?int $productTaxClassId,
         ?DateTimeInterface $effectiveAt,
+        ?int $productTaxCategoryId,
         ?int $grossMinorUnits,
         bool $isInclusiveInput = false,
     ): TaxResult {
         $resultType = $this->zoneRuleResultType($zoneRule);
 
         return match ($resultType) {
-            TaxResultType::Standard => $this->mergeZoneMetadata(
-                $this->matrixCalculator->calculateExclusive(
-                    $netMinorUnits,
-                    $currencyCode,
-                    $organisationTaxClassId,
-                    $productTaxClassId,
-                    $effectiveAt,
-                ),
+            TaxResultType::Standard => $this->applyStandardZoneRule(
                 $zoneRule,
+                $netMinorUnits,
+                $currencyCode,
+                $organisationTaxClassId,
+                $productTaxClassId,
+                $effectiveAt,
+                $productTaxCategoryId,
+                $grossMinorUnits,
+                $isInclusiveInput,
             ),
             // Compound-tax display is N/A while compound tax remains deferred per the Phase-4 binding decision.
             TaxResultType::ReverseCharge => $this->zeroTaxResult(
@@ -221,6 +233,110 @@ class ZoneAwareTaxResolver implements TaxResolver
                 isInclusiveInput: $isInclusiveInput,
             ),
         };
+    }
+
+    private function applyStandardZoneRule(
+        TaxRule $zoneRule,
+        int $netMinorUnits,
+        string $currencyCode,
+        ?int $organisationTaxClassId,
+        ?int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt,
+        ?int $productTaxCategoryId,
+        ?int $grossMinorUnits,
+        bool $isInclusiveInput = false,
+    ): TaxResult {
+        $categoryRate = $this->resolveCategorySteeredRate($productTaxCategoryId, $zoneRule);
+
+        if ($categoryRate !== null) {
+            $categoryResult = $isInclusiveInput
+                ? $this->matrixCalculator->calculateInclusiveWithTaxRate(
+                    $grossMinorUnits ?? $netMinorUnits,
+                    $currencyCode,
+                    $categoryRate,
+                )
+                : $this->matrixCalculator->calculateExclusiveWithTaxRate(
+                    $netMinorUnits,
+                    $currencyCode,
+                    $categoryRate,
+                );
+
+            return $this->mergeZoneMetadata($categoryResult, $zoneRule);
+        }
+
+        $matrixResult = $isInclusiveInput
+            ? $this->matrixCalculator->calculateInclusive(
+                $grossMinorUnits ?? $netMinorUnits,
+                $currencyCode,
+                $organisationTaxClassId,
+                $productTaxClassId,
+                $effectiveAt,
+                $productTaxCategoryId,
+            )
+            : $this->matrixCalculator->calculateExclusive(
+                $netMinorUnits,
+                $currencyCode,
+                $organisationTaxClassId,
+                $productTaxClassId,
+                $effectiveAt,
+                $productTaxCategoryId,
+            );
+
+        if ($matrixResult->taxRateId !== null) {
+            return $this->mergeZoneMetadata($matrixResult, $zoneRule);
+        }
+
+        $fallbackRate = $this->rateFallbackResolver->resolve(
+            $zoneRule,
+            TaxResultType::Standard,
+            $productTaxCategoryId,
+        );
+
+        if ($fallbackRate === null) {
+            return $this->mergeZoneMetadata($matrixResult, $zoneRule);
+        }
+
+        $fallbackResult = $isInclusiveInput
+            ? $this->matrixCalculator->calculateInclusiveWithTaxRate(
+                $grossMinorUnits ?? $netMinorUnits,
+                $currencyCode,
+                $fallbackRate,
+            )
+            : $this->matrixCalculator->calculateExclusiveWithTaxRate(
+                $netMinorUnits,
+                $currencyCode,
+                $fallbackRate,
+            );
+
+        return $this->mergeZoneMetadata($fallbackResult, $zoneRule);
+    }
+
+    private function resolveCategorySteeredRate(?int $productTaxCategoryId, TaxRule $zoneRule): ?TaxRate
+    {
+        if ($productTaxCategoryId === null) {
+            return null;
+        }
+
+        $category = TaxCategory::query()->find($productTaxCategoryId);
+
+        if ($category === null) {
+            return null;
+        }
+
+        $type = $category->getAttribute('type');
+        $categoryType = $type instanceof TaxCategoryType
+            ? $type
+            : TaxCategoryType::tryFrom((string) $type);
+
+        if ($categoryType === null || $categoryType === TaxCategoryType::Standard) {
+            return null;
+        }
+
+        return $this->rateFallbackResolver->resolve(
+            $zoneRule,
+            TaxResultType::Standard,
+            $productTaxCategoryId,
+        );
     }
 
     private function mergeZoneMetadata(TaxResult $matrixResult, TaxRule $zoneRule): TaxResult

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Country;
+use App\Models\Store;
 use App\Models\TaxZone;
 use App\Models\TaxZoneMember;
 use Illuminate\Database\Seeder;
@@ -68,6 +69,11 @@ class TaxZoneSeeder extends Seeder
 
         $mapped = array_merge(['GB'], self::EU_MEMBER_CODES, self::EU_OTHER_CODES);
         $this->syncWorldCatchAll($world, $mapped);
+
+        Store::query()
+            ->where('is_default', true)
+            ->whereNull('tax_zone_id')
+            ->update(['tax_zone_id' => $uk->id]);
     }
 
     /**

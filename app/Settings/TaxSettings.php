@@ -18,6 +18,7 @@ class TaxSettings extends SettingsDefinition
     {
         return [
             'unresolved_zone_fallback' => 'seller_domestic',
+            'default_product_tax_class_id' => null,
         ];
     }
 
@@ -29,6 +30,7 @@ class TaxSettings extends SettingsDefinition
                 'string',
                 Rule::in(['seller_domestic']),
             ],
+            'default_product_tax_class_id' => ['nullable', 'integer', 'exists:product_tax_classes,id'],
         ];
     }
 
@@ -36,6 +38,7 @@ class TaxSettings extends SettingsDefinition
     {
         return [
             'unresolved_zone_fallback' => 'string',
+            'default_product_tax_class_id' => 'integer',
         ];
     }
 }

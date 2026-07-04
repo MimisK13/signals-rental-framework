@@ -28,6 +28,7 @@ use App\Models\Phone;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductRate;
+use App\Models\ProductTaxClass;
 use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Models\User;
@@ -219,6 +220,7 @@ class DemoDataSeeder extends Seeder
         $this->command->info('Seeding demo products...');
 
         $groupIds = ProductGroup::query()->pluck('id', 'name');
+        $standardProductTaxClassId = ProductTaxClass::query()->where('is_default', true)->value('id');
 
         $products = [
             [
@@ -324,6 +326,7 @@ class DemoDataSeeder extends Seeder
                 array_merge($data, [
                     'product_group_id' => $group !== null ? $groupIds->get($group) : null,
                     'is_active' => true,
+                    'tax_class_id' => $standardProductTaxClassId,
                     'tag_list' => ['demo-data'],
                 ]),
             );

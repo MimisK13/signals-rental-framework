@@ -100,13 +100,15 @@ it('creates deposit and proforma invoice types', function () {
         ->and($proforma->typeEnum())->toBe(InvoiceType::Proforma);
 });
 
-it('matches the paid invoice total to its source opportunity charge total', function () {
+it('matches the paid invoice total to its source opportunity charge including tax total', function () {
     seedDemoInvoices();
 
     $opportunity = Opportunity::query()->where('reference', 'DEMO-OPP-0002')->firstOrFail();
     $invoice = Invoice::query()->where('reference', 'DEMO-INV-PAID')->firstOrFail();
 
-    expect($invoice->total)->toBe((int) $opportunity->charge_total);
+    expect($invoice->total)->toBe((int) $opportunity->charge_including_tax_total)
+        ->and($invoice->tax_total)->toBeGreaterThan(0)
+        ->and($opportunity->tax_total)->toBeGreaterThan(0);
 });
 
 it('records partial payment, refund, and credit note on the partial demo invoice', function () {
