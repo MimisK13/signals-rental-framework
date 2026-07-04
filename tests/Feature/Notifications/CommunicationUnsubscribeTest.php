@@ -105,6 +105,25 @@ describe('communication unsubscribe public route', function () {
 
         $this->get($url)->assertStatus(429);
     });
+
+    it('uses notifications.unsubscribe_url_ttl_days for signed link expiry', function () {
+        $member = Member::factory()->contact()->create();
+        $service = app(CustomerCommunicationUnsubscribeUrl::class);
+
+        $this->travelTo('2026-01-15 12:00:00');
+
+        settings()->set('notifications.unsubscribe_url_ttl_days', 30);
+        $shortTtlUrl = $service->forMember($member, 'invoice.created');
+
+        settings()->set('notifications.unsubscribe_url_ttl_days', 90);
+        $longTtlUrl = $service->forMember($member, 'invoice.created');
+
+        parse_str(parse_url($shortTtlUrl, PHP_URL_QUERY) ?? '', $shortQuery);
+        parse_str(parse_url($longTtlUrl, PHP_URL_QUERY) ?? '', $longQuery);
+
+        expect((int) $shortQuery['expires'])->toBe(now()->addDays(30)->timestamp)
+            ->and((int) $longQuery['expires'])->toBe(now()->addDays(90)->timestamp);
+    });
 });
 
 describe('CommunicationPreferences', function () {

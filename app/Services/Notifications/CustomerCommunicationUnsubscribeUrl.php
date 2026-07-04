@@ -12,7 +12,7 @@ class CustomerCommunicationUnsubscribeUrl
 {
     public function forMember(Member $member, string $notificationTypeKey): string
     {
-        $ttlDays = max(1, (int) config('communications.unsubscribe_url_ttl_days', 365));
+        $ttlDays = max(1, (int) settings('notifications.unsubscribe_url_ttl_days', 365));
 
         return URL::temporarySignedRoute(
             'communications.unsubscribe.show',

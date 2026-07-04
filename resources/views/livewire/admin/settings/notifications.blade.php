@@ -13,6 +13,7 @@ use App\Models\NotificationType;
 use App\Services\Notifications\ChannelProviderConfigService;
 use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Notifications\RecipientResolverRegistry;
+use App\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -46,9 +47,53 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
 
     public ?int $editingRoleMemberId = null;
 
+    public int $communicationLogRetentionDays = 365;
+
+    public int $communicationLogPruneSafetyDays = 7;
+
+    public int $unsubscribeUrlTtlDays = 365;
+
     public function mount(): void
     {
         Gate::authorize('notifications.manage');
+
+        $group = settings()->group('notifications');
+
+        $this->communicationLogRetentionDays = (int) $group['communication_log_retention_days'];
+        $this->communicationLogPruneSafetyDays = (int) $group['communication_log_prune_safety_days'];
+        $this->unsubscribeUrlTtlDays = (int) $group['unsubscribe_url_ttl_days'];
+    }
+
+    public function saveNotificationSettings(): void
+    {
+        Gate::authorize('notifications.manage');
+
+        $registry = app(SettingsRegistry::class);
+        $rules = $registry->rules('notifications');
+        $types = $registry->types('notifications');
+
+        $validated = $this->validate([
+            'communicationLogRetentionDays' => $rules['communication_log_retention_days'],
+            'communicationLogPruneSafetyDays' => $rules['communication_log_prune_safety_days'],
+            'unsubscribeUrlTtlDays' => $rules['unsubscribe_url_ttl_days'],
+        ]);
+
+        settings()->setMany([
+            'notifications.communication_log_retention_days' => [
+                'value' => $validated['communicationLogRetentionDays'],
+                'type' => $types['communication_log_retention_days'],
+            ],
+            'notifications.communication_log_prune_safety_days' => [
+                'value' => $validated['communicationLogPruneSafetyDays'],
+                'type' => $types['communication_log_prune_safety_days'],
+            ],
+            'notifications.unsubscribe_url_ttl_days' => [
+                'value' => $validated['unsubscribeUrlTtlDays'],
+                'type' => $types['unsubscribe_url_ttl_days'],
+            ],
+        ]);
+
+        $this->dispatch('notification-settings-saved');
     }
 
     public function openProviderConfig(string $driverKey): void
@@ -544,6 +589,46 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
                     @endforeach
                 </div>
             </div>
+        </x-signals.card>
+
+        {{-- Communication log & unsubscribe settings --}}
+        <x-signals.card>
+            <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
+                <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Communication log &amp; unsubscribe</h3>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">Retention for delivery history and signed unsubscribe link lifetime.</p>
+            </div>
+            <form wire:submit="saveNotificationSettings" class="p-4 space-y-4">
+                <div class="grid gap-4 md:grid-cols-3">
+                    <flux:input
+                        wire:model="communicationLogRetentionDays"
+                        label="Log retention (days)"
+                        type="number"
+                        min="30"
+                        max="3650"
+                        description="Terminal delivery rows are removed after this many days."
+                    />
+                    <flux:input
+                        wire:model="communicationLogPruneSafetyDays"
+                        label="Prune safety window (days)"
+                        type="number"
+                        min="1"
+                        max="90"
+                        description="Extra days beyond retention before in-flight (non-terminal) rows are removed."
+                    />
+                    <flux:input
+                        wire:model="unsubscribeUrlTtlDays"
+                        label="Unsubscribe link lifetime (days)"
+                        type="number"
+                        min="1"
+                        max="3650"
+                        description="How long newly generated one-click unsubscribe links remain valid."
+                    />
+                </div>
+                <div class="flex items-center gap-4">
+                    <flux:button variant="primary" type="submit" wire:loading.attr="disabled">Save settings</flux:button>
+                    <x-action-message on="notification-settings-saved">Saved.</x-action-message>
+                </div>
+            </form>
         </x-signals.card>
 
         {{-- Notification Types --}}

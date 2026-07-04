@@ -14,7 +14,7 @@ class PruneCommunicationLogCommand extends Command
                             {--days= : Retention period in days (overrides setting)}
                             {--safety-days= : Safety window for non-terminal statuses (overrides setting)}';
 
-    protected $description = 'Prune communication log entries beyond retention while preserving pinned and in-flight rows';
+    protected $description = 'Prune communication log entries beyond retention; non-terminal rows get an extra safety window beyond retention before removal';
 
     public function handle(CommunicationLogStatusRegistry $statusRegistry): int
     {
@@ -33,8 +33,8 @@ class PruneCommunicationLogCommand extends Command
             return self::FAILURE;
         }
 
-        $cutoff = now()->subDays($retentionDays);
-        $safetyCutoff = now()->subDays($safetyDays);
+        $terminalCutoff = now()->subDays($retentionDays);
+        $nonTerminalCutoff = now()->subDays($retentionDays + $safetyDays);
 
         $terminalStatuses = array_keys(array_filter(
             $statusRegistry->statuses(),
@@ -43,11 +43,18 @@ class PruneCommunicationLogCommand extends Command
 
         $deleted = CommunicationLog::query()
             ->where('is_pinned', false)
-            ->where('created_at', '<', $cutoff)
-            ->where(function ($query) use ($terminalStatuses, $safetyCutoff): void {
+            ->where(function ($query) use ($terminalStatuses, $terminalCutoff, $nonTerminalCutoff): void {
                 $query
-                    ->whereIn('status', $terminalStatuses)
-                    ->orWhere('created_at', '<', $safetyCutoff);
+                    ->where(function ($query) use ($terminalStatuses, $terminalCutoff): void {
+                        $query
+                            ->whereIn('status', $terminalStatuses)
+                            ->where('created_at', '<', $terminalCutoff);
+                    })
+                    ->orWhere(function ($query) use ($terminalStatuses, $nonTerminalCutoff): void {
+                        $query
+                            ->whereNotIn('status', $terminalStatuses)
+                            ->where('created_at', '<', $nonTerminalCutoff);
+                    });
             })
             ->delete();
 

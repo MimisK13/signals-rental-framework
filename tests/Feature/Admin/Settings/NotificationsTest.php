@@ -241,6 +241,21 @@ test('communication template editor link is shown for notification types with te
         ->assertSee(route('admin.settings.communication-templates.edit', $template, absolute: false));
 });
 
+test('notification log and unsubscribe settings round-trip from admin page', function () {
+    Volt::actingAs($this->manager)
+        ->test('admin.settings.notifications')
+        ->set('communicationLogRetentionDays', 180)
+        ->set('communicationLogPruneSafetyDays', 14)
+        ->set('unsubscribeUrlTtlDays', 90)
+        ->call('saveNotificationSettings')
+        ->assertHasNoErrors()
+        ->assertDispatched('notification-settings-saved');
+
+    expect(settings('notifications.communication_log_retention_days'))->toBe(180)
+        ->and(settings('notifications.communication_log_prune_safety_days'))->toBe(14)
+        ->and(settings('notifications.unsubscribe_url_ttl_days'))->toBe(90);
+});
+
 class AdminSettingsPluginChannelDriver implements ChannelDriver
 {
     public function key(): string
