@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BundleRuleController;
+use App\Http\Controllers\Api\V1\ChannelProviderController;
 use App\Http\Controllers\Api\V1\CommunicationLogController;
 use App\Http\Controllers\Api\V1\CommunicationTemplateController;
 use App\Http\Controllers\Api\V1\ContainerController;
@@ -29,8 +30,11 @@ use App\Http\Controllers\Api\V1\MemberAddressController;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\MemberEmailController;
 use App\Http\Controllers\Api\V1\MemberLinkController;
+use App\Http\Controllers\Api\V1\MemberNotificationPreferenceController;
 use App\Http\Controllers\Api\V1\MemberPhoneController;
 use App\Http\Controllers\Api\V1\MemberRelationshipController;
+use App\Http\Controllers\Api\V1\NotificationPreferenceController;
+use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\OpportunityInvoiceController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
@@ -110,6 +114,17 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('communication_templates/{communicationTemplate}/versions', [CommunicationTemplateController::class, 'versions'])->name('api.v1.communication_templates.versions');
     Route::post('communication_templates/{communicationTemplate}/versions/{version}/restore', [CommunicationTemplateController::class, 'restoreVersion'])->name('api.v1.communication_templates.restore_version');
     Route::apiResource('communication_templates', CommunicationTemplateController::class)->names('api.v1.communication_templates');
+
+    Route::get('notification_preferences', [NotificationPreferenceController::class, 'index'])->name('api.v1.notification_preferences.index');
+    Route::put('notification_preferences', [NotificationPreferenceController::class, 'update'])->name('api.v1.notification_preferences.update');
+    Route::get('members/{member}/notification_preferences', [MemberNotificationPreferenceController::class, 'index'])->name('api.v1.members.notification_preferences.index');
+    Route::put('members/{member}/notification_preferences', [MemberNotificationPreferenceController::class, 'update'])->name('api.v1.members.notification_preferences.update');
+
+    Route::post('channel_providers/{channel_provider}/test', [ChannelProviderController::class, 'test'])->name('api.v1.channel_providers.test');
+    Route::apiResource('channel_providers', ChannelProviderController::class)->names('api.v1.channel_providers');
+
+    Route::get('notification_settings', [NotificationSettingController::class, 'index'])->name('api.v1.notification_settings.index');
+    Route::put('notification_settings', [NotificationSettingController::class, 'update'])->name('api.v1.notification_settings.update');
 
     Route::get('documents', [DocumentController::class, 'index'])->name('api.v1.documents.index');
     Route::post('documents/generate', [DocumentController::class, 'generate'])->name('api.v1.documents.generate');

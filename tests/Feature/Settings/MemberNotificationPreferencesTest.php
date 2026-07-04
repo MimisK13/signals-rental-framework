@@ -9,8 +9,8 @@ use App\Models\NotificationType;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Volt\Volt;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -97,7 +97,7 @@ test('save member preferences rejects cross-user writes', function () {
         targetUserId: $this->otherUser->id,
         notificationTypeId: $this->type->id,
         channels: ['in_app'],
-    )))->toThrow(HttpException::class);
+    )))->toThrow(AuthorizationException::class);
 });
 
 test('disabled tenant notification types are hidden from member preferences', function () {

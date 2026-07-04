@@ -151,6 +151,17 @@ abstract class Controller
     {
         Gate::authorize($permission);
 
+        $this->authorizeTokenAbility($ability);
+    }
+
+    /**
+     * Authorize using only the Sanctum token ability (no Gate permission).
+     *
+     * Used for self-service endpoints where any authenticated user may access
+     * their own data without a dedicated web permission.
+     */
+    protected function authorizeTokenAbility(string $ability): void
+    {
         /** @var PersonalAccessToken|null $token */
         $token = request()->user()?->currentAccessToken();
 

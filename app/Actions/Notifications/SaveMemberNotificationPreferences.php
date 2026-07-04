@@ -3,11 +3,15 @@
 namespace App\Actions\Notifications;
 
 use App\Data\Notifications\SaveMemberNotificationPreferencesData;
+use App\Models\Member;
+use App\Models\MemberStore;
 use App\Models\NotificationPreference;
 use App\Models\NotificationType;
 use App\Models\User;
 use App\Services\Notifications\MemberNotificationPreferenceCatalog;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class SaveMemberNotificationPreferences
 {
@@ -15,10 +19,11 @@ class SaveMemberNotificationPreferences
         private readonly MemberNotificationPreferenceCatalog $catalog,
     ) {}
 
-    public function __invoke(User $user, SaveMemberNotificationPreferencesData $data): void
+    public function __invoke(User $actor, SaveMemberNotificationPreferencesData $data): void
     {
-        if ($data->targetUserId !== $user->id) {
-            abort(403);
+        if ($data->targetUserId !== $actor->id) {
+            Gate::authorize('members.edit');
+            $this->assertActorCanManageTargetUser($actor, $data->targetUserId);
         }
 
         $type = NotificationType::query()
@@ -31,7 +36,7 @@ class SaveMemberNotificationPreferences
         if ($data->isMuted) {
             NotificationPreference::query()->updateOrCreate(
                 [
-                    'user_id' => $user->id,
+                    'user_id' => $data->targetUserId,
                     'notification_type_id' => $type->id,
                 ],
                 [
@@ -57,7 +62,7 @@ class SaveMemberNotificationPreferences
 
         NotificationPreference::query()->updateOrCreate(
             [
-                'user_id' => $user->id,
+                'user_id' => $data->targetUserId,
                 'notification_type_id' => $type->id,
             ],
             [
@@ -65,5 +70,39 @@ class SaveMemberNotificationPreferences
                 'channels' => $channels === $tenantChannels ? null : $channels,
             ],
         );
+    }
+
+    private function assertActorCanManageTargetUser(User $actor, int $targetUserId): void
+    {
+        $targetUser = User::query()->findOrFail($targetUserId);
+
+        if ($targetUser->member_id === null) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        $member = Member::query()->find($targetUser->member_id);
+
+        if ($member === null) {
+            abort(Response::HTTP_NOT_FOUND);
+        }
+
+        $storeIds = $actor->accessibleStoreIds();
+
+        if ($storeIds === null) {
+            return;
+        }
+
+        $memberStoreIds = MemberStore::query()
+            ->where('member_id', $member->id)
+            ->pluck('store_id')
+            ->all();
+
+        if ($memberStoreIds === []) {
+            return;
+        }
+
+        if (array_intersect($storeIds, $memberStoreIds) === []) {
+            abort(Response::HTTP_NOT_FOUND);
+        }
     }
 }
