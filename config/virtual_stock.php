@@ -48,4 +48,44 @@ return [
 
     'fallback_number_prefix' => 'VS-',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Virtual serialised asset lifecycle statuses
+    |--------------------------------------------------------------------------
+    |
+    | Config-driven statuses for stock_levels rows where is_virtual = true.
+    | Operational assignment stages mirror owned assets via opportunity_item_assets;
+    | these statuses track the virtual asset's supply lifecycle only.
+    |
+    */
+
+    'virtual_asset_default_status' => 'available',
+
+    'virtual_asset_statuses' => [
+        'available' => [
+            'label' => 'Available',
+            'terminal' => false,
+            'supplies_availability' => true,
+            'badge_class' => 's-badge-green',
+        ],
+        'allocated' => [
+            'label' => 'Allocated',
+            'terminal' => false,
+            'supplies_availability' => true,
+            'badge_class' => 's-badge-amber',
+        ],
+        'retired' => [
+            'label' => 'Retired',
+            'terminal' => true,
+            'supplies_availability' => false,
+            'badge_class' => 's-badge-zinc',
+        ],
+    ],
+
+    'virtual_asset_transitions' => [
+        'available' => ['allocated', 'retired'],
+        'allocated' => ['available', 'retired'],
+        'retired' => [],
+    ],
+
 ];

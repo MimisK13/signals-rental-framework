@@ -216,6 +216,16 @@ class VirtualStockIntake extends Model implements HasSchema
         );
     }
 
+    /**
+     * @return HasMany<StockLevel, $this>
+     */
+    public function virtualAssets(): HasMany
+    {
+        return $this->hasMany(StockLevel::class, 'virtual_stock_intake_id')
+            ->where('is_virtual', true)
+            ->orderBy('asset_number');
+    }
+
     public function isLateReturn(): bool
     {
         if ($this->returned_at === null) {

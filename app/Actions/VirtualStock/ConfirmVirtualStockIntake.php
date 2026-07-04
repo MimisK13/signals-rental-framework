@@ -4,8 +4,11 @@ namespace App\Actions\VirtualStock;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\VirtualStockIntakeData;
+use App\Enums\StockMethod;
+use App\Models\Product;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;
+use App\Services\VirtualStock\SerialisedVirtualStockAssetCoordinator;
 use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
@@ -29,15 +32,20 @@ class ConfirmVirtualStockIntake
         app(VirtualStockStatusRegistry::class)->assertCanTransitionTo($intake->status, $status);
 
         $confirmedAt = CarbonImmutable::now('UTC');
-        $demandId = app(SequenceAllocator::class)->next('demands');
+        $product = Product::query()->findOrFail($intake->product_id);
+        $isSerialised = $product->stock_method === StockMethod::Serialised;
+        $demandId = $isSerialised ? null : app(SequenceAllocator::class)->next('demands');
+        $coordinator = app(SerialisedVirtualStockAssetCoordinator::class);
 
-        $this->commitVerbs(function () use ($intake, $status, $confirmedAt, $demandId): void {
+        $this->commitVerbs(function () use ($intake, $status, $confirmedAt, $demandId, $coordinator): void {
             VirtualStockIntakeConfirmed::fire(
                 state_id: (int) $intake->state_id,
                 status: $status,
                 demand_id: $demandId,
                 confirmed_at: $confirmedAt->toIso8601String(),
             );
+
+            $coordinator->fireProvisionedEvent($intake, $confirmedAt);
         });
 
         ($this->apportionVirtualStockCost)($intake->refresh(), authorize: false);

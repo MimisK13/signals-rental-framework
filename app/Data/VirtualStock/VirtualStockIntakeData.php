@@ -24,6 +24,9 @@ class VirtualStockIntakeData extends Data
         return ['unit_cost'];
     }
 
+    /**
+     * @param  Lazy|list<VirtualStockAssetData>|null  $virtual_assets
+     */
     public function __construct(
         public int $id,
         public string $number,
@@ -54,6 +57,8 @@ class VirtualStockIntakeData extends Data
         public Lazy|EntityReferenceData|null $store = null,
         public Lazy|EntityReferenceData|null $purchase_order = null,
         public Lazy|EntityReferenceData|null $purchase_order_item = null,
+        /** @var Lazy|list<VirtualStockAssetData>|null */
+        public Lazy|array|null $virtual_assets = null,
     ) {}
 
     public static function fromModel(VirtualStockIntake $intake): self
@@ -90,6 +95,10 @@ class VirtualStockIntakeData extends Data
             store: Lazy::whenLoaded('store', $intake, fn (): ?EntityReferenceData => self::reference($intake->store)),
             purchase_order: Lazy::whenLoaded('purchaseOrder', $intake, fn (): ?EntityReferenceData => self::referencePo($intake->purchaseOrder)),
             purchase_order_item: Lazy::whenLoaded('purchaseOrderItem', $intake, fn (): ?EntityReferenceData => self::referencePoItem($intake->purchaseOrderItem)),
+            virtual_assets: Lazy::whenLoaded('virtualAssets', $intake, fn (): array => $intake->virtualAssets
+                ->map(fn ($asset): VirtualStockAssetData => VirtualStockAssetData::fromModel($asset))
+                ->values()
+                ->all()),
         );
     }
 

@@ -6,10 +6,12 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
+use App\Services\VirtualStock\SerialisedVirtualStockAssetCoordinator;
 use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeReturned;
+use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsRetired;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -43,13 +45,21 @@ class ReturnVirtualStockIntake
         app(VirtualStockStatusRegistry::class)->assertCanTransitionTo($intake->status, $status);
 
         $returnedAt = CarbonImmutable::now('UTC');
+        $coordinator = app(SerialisedVirtualStockAssetCoordinator::class);
 
-        $this->commitVerbs(function () use ($intake, $status, $returnedAt): void {
+        $this->commitVerbs(function () use ($intake, $status, $returnedAt, $coordinator): void {
             VirtualStockIntakeReturned::fire(
                 state_id: (int) $intake->state_id,
                 status: $status,
                 returned_at: $returnedAt->toIso8601String(),
             );
+
+            if ($coordinator->shouldRetireAssets($intake)) {
+                VirtualStockIntakeSerialisedAssetsRetired::fire(
+                    state_id: (int) $intake->state_id,
+                    retired_at: $returnedAt->toIso8601String(),
+                );
+            }
         });
 
         ($this->apportionVirtualStockCost)->removeForIntake($intake->refresh(), authorize: false);

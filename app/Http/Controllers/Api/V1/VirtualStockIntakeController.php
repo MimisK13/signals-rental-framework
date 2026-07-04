@@ -67,6 +67,7 @@ class VirtualStockIntakeController extends Controller
         'store',
         'purchaseOrder',
         'purchaseOrderItem',
+        'virtualAssets',
     ];
 
     protected function modelClass(): string

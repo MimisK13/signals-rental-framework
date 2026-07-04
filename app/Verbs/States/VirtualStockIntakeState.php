@@ -49,6 +49,18 @@ class VirtualStockIntakeState extends State
     /** Application-allocated demand row PK created on confirm. */
     public ?int $demand_id = null;
 
+    /** Whether serialised virtual stock_levels rows have been provisioned. */
+    public bool $serialised_assets_provisioned = false;
+
+    /**
+     * Replay-stable stock_levels PKs for serialised virtual assets.
+     *
+     * @var list<int>
+     */
+    public array $serialised_asset_stock_level_ids = [];
+
+    public bool $serialised_assets_retired = false;
+
     public bool $is_deleted = false;
 
     public ?CarbonImmutable $deleted_at = null;

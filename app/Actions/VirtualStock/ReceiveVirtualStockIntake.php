@@ -5,6 +5,7 @@ namespace App\Actions\VirtualStock;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\VirtualStockIntakeData;
 use App\Models\VirtualStockIntake;
+use App\Services\VirtualStock\SerialisedVirtualStockAssetCoordinator;
 use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeReceived;
@@ -28,13 +29,18 @@ class ReceiveVirtualStockIntake
         app(VirtualStockStatusRegistry::class)->assertCanTransitionTo($intake->status, $status);
 
         $receivedAt = CarbonImmutable::now('UTC');
+        $coordinator = app(SerialisedVirtualStockAssetCoordinator::class);
 
-        $this->commitVerbs(function () use ($intake, $status, $receivedAt): void {
+        $this->commitVerbs(function () use ($intake, $status, $receivedAt, $coordinator): void {
             VirtualStockIntakeReceived::fire(
                 state_id: (int) $intake->state_id,
                 status: $status,
                 received_at: $receivedAt->toIso8601String(),
             );
+
+            if ($coordinator->needsProvisioning($intake)) {
+                $coordinator->fireProvisionedEvent($intake, $receivedAt);
+            }
         });
 
         ($this->apportionVirtualStockCost)($intake->refresh(), authorize: false);

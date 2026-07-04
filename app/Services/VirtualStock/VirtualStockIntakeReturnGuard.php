@@ -4,7 +4,9 @@ namespace App\Services\VirtualStock;
 
 use App\Enums\AssetAssignmentStatus;
 use App\Models\OpportunityItem;
+use App\Models\OpportunityItemAsset;
 use App\Models\ShortageResolution;
+use App\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use Brick\Math\BigDecimal;
 
@@ -27,6 +29,31 @@ class VirtualStockIntakeReturnGuard
      * }>
      */
     public function outstandingAllocations(VirtualStockIntake $intake): array
+    {
+        $outstanding = $this->outstandingFromShortageResolution($intake);
+        $seenItemIds = array_column($outstanding, 'opportunity_item_id');
+
+        foreach ($this->outstandingFromVirtualAssets($intake) as $row) {
+            if (in_array($row['opportunity_item_id'], $seenItemIds, true)) {
+                continue;
+            }
+
+            $outstanding[] = $row;
+        }
+
+        return $outstanding;
+    }
+
+    /**
+     * @return list<array{
+     *     opportunity_id: int,
+     *     opportunity_subject: string,
+     *     opportunity_item_id: int,
+     *     line_name: string,
+     *     quantity_out: string,
+     * }>
+     */
+    private function outstandingFromShortageResolution(VirtualStockIntake $intake): array
     {
         $resolution = ShortageResolution::query()
             ->where('virtual_stock_intake_id', $intake->id)
@@ -55,6 +82,59 @@ class VirtualStockIntakeReturnGuard
                 'opportunity_item_id' => (int) $item->id,
                 'line_name' => (string) $item->name,
                 'quantity_out' => $quantityOut,
+            ];
+        }
+
+        return $outstanding;
+    }
+
+    /**
+     * @return list<array{
+     *     opportunity_id: int,
+     *     opportunity_subject: string,
+     *     opportunity_item_id: int,
+     *     line_name: string,
+     *     quantity_out: string,
+     * }>
+     */
+    private function outstandingFromVirtualAssets(VirtualStockIntake $intake): array
+    {
+        $assetIds = StockLevel::query()
+            ->where('virtual_stock_intake_id', $intake->id)
+            ->where('is_virtual', true)
+            ->pluck('id');
+
+        if ($assetIds->isEmpty()) {
+            return [];
+        }
+
+        $assignments = OpportunityItemAsset::query()
+            ->whereIn('stock_level_id', $assetIds)
+            ->with('item.opportunity')
+            ->get();
+
+        $outstanding = [];
+
+        foreach ($assignments as $assignment) {
+            $item = $assignment->item;
+
+            if ($item === null) {
+                continue;
+            }
+
+            if ($assignment->dispatched_at === null
+                || $assignment->status->value >= AssetAssignmentStatus::CheckedIn->value) {
+                continue;
+            }
+
+            $outstanding[] = [
+                'opportunity_id' => (int) $item->opportunity_id,
+                'opportunity_subject' => (string) ($item->opportunity !== null
+                    ? $item->opportunity->subject
+                    : 'Opportunity #'.$item->opportunity_id),
+                'opportunity_item_id' => (int) $item->id,
+                'line_name' => (string) $item->name,
+                'quantity_out' => '1',
             ];
         }
 

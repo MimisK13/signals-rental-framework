@@ -25,7 +25,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(VirtualStockIntake $virtualStockIntake): void
     {
         Gate::authorize('view', $virtualStockIntake);
-        $this->virtualStockIntake = $virtualStockIntake->load(['product', 'store', 'purchaseOrder', 'purchaseOrderItem']);
+        $this->virtualStockIntake = $virtualStockIntake->load(['product', 'store', 'purchaseOrder', 'purchaseOrderItem', 'virtualAssets']);
     }
 
     public function confirm(): void
@@ -200,6 +200,46 @@ new #[Layout('components.layouts.app')] class extends Component {
         <x-signals.panel title="Availability window">
             <p>@localdatetime($virtualStockIntake->available_from) → @localdatetime($virtualStockIntake->available_until)</p>
         </x-signals.panel>
+
+        @if($virtualStockIntake->virtualAssets->isNotEmpty())
+            <x-signals.panel title="Virtual assets">
+                <x-signals.table-wrap>
+                    <table class="s-table">
+                        <thead>
+                            <tr>
+                                <th>Asset number</th>
+                                <th>Status</th>
+                                <th>Window</th>
+                                <th class="text-right">Allocated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($virtualStockIntake->virtualAssets as $asset)
+                                @php
+                                    $assetStatus = config('virtual_stock.virtual_asset_statuses.' . ($asset->virtual_asset_status ?? 'available'), []);
+                                @endphp
+                                <tr wire:key="virtual-asset-{{ $asset->id }}">
+                                    <td style="font-family: var(--font-mono);">{{ $asset->asset_number }}</td>
+                                    <td>
+                                        <span class="s-badge {{ $assetStatus['badge_class'] ?? 's-badge-zinc' }}">
+                                            {{ $assetStatus['label'] ?? $asset->virtual_asset_status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-sm text-[var(--text-muted)]">
+                                        @if($asset->starts_at && $asset->ends_at)
+                                            @localdatetime($asset->starts_at) → @localdatetime($asset->ends_at)
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $asset->quantity_allocated }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </x-signals.table-wrap>
+            </x-signals.panel>
+        @endif
 
         @costs
             @if($profitAndLoss !== null)

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -26,6 +27,9 @@ use Illuminate\Validation\ValidationException;
  * of, the quantity change is recorded against `stock_transactions` (preserving
  * the audit history) rather than soft-deleting the row. Hard-deleting a stock
  * level is reserved for correcting data-entry mistakes.
+ *
+ * @property Carbon|null $starts_at
+ * @property Carbon|null $ends_at
  */
 #[ObservedBy(StockLevelObserver::class)]
 class StockLevel extends Model implements HasSchema
@@ -54,6 +58,9 @@ class StockLevel extends Model implements HasSchema
         'starts_at',
         'ends_at',
         'last_count_at',
+        'is_virtual',
+        'virtual_stock_intake_id',
+        'virtual_asset_status',
     ];
 
     /**
@@ -71,6 +78,7 @@ class StockLevel extends Model implements HasSchema
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'last_count_at' => 'datetime',
+            'is_virtual' => 'boolean',
         ];
     }
 
@@ -165,6 +173,19 @@ class StockLevel extends Model implements HasSchema
     public function activities(): MorphMany
     {
         return $this->morphMany(Activity::class, 'regarding');
+    }
+
+    /**
+     * @return BelongsTo<VirtualStockIntake, $this>
+     */
+    public function virtualStockIntake(): BelongsTo
+    {
+        return $this->belongsTo(VirtualStockIntake::class, 'virtual_stock_intake_id');
+    }
+
+    public function isVirtualAsset(): bool
+    {
+        return (bool) $this->is_virtual;
     }
 
     /**

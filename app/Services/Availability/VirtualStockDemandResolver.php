@@ -4,7 +4,9 @@ namespace App\Services\Availability;
 
 use App\Contracts\DemandResolverContract;
 use App\Enums\DemandPhase;
+use App\Enums\StockMethod;
 use App\Models\Demand;
+use App\Models\Product;
 use App\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -59,7 +61,7 @@ class VirtualStockDemandResolver implements DemandResolverContract
     {
         $intake = $this->asIntake($source);
 
-        if ($intake->demand_id === null) {
+        if ($intake->demand_id === null || $this->usesSerialisedAssetSupply($intake)) {
             return;
         }
 
@@ -71,6 +73,17 @@ class VirtualStockDemandResolver implements DemandResolverContract
      */
     public function syncSupplyDemand(VirtualStockIntake $intake, int $demandId): void
     {
+        if ($this->usesSerialisedAssetSupply($intake)) {
+            if ($demandId > 0) {
+                Demand::query()->whereKey($demandId)->update([
+                    'phase' => DemandPhase::Void->value,
+                    'is_active' => false,
+                ]);
+            }
+
+            return;
+        }
+
         if (! in_array($intake->status, ['confirmed', 'received'], true)) {
             $this->releaseDemands($intake);
 
@@ -153,5 +166,12 @@ class VirtualStockDemandResolver implements DemandResolverContract
         }
 
         return $source;
+    }
+
+    protected function usesSerialisedAssetSupply(VirtualStockIntake $intake): bool
+    {
+        $product = Product::query()->find($intake->product_id);
+
+        return $product !== null && $product->stock_method === StockMethod::Serialised;
     }
 }

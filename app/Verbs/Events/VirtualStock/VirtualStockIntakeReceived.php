@@ -2,8 +2,10 @@
 
 namespace App\Verbs\Events\VirtualStock;
 
+use App\Models\Demand;
 use App\Models\VirtualStockIntake;
 use App\Services\Availability\VirtualStockDemandResolver;
+use App\Services\VirtualStock\VirtualStockAssetProvisioner;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\States\VirtualStockIntakeState;
 use Carbon\CarbonImmutable;
@@ -51,9 +53,38 @@ class VirtualStockIntakeReceived extends Event
 
         $intake = VirtualStockIntake::query()->find($state->virtual_stock_intake_id);
 
-        if ($intake !== null && $state->demand_id !== null) {
-            app(VirtualStockDemandResolver::class)
-                ->syncSupplyDemand($intake, $state->demand_id);
+        if ($intake !== null) {
+            $resolver = app(VirtualStockDemandResolver::class);
+
+            if ($state->demand_id !== null && $state->demand_id > 0) {
+                $resolver->syncSupplyDemand($intake, $state->demand_id);
+            }
+
+            if ($state->serialised_assets_provisioned) {
+                $this->resyncSerialisedAssetSupply($intake);
+            }
         }
+    }
+
+    private function resyncSerialisedAssetSupply(VirtualStockIntake $intake): void
+    {
+        $provisioner = app(VirtualStockAssetProvisioner::class);
+
+        Demand::query()
+            ->where('source_type', 'virtual_stock_intake')
+            ->where('source_id', $intake->id)
+            ->whereNotNull('asset_id')
+            ->orderBy('id')
+            ->each(function (Demand $demand) use ($intake, $provisioner): void {
+                if ($demand->asset_id === null) {
+                    return;
+                }
+
+                $provisioner->syncSupplyDemand(
+                    $intake,
+                    (int) $demand->asset_id,
+                    (int) $demand->id,
+                );
+            });
     }
 }

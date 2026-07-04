@@ -19,7 +19,7 @@ class VirtualStockIntakeConfirmed extends Event
         #[StateId(VirtualStockIntakeState::class)]
         public int $state_id,
         public string $status = 'confirmed',
-        public int $demand_id = 0,
+        public ?int $demand_id = null,
         public ?string $confirmed_at = null,
     ) {}
 
@@ -39,7 +39,9 @@ class VirtualStockIntakeConfirmed extends Event
     public function apply(VirtualStockIntakeState $state): void
     {
         $state->status = $this->status;
-        $state->demand_id = $this->demand_id;
+        if ($this->demand_id !== null) {
+            $state->demand_id = $this->demand_id;
+        }
         $state->confirmed_at = $this->confirmed_at !== null
             ? CarbonImmutable::parse($this->confirmed_at)
             : null;
@@ -63,7 +65,9 @@ class VirtualStockIntakeConfirmed extends Event
 
         $intake->refresh();
 
-        app(VirtualStockDemandResolver::class)->syncSupplyDemand($intake, $this->demand_id);
+        if ($this->demand_id !== null) {
+            app(VirtualStockDemandResolver::class)->syncSupplyDemand($intake, $this->demand_id);
+        }
 
         VirtualStockIntake::withTrashed()
             ->whereKey($state->virtual_stock_intake_id)

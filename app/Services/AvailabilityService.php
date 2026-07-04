@@ -344,12 +344,32 @@ class AvailabilityService
         $conflicting = Demand::query()
             ->whereColumn('demands.asset_id', 'stock_levels.id')
             ->active()
-            ->overlapping($from, $to);
+            ->overlapping($from, $to)
+            ->where('quantity', '>', 0);
 
         return StockLevel::query()
             ->forProduct($productId)
             ->forStore($storeId)
             ->serialized()
+            ->where(function (EloquentBuilder $query) use ($from, $to): void {
+                $query->where('is_virtual', false)
+                    ->orWhere(function (EloquentBuilder $virtual) use ($from, $to): void {
+                        $virtual->where('is_virtual', true)
+                            ->where(function (EloquentBuilder $status): void {
+                                $status->whereNull('virtual_asset_status')
+                                    ->orWhere('virtual_asset_status', '!=', 'retired');
+                            })
+                            ->where(function (EloquentBuilder $window) use ($from, $to): void {
+                                $window->where(function (EloquentBuilder $starts) use ($to): void {
+                                    $starts->whereNull('starts_at')
+                                        ->orWhere('starts_at', '<=', $to);
+                                })->where(function (EloquentBuilder $ends) use ($from): void {
+                                    $ends->whereNull('ends_at')
+                                        ->orWhere('ends_at', '>', $from);
+                                });
+                            });
+                    });
+            })
             ->whereNotExists($conflicting->getQuery())
             ->orderBy('id');
     }
@@ -411,7 +431,13 @@ class AvailabilityService
      */
     public function checkAssetAvailable(int $stockLevelId, Carbon $from, Carbon $to): bool
     {
-        if (! StockLevel::query()->whereKey($stockLevelId)->exists()) {
+        $stockLevel = StockLevel::query()->whereKey($stockLevelId)->first();
+
+        if ($stockLevel === null) {
+            return false;
+        }
+
+        if ($stockLevel->is_virtual && ! $this->virtualAssetAvailableForWindow($stockLevel, $from, $to)) {
             return false;
         }
 
@@ -419,7 +445,28 @@ class AvailabilityService
             ->where('asset_id', $stockLevelId)
             ->active()
             ->overlapping($from, $to)
+            ->where('quantity', '>', 0)
             ->exists();
+    }
+
+    /**
+     * Whether a virtual serialised asset's intake window covers the request.
+     */
+    private function virtualAssetAvailableForWindow(StockLevel $stockLevel, Carbon $from, Carbon $to): bool
+    {
+        if ($stockLevel->virtual_asset_status === 'retired') {
+            return false;
+        }
+
+        if ($stockLevel->starts_at !== null && $stockLevel->starts_at->gt($to)) {
+            return false;
+        }
+
+        if ($stockLevel->ends_at !== null && $stockLevel->ends_at->lte($from)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
