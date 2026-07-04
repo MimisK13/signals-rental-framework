@@ -32,6 +32,7 @@ use App\Services\Availability\PassThroughAvailabilityStrategy;
 use App\Services\Availability\RecalculationPipeline;
 use App\Services\Availability\SettingsAvailabilityResolutionProvider;
 use App\Services\Availability\SlotCalculator;
+use App\Services\Availability\VirtualStockDemandResolver;
 use App\Services\AvailabilityService;
 use App\Services\ColumnRegistryResolver;
 use App\Services\DemandSourceDefinition;
@@ -324,6 +325,14 @@ class AppServiceProvider extends ServiceProvider
                 resolverClass: ContainerDemandResolver::class,
                 colour: '#0EA5E9',
                 icon: 'cube',
+            ));
+
+            $registry->register(new DemandSourceDefinition(
+                type: 'virtual_stock_intake',
+                displayName: 'Virtual Stock',
+                resolverClass: VirtualStockDemandResolver::class,
+                colour: '#8B5CF6',
+                icon: 'arrow-down-circle',
             ));
 
             return $registry;

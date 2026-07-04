@@ -269,6 +269,15 @@
                                     </div>
                                 </a>
                                 @endcan
+                                @can('viewAny', App\Models\VirtualStockIntake::class)
+                                <a href="{{ route('virtual-stock.index') }}" class="mega-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}" wire:navigate>
+                                    <flux:icon.arrow-down-circle class="mega-item-icon" />
+                                    <div class="flex flex-col gap-px">
+                                        <span class="mega-item-label">Virtual Stock</span>
+                                        <span class="mega-item-desc">Sub-hire supply windows</span>
+                                    </div>
+                                </a>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -620,6 +629,11 @@
                 <div class="sidebar-group-label">Purchasing</div>
                 <a class="sidebar-item {{ ActiveRoute::is('purchase-orders.*') ? 'active' : '' }}" href="{{ route('purchase-orders.index') }}" wire:navigate x-on:click="mobileNav = false">
                     <flux:icon.shopping-cart class="!size-[15px]" /> Purchase Orders
+                </a>
+                @endcan
+                @can('viewAny', App\Models\VirtualStockIntake::class)
+                <a class="sidebar-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}" href="{{ route('virtual-stock.index') }}" wire:navigate x-on:click="mobileNav = false">
+                    <flux:icon.arrow-down-circle class="!size-[15px]" /> Virtual Stock
                 </a>
                 @endcan
 

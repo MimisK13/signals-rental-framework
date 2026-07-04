@@ -138,6 +138,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <th class="text-right">Unit cost</th>
                                 <th class="text-right">Tax</th>
                                 <th class="text-right">Total</th>
+                                @if($purchaseOrder->po_type === 'sub_hire')
+                                    <th></th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -153,6 +156,15 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->unit_cost, $purchaseOrder->currency_code) }}</td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->tax, $purchaseOrder->currency_code) }}</td>
                                     <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($item->total, $purchaseOrder->currency_code) }}</td>
+                                    @if($purchaseOrder->po_type === 'sub_hire' && $item->product_id)
+                                        <td class="text-right">
+                                            @can('create', App\Models\VirtualStockIntake::class)
+                                                <a href="{{ route('virtual-stock.create', ['purchase_order_id' => $purchaseOrder->id, 'purchase_order_item_id' => $item->id]) }}" wire:navigate class="text-sm text-[var(--link)] hover:underline">Create intake</a>
+                                            @endcan
+                                        </td>
+                                    @elseif($purchaseOrder->po_type === 'sub_hire')
+                                        <td></td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>

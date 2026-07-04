@@ -60,6 +60,7 @@ use App\Http\Controllers\Api\V1\TaxRuleController;
 use App\Http\Controllers\Api\V1\TaxZoneController;
 use App\Http\Controllers\Api\V1\UsageController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\VirtualStockIntakeController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\LogApiRequest;
@@ -360,6 +361,12 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('purchase_orders/{purchase_order}/send', [PurchaseOrderController::class, 'send'])->name('api.v1.purchase_orders.send');
     Route::post('purchase_orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('api.v1.purchase_orders.cancel');
     Route::apiResource('purchase_orders', PurchaseOrderController::class)->names('api.v1.purchase_orders');
+
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/confirm', [VirtualStockIntakeController::class, 'confirm'])->name('api.v1.virtual_stock_intakes.confirm');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/receive', [VirtualStockIntakeController::class, 'receive'])->name('api.v1.virtual_stock_intakes.receive');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/return', [VirtualStockIntakeController::class, 'return'])->name('api.v1.virtual_stock_intakes.return');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/cancel', [VirtualStockIntakeController::class, 'cancel'])->name('api.v1.virtual_stock_intakes.cancel');
+    Route::apiResource('virtual_stock_intakes', VirtualStockIntakeController::class)->names('api.v1.virtual_stock_intakes');
 
     // Rate Definitions
     Route::post('rate_definitions/{rate_definition}/duplicate', [RateDefinitionController::class, 'duplicate'])->name('api.v1.rate_definitions.duplicate');

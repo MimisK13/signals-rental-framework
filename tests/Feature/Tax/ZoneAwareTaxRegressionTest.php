@@ -55,8 +55,9 @@ function wireMatrixOnlyTax(string $rate = '20.0000'): array
  * Legacy opportunity tax_total from pre-P2 groupedTaxTotal semantics.
  *
  * @param  iterable<OpportunityItem>  $items
+ * @param  iterable<OpportunityCost>  $costs
  */
-function legacyOpportunityTaxTotal(
+function zoneLegacyOpportunityTaxTotal(
     Opportunity $opportunity,
     iterable $items,
     iterable $costs,
@@ -146,7 +147,7 @@ describe('zone-aware regression without zone rules', function () {
         ]);
 
         $defaultProductTaxClassId = ProductTaxClass::query()->where('is_default', true)->value('id');
-        $expectedTax = legacyOpportunityTaxTotal($opportunity, $opportunity->items, $opportunity->costs, $defaultProductTaxClassId);
+        $expectedTax = zoneLegacyOpportunityTaxTotal($opportunity, $opportunity->items, $opportunity->costs, $defaultProductTaxClassId);
 
         app(OpportunityTotalsCalculator::class)->rollUp($opportunity->refresh());
         $opportunity->refresh();
@@ -202,7 +203,7 @@ describe('zone-aware regression without zone rules', function () {
         ]);
 
         $defaultProductTaxClassId = ProductTaxClass::query()->where('is_default', true)->value('id');
-        $expectedTax = legacyOpportunityTaxTotal($opportunity, $opportunity->items, $opportunity->costs, $defaultProductTaxClassId);
+        $expectedTax = zoneLegacyOpportunityTaxTotal($opportunity, $opportunity->items, $opportunity->costs, $defaultProductTaxClassId);
 
         app(OpportunityTotalsCalculator::class)->rollUp($opportunity->refresh());
 
@@ -229,7 +230,7 @@ describe('zone-aware regression without zone rules', function () {
         ]);
 
         $defaultProductTaxClassId = ProductTaxClass::query()->where('is_default', true)->value('id');
-        $expectedTax = legacyOpportunityTaxTotal($opportunity, $opportunity->items, $opportunity->costs, $defaultProductTaxClassId);
+        $expectedTax = zoneLegacyOpportunityTaxTotal($opportunity, $opportunity->items, $opportunity->costs, $defaultProductTaxClassId);
 
         app(OpportunityTotalsCalculator::class)->rollUp($opportunity->refresh());
 

@@ -85,6 +85,17 @@ class PermissionSeeder extends Seeder
             'purchase_orders.send' => ['label' => 'Send Purchase Orders', 'description' => 'Send purchase orders to suppliers', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
             'purchase_orders.cancel' => ['label' => 'Cancel Purchase Orders', 'description' => 'Cancel purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
 
+            // Virtual stock
+            'virtual_stock.access' => ['label' => 'Access Virtual Stock', 'description' => 'Access the virtual stock area', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'virtual_stock.view' => ['label' => 'View Virtual Stock', 'description' => 'View virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.access']],
+            'virtual_stock.create' => ['label' => 'Create Virtual Stock', 'description' => 'Create virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.view']],
+            'virtual_stock.edit' => ['label' => 'Edit Virtual Stock', 'description' => 'Edit draft virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.view']],
+            'virtual_stock.delete' => ['label' => 'Delete Virtual Stock', 'description' => 'Delete draft virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.edit']],
+            'virtual_stock.confirm' => ['label' => 'Confirm Virtual Stock', 'description' => 'Confirm virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.edit']],
+            'virtual_stock.receive' => ['label' => 'Receive Virtual Stock', 'description' => 'Mark virtual stock intakes as received', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.confirm']],
+            'virtual_stock.return' => ['label' => 'Return Virtual Stock', 'description' => 'Mark virtual stock intakes as returned', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.receive']],
+            'virtual_stock.cancel' => ['label' => 'Cancel Virtual Stock', 'description' => 'Cancel virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.confirm']],
+
             // Products
             'products.access' => ['label' => 'Access Products', 'description' => 'Access the products area', 'group' => 'Products', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
             'products.view' => ['label' => 'View Products', 'description' => 'View product catalogue', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.access']],

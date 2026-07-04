@@ -433,7 +433,7 @@ class RecalculationPipeline
 
             $quantity = $demand->effectiveQuantity();
 
-            if ($quantity <= 0) {
+            if ($quantity === 0) {
                 continue;
             }
 

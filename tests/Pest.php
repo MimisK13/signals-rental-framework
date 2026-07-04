@@ -1,10 +1,14 @@
 <?php
 
 use App\Actions\PurchaseOrders\CreatePurchaseOrder;
+use App\Actions\VirtualStock\CreateVirtualStockIntake;
 use App\Data\PurchaseOrders\CreatePurchaseOrderData;
+use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Models\Member;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\Store;
+use App\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -107,6 +111,29 @@ function createTestPurchaseOrder(array $overrides = []): PurchaseOrder
     );
 
     return PurchaseOrder::query()->findOrFail($result->id);
+}
+
+/**
+ * @param  array<string, mixed>  $overrides
+ */
+function createTestVirtualStockIntake(array $overrides = []): VirtualStockIntake
+{
+    $store = Store::factory()->create();
+    $product = Product::factory()->bulk()->create();
+
+    $result = (new CreateVirtualStockIntake)(
+        CreateVirtualStockIntakeData::from([
+            'product_id' => $product->id,
+            'store_id' => $store->id,
+            'quantity' => 5,
+            'available_from' => '2026-08-01T00:00:00Z',
+            'available_until' => '2026-08-06T00:00:00Z',
+            'unit_cost' => 2500,
+            ...$overrides,
+        ]),
+    );
+
+    return VirtualStockIntake::query()->findOrFail($result->id);
 }
 
 /**

@@ -78,11 +78,14 @@ function wireZoneTaxInfrastructure(): array
     return compact('uk', 'euMember', 'world', 'orgClass', 'productClass', 'productClass2', 'taxRate');
 }
 
-function rollupCalculator(): OpportunityTotalsCalculator
+function zoneTaxRollupCalculator(): OpportunityTotalsCalculator
 {
     return app(OpportunityTotalsCalculator::class);
 }
 
+/**
+ * @param  list<DocumentTaxLineInput>  $lines
+ */
 function summarizeOpportunityTax(Opportunity $opportunity, array $lines): DocumentTaxSummary
 {
     $context = TaxResolutionContext::fromOpportunity($opportunity->loadMissing(['member', 'store']));
@@ -127,7 +130,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 10_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
         $opportunity->refresh();
 
         expect($opportunity->tax_total)->toBe(2_000)
@@ -168,7 +171,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 10_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
         $opportunity->refresh();
 
         expect($opportunity->tax_total)->toBe(0);
@@ -207,7 +210,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 5_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         expect($opportunity->fresh()->tax_total)->toBe(1_000);
     });
@@ -237,7 +240,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 8_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         expect($opportunity->fresh()->tax_total)->toBe(0);
 
@@ -274,7 +277,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 10_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         $summary = summarizeOpportunityTax($opportunity->refresh(), [
             new DocumentTaxLineInput(lineKey: 'item:1', netMinor: 10_000, productTaxClassId: $zones['productClass']->id),
@@ -322,7 +325,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 4_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         $summary = summarizeOpportunityTax($opportunity->refresh(), [
             new DocumentTaxLineInput(lineKey: 'item:1', netMinor: 4_000, productTaxClassId: $zones['productClass']->id),
@@ -358,7 +361,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 10_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         expect($opportunity->fresh()->tax_total)->toBe(2_000);
     });
@@ -400,7 +403,7 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 4_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         $summary = summarizeOpportunityTax($opportunity->refresh(), [
             new DocumentTaxLineInput(lineKey: 'item:1', netMinor: 6_000, productTaxClassId: $zones['productClass']->id),
@@ -443,13 +446,13 @@ describe('zone-aware opportunity tax totals', function () {
             'unit_price' => 10_000,
         ]);
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
         $firstTax = $opportunity->fresh()->tax_total;
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
         $secondTax = $opportunity->fresh()->tax_total;
 
-        rollupCalculator()->rollUp($opportunity->refresh());
+        zoneTaxRollupCalculator()->rollUp($opportunity->refresh());
 
         expect($firstTax)->toBe(0)
             ->and($secondTax)->toBe($firstTax)

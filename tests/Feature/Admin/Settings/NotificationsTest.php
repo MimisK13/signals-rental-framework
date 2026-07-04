@@ -192,7 +192,7 @@ test('plugin provider test result is persisted on the channel provider record', 
     ]);
 
     app(PluginRegistrar::class)
-        ->channelDriver('fake_plugin', TestActionPluginChannelDriver::class);
+        ->channelDriver('fake_plugin', AdminSettingsPluginChannelDriver::class);
 
     Volt::actingAs($this->owner)
         ->test('admin.settings.notifications')
@@ -241,7 +241,7 @@ test('communication template editor link is shown for notification types with te
         ->assertSee(route('admin.settings.communication-templates.edit', $template, absolute: false));
 });
 
-class TestActionPluginChannelDriver implements ChannelDriver
+class AdminSettingsPluginChannelDriver implements ChannelDriver
 {
     public function key(): string
     {

@@ -141,6 +141,11 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('purchase-orders/{purchaseOrder}', 'purchase-orders.show')->name('purchase-orders.show');
     Volt::route('purchase-orders/{purchaseOrder}/edit', 'purchase-orders.form')->name('purchase-orders.edit');
 
+    // Virtual stock
+    Volt::route('virtual-stock', 'virtual-stock.index')->name('virtual-stock.index');
+    Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
+    Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
+
     // Opportunities
     //
     // Named web routes resolve now so route('opportunities.*') works everywhere
