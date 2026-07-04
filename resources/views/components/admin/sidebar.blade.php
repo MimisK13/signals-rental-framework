@@ -13,8 +13,7 @@
     </a>
 
     {{-- Setup --}}
-    @if($group === 'setup')
-        <div class="s-admin-sidebar-title">Setup</div>
+    <div class="s-admin-sidebar-title">Setup</div>
         <a href="{{ route('admin.settings.company') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.company') ? 'active' : '' }}">
             <flux:icon.building-office class="s-admin-nav-icon" />
@@ -30,11 +29,9 @@
             <flux:icon.paint-brush class="s-admin-nav-icon" />
             Branding
         </a>
-    @endif
 
     {{-- Users & Security --}}
-    @if($group === 'users')
-        <div class="s-admin-sidebar-title">Users & Security</div>
+    <div class="s-admin-sidebar-title">Users & Security</div>
         <a href="{{ route('admin.settings.users') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.users', 'admin.settings.users.*') ? 'active' : '' }}">
             <flux:icon.users class="s-admin-nav-icon" />
@@ -62,11 +59,9 @@
             <flux:icon.code-bracket class="s-admin-nav-icon" />
             API Tokens
         </a>
-    @endif
 
     {{-- Preferences --}}
-    @if($group === 'preferences')
-        <div class="s-admin-sidebar-title">Preferences</div>
+    <div class="s-admin-sidebar-title">Preferences</div>
         <a href="{{ route('admin.settings.preferences') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.preferences') ? 'active' : '' }}">
             <flux:icon.adjustments-horizontal class="s-admin-nav-icon" />
@@ -97,11 +92,9 @@
             <flux:icon.puzzle-piece class="s-admin-nav-icon" />
             Integrations
         </a>
-    @endif
 
     {{-- Data --}}
-    @if($group === 'data')
-        <div class="s-admin-sidebar-title">Data</div>
+    <div class="s-admin-sidebar-title">Data</div>
         @can('custom-fields.manage')
             <a href="{{ route('admin.settings.custom-field-groups') }}" wire:navigate
                class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.custom-field-groups*') ? 'active' : '' }}">
@@ -124,11 +117,9 @@
             <flux:icon.globe-alt class="s-admin-nav-icon" />
             Countries
         </a>
-    @endif
 
     {{-- Documents --}}
-    @if($group === 'documents')
-        <div class="s-admin-sidebar-title">Documents</div>
+    <div class="s-admin-sidebar-title">Documents</div>
         @can('document_templates.view')
             <a href="{{ route('admin.document-templates.index') }}" wire:navigate
                class="s-admin-nav-item {{ ActiveRoute::is('admin.document-templates*') ? 'active' : '' }}">
@@ -136,11 +127,9 @@
                 Document Templates
             </a>
         @endcan
-    @endif
 
     {{-- Tax --}}
-    @if($group === 'tax')
-        <div class="s-admin-sidebar-title">Tax</div>
+    <div class="s-admin-sidebar-title">Tax</div>
         <a href="{{ route('admin.settings.finance') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.finance') ? 'active' : '' }}">
             <flux:icon.banknotes class="s-admin-nav-icon" />
@@ -176,11 +165,9 @@
             <flux:icon.table-cells class="s-admin-nav-icon" />
             Tax Rules
         </a>
-    @endif
 
     {{-- Pricing --}}
-    @if($group === 'pricing')
-        <div class="s-admin-sidebar-title">Pricing</div>
+    <div class="s-admin-sidebar-title">Pricing</div>
         @can('rates.view')
             <a href="{{ route('admin.settings.rate-definitions') }}" wire:navigate
                class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.rate-definitions*') ? 'active' : '' }}">
@@ -210,11 +197,9 @@
                 Surcharge Groups
             </a>
         @endcan
-    @endif
 
     {{-- System --}}
-    @if($group === 'system')
-        <div class="s-admin-sidebar-title">System</div>
+    <div class="s-admin-sidebar-title">System</div>
         @can('action-log.view')
             <a href="{{ route('admin.settings.action-log') }}" wire:navigate
                class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.action-log') ? 'active' : '' }}">
@@ -239,5 +224,4 @@
             <flux:icon.circle-stack class="s-admin-nav-icon" />
             Database Seeders
         </a>
-    @endif
 </nav>
