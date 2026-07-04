@@ -38,6 +38,9 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
+/**
+ * @return array{store: Store, opportunity: Opportunity, template: DocumentTemplate}
+ */
 function renderPipelineFixture(): array
 {
     $orgClass = OrganisationTaxClass::factory()->create();

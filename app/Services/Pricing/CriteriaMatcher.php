@@ -54,10 +54,6 @@ class CriteriaMatcher
         $active = [];
 
         foreach ($criteria as $key => $value) {
-            if (! is_string($key)) {
-                continue;
-            }
-
             if ($value === null || $value === [] || $value === '') {
                 continue;
             }

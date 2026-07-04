@@ -48,6 +48,9 @@ function bundleFlatProduct(int $priceMinor = 10_000): Product
     return $product;
 }
 
+/**
+ * @param  list<array{product: Product, quantity?: int|string, revenue_group_id?: int}>  $lines
+ */
 function createBundleOpportunity(array $lines): Opportunity
 {
     $member = Member::factory()->organisation()->create();

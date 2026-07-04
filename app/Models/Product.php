@@ -37,6 +37,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $container_repack_on_return
  * @property bool $is_warehouse_addable
  * @property int|null $warehouse_add_default_charge
+ * @property bool $discountable
+ * @property list<string>|null $tag_list
  */
 class Product extends Model implements HasSchema
 {

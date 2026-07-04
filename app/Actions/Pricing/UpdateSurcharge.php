@@ -26,11 +26,11 @@ class UpdateSurcharge
             'sort_order' => $data->sort_order,
         ], fn (mixed $value): bool => $value !== null);
 
-        if (array_key_exists('percent_value', $payload) && $payload['percent_value'] !== null) {
+        if (array_key_exists('percent_value', $payload)) {
             $payload['fixed_value_minor'] = null;
         }
 
-        if (array_key_exists('fixed_value_minor', $payload) && $payload['fixed_value_minor'] !== null) {
+        if (array_key_exists('fixed_value_minor', $payload)) {
             $payload['percent_value'] = null;
         }
 

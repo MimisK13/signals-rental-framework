@@ -21,6 +21,9 @@ readonly class DocumentRenderResult
         public DocumentOutputFormat $format = DocumentOutputFormat::Preview,
     ) {}
 
+    /**
+     * @param  array<string, mixed>|null  $renderedData
+     */
     public static function success(
         string $html,
         ?array $renderedData,

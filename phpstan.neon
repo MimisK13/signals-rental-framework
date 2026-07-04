@@ -7,6 +7,7 @@ parameters:
     level: 6
     stubFiles:
         - phpstan-stubs/spatie-browsershot.php
+        - phpstan-stubs/pest-browser.php
     paths:
         - app/
         - database/
@@ -34,6 +35,8 @@ parameters:
             path: app/Http/Traits/ResourceActions.php
     scanDirectories:
         - tests/
+    scanFiles:
+        - phpstan-stubs/pest-browser.php
     universalObjectCratesClasses:
         - Signals\PHPStan\PestTestCase
 

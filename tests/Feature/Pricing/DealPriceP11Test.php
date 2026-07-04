@@ -40,6 +40,9 @@ beforeEach(function () {
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
 });
 
+/**
+ * @param  array<string, mixed>  $overrides
+ */
 function p11Opportunity(array $overrides = []): Opportunity
 {
     $member = Member::factory()->organisation()->create();
@@ -70,6 +73,9 @@ function p11AddManualLine(Opportunity $opportunity, string $name, int $unitPrice
         ?? $opportunity->items()->latest('id')->firstOrFail();
 }
 
+/**
+ * @param  array<string, mixed>  $overrides
+ */
 function p11AddProductLine(Opportunity $opportunity, Product $product, array $overrides = []): OpportunityItem
 {
     $beforeIds = $opportunity->items()->pluck('id')->all();

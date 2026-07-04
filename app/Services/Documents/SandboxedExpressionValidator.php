@@ -32,7 +32,7 @@ class SandboxedExpressionValidator
         'ucfirst',
     ];
 
-    /** @var array<int, string> */
+    /** @return array<int, string> */
     private function forbiddenTokenMessages(): array
     {
         $messages = [

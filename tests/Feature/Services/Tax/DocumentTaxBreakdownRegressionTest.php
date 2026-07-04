@@ -69,7 +69,8 @@ function wireSingleClassTax(string $rate = '20.0000'): array
 /**
  * Legacy opportunity tax_total from pre-P2 groupedTaxTotal semantics.
  *
- * @param  iterable<OpportunityItem>  $items
+ * @param  iterable<int, OpportunityItem>  $items
+ * @param  iterable<int, OpportunityCost>  $costs
  */
 function legacyOpportunityTaxTotal(
     Opportunity $opportunity,

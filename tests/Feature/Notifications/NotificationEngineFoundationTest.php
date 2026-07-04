@@ -55,6 +55,7 @@ describe('member notifiable routing', function () {
 
         $notification = new class extends Notification
         {
+            /** @return list<string> */
             public function via(object $notifiable): array
             {
                 return ['mail'];

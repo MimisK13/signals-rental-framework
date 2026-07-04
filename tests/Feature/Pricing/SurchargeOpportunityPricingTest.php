@@ -21,6 +21,7 @@ use App\Enums\PricingRoundingDirection;
 use App\Enums\RateTransactionType;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
 use App\Models\OrganisationTaxClass;
 use App\Models\Product;
@@ -65,6 +66,9 @@ function wireFlatPricedProduct(int $priceMinor = 10_000): Product
     return $product;
 }
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem}
+ */
 function createPricedOpportunityWithItem(Product $product, ?Member $member = null): array
 {
     $member ??= Member::factory()->organisation()->create();

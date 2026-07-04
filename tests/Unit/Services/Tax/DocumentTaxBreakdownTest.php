@@ -47,6 +47,9 @@ function legacyGroupedTaxTotal(array $netByProductTaxClass, string $currency, ?i
     return $taxTotal;
 }
 
+/**
+ * @return array{0: OrganisationTaxClass, 1: ProductTaxClass, 2: TaxRate}
+ */
 function wireStandardTaxRule(?OrganisationTaxClass $orgClass = null, ?ProductTaxClass $productClass = null, string $rate = '20.0000'): array
 {
     $orgClass ??= OrganisationTaxClass::factory()->create();

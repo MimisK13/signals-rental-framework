@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property TaxBuyerType|null $buyer_type
  * @property TaxResultType|null $result_type
  */
 class TaxRule extends Model implements HasSchema

@@ -12,6 +12,7 @@ use App\Models\DiscountCategory;
 use App\Models\DiscountRule;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
@@ -25,6 +26,9 @@ beforeEach(function () {
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
 });
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem}
+ */
 function createDiscountedOpportunity(Member $member, Product $product, ?int $revenueGroupId = null): array
 {
     $created = (new CreateOpportunity)(CreateOpportunityData::from([

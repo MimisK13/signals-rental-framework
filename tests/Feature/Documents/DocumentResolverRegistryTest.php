@@ -6,9 +6,6 @@ use App\Services\Documents\OpportunityDataResolver;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @implements DocumentDataResolver
- */
 class PluginDocumentDataResolverStub implements DocumentDataResolver
 {
     public function __construct(

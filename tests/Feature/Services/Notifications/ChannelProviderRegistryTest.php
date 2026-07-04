@@ -177,16 +177,23 @@ describe('ChannelProviderRegistry plugin seam', function () {
             config: ['api_key' => 'test-key'],
         ));
 
-        Queue::assertPushed(SendChannelNotification::class, function (SendChannelNotification $job) {
+        $pushedJob = null;
+
+        Queue::assertPushed(SendChannelNotification::class, function (SendChannelNotification $job) use (&$pushedJob): bool {
+            $pushedJob = $job;
+
             return $job->payload->driverKey === 'fake_plugin'
                 && $job->queue === 'notifications';
         });
 
-        $pushed = Queue::pushed(SendChannelNotification::class)->first();
-        $pushed->handle(app(ChannelProviderRegistry::class));
+        if (! $pushedJob instanceof SendChannelNotification) {
+            throw new RuntimeException('Expected SendChannelNotification job to be pushed.');
+        }
+
+        $pushedJob->handle(app(ChannelProviderRegistry::class));
 
         expect(FakePluginChannelDriver::$sendCalled)->toBeTrue()
-            ->and(FakePluginChannelDriver::$lastPayload?->title)->toBe('Plugin test')
+            ->and($pushedJob->payload->title)->toBe('Plugin test')
             ->and(FakePluginChannelDriver::$lastConfig)->toBe(['api_key' => 'test-key']);
     });
 

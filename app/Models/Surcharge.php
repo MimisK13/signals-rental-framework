@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property array<string, mixed>|null $criteria
+ * @property Carbon|null $valid_from
+ * @property Carbon|null $valid_to
+ */
 class Surcharge extends Model
 {
     /** @use HasFactory<SurchargeFactory> */

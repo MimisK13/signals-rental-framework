@@ -28,6 +28,9 @@ beforeEach(function () {
     settings()->set('company.date_format_php', 'd/m/Y');
 });
 
+/**
+ * @param  array<string, mixed>  $overrides
+ */
 function documentResolverOpportunity(array $overrides = []): Opportunity
 {
     $orgClass = OrganisationTaxClass::factory()->create();

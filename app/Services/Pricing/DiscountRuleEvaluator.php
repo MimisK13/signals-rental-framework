@@ -36,7 +36,7 @@ class DiscountRuleEvaluator
         Opportunity $opportunity,
         Collection $rules,
         CarbonInterface $at,
-        array $quantityMaps = [],
+        array $quantityMaps = ['by_product' => [], 'by_group' => []],
     ): ?string {
         if (! $this->isDiscountable($item)) {
             return null;
@@ -91,7 +91,7 @@ class DiscountRuleEvaluator
             $product = Product::query()->find($item->itemable_id);
         }
 
-        return $product?->discountable ?? true;
+        return $product instanceof Product ? $product->discountable : true;
     }
 
     private function isTemporallyValid(DiscountRule $rule, CarbonInterface $at): bool
@@ -130,7 +130,7 @@ class DiscountRuleEvaluator
                 $productId = (int) $product->id;
                 $productGroupId = $product->product_group_id !== null ? (int) $product->product_group_id : null;
                 $tagNames = array_values(array_filter(
-                    is_array($product->tag_list) ? $product->tag_list : [],
+                    $product->tag_list ?? [],
                     is_string(...),
                 ));
                 $aggregateProduct = $quantityMaps['by_product'][$productId] ?? null;
@@ -151,7 +151,7 @@ class DiscountRuleEvaluator
         );
     }
 
-    private function mapTransactionType(LineItemTransactionType $type): ?string
+    private function mapTransactionType(LineItemTransactionType $type): string
     {
         return match ($type) {
             LineItemTransactionType::Rental, LineItemTransactionType::SubRental => RateTransactionType::Rental->value,

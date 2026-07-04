@@ -7,7 +7,13 @@ use Database\Factories\DiscountRuleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property array<string, mixed>|null $criteria
+ * @property Carbon|null $valid_from
+ * @property Carbon|null $valid_to
+ */
 class DiscountRule extends Model
 {
     /** @use HasFactory<DiscountRuleFactory> */

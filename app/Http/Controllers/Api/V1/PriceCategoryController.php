@@ -98,6 +98,12 @@ class PriceCategoryController extends Controller
         return ['read' => 'pricing:read', 'write' => 'pricing:write'];
     }
 
+    /**
+     * @template TModel of PriceCategory
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     protected function applyIncludes(Builder $query, Request $request, ?Model $model = null): Builder
     {
         if ($request->boolean('include_tiers', true) || str_contains((string) $request->query('include', ''), 'tiers')) {

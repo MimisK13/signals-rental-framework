@@ -26,6 +26,9 @@ beforeEach(function () {
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
 });
 
+/**
+ * @return array{trade: PriceCategory, product: Product, definition: RateDefinition}
+ */
 function wireCategoryPricedProduct(int $defaultMinor = 10000, int $tradeMinor = 7500): array
 {
     $trade = PriceCategory::factory()->create(['name' => 'Trade']);

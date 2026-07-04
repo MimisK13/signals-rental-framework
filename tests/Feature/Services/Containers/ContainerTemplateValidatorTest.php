@@ -10,11 +10,17 @@ beforeEach(function () {
     $this->validator = app(ContainerTemplateValidator::class);
 });
 
+/**
+ * @param  array<string, mixed>  $attributes
+ */
 function containerProduct(array $attributes = []): Product
 {
     return Product::factory()->serialised()->create($attributes);
 }
 
+/**
+ * @return array{slots: list<array{product_id: int, quantity: int, binding?: string}>, max_items: int}
+ */
 function validTemplate(Product $component, int $quantity = 1, ?string $binding = null): array
 {
     $slot = [

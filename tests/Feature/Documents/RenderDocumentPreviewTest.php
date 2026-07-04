@@ -18,6 +18,9 @@ beforeEach(function () {
     $this->seed(RoleSeeder::class);
 });
 
+/**
+ * @return array{store: Store, opportunity: Opportunity, template: DocumentTemplate}
+ */
 function previewFixture(): array
 {
     $store = Store::factory()->create();

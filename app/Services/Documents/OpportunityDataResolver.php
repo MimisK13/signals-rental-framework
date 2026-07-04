@@ -28,6 +28,7 @@ use Brick\Money\Currency;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * Resolves opportunity records into quote/order document merge data.
@@ -121,16 +122,21 @@ class OpportunityDataResolver implements DocumentDataResolver
     public function loadSource(int $sourceId): Model
     {
         return Opportunity::query()
+            ->with(['store', 'items.itemSurcharges'])
             ->with([
-                'member.emails' => fn ($query) => $query->where('is_primary', true),
-                'member.phones' => fn ($query) => $query->where('is_primary', true),
-                'store',
-                'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
-                'items.item' => fn (MorphTo $morphTo) => $morphTo->morphWith([
-                    Product::class,
-                ]),
-                'items.itemSurcharges',
-                'costs' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'member.emails' => fn (Relation $query) => $query->where('is_primary', true),
+                'member.phones' => fn (Relation $query) => $query->where('is_primary', true),
+                'items' => fn (Relation $query) => $query->orderBy('path')->orderBy('id'),
+                'items.item' => function (Relation $morphTo) {
+                    if ($morphTo instanceof MorphTo) {
+                        $morphTo->morphWith([
+                            Product::class,
+                        ]);
+                    }
+
+                    return $morphTo;
+                },
+                'costs' => fn (Relation $query) => $query->orderBy('sort_order')->orderBy('id'),
             ])
             ->findOrFail($sourceId);
     }
@@ -248,7 +254,7 @@ class OpportunityDataResolver implements DocumentDataResolver
 
                 return [
                     'name' => $item->name,
-                    'product_name' => $product?->name ?? $item->name,
+                    'product_name' => $product instanceof Product ? $product->name : $item->name,
                     'quantity' => (string) $item->quantity,
                     'unit_price' => $item->formatMoneyCost('unit_price'),
                     'discount' => $this->formatMinor($discountMinor, $currencyCode),

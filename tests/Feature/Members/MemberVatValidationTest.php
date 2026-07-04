@@ -83,6 +83,9 @@ function vatValidationTaxInfrastructure(): array
     return compact('uk', 'euMember', 'world', 'orgClass', 'productClass');
 }
 
+/**
+ * @param  list<DocumentTaxLineInput>  $lines
+ */
 function summarizeMemberOpportunityTax(Opportunity $opportunity, array $lines): DocumentTaxSummary
 {
     $context = TaxResolutionContext::fromOpportunity($opportunity->loadMissing(['member', 'store']));

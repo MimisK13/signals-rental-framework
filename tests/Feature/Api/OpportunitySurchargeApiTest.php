@@ -15,6 +15,7 @@ use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
@@ -23,7 +24,10 @@ beforeEach(function () {
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
 });
 
-function wireOpportunityWithLine(): array
+/**
+ * @return array{0: Opportunity, 1: int}
+ */
+function wireOpportunityWithLine(TestCase $test, Store $store): array
 {
     $product = Product::factory()->rental()->create();
     $definition = RateDefinition::factory()->create([
@@ -39,12 +43,12 @@ function wireOpportunityWithLine(): array
         'price' => 5000,
     ]);
 
-    $opportunity = Opportunity::factory()->for(test()->store)->create([
+    $opportunity = Opportunity::factory()->for($store)->create([
         'starts_at' => '2026-07-01T09:00:00Z',
         'ends_at' => '2026-07-02T17:00:00Z',
     ]);
 
-    $response = test()->postJson("/api/v1/opportunities/{$opportunity->id}/items", [
+    $response = $test->postJson("/api/v1/opportunities/{$opportunity->id}/items", [
         'name' => $product->name,
         'itemable_id' => $product->id,
         'itemable_type' => Product::class,
@@ -58,7 +62,7 @@ function wireOpportunityWithLine(): array
 }
 
 it('toggles a surcharge group on an opportunity via the API', function () {
-    [$opportunity] = wireOpportunityWithLine();
+    [$opportunity] = wireOpportunityWithLine($this, $this->store);
     $group = SurchargeGroup::factory()->create(['is_default' => false]);
     Surcharge::factory()->for($group, 'surchargeGroup')->percent('10.00')->create();
 
@@ -73,7 +77,7 @@ it('toggles a surcharge group on an opportunity via the API', function () {
 });
 
 it('overrides a line surcharge amount via the API', function () {
-    [$opportunity, $itemId] = wireOpportunityWithLine();
+    [$opportunity, $itemId] = wireOpportunityWithLine($this, $this->store);
     $group = SurchargeGroup::factory()->defaultGroup()->create();
     $surcharge = Surcharge::factory()->for($group, 'surchargeGroup')->percent('10.00')->create();
 
@@ -88,7 +92,7 @@ it('overrides a line surcharge amount via the API', function () {
 });
 
 it('disables a line surcharge via the API', function () {
-    [$opportunity, $itemId] = wireOpportunityWithLine();
+    [$opportunity, $itemId] = wireOpportunityWithLine($this, $this->store);
     $group = SurchargeGroup::factory()->defaultGroup()->create();
     $surcharge = Surcharge::factory()->for($group, 'surchargeGroup')->percent('10.00')->create();
 

@@ -29,7 +29,7 @@ function runConcurrentDocumentAllocations(int $storeId, string $documentType, in
 
     $results = Process::pool(function (Pool $pool) use ($closure, $command, $count): void {
         for ($i = 0; $i < $count; $i++) {
-            $pool->as($i)->path(base_path())->env([
+            $pool->as((string) $i)->path(base_path())->env([
                 'APP_ENV' => 'testing',
                 'DB_CONNECTION' => 'pgsql_testing',
                 'LARAVEL_INVOKABLE_CLOSURE' => base64_encode(
