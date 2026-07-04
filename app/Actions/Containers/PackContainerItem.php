@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\AvailabilityService;
+use App\Services\Containers\ContainerEventRecorder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +95,8 @@ class PackContainerItem
             // Create the container demand (or no-op for transport / hybrid-pool).
             $item->setRelation('container', $container);
             app(ContainerDemandResolver::class)->syncDemands($item);
+
+            app(ContainerEventRecorder::class)->itemPacked($container, $item);
 
             return $item;
         });

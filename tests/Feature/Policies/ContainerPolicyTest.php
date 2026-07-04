@@ -52,6 +52,7 @@ it('maps elevated actions to their permissions', function () {
 
     expect($this->policy->create($user))->toBeTrue()
         ->and($this->policy->createTemporary($user))->toBeTrue()
+        ->and($this->policy->update($user, $container))->toBeTrue()
         ->and($this->policy->pack($user, $container))->toBeTrue()
         ->and($this->policy->packOverride($user, $container))->toBeTrue()
         ->and($this->policy->transfer($user, $container))->toBeTrue()

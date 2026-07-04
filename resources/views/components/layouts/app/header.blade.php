@@ -159,7 +159,7 @@
 
                 {{-- Resources mega dropdown --}}
                 <div class="nav-dropdown-wrapper">
-                    <button class="header-nav-item {{ ActiveRoute::is('products.*', 'product-groups.*', 'stock-levels.*') ? 'active' : '' }}" type="button">
+                    <button class="header-nav-item {{ ActiveRoute::is('products.*', 'product-groups.*', 'stock-levels.*', 'containers.*') ? 'active' : '' }}" type="button">
                         Resources
                         <svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
                     </button>
@@ -190,6 +190,15 @@
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Stock Levels</span>
                                         <span class="mega-item-desc">Inventory &amp; asset tracking</span>
+                                    </div>
+                                </a>
+                                @endcan
+                                @can('viewAny', App\Models\Container::class)
+                                <a href="{{ route('containers.index') }}" class="mega-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}" wire:navigate>
+                                    <flux:icon.cube-transparent class="mega-item-icon" />
+                                    <div class="flex flex-col gap-px">
+                                        <span class="mega-item-label">Containers</span>
+                                        <span class="mega-item-desc">Cases, flightcases &amp; kits</span>
                                     </div>
                                 </a>
                                 @endcan
@@ -324,13 +333,15 @@
                                         <span class="mega-item-desc">Scan &amp; receive returns</span>
                                     </div>
                                 </a>
-                                <a href="#" class="mega-item">
+                                @can('viewAny', App\Models\Container::class)
+                                <a href="{{ route('containers.index') }}" class="mega-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}" wire:navigate>
                                     <flux:icon.cube-transparent class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Containers</span>
                                         <span class="mega-item-desc">Cases, flightcases &amp; kits</span>
                                     </div>
                                 </a>
+                                @endcan
                             </div>
                             <div>
                                 <div class="mega-group-label">Inspections</div>
@@ -598,6 +609,11 @@
                             <flux:icon.archive-box class="!size-[15px]" /> Stock Levels
                         </a>
                     @endcan
+                    @can('viewAny', App\Models\Container::class)
+                        <a class="sidebar-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}" href="{{ route('containers.index') }}" wire:navigate x-on:click="mobileNav = false">
+                            <flux:icon.cube-transparent class="!size-[15px]" /> Containers
+                        </a>
+                    @endcan
                 @endcanany
 
                 {{-- Services / Finance / Operations placeholders (ungated until modules ship). --}}
@@ -650,9 +666,11 @@
                 <a class="sidebar-item" href="#">
                     <flux:icon.qr-code class="!size-[15px]" /> Global Check-in
                 </a>
-                <a class="sidebar-item" href="#">
-                    <flux:icon.cube-transparent class="!size-[15px]" /> Containers
-                </a>
+                @can('viewAny', App\Models\Container::class)
+                    <a class="sidebar-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}" href="{{ route('containers.index') }}" wire:navigate x-on:click="mobileNav = false">
+                        <flux:icon.cube-transparent class="!size-[15px]" /> Containers
+                    </a>
+                @endcan
 
                 <div class="sidebar-group-label">Operations</div>
                 <a class="sidebar-item" href="#">

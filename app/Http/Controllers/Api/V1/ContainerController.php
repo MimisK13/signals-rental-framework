@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Containers\CreateContainer;
+use App\Actions\Containers\CreateTemporaryContainer;
 use App\Actions\Containers\PackContainerItem;
 use App\Actions\Containers\UnpackContainerItem;
+use App\Actions\Containers\UpdateContainer;
 use App\Data\Containers\ContainerData;
+use App\Data\Containers\CreateContainerData;
+use App\Data\Containers\CreateTemporaryContainerData;
 use App\Data\Containers\PackContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
+use App\Data\Containers\UpdateContainerData;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Models\Container;
@@ -16,10 +22,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * API surface for the container availability subset (serialised-containers.md,
- * M5-3b). Only the reads (list/show) and the pack/unpack availability write
- * surface are exposed here — the broader container lifecycle (seal, dissolve,
- * scan, repack, dispatch, return) stays Phase-4 and is intentionally absent.
+ * API surface for containers (serialised-containers.md). Read, create,
+ * update, and pack/unpack are exposed here — seal, dissolve, dispatch, return,
+ * and repack stay in later Phase-4 slices.
  *
  * Pack/unpack delegate to the existing {@see PackContainerItem} /
  * {@see UnpackContainerItem} actions, which create/release the container demand
@@ -106,6 +111,51 @@ class ContainerController extends Controller
             ContainerData::fromModel($container)->toArray(),
             'container',
         );
+    }
+
+    /**
+     * Create a product-backed container from a containerable serialised item.
+     */
+    #[ApiResponse(201, 'Container created')]
+    public function store(Request $request): JsonResponse
+    {
+        $this->authorizeApi('containers.create', 'containers:write');
+
+        $data = CreateContainerData::from($request->validate(CreateContainerData::rules()));
+
+        $container = (new CreateContainer)($data);
+
+        return $this->respondWith($container->toArray(), 'container', Response::HTTP_CREATED);
+    }
+
+    /**
+     * Create a barcode-only temporary container.
+     */
+    #[ApiResponse(201, 'Temporary container created')]
+    public function storeTemporary(Request $request): JsonResponse
+    {
+        $this->authorizeApi('containers.create_temporary', 'containers:write');
+
+        $data = CreateTemporaryContainerData::from($request->validate(CreateTemporaryContainerData::rules()));
+
+        $container = (new CreateTemporaryContainer)($data);
+
+        return $this->respondWith($container->toArray(), 'container', Response::HTTP_CREATED);
+    }
+
+    /**
+     * Update an open container's name, barcode, or notes.
+     */
+    #[ApiResponse(200, 'Container updated')]
+    public function update(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.create', 'containers:write');
+
+        $data = UpdateContainerData::from($request->validate(UpdateContainerData::rules()));
+
+        $result = (new UpdateContainer)($container, $data);
+
+        return $this->respondWith($result->toArray(), 'container');
     }
 
     /**

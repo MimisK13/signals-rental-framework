@@ -30,6 +30,11 @@ class ContainerPolicy
         return $user->can('containers.create_temporary');
     }
 
+    public function update(User $user, Container $container): bool
+    {
+        return $user->can('containers.create') && $this->canAccessContainerStore($user, $container);
+    }
+
     public function pack(User $user, Container $container): bool
     {
         return $user->can('containers.pack') && $this->canAccessContainerStore($user, $container);

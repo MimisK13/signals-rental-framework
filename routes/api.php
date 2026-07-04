@@ -227,13 +227,16 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Stock Levels
     Route::apiResource('stock_levels', StockLevelController::class)->names('api.v1.stock_levels');
 
-    // Containers (M5-3b availability subset — read + pack/unpack only; the full
-    // seal/dissolve/scan/dispatch/return lifecycle is Phase-4). The pack/unpack
-    // sub-actions are declared before the resource routes so the explicit verbs win.
+    // Containers — routes bind by public UUID ({@see Container::resolveRouteBinding})
+    // with integer-id fallback for backward compatibility. The pack/unpack and
+    // temporary create routes are declared before the {container} segment routes.
+    Route::post('containers/temporary', [ContainerController::class, 'storeTemporary'])->name('api.v1.containers.temporary.store');
     Route::post('containers/{container}/pack', [ContainerController::class, 'pack'])->name('api.v1.containers.pack');
     Route::post('containers/{container}/unpack', [ContainerController::class, 'unpack'])->name('api.v1.containers.unpack');
     Route::get('containers', [ContainerController::class, 'index'])->name('api.v1.containers.index');
+    Route::post('containers', [ContainerController::class, 'store'])->name('api.v1.containers.store');
     Route::get('containers/{container}', [ContainerController::class, 'show'])->name('api.v1.containers.show');
+    Route::patch('containers/{container}', [ContainerController::class, 'update'])->name('api.v1.containers.update');
 
     // Availability (read-only: point query via ?date, range query via ?from&?to).
     // The static calendar/shortages grids and the {product}/gantt bar view are

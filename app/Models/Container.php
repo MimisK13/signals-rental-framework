@@ -131,6 +131,27 @@ class Container extends Model implements HasSchema
     }
 
     /**
+     * Public URLs use the stable UUID (serialised-containers.md §API).
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
+    /**
+     * Resolve by UUID (canonical) or integer id (backward compatibility for
+     * existing integrations that still address containers by primary key).
+     */
+    public function resolveRouteBinding($value, $field = null): ?static
+    {
+        if (is_numeric($value)) {
+            return static::query()->whereKey((int) $value)->first();
+        }
+
+        return static::query()->where('uuid', $value)->first();
+    }
+
+    /**
      * The serialised housing asset (null for temporary containers).
      *
      * @return BelongsTo<StockLevel, $this>

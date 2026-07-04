@@ -25,7 +25,7 @@ final class CoreAbilityDefinitions
             'stock:write' => ['label' => 'Write stock levels & transactions', 'description' => 'Write stock levels & transactions'],
             'availability:read' => ['label' => 'Read product availability', 'description' => 'Read product availability'],
             'containers:read' => ['label' => 'Read containers & contents', 'description' => 'Read containers & contents'],
-            'containers:write' => ['label' => 'Pack & unpack containers', 'description' => 'Pack & unpack containers'],
+            'containers:write' => ['label' => 'Manage containers', 'description' => 'Create, update, pack & unpack containers'],
             'kits:read' => ['label' => 'Read kit compositions', 'description' => 'Read kit compositions'],
             'kits:write' => ['label' => 'Manage kit compositions', 'description' => 'Manage kit compositions'],
             'activities:read' => ['label' => 'Read activities', 'description' => 'Read activities'],

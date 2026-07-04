@@ -147,6 +147,10 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
     Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
 
+    // Containers (P49 scaffold — full warehouse UI in P55)
+    Volt::route('containers', 'containers.index')->name('containers.index');
+    Volt::route('containers/{container}', 'containers.show')->name('containers.show');
+
     // Opportunities
     //
     // Named web routes resolve now so route('opportunities.*') works everywhere

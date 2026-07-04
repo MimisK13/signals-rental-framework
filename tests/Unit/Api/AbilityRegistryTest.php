@@ -26,7 +26,7 @@ function legacyApiTokenAbilities(): array
         'stock:write' => 'Write stock levels & transactions',
         'availability:read' => 'Read product availability',
         'containers:read' => 'Read containers & contents',
-        'containers:write' => 'Pack & unpack containers',
+        'containers:write' => 'Manage containers',
         'kits:read' => 'Read kit compositions',
         'kits:write' => 'Manage kit compositions',
         'activities:read' => 'Read activities',
@@ -37,7 +37,15 @@ function legacyApiTokenAbilities(): array
         'shortages:write' => 'Write shortage resolutions',
         'rates:read' => 'Read rate definitions & product rates',
         'rates:write' => 'Write rate definitions & product rates',
+        'pricing:read' => 'Read pricing categories',
+        'pricing:write' => 'Write pricing categories',
         'schema:read' => 'Read schema / field metadata',
+        'documents:read' => 'Read documents',
+        'documents:write' => 'Write documents',
+        'invoices:read' => 'Read invoices',
+        'invoices:write' => 'Write invoices',
+        'payments:read' => 'Read payments',
+        'payments:write' => 'Write payments',
         'custom-fields:read' => 'Read custom fields',
         'custom-fields:write' => 'Write custom fields',
         'static-data:read' => 'Read static data (lists)',
@@ -53,6 +61,8 @@ function legacyApiTokenAbilities(): array
         'webhooks:manage' => 'Manage webhooks',
         'system:read' => 'Read system info',
         'action-log:read' => 'Read action logs',
+        'api-usage:read' => 'Read API usage',
+        'api-log:read' => 'Read API request logs',
     ];
 }
 
