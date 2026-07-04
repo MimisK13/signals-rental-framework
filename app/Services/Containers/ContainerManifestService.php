@@ -4,6 +4,8 @@ namespace App\Services\Containers;
 
 use App\Data\Containers\ContainerComplianceData;
 use App\Data\Containers\ContainerComplianceSlotData;
+use App\Enums\ContainerAvailabilityMode;
+use App\Enums\KitComponentBinding;
 use App\Models\Container;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
@@ -228,6 +230,109 @@ class ContainerManifestService
     public function recursiveItemCount(Container $container): int
     {
         return array_sum($this->manifestQuantities($container));
+    }
+
+    /**
+     * Product-quantity manifest for kit/hybrid dispatch validation — the kit housing
+     * product (qty 1) plus any hybrid pool-binding content products that need their
+     * own opportunity line items.
+     *
+     * @return array<int, int> product_id => quantity
+     */
+    public function kitDispatchProductQuantities(Container $container): array
+    {
+        $quantities = [];
+
+        if ($container->product_id !== null) {
+            $quantities[(int) $container->product_id] = 1;
+        }
+
+        if ($container->availabilityMode() !== ContainerAvailabilityMode::Hybrid) {
+            return $quantities;
+        }
+
+        $contentQuantities = $this->dispatchContentQuantities(
+            $container,
+            $this->resolveMaxDepth($container),
+        );
+
+        foreach ($contentQuantities as $productId => $quantity) {
+            if ($this->isFixedBinding($container, (int) $productId)) {
+                continue;
+            }
+
+            $quantities[(int) $productId] = ($quantities[(int) $productId] ?? 0) + $quantity;
+        }
+
+        return $quantities;
+    }
+
+    /**
+     * Asset manifest for kit/hybrid dispatch execution.
+     *
+     * Each asset allocates to a line matching its product. Fixed kit/hybrid
+     * component lines are auto-added at dispatch when absent (the opportunity
+     * books the kit product only; see serialised-containers.md §Step 7).
+     *
+     * @return list<array{serialised_item_id: int, product_id: int, container_stock_level_id: int|null}>
+     */
+    public function kitDispatchAssets(Container $container): array
+    {
+        return $this->dispatchAssets($container);
+    }
+
+    /**
+     * Stock level ids for every asset in a kit tree (housing + packed contents).
+     *
+     * @return list<int>
+     */
+    public function kitStockLevelIds(Container $container): array
+    {
+        return array_map(
+            static fn (array $asset): int => (int) $asset['serialised_item_id'],
+            $this->dispatchAssets($container),
+        );
+    }
+
+    /**
+     * Whether a product in this container dispatches on the kit housing line.
+     */
+    public function isFixedBinding(Container $container, int $productId): bool
+    {
+        if ($container->product_id !== null && (int) $container->product_id === $productId) {
+            return true;
+        }
+
+        $mode = $container->availabilityMode();
+
+        if ($mode === ContainerAvailabilityMode::Kit) {
+            return true;
+        }
+
+        if ($mode === ContainerAvailabilityMode::Transport) {
+            return false;
+        }
+
+        $container->loadMissing('product');
+
+        if ($container->product === null) {
+            return false;
+        }
+
+        return $container->product->components()
+            ->where('component_product_id', $productId)
+            ->where('binding', KitComponentBinding::Fixed->value)
+            ->exists();
+    }
+
+    /**
+     * Leaf content quantities for kit auto-line creation (excludes housing rows).
+     *
+     * @return array<int, int>
+     */
+    public function kitContentProductQuantities(Container $container): array
+    {
+        return $this->dispatchContentQuantities($container, $this->resolveMaxDepth($container));
     }
 
     /**

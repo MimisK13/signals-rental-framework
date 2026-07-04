@@ -49,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $dissolved_reason
  * @property Carbon|null $dispatched_at
  * @property Carbon|null $returned_at
+ * @property Carbon|null $checkin_verification_required_at
  * @property int|null $opportunity_id
  * @property string|null $notes
  * @property Carbon|null $created_at
@@ -81,6 +82,7 @@ class Container extends Model implements HasSchema
         'dissolved_reason',
         'dispatched_at',
         'returned_at',
+        'checkin_verification_required_at',
         'opportunity_id',
         'notes',
     ];
@@ -99,6 +101,7 @@ class Container extends Model implements HasSchema
             'dissolved_at' => 'datetime',
             'dispatched_at' => 'datetime',
             'returned_at' => 'datetime',
+            'checkin_verification_required_at' => 'datetime',
         ];
     }
 

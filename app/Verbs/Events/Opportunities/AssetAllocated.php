@@ -51,6 +51,7 @@ class AssetAllocated extends Event
         public int $opportunity_item_id = 0,
         public int $stock_level_id = 0,
         public ?string $allocated_at = null,
+        public bool $ignore_availability = false,
     ) {}
 
     public function validate(AssetAssignmentState $state): void
@@ -111,7 +112,7 @@ class AssetAllocated extends Event
         }
 
         // Over-allocation guard: the asset must be free for the line's window.
-        if ($item !== null && $stockLevel !== null) {
+        if ($item !== null && $stockLevel !== null && ! $this->ignore_availability) {
             $this->assertAssetAvailableForItem($item, $this->stock_level_id);
         }
     }

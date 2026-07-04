@@ -72,6 +72,7 @@ class ContainerPolicy
 
     /**
      * Transport-mode dispatch against an opportunity (serialised-containers.md §Permissions).
+     * Kit/hybrid persistent dispatch uses the same gate.
      *
      * Requires opportunity dispatch permission ({@see opportunities.edit}) plus
      * {@see containers.view}. Does not require {@see containers.dissolve}.
@@ -81,6 +82,24 @@ class ContainerPolicy
         return $user->can('containers.view')
             && $user->can('opportunities.edit')
             && $this->canAccessContainerStore($user, $container);
+    }
+
+    /**
+     * Kit/hybrid return — mirrors {@see ReturnAsset} ({@see opportunities.edit}).
+     */
+    public function return(User $user, Container $container): bool
+    {
+        return $user->can('containers.view')
+            && $user->can('opportunities.edit')
+            && $this->canAccessContainerStore($user, $container);
+    }
+
+    /**
+     * Clear a parent-then-verify check-in flag after condition assessment.
+     */
+    public function verifyCheckin(User $user, Container $container): bool
+    {
+        return $this->return($user, $container);
     }
 
     public function manageTemplates(User $user): bool

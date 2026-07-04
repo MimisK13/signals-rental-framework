@@ -44,7 +44,74 @@ class ContainerDispatchValidator
         bool $autoAddMissing = true,
         ?array $approvedAmendments = null,
     ): array {
-        $productQuantities = $this->manifests->dispatchProductQuantities($container);
+        return $this->validateProductQuantities(
+            container: $container,
+            opportunity: $opportunity,
+            actor: $actor,
+            productQuantities: $this->manifests->dispatchProductQuantities($container),
+            autoAddMissing: $autoAddMissing,
+            approvedAmendments: $approvedAmendments,
+            useFullManifestForPlacement: true,
+        );
+    }
+
+    /**
+     * Kit/hybrid dispatch validation (serialised-containers.md §Step 7).
+     *
+     * Validates the kit housing product plus hybrid pool-binding contents only.
+     * Fixed-binding contents are covered by the kit line item.
+     *
+     * @param  list<ContainerDispatchAmendmentData>|null  $approvedAmendments
+     * @return array{
+     *     products: list<ContainerDispatchProductVerdictData>,
+     *     has_failures: bool,
+     *     has_prompts: bool,
+     *     has_auto_adds: bool,
+     *     auto_adds: list<ContainerDispatchProductVerdictData>,
+     *     prompts: list<ContainerDispatchProductVerdictData>,
+     *     failures: list<ContainerDispatchProductVerdictData>,
+     * }
+     */
+    public function validateKit(
+        Container $container,
+        Opportunity $opportunity,
+        User $actor,
+        bool $autoAddMissing = true,
+        ?array $approvedAmendments = null,
+    ): array {
+        return $this->validateProductQuantities(
+            container: $container,
+            opportunity: $opportunity,
+            actor: $actor,
+            productQuantities: $this->manifests->kitDispatchProductQuantities($container),
+            autoAddMissing: $autoAddMissing,
+            approvedAmendments: $approvedAmendments,
+            useFullManifestForPlacement: false,
+        );
+    }
+
+    /**
+     * @param  array<int, int>  $productQuantities
+     * @param  list<ContainerDispatchAmendmentData>|null  $approvedAmendments
+     * @return array{
+     *     products: list<ContainerDispatchProductVerdictData>,
+     *     has_failures: bool,
+     *     has_prompts: bool,
+     *     has_auto_adds: bool,
+     *     auto_adds: list<ContainerDispatchProductVerdictData>,
+     *     prompts: list<ContainerDispatchProductVerdictData>,
+     *     failures: list<ContainerDispatchProductVerdictData>,
+     * }
+     */
+    protected function validateProductQuantities(
+        Container $container,
+        Opportunity $opportunity,
+        User $actor,
+        array $productQuantities,
+        bool $autoAddMissing,
+        ?array $approvedAmendments,
+        bool $useFullManifestForPlacement,
+    ): array {
         $approvedByProduct = $this->indexApprovedAmendments($approvedAmendments);
         $canDispatchAddItems = $actor->can('opportunities.dispatch_add_items');
 
@@ -71,6 +138,7 @@ class ContainerDispatchValidator
                 $container,
                 $opportunity,
                 $productId,
+                $useFullManifestForPlacement,
             );
 
             $remainingToPlace = max(0, $containerQuantity - $alreadyOnOpportunity);
@@ -221,8 +289,13 @@ class ContainerDispatchValidator
         Container $container,
         Opportunity $opportunity,
         int $productId,
+        bool $useFullManifest = true,
     ): int {
-        $stockLevelIds = collect($this->manifests->dispatchAssets($container))
+        $manifestAssets = $useFullManifest
+            ? $this->manifests->dispatchAssets($container)
+            : $this->manifests->kitDispatchAssets($container);
+
+        $stockLevelIds = collect($manifestAssets)
             ->filter(fn (array $asset): bool => (int) $asset['product_id'] === $productId)
             ->pluck('serialised_item_id');
 

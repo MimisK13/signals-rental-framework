@@ -223,16 +223,6 @@ describe('DispatchContainer guards', function () {
         ])))->toThrow(ValidationException::class);
     });
 
-    it('rejects kit-mode containers', function () {
-        $container = Container::factory()->kit()->sealed()->create(['store_id' => $this->store->id]);
-        $product = Product::factory()->serialised()->create();
-        $opportunity = p52DispatchOrder($this->store, [$product->id => '1']);
-
-        expect(fn () => (new DispatchContainer)($container, DispatchContainerData::from([
-            'opportunity_id' => $opportunity->id,
-        ])))->toThrow(ValidationException::class);
-    });
-
     it('rejects quotation-state opportunities', function () {
         $container = p52TransportContainer($this->store);
         $product = Product::factory()->serialised()->create();

@@ -121,6 +121,51 @@ class ContainerEventRecorder
         ]);
     }
 
+    public function dispatched(Container $container, int $itemCount): void
+    {
+        event(new AuditableEvent($container, 'container.dispatched', newValues: [
+            'status' => $container->status->value,
+            'opportunity_id' => $container->opportunity_id,
+            'item_count' => $itemCount,
+        ]));
+
+        app(WebhookService::class)->dispatch('container.dispatched', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'opportunity_id' => $container->opportunity_id,
+            'item_count' => $itemCount,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function returned(Container $container, int $itemCount): void
+    {
+        event(new AuditableEvent($container, 'container.returned', newValues: [
+            'status' => $container->status->value,
+            'opportunity_id' => $container->opportunity_id,
+            'item_count' => $itemCount,
+            'checkin_verification_required_at' => $container->checkin_verification_required_at?->toIso8601String(),
+        ]));
+
+        app(WebhookService::class)->dispatch('container.returned', [
+            'container' => ContainerData::fromModel($container)->toArray(),
+            'container_id' => $container->id,
+            'container_uuid' => $container->uuid,
+            'opportunity_id' => $container->opportunity_id,
+            'item_count' => $itemCount,
+            'checkin_verification_required_at' => $container->checkin_verification_required_at?->toIso8601String(),
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    public function checkinVerified(Container $container): void
+    {
+        event(new AuditableEvent($container, 'container.checkin_verified', newValues: [
+            'checkin_verification_required_at' => null,
+        ]));
+    }
+
     public function itemTransferred(Container $source, Container $target, ContainerItem $item): void
     {
         event(new AuditableEvent($item, 'container.item.transferred', metadata: [
