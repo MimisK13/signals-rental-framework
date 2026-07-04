@@ -75,6 +75,7 @@ class ShortageResolution extends Model implements HasSchema
         'cancelled_at',
         'cancellation_reason',
         'notes',
+        'virtual_stock_intake_id',
     ];
 
     /**

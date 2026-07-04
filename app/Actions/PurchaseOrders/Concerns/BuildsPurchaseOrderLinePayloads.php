@@ -27,7 +27,9 @@ trait BuildsPurchaseOrderLinePayloads
             $unitCost = array_key_exists('unit_cost', $line) && $line['unit_cost'] !== null
                 ? (int) $line['unit_cost']
                 : null;
-            $supplierCostId = null;
+            $supplierCostId = isset($line['supplier_cost_id'])
+                ? (int) $line['supplier_cost_id']
+                : null;
 
             if ($productId !== null && $unitCost === null) {
                 $supplierCost = $resolver->resolve($productId, $supplierId, $storeId);

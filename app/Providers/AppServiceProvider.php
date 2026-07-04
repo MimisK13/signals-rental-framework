@@ -111,6 +111,7 @@ use App\Services\Shortages\PipelineShortageEmitter;
 use App\Services\Shortages\Resolvers\DateShiftResolver;
 use App\Services\Shortages\Resolvers\PartialFulfilmentResolver;
 use App\Services\Shortages\Resolvers\QuoteReallocationResolver;
+use App\Services\Shortages\Resolvers\SubHireResolver;
 use App\Services\Shortages\Resolvers\SubstitutionResolver;
 use App\Services\Shortages\Resolvers\WaitlistResolver;
 use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
@@ -394,6 +395,7 @@ class AppServiceProvider extends ServiceProvider
             $registry->register(new ShortageResolverDefinition('date_shift', DateShiftResolver::class));
             $registry->register(new ShortageResolverDefinition('partial', PartialFulfilmentResolver::class));
             $registry->register(new ShortageResolverDefinition('waitlist', WaitlistResolver::class));
+            $registry->register(new ShortageResolverDefinition('subhire', SubHireResolver::class));
 
             return $registry;
         });

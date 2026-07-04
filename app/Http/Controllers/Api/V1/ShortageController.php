@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Shortages\AcknowledgeOpportunityShortages;
+use App\Actions\Shortages\ApplyBatchShortageResolution;
 use App\Actions\Shortages\ApplyShortageResolution;
 use App\Actions\Shortages\CancelShortageResolution;
 use App\Actions\Shortages\ConfirmShortageResolution;
@@ -11,6 +12,7 @@ use App\Actions\Shortages\FailShortageResolution;
 use App\Actions\Shortages\FulfillShortageResolution;
 use App\Actions\Shortages\StartShortageResolution;
 use App\Data\Shortages\AcknowledgeShortageData;
+use App\Data\Shortages\ApplyBatchResolutionData;
 use App\Data\Shortages\ApplyResolutionData;
 use App\Data\Shortages\ShortageData;
 use App\Data\Shortages\ShortageResolutionData;
@@ -20,11 +22,13 @@ use App\Http\Traits\FiltersQueries;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\ShortageResolution;
+use App\Services\Shortages\ShortageBatchGrouper;
 use App\Services\Shortages\ShortageConfirmationGate;
 use App\Services\Shortages\ShortageDetector;
 use App\Services\Shortages\ShortageEventRecorder;
 use App\Services\Shortages\ShortageResolverRegistry;
 use App\ValueObjects\Shortage;
+use App\ValueObjects\ShortageCollection;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -202,6 +206,87 @@ class ShortageController extends Controller
         $result = (new ApplyShortageResolution(
             app(ShortageDetector::class),
             app(ShortageResolverRegistry::class),
+        ))($data);
+
+        $payload = [
+            'resolution' => $result->resolution !== null
+                ? ShortageResolutionData::fromModel($result->resolution->load('items'))->toArray()
+                : null,
+            'status' => $result->status->value,
+            'message' => $result->message,
+            'requires_followup' => $result->requiresFollowup,
+        ];
+
+        return response()->json($payload, Response::HTTP_CREATED);
+    }
+
+    /**
+     * List batch resolver options for a set of line items sharing product + store.
+     */
+    #[ApiResponse(200, 'Batch resolver options', type: 'array{groups: list<array{product_id: int, product_name: string, store_id: int, total_shortfall: int, opportunity_count: int, opportunity_item_ids: list<int>, resolvers: list<array{resolver_key: string, name: string, options: list<array<string, mixed>>}>}>}')]
+    public function batchResolvers(Request $request): JsonResponse
+    {
+        $this->authorizeApi('shortages.view', 'shortages:read');
+
+        $validated = $request->validate([
+            'opportunity_item_ids' => ['required', 'array', 'min:2'],
+            'opportunity_item_ids.*' => ['required', 'integer', 'distinct', 'exists:opportunity_items,id'],
+        ]);
+
+        $shortages = new ShortageCollection;
+
+        foreach ($validated['opportunity_item_ids'] as $itemId) {
+            $item = OpportunityItem::query()->findOrFail($itemId);
+            $shortage = app(ShortageDetector::class)->forItem($item);
+
+            if ($shortage !== null && $shortage->isUnresolved()) {
+                $shortages->push($shortage);
+            }
+        }
+
+        $grouper = app(ShortageBatchGrouper::class);
+        $registry = app(ShortageResolverRegistry::class);
+        $groups = [];
+
+        foreach ($grouper->groupsFrom($shortages) as $group) {
+            $groups[] = [
+                'product_id' => $group->productId,
+                'product_name' => $group->productName,
+                'store_id' => $group->storeId,
+                'total_shortfall' => $group->totalShortfall,
+                'opportunity_count' => $group->opportunityCount(),
+                'opportunity_item_ids' => $group->opportunityItemIds(),
+                'resolvers' => array_map(
+                    static fn ($resolver): array => [
+                        'resolver_key' => $resolver->key(),
+                        'name' => $resolver->name(),
+                        'options' => array_map(
+                            static fn ($option): array => $option->toArray(),
+                            $resolver->getBatchOptions($group),
+                        ),
+                    ],
+                    $registry->batchApplicableTo($group),
+                ),
+            ];
+        }
+
+        return response()->json(['groups' => $groups]);
+    }
+
+    /**
+     * Apply a batch resolver option across multiple line items.
+     */
+    #[ApiResponse(201, 'Batch resolution applied', type: 'array{resolution: array{id: int, resolver_key: string, status: string}, status: string, message: string, requires_followup: bool}')]
+    public function batchResolve(Request $request): JsonResponse
+    {
+        $this->authorizeApi('shortages.resolve', 'shortages:write');
+
+        $data = ApplyBatchResolutionData::from($request->validate(ApplyBatchResolutionData::rules()));
+
+        $result = (new ApplyBatchShortageResolution(
+            app(ShortageDetector::class),
+            app(ShortageResolverRegistry::class),
+            app(ShortageBatchGrouper::class),
         ))($data);
 
         $payload = [

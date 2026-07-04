@@ -322,6 +322,8 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('opportunities/{opportunity}/items/{item}/shortage_resolvers', [ShortageController::class, 'resolvers'])->name('api.v1.opportunities.shortage_resolvers');
     Route::post('opportunities/{opportunity}/shortages/acknowledge', [ShortageController::class, 'acknowledge'])->name('api.v1.opportunities.shortages.acknowledge');
     Route::post('shortage_resolutions', [ShortageController::class, 'resolve'])->name('api.v1.shortage_resolutions.store');
+    Route::get('shortage_resolutions/batch', [ShortageController::class, 'batchResolvers'])->name('api.v1.shortage_resolutions.batch.index');
+    Route::post('shortage_resolutions/batch', [ShortageController::class, 'batchResolve'])->name('api.v1.shortage_resolutions.batch.store');
     // Resolution status-transition lifecycle (§8.3): progress/cancel/fail a
     // recorded resolution. Each transition validates the §8.3 matrix (422 on an
     // illegal move) and emits the matching `shortage.resolution.*` event.
