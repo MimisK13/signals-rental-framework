@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -48,6 +49,9 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public bool $fullCreditNote = true;
 
+    /** @var array<int, array{invoice_item_id: int, quantity: string}> */
+    public array $creditNoteLines = [];
+
     public function mount(Invoice $invoice): void
     {
         Gate::authorize('view', $invoice);
@@ -61,7 +65,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'items.opportunityItem',
             'taxes',
             'payments',
-            'creditNotes',
+            'creditNotes.items',
         ]);
     }
 
@@ -185,9 +189,37 @@ new #[Layout('components.layouts.app')] class extends Component {
         });
     }
 
+    public function openCreditNoteModal(): void
+    {
+        $this->fullCreditNote = true;
+        $this->creditNoteNotes = null;
+        $this->resetCreditNoteLines();
+        $this->showCreditNoteModal = true;
+    }
+
+    public function updatedFullCreditNote(bool $fullCreditNote): void
+    {
+        if (! $fullCreditNote) {
+            $this->resetCreditNoteLines();
+        }
+    }
+
     public function issueCreditNote(): void
     {
-        $lines = $this->fullCreditNote ? null : [];
+        $lines = null;
+
+        if (! $this->fullCreditNote) {
+            $this->validatePartialCreditNoteLines();
+
+            $lines = collect($this->creditNoteLines)
+                ->filter(fn (array $line): bool => bccomp($line['quantity'], '0', 2) > 0)
+                ->map(fn (array $line): array => [
+                    'invoice_item_id' => $line['invoice_item_id'],
+                    'quantity' => $line['quantity'],
+                ])
+                ->values()
+                ->all();
+        }
 
         $this->runVerbsTransition(function () use ($lines): void {
             (new IssueCreditNote)($this->invoice, IssueCreditNoteData::from([
@@ -198,6 +230,82 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->showCreditNoteModal = false;
             $this->refreshInvoice();
         });
+    }
+
+    public function remainingCreditableQuantity(int $invoiceItemId): string
+    {
+        $item = $this->invoice->items->firstWhere('id', $invoiceItemId);
+
+        if ($item === null) {
+            return '0.00';
+        }
+
+        $credited = $this->creditedQuantitiesByInvoiceItem()[$invoiceItemId] ?? '0.00';
+        $remaining = bcsub((string) $item->quantity, $credited, 2);
+
+        return bccomp($remaining, '0', 2) < 0 ? '0.00' : $remaining;
+    }
+
+    private function validatePartialCreditNoteLines(): void
+    {
+        $rules = [];
+        $messages = [];
+
+        foreach ($this->creditNoteLines as $itemId => $line) {
+            $remaining = $this->remainingCreditableQuantity((int) $itemId);
+            $rules["creditNoteLines.{$itemId}.quantity"] = ['nullable', 'numeric', 'min:0', 'max:'.$remaining];
+            $messages["creditNoteLines.{$itemId}.quantity.max"] = "Credit quantity cannot exceed the remaining creditable quantity ({$remaining}).";
+        }
+
+        $this->validate($rules, $messages);
+
+        $selected = collect($this->creditNoteLines)
+            ->filter(fn (array $line): bool => bccomp($line['quantity'], '0', 2) > 0);
+
+        if ($selected->isEmpty()) {
+            throw ValidationException::withMessages([
+                'creditNoteLines' => ['At least one invoice line must have a credit quantity greater than zero.'],
+            ]);
+        }
+    }
+
+    private function resetCreditNoteLines(): void
+    {
+        $this->creditNoteLines = [];
+
+        foreach ($this->invoice->items as $item) {
+            $remaining = $this->remainingCreditableQuantity((int) $item->id);
+
+            if (bccomp($remaining, '0', 2) <= 0) {
+                continue;
+            }
+
+            $this->creditNoteLines[$item->id] = [
+                'invoice_item_id' => $item->id,
+                'quantity' => '0',
+            ];
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function creditedQuantitiesByInvoiceItem(): array
+    {
+        $quantities = [];
+
+        foreach ($this->invoice->creditNotes as $creditNote) {
+            foreach ($creditNote->items as $creditNoteItem) {
+                $itemId = (int) $creditNoteItem->invoice_item_id;
+                $quantities[$itemId] = bcadd(
+                    $quantities[$itemId] ?? '0',
+                    (string) $creditNoteItem->quantity,
+                    2,
+                );
+            }
+        }
+
+        return $quantities;
     }
 
     private function refreshInvoice(): void
@@ -211,7 +319,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'items.opportunityItem',
             'taxes',
             'payments',
-            'creditNotes',
+            'creditNotes.items',
         ]);
     }
 
@@ -278,7 +386,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <button type="button" wire:click="openPaymentModal" class="s-btn s-btn-sm s-btn-ghost">Record Payment</button>
             @endif
             @if($canCredit)
-                <button type="button" wire:click="$set('showCreditNoteModal', true)" class="s-btn s-btn-sm s-btn-ghost">Credit Note</button>
+                <button type="button" wire:click="openCreditNoteModal" class="s-btn s-btn-sm s-btn-ghost">Credit Note</button>
             @endif
             @if($invoice->status !== 'draft')
                 <button type="button" wire:click="downloadPdf" class="s-btn s-btn-sm s-btn-ghost">Download PDF</button>
@@ -514,10 +622,44 @@ new #[Layout('components.layouts.app')] class extends Component {
         </form>
     </flux:modal>
 
-    <flux:modal wire:model="showCreditNoteModal" class="max-w-md">
+    <flux:modal wire:model="showCreditNoteModal" class="max-w-lg">
         <flux:heading size="lg">Issue Credit Note</flux:heading>
         <form wire:submit="issueCreditNote" class="mt-4 space-y-4">
-            <flux:checkbox wire:model="fullCreditNote" label="Full credit (all line items)" />
+            <flux:checkbox wire:model.live="fullCreditNote" label="Full credit (all line items)" />
+
+            @if(! $fullCreditNote)
+                <div class="space-y-3">
+                    <p class="text-sm text-[var(--text-muted)]">Enter the quantity to credit for each line.</p>
+
+                    @foreach($invoice->items as $item)
+                        @php($remaining = $this->remainingCreditableQuantity($item->id))
+                        @if(bccomp($remaining, '0', 2) > 0)
+                            <flux:field wire:key="credit-line-{{ $item->id }}">
+                                <flux:label>
+                                    {{ $item->description }}
+                                    <span class="text-[var(--text-muted)]">
+                                        (qty {{ rtrim(rtrim(number_format((float) $item->quantity, 2), '0'), '.') }},
+                                        {{ $formatter->money($item->total, $item->currency_code) }},
+                                        max {{ $remaining }})
+                                    </span>
+                                </flux:label>
+                                <flux:input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="{{ $remaining }}"
+                                    wire:model="creditNoteLines.{{ $item->id }}.quantity"
+                                />
+                                <input type="hidden" wire:model="creditNoteLines.{{ $item->id }}.invoice_item_id" value="{{ $item->id }}" />
+                                <flux:error name="creditNoteLines.{{ $item->id }}.quantity" />
+                            </flux:field>
+                        @endif
+                    @endforeach
+
+                    <flux:error name="creditNoteLines" />
+                </div>
+            @endif
+
             <flux:field>
                 <flux:label>Notes</flux:label>
                 <flux:textarea wire:model="creditNoteNotes" rows="3" />

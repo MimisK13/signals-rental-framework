@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\MeteringChannel;
+use App\Models\InboundWebhookSource;
 use App\Models\RequestLog;
 use App\Models\UsageDaily;
 use App\Models\User;
@@ -192,6 +193,38 @@ it('preserves the token reference when the token still exists', function () {
 
     expect(RequestLog::query()->sole()->personal_access_token_id)->toBe($tokenId)
         ->and(UsageDaily::query()->sole()->personal_access_token_id)->toBe($tokenId);
+});
+
+it('records usage when incrementDailyUsage receives a deleted webhook source id', function () {
+    $source = InboundWebhookSource::factory()->create();
+    $sourceId = $source->id;
+    $source->delete();
+
+    app(UsageRecorder::class)->incrementDailyUsage([
+        'channel' => MeteringChannel::WebhookReceived->value,
+        'key' => 'stale-source',
+        'inbound_webhook_source_id' => $sourceId,
+        'personal_access_token_id' => null,
+        'resource' => 'stale-source',
+        'status_class' => '2xx',
+    ]);
+
+    expect(UsageDaily::query()->sole()->inbound_webhook_source_id)->toBeNull();
+});
+
+it('preserves webhook source reference when the source still exists', function () {
+    $source = InboundWebhookSource::factory()->create();
+
+    app(UsageRecorder::class)->incrementDailyUsage([
+        'channel' => MeteringChannel::WebhookReceived->value,
+        'key' => $source->slug,
+        'inbound_webhook_source_id' => $source->id,
+        'personal_access_token_id' => null,
+        'resource' => $source->slug,
+        'status_class' => '2xx',
+    ]);
+
+    expect(UsageDaily::query()->sole()->inbound_webhook_source_id)->toBe($source->id);
 });
 
 it('increments existing usage daily rollups instead of overwriting them', function () {

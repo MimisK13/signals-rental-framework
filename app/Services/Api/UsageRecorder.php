@@ -3,6 +3,7 @@
 namespace App\Services\Api;
 
 use App\Enums\MeteringChannel;
+use App\Models\InboundWebhookSource;
 use App\Models\RequestLog;
 use App\Models\UsageDaily;
 use App\Support\Api\MeteringStatusClass;
@@ -60,8 +61,10 @@ class UsageRecorder
         $dateString = $date instanceof Carbon ? $date->toDateString() : (string) $date;
         $channel = $dimensions['channel'];
         $key = $dimensions['key'];
-        $personalAccessTokenId = $dimensions['personal_access_token_id'] ?? null;
-        $inboundWebhookSourceId = $dimensions['inbound_webhook_source_id'] ?? null;
+        [$personalAccessTokenId, $inboundWebhookSourceId] = $this->sanitizeMeteringReferences(
+            $dimensions['personal_access_token_id'] ?? null,
+            $dimensions['inbound_webhook_source_id'] ?? null,
+        );
         $statusClass = $dimensions['status_class'];
 
         $dedupeKey = UsageDaily::computeDedupeKey(
@@ -142,6 +145,7 @@ class UsageRecorder
     private function nullifyMissingTokenReferences(array $entries): array
     {
         $tokenIds = [];
+        $sourceIds = [];
 
         foreach ($entries as $entry) {
             $tokenId = $entry['personal_access_token_id'] ?? null;
@@ -149,29 +153,71 @@ class UsageRecorder
             if ($tokenId !== null) {
                 $tokenIds[(int) $tokenId] = true;
             }
+
+            $sourceId = $entry['inbound_webhook_source_id'] ?? null;
+
+            if ($sourceId !== null) {
+                $sourceIds[(int) $sourceId] = true;
+            }
         }
 
-        if ($tokenIds === []) {
+        if ($tokenIds === [] && $sourceIds === []) {
             return $entries;
         }
 
-        $existing = array_flip(
-            PersonalAccessToken::query()
-                ->whereIn('id', array_keys($tokenIds))
-                ->pluck('id')
-                ->map(static fn ($id): int => (int) $id)
-                ->all(),
-        );
+        $existingTokens = $tokenIds === []
+            ? []
+            : array_flip(
+                PersonalAccessToken::query()
+                    ->whereIn('id', array_keys($tokenIds))
+                    ->pluck('id')
+                    ->map(static fn ($id): int => (int) $id)
+                    ->all(),
+            );
+
+        $existingSources = $sourceIds === []
+            ? []
+            : array_flip(
+                InboundWebhookSource::query()
+                    ->whereIn('id', array_keys($sourceIds))
+                    ->pluck('id')
+                    ->map(static fn ($id): int => (int) $id)
+                    ->all(),
+            );
 
         foreach ($entries as $index => $entry) {
             $tokenId = $entry['personal_access_token_id'] ?? null;
 
-            if ($tokenId !== null && ! isset($existing[(int) $tokenId])) {
+            if ($tokenId !== null && ! isset($existingTokens[(int) $tokenId])) {
                 $entries[$index]['personal_access_token_id'] = null;
+            }
+
+            $sourceId = $entry['inbound_webhook_source_id'] ?? null;
+
+            if ($sourceId !== null && ! isset($existingSources[(int) $sourceId])) {
+                $entries[$index]['inbound_webhook_source_id'] = null;
             }
         }
 
         return $entries;
+    }
+
+    /**
+     * @return array{0: int|null, 1: int|null}
+     */
+    private function sanitizeMeteringReferences(?int $personalAccessTokenId, ?int $inboundWebhookSourceId): array
+    {
+        if ($personalAccessTokenId !== null
+            && ! PersonalAccessToken::query()->whereKey($personalAccessTokenId)->exists()) {
+            $personalAccessTokenId = null;
+        }
+
+        if ($inboundWebhookSourceId !== null
+            && ! InboundWebhookSource::query()->whereKey($inboundWebhookSourceId)->exists()) {
+            $inboundWebhookSourceId = null;
+        }
+
+        return [$personalAccessTokenId, $inboundWebhookSourceId];
     }
 
     /**
