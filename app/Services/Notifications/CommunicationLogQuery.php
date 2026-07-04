@@ -48,7 +48,11 @@ class CommunicationLogQuery
      * Communication logs for billing emails tied to an invoice (P56).
      *
      * Billing comms log the member as subject; invoice linkage is via generated
-     * document attachments (`document:{id}`) on documents documentable to the invoice.
+     * document attachments stored on {@see CommunicationLog::$attachments} as a
+     * JSON array of string tokens, e.g. {@code ["document:42"]}. Matching uses
+     * {@code whereJsonContains} for exact array-element membership (SQLite +
+     * PostgreSQL JSON), not substring search — {@code document:5} must not match
+     * {@code document:50}.
      *
      * @return Builder<CommunicationLog>
      */
@@ -95,8 +99,7 @@ class CommunicationLogQuery
         return $this->forUser($user)
             ->where(function (Builder $builder) use ($documentIds): void {
                 foreach ($documentIds as $documentId) {
-                    $needle = 'document:'.$documentId;
-                    $builder->orWhere('attachments', 'like', '%'.$needle.'%');
+                    $builder->orWhereJsonContains('attachments', 'document:'.$documentId);
                 }
             });
     }

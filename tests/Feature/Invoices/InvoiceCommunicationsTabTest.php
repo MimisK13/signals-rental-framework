@@ -6,6 +6,7 @@ use App\Contracts\Documents\DocumentRenderer;
 use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Enums\DocumentOutputFormat;
 use App\Models\CommunicationLog;
+use App\Models\Document;
 use App\Models\DocumentSequence;
 use App\Models\Invoice;
 use App\Models\User;
@@ -78,6 +79,46 @@ it('lists invoice billing communications on the communications tab', function ()
     Volt::test('invoices.communications', ['invoice' => $invoice])
         ->assertSee('invoice.created')
         ->assertSee($member->name);
+});
+
+it('matches invoice communications by exact document attachment id without prefix collisions', function () {
+    $user = User::factory()->owner()->create();
+    $query = app(CommunicationLogQuery::class);
+
+    $invoiceForDocumentFive = Invoice::factory()->create();
+    $invoiceForDocumentFifty = Invoice::factory()->create();
+
+    Document::factory()->create([
+        'id' => 5,
+        'store_id' => $invoiceForDocumentFive->store_id,
+        'documentable_type' => (new Invoice)->getMorphClass(),
+        'documentable_id' => $invoiceForDocumentFive->id,
+        'document_type' => 'invoice',
+    ]);
+
+    Document::factory()->create([
+        'id' => 50,
+        'store_id' => $invoiceForDocumentFifty->store_id,
+        'documentable_type' => (new Invoice)->getMorphClass(),
+        'documentable_id' => $invoiceForDocumentFifty->id,
+        'document_type' => 'invoice',
+    ]);
+
+    CommunicationLog::factory()->create([
+        'attachments' => ['document:5'],
+    ]);
+
+    CommunicationLog::factory()->create([
+        'attachments' => ['document:50'],
+    ]);
+
+    $logsForDocumentFive = $query->forInvoice($invoiceForDocumentFive, $user)->get();
+    $logsForDocumentFifty = $query->forInvoice($invoiceForDocumentFifty, $user)->get();
+
+    expect($logsForDocumentFive)->toHaveCount(1)
+        ->and($logsForDocumentFive->first()->attachments)->toBe(['document:5'])
+        ->and($logsForDocumentFifty)->toHaveCount(1)
+        ->and($logsForDocumentFifty->first()->attachments)->toBe(['document:50']);
 });
 
 it('gates the invoice communications tab behind invoice view permission', function () {
