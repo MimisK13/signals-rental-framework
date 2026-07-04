@@ -2,7 +2,7 @@
 
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Views\PurchaseOrderColumnRegistry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -13,9 +13,6 @@ use Livewire\Volt\Component;
 new #[Layout('components.layouts.app')] #[Title('Purchase Orders')] class extends Component {
     #[Url(as: 'status')]
     public string $statusFilter = '';
-
-    #[Url]
-    public string $search = '';
 
     /** @var Collection<string, int> */
     public Collection $statusCounts;
@@ -49,32 +46,38 @@ new #[Layout('components.layouts.app')] #[Title('Purchase Orders')] class extend
     }
 
     /**
-     * @return LengthAwarePaginator<int, PurchaseOrder>
-     */
-    public function purchaseOrders(): LengthAwarePaginator
-    {
-        return PurchaseOrder::query()
-            ->with(['supplier', 'store'])
-            ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
-            ->when($this->search !== '', function ($q): void {
-                $q->where(function ($inner): void {
-                    $inner->where('number', 'ilike', '%'.$this->search.'%')
-                        ->orWhere('reference', 'ilike', '%'.$this->search.'%')
-                        ->orWhereHas('supplier', fn ($m) => $m->where('name', 'ilike', '%'.$this->search.'%'));
-                });
-            })
-            ->orderByDesc('created_at')
-            ->paginate(20);
-    }
-
-    /**
      * @return array<string, mixed>
      */
     public function with(): array
     {
+        $registry = app(PurchaseOrderColumnRegistry::class);
+        $columnMeta = fn (string $key): array => [
+            'sortable' => $registry->get($key)?->sortable ?? false,
+            'filterable' => $registry->get($key)?->filterable ?? false,
+        ];
+
+        $statusOptions = collect(config('purchase_orders.statuses', []))
+            ->mapWithKeys(fn (array $meta, string $key): array => [$key => $meta['label'] ?? $key])
+            ->all();
+
+        $typeOptions = collect(config('purchase_orders.types', []))
+            ->mapWithKeys(fn (array $meta, string $key): array => [$key => $meta['label'] ?? $key])
+            ->all();
+
         return [
             'statuses' => app(PurchaseOrderStatusRegistry::class)->statuses(),
-            'types' => config('purchase_orders.types', []),
+            'statusCounts' => $this->statusCounts,
+            'totalCount' => $this->totalCount,
+            'columns' => [
+                ['key' => 'number', 'label' => 'Number', ...$columnMeta('number'), 'filter_type' => 'text', 'view' => 'livewire.purchase-orders.partials.column-number'],
+                ['key' => 'po_type', 'label' => 'Type', ...$columnMeta('po_type'), 'filter_type' => 'select', 'filter_options' => $typeOptions, 'view' => 'livewire.purchase-orders.partials.column-type'],
+                ['key' => 'status', 'label' => 'Status', ...$columnMeta('status'), 'filter_type' => 'select', 'filter_options' => $statusOptions, 'view' => 'livewire.purchase-orders.partials.column-status'],
+                ['key' => 'supplier_id', 'label' => 'Supplier', ...$columnMeta('supplier_id'), 'view' => 'livewire.purchase-orders.partials.column-supplier'],
+                ['key' => 'store_id', 'label' => 'Store', ...$columnMeta('store_id'), 'view' => 'livewire.purchase-orders.partials.column-store'],
+                ['key' => 'total', 'label' => 'Total', ...$columnMeta('total'), 'view' => 'livewire.purchase-orders.partials.column-total'],
+                ['key' => 'expected_at', 'label' => 'Expected', ...$columnMeta('expected_at'), 'view' => 'livewire.purchase-orders.partials.column-expected'],
+            ],
+            'scopes' => $this->statusFilter !== '' ? ['ofStatus' => $this->statusFilter] : [],
         ];
     }
 }; ?>
@@ -84,14 +87,6 @@ new #[Layout('components.layouts.app')] #[Title('Purchase Orders')] class extend
         <x-slot:meta>
             <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Finance</span>
         </x-slot:meta>
-        <x-slot:actions>
-            @can('create', App\Models\PurchaseOrder::class)
-                <a href="{{ route('purchase-orders.create') }}" wire:navigate class="s-btn s-btn-sm s-btn-accent">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
-                    New Draft
-                </a>
-            @endcan
-        </x-slot:actions>
     </x-signals.page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
@@ -107,62 +102,17 @@ new #[Layout('components.layouts.app')] #[Title('Purchase Orders')] class extend
             @endforeach
         </div>
 
-        <div class="mb-4">
-            <flux:input wire:model.live.debounce.300ms="search" placeholder="Search number, reference, or supplier…" icon="magnifying-glass" />
-        </div>
-
-        @php $formatter = app(\App\Support\Formatter::class); @endphp
-
-        @if($this->purchaseOrders()->isEmpty())
-            <x-signals.empty title="No purchase orders found" description="Create a draft purchase order to order stock or sub-hire equipment." />
-        @else
-            <x-signals.table-wrap>
-                <table class="s-table">
-                    <thead>
-                        <tr>
-                            <th>Number</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Supplier</th>
-                            <th>Store</th>
-                            <th class="text-right">Total</th>
-                            <th>Expected</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($this->purchaseOrders() as $purchaseOrder)
-                            <tr wire:key="po-{{ $purchaseOrder->id }}">
-                                <td>
-                                    <a href="{{ route('purchase-orders.show', $purchaseOrder) }}" wire:navigate class="font-medium text-[var(--link)] hover:underline">
-                                        {{ $purchaseOrder->number }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <span class="s-badge s-badge-zinc">{{ $types[$purchaseOrder->po_type]['label'] ?? $purchaseOrder->po_type }}</span>
-                                </td>
-                                <td>
-                                    @php $badge = $statuses[$purchaseOrder->status]['badge_class'] ?? 's-badge-zinc'; @endphp
-                                    <span class="s-badge {{ $badge }}">{{ $statuses[$purchaseOrder->status]['label'] ?? $purchaseOrder->status }}</span>
-                                </td>
-                                <td>{{ $purchaseOrder->supplier?->name ?? '—' }}</td>
-                                <td>{{ $purchaseOrder->store?->name ?? '—' }}</td>
-                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($purchaseOrder->total, $purchaseOrder->currency_code) }}</td>
-                                <td>
-                                    @if($purchaseOrder->expected_at)
-                                        @localdate($purchaseOrder->expected_at)
-                                    @else
-                                        —
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </x-signals.table-wrap>
-
-            <div class="mt-4">
-                {{ $this->purchaseOrders()->links() }}
-            </div>
-        @endif
+        <livewire:components.data-table
+            :columns="$columns"
+            :model="\App\Models\PurchaseOrder::class"
+            :searchable="['number', 'reference']"
+            :with="['supplier', 'store']"
+            :scopes="$scopes"
+            default-sort="-created_at"
+            empty-message="No purchase orders found."
+            toolbar-view="livewire.purchase-orders.partials.toolbar"
+            entity-type="purchase_orders"
+            :key="'purchase-orders-table-' . $statusFilter"
+        />
     </div>
 </section>

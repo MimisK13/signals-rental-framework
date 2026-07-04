@@ -19,6 +19,7 @@ class UpdateCustomView
                 $view->entity_type,
                 $data->columns ?? $view->columns,
                 $data->sort_column,
+                auth()->user(),
             );
         }
 

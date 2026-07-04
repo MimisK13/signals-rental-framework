@@ -149,6 +149,15 @@ class Invoice extends Model implements HasSchema
      * @param  Builder<Invoice>  $query
      * @return Builder<Invoice>
      */
+    public function scopeOfStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * @param  Builder<Invoice>  $query
+     * @return Builder<Invoice>
+     */
     public function scopeOverdue(Builder $query, ?Carbon $now = null): Builder
     {
         $now ??= now('UTC');

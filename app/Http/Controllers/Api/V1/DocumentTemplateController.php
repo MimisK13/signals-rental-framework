@@ -69,9 +69,8 @@ class DocumentTemplateController extends Controller
     {
         $this->authorizeApi('document_templates.view', 'documents:read');
 
-        $query = DocumentTemplate::query();
-        $query = $this->applyFilters($query, $request);
-        $query = $this->applySort($query, $request);
+        $query = DocumentTemplate::query()->with('store');
+        ['query' => $query, 'view' => $view] = $this->applyViewOrFilters($query, $request, 'document_templates');
 
         $paginator = $this->paginateQuery($query, $request);
 
@@ -79,13 +78,22 @@ class DocumentTemplateController extends Controller
             ->map(fn (DocumentTemplate $template): array => DocumentTemplateData::fromModel($template)->toArray())
             ->all();
 
+        $meta = [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'page' => $paginator->currentPage(),
+        ];
+
+        if ($view !== null) {
+            $meta['view'] = [
+                'id' => $view->id,
+                'name' => $view->name,
+            ];
+        }
+
         return response()->json([
             'document_templates' => $items,
-            'meta' => [
-                'total' => $paginator->total(),
-                'per_page' => $paginator->perPage(),
-                'page' => $paginator->currentPage(),
-            ],
+            'meta' => $meta,
         ]);
     }
 

@@ -7,6 +7,7 @@ use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;
 use App\Services\SchemaBuilder;
 use Database\Factories\PurchaseOrderFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -117,6 +118,15 @@ class PurchaseOrder extends Model implements HasSchema
                 'purchase_order' => ['Only draft purchase orders can be edited.'],
             ]);
         }
+    }
+
+    /**
+     * @param  Builder<PurchaseOrder>  $query
+     * @return Builder<PurchaseOrder>
+     */
+    public function scopeOfStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
     }
 
     public static function defineSchema(SchemaBuilder $builder): void

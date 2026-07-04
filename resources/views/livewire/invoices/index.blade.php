@@ -3,7 +3,7 @@
 use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use App\Services\Invoices\InvoiceStatusRegistry;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Views\InvoiceColumnRegistry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,9 +14,6 @@ use Livewire\Volt\Component;
 new #[Layout('components.layouts.app')] #[Title('Invoices')] class extends Component {
     #[Url(as: 'status')]
     public string $statusFilter = '';
-
-    #[Url]
-    public string $search = '';
 
     /** @var Collection<string, int> */
     public Collection $statusCounts;
@@ -50,32 +47,39 @@ new #[Layout('components.layouts.app')] #[Title('Invoices')] class extends Compo
     }
 
     /**
-     * @return LengthAwarePaginator<int, Invoice>
-     */
-    public function invoices(): LengthAwarePaginator
-    {
-        return Invoice::query()
-            ->with(['member', 'store'])
-            ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
-            ->when($this->search !== '', function ($q): void {
-                $q->where(function ($inner): void {
-                    $inner->where('number', 'ilike', '%'.$this->search.'%')
-                        ->orWhere('reference', 'ilike', '%'.$this->search.'%')
-                        ->orWhereHas('member', fn ($m) => $m->where('name', 'ilike', '%'.$this->search.'%'));
-                });
-            })
-            ->orderByDesc('created_at')
-            ->paginate(20);
-    }
-
-    /**
      * @return array<string, mixed>
      */
     public function with(): array
     {
+        $registry = app(InvoiceColumnRegistry::class);
+        $columnMeta = fn (string $key): array => [
+            'sortable' => $registry->get($key)?->sortable ?? false,
+            'filterable' => $registry->get($key)?->filterable ?? false,
+        ];
+
+        $statusOptions = collect(config('invoices.statuses', []))
+            ->mapWithKeys(fn (array $meta, string $key): array => [$key => $meta['label'] ?? $key])
+            ->all();
+
+        $typeOptions = collect(InvoiceType::cases())
+            ->mapWithKeys(fn (InvoiceType $type): array => [$type->value => $type->label()])
+            ->all();
+
         return [
             'statuses' => app(InvoiceStatusRegistry::class)->statuses(),
-            'types' => InvoiceType::cases(),
+            'statusCounts' => $this->statusCounts,
+            'totalCount' => $this->totalCount,
+            'columns' => [
+                ['key' => 'number', 'label' => 'Number', ...$columnMeta('number'), 'filter_type' => 'text', 'view' => 'livewire.invoices.partials.column-number'],
+                ['key' => 'type', 'label' => 'Type', ...$columnMeta('type'), 'filter_type' => 'select', 'filter_options' => $typeOptions, 'view' => 'livewire.invoices.partials.column-type'],
+                ['key' => 'status', 'label' => 'Status', ...$columnMeta('status'), 'filter_type' => 'select', 'filter_options' => $statusOptions, 'view' => 'livewire.invoices.partials.column-status'],
+                ['key' => 'member_id', 'label' => 'Member', ...$columnMeta('member_id'), 'view' => 'livewire.invoices.partials.column-member'],
+                ['key' => 'store_id', 'label' => 'Store', ...$columnMeta('store_id'), 'view' => 'livewire.invoices.partials.column-store'],
+                ['key' => 'total', 'label' => 'Total', ...$columnMeta('total'), 'view' => 'livewire.invoices.partials.column-total'],
+                ['key' => 'amount_outstanding', 'label' => 'Outstanding', ...$columnMeta('amount_outstanding'), 'view' => 'livewire.invoices.partials.column-outstanding'],
+                ['key' => 'issued_at', 'label' => 'Issued', ...$columnMeta('issued_at'), 'view' => 'livewire.invoices.partials.column-issued'],
+            ],
+            'scopes' => $this->statusFilter !== '' ? ['ofStatus' => $this->statusFilter] : [],
         ];
     }
 }; ?>
@@ -85,14 +89,6 @@ new #[Layout('components.layouts.app')] #[Title('Invoices')] class extends Compo
         <x-slot:meta>
             <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Finance</span>
         </x-slot:meta>
-        <x-slot:actions>
-            @action('invoices.create')
-                <a href="{{ route('invoices.create') }}" wire:navigate class="s-btn s-btn-sm s-btn-accent">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
-                    New Draft
-                </a>
-            @endaction
-        </x-slot:actions>
     </x-signals.page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
@@ -108,74 +104,17 @@ new #[Layout('components.layouts.app')] #[Title('Invoices')] class extends Compo
             @endforeach
         </div>
 
-        <div class="mb-4">
-            <flux:input wire:model.live.debounce.300ms="search" placeholder="Search number, reference, or member…" icon="magnifying-glass" />
-        </div>
-
-        @php $formatter = app(\App\Support\Formatter::class); @endphp
-
-        @if($this->invoices()->isEmpty())
-            <x-signals.empty title="No invoices found" description="Create a draft invoice or generate one from an opportunity." />
-        @else
-            <x-signals.table-wrap>
-                <table class="s-table">
-                    <thead>
-                        <tr>
-                            <th>Number</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Member</th>
-                            <th>Store</th>
-                            <th class="text-right">Total</th>
-                            <th class="text-right">Outstanding</th>
-                            <th>Issued</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($this->invoices() as $invoice)
-                            <tr wire:key="invoice-{{ $invoice->id }}">
-                                <td>
-                                    <a href="{{ route('invoices.show', $invoice) }}" wire:navigate class="font-medium text-[var(--link)] hover:underline">
-                                        {{ $invoice->number }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <span class="s-badge s-badge-zinc">{{ $invoice->typeEnum()->label() }}</span>
-                                </td>
-                                <td>
-                                    @php
-                                        $effective = $invoice->effectiveStatus();
-                                        $statusClass = match($effective) {
-                                            'draft' => 's-badge-zinc',
-                                            'issued', 'partially_paid' => 's-badge-blue',
-                                            'paid' => 's-badge-green',
-                                            'overdue' => 's-badge-red',
-                                            'void', 'credited' => 's-badge-amber',
-                                            default => 's-badge-zinc',
-                                        };
-                                    @endphp
-                                    <span class="s-badge {{ $statusClass }}">{{ config('invoices.statuses.'.$effective.'.label', $effective) }}</span>
-                                </td>
-                                <td>{{ $invoice->member?->name ?? '—' }}</td>
-                                <td>{{ $invoice->store?->name ?? '—' }}</td>
-                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($invoice->total, $invoice->currency_code) }}</td>
-                                <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($invoice->amount_outstanding, $invoice->currency_code) }}</td>
-                                <td>
-                                    @if($invoice->issued_at)
-                                        @localdate($invoice->issued_at)
-                                    @else
-                                        —
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </x-signals.table-wrap>
-
-            <div class="mt-4">
-                {{ $this->invoices()->links() }}
-            </div>
-        @endif
+        <livewire:components.data-table
+            :columns="$columns"
+            :model="\App\Models\Invoice::class"
+            :searchable="['number', 'reference']"
+            :with="['member', 'store']"
+            :scopes="$scopes"
+            default-sort="-created_at"
+            empty-message="No invoices found."
+            toolbar-view="livewire.invoices.partials.toolbar"
+            entity-type="invoices"
+            :key="'invoices-table-' . $statusFilter"
+        />
     </div>
 </section>

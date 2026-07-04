@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasStoreScoping;
 use App\Services\Documents\DocumentTypeRegistry;
 use Database\Factories\DocumentTemplateFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -108,5 +109,14 @@ class DocumentTemplate extends Model
             CreditNote::class => 'credit_note',
             default => throw new \InvalidArgumentException("Unsupported document template model type [{$this->model_type}]."),
         };
+    }
+
+    /**
+     * @param  Builder<DocumentTemplate>  $query
+     * @return Builder<DocumentTemplate>
+     */
+    public function scopeForStore(Builder $query, int $storeId): Builder
+    {
+        return $query->where('store_id', $storeId);
     }
 }

@@ -278,6 +278,15 @@ class VirtualStockIntake extends Model implements HasSchema
      * @param  Builder<VirtualStockIntake>  $query
      * @return Builder<VirtualStockIntake>
      */
+    public function scopeOfStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * @param  Builder<VirtualStockIntake>  $query
+     * @return Builder<VirtualStockIntake>
+     */
     public function scopeLateReturn(Builder $query, bool $isLate = true): Builder
     {
         if ($isLate) {
