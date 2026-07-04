@@ -8,6 +8,7 @@ use App\Models\Store;
 use App\Services\Invoices\CreditNoteNumberGenerator;
 use App\Services\Invoices\PaymentNumberGenerator;
 use App\Services\Members\MemberNumberGenerator;
+use App\Services\Opportunities\OpportunityNumberGenerator;
 use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
 
 /**
@@ -33,6 +34,7 @@ class DocumentSequenceDefaults
         'purchase_order' => 'PO-',
         'member' => 'MEM-',
         'invoice_payment' => 'PAY-',
+        'opportunity' => '',
         'invoice_standard' => 'INV-',
         'invoice_deposit' => 'DEP-',
         'invoice_proforma' => 'PRO-',
@@ -91,6 +93,19 @@ class DocumentSequenceDefaults
      */
     public static function attributes(string $documentType): array
     {
+        if ($documentType === OpportunityNumberGenerator::DOCUMENT_TYPE) {
+            return [
+                'prefix' => '',
+                'suffix' => '',
+                'include_year' => false,
+                'include_month' => false,
+                'next_number' => 1,
+                'padding' => 10,
+                'reset_frequency' => 'never',
+                'is_entity_number' => true,
+            ];
+        }
+
         return [
             'prefix' => self::prefixFor($documentType),
             'suffix' => '',

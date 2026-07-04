@@ -2,54 +2,142 @@
 
 namespace App\Services\Opportunities;
 
-use App\Services\SequenceAllocator;
+use App\Models\DocumentSequence;
+use App\Models\Opportunity;
+use App\Services\Documents\DocumentNumberGenerator;
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
- * Allocates the next zero-padded opportunity `number` (e.g. "0000000042").
+ * Allocates zero-padded opportunity numbers from per-store document sequences.
  *
- * The number is allocated at event-fire time (in CreateOpportunity) from a named
- * {@see SequenceAllocator} sequence and baked into the OpportunityCreated event
- * payload, so a truncate + Verbs::replay() rebuild reproduces the identical number
- * (same replay-stability principle as the projection id). Allocation therefore
- * lives ONLY in the action — replay re-applies the stored payload and never calls
- * this generator.
+ * The number is allocated at event-fire time (in CreateOpportunity) and baked
+ * into the OpportunityCreated event payload, so a truncate + Verbs::replay()
+ * rebuild reproduces the identical number (same replay-stability principle as
+ * the projection id). Allocation therefore lives ONLY in the action — replay
+ * re-applies the stored payload and never calls this generator.
  *
- * The sequence is store-scoped by default (one running number per store, matching
- * RMS behaviour where an opportunity is scoped to a single store); a null store or
- * the 'global' scope falls back to a single shared sequence. The pad width and
- * scope come from the `opportunities.number_pad` / `opportunities.number_scope`
- * system settings, read here at fire-time only (never on replay).
+ * Legacy installs allocated via SequenceAllocator with an optional global scope
+ * (`opportunities.number_scope`, migration-input only). Runtime numbering is
+ * always per-store via document_sequences. First provision seeds next_number from
+ * the global numeric max + 1 when legacy scope was `global`, otherwise from the
+ * store's own max + 1 so fresh multi-store installs keep independent counters.
  */
 class OpportunityNumberGenerator
 {
+    public const DOCUMENT_TYPE = 'opportunity';
+
     public function __construct(
-        private readonly SequenceAllocator $allocator,
+        private readonly DocumentNumberGenerator $documentNumberGenerator,
     ) {}
 
-    /**
-     * Allocate and format the next number for the given store.
-     */
-    public function next(?int $storeId): string
+    public function next(int $storeId, ?DateTimeInterface $at = null): string
     {
-        $value = $this->allocator->next($this->sequenceKey($storeId));
+        $this->ensureSequence($storeId);
 
-        $pad = (int) settings('opportunities.number_pad', 10);
+        return $this->documentNumberGenerator->next($storeId, self::DOCUMENT_TYPE, $at);
+    }
 
-        return str_pad((string) $value, $pad, '0', STR_PAD_LEFT);
+    public function ensureSequence(int $storeId): DocumentSequence
+    {
+        $sequence = DocumentSequence::query()
+            ->where('store_id', $storeId)
+            ->where('document_type', self::DOCUMENT_TYPE)
+            ->first();
+
+        if ($sequence !== null) {
+            return $sequence;
+        }
+
+        return DocumentSequence::query()->create([
+            'store_id' => $storeId,
+            'document_type' => self::DOCUMENT_TYPE,
+            'prefix' => '',
+            'suffix' => '',
+            'include_year' => false,
+            'include_month' => false,
+            'next_number' => $this->seededNextNumber($storeId),
+            'padding' => $this->provisioningPadding(),
+            'reset_frequency' => 'never',
+            'is_entity_number' => true,
+        ]);
+    }
+
+    public function nextOrCreate(int $storeId, ?DateTimeInterface $at = null): string
+    {
+        try {
+            return $this->next($storeId, $at);
+        } catch (ModelNotFoundException) {
+            $this->ensureSequence($storeId);
+
+            return $this->next($storeId, $at);
+        }
     }
 
     /**
-     * Resolve the sequence key. Store-scoped installs key the running number to
-     * the store; a global scope (or a null store) shares one sequence.
+     * Padding width read once when provisioning a store's opportunity sequence.
+     *
+     * @deprecated Setting `opportunities.number_pad` is migration-input only; the
+     *             Numbering admin page owns padding after convergence.
      */
-    private function sequenceKey(?int $storeId): string
+    private function provisioningPadding(): int
     {
+        return (int) settings('opportunities.number_pad', 10);
+    }
+
+    /**
+     * Next counter for a newly provisioned store sequence.
+     *
+     * When `opportunities.number_scope` was `global` (migration-input only), seed
+     * from the highest numeric `number` across **all** stores + 1 so no store
+     * re-issues a number consumed by the legacy shared SequenceAllocator counter.
+     *
+     * When scope was `store`, seed from this store's highest numeric number + 1 so
+     * each store keeps an independent running sequence after convergence.
+     */
+    private function seededNextNumber(int $storeId): int
+    {
+        /** @var 'store'|'global' $scope @deprecated migration-input only */
         $scope = settings('opportunities.number_scope', 'store');
 
-        if ($scope === 'store' && $storeId !== null) {
-            return "opportunity_number:store:{$storeId}";
+        if ($scope === 'global') {
+            return $this->globalNumericMax() + 1;
         }
 
-        return 'opportunity_number:global';
+        return $this->storeNumericMax($storeId) + 1;
+    }
+
+    private function globalNumericMax(): int
+    {
+        $max = Opportunity::withTrashed()
+            ->whereNotNull('number')
+            ->pluck('number')
+            ->map(fn (string $number): int => $this->numericPortion($number))
+            ->max();
+
+        return (int) $max;
+    }
+
+    private function storeNumericMax(int $storeId): int
+    {
+        $max = Opportunity::withTrashed()
+            ->where('store_id', $storeId)
+            ->whereNotNull('number')
+            ->pluck('number')
+            ->map(fn (string $number): int => $this->numericPortion($number))
+            ->max();
+
+        return (int) $max;
+    }
+
+    private function numericPortion(string $number): int
+    {
+        $digits = preg_replace('/\D/', '', $number) ?? '';
+
+        if ($digits === '') {
+            return 0;
+        }
+
+        return (int) $digits;
     }
 }

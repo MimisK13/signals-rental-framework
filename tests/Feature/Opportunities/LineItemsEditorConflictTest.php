@@ -7,6 +7,7 @@ use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\RenameOpportunityItemData;
 use App\Models\Opportunity;
+use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -50,6 +51,7 @@ beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true]);
     $this->owner = User::factory()->owner()->create();
     $this->actingAs($this->owner);
 });

@@ -17,6 +17,7 @@ class DocumentSequenceEntityProjection
         'virtual_stock_intake',
         'member',
         'invoice_payment',
+        'opportunity',
     ];
 
     /** @var array<string, string> */
@@ -29,6 +30,7 @@ class DocumentSequenceEntityProjection
         'virtual_stock_intake' => 'virtual_stock_intakes',
         'member' => 'members',
         'invoice_payment' => 'invoice_payments',
+        'opportunity' => 'opportunities',
     ];
 
     public static function projectionTableFor(string $documentType): ?string
