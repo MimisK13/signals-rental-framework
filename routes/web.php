@@ -138,8 +138,10 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('invoices/{invoice}/edit', 'invoices.form')->name('invoices.edit');
 
     // Credit notes & payments
-    Volt::route('finance/credit-notes', 'credit-notes.index')->name('credit-notes.index');
-    Volt::route('finance/payments', 'payments.index')->name('payments.index');
+    Route::redirect('finance/credit-notes', '/credit-notes', 301);
+    Route::redirect('finance/payments', '/payments', 301);
+    Volt::route('credit-notes', 'credit-notes.index')->name('credit-notes.index');
+    Volt::route('payments', 'payments.index')->name('payments.index');
 
     // Purchase orders
     Volt::route('purchase-orders', 'purchase-orders.index')->name('purchase-orders.index');
