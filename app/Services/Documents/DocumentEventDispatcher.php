@@ -10,6 +10,7 @@ use App\Models\Document;
 use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Services\Api\WebhookService;
+use Thunk\Verbs\Facades\Verbs;
 
 /**
  * Bridges document-domain mutations onto the audit log and outbound webhook bus.
@@ -34,9 +35,24 @@ class DocumentEventDispatcher
     ): void {
         event(new AuditableEvent($document, $action, $oldValues, $newValues, metadata: $metadata));
 
-        $this->dispatchWebhook($action, [
+        $payload = [
             'document' => DocumentData::fromModel($document)->toArray(),
-        ]);
+        ];
+
+        if ($metadata !== null) {
+            $payload = array_merge($payload, $metadata);
+        }
+
+        $this->dispatchWebhook($action, $payload);
+    }
+
+    public function pdfGenerated(Document $document): void
+    {
+        $this->document(
+            $document,
+            'document.pdf_generated',
+            metadata: ['output_format' => 'pdf'],
+        );
     }
 
     /**
@@ -73,6 +89,10 @@ class DocumentEventDispatcher
      */
     private function dispatchWebhook(string $action, array $payload): void
     {
+        if (Verbs::isReplaying()) {
+            return;
+        }
+
         if (! in_array($action, WebhookService::EVENTS, true)) {
             return;
         }

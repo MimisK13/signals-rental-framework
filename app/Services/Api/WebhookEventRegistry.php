@@ -145,6 +145,7 @@ class WebhookEventRegistry
         'shortage.waitlist.matched',
         'shortage.waitlist.expired',
         'document.created',
+        'document.pdf_generated',
         'document.finalised',
         'document.voided',
         'document.emailed',

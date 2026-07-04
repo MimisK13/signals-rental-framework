@@ -98,6 +98,9 @@ class GenerateDocument
             );
 
             $document->update(['pdf_path' => $pdfPath]);
+            $document->refresh();
+
+            app(DocumentEventDispatcher::class)->pdfGenerated($document);
         }
 
         if ($outputFormat === DocumentOutputFormat::HtmlDownload) {

@@ -130,6 +130,48 @@ describe('document lifecycle events', function () {
         Queue::assertPushed(DeliverWebhook::class, fn (DeliverWebhook $job): bool => $job->event === 'document.created');
     });
 
+    it('fires document.pdf_generated only when a persisted PDF is generated', function () {
+        Event::fake([AuditableEvent::class]);
+        Queue::fake();
+
+        ['opportunity' => $opportunity, 'template' => $template] = documentEventFixture();
+
+        Webhook::factory()->create(['events' => ['document.pdf_generated'], 'is_active' => true]);
+
+        app(GenerateDocument::class)(GenerateDocumentData::from([
+            'document_template_id' => $template->id,
+            'documentable_type' => 'opportunity',
+            'documentable_id' => $opportunity->id,
+            'output_format' => DocumentOutputFormat::Pdf->value,
+        ]));
+
+        Event::assertDispatched(AuditableEvent::class, fn (AuditableEvent $event): bool => $event->action === 'document.pdf_generated');
+        Queue::assertPushed(DeliverWebhook::class, fn (DeliverWebhook $job): bool => $job->event === 'document.pdf_generated'
+            && ($job->payload['output_format'] ?? null) === 'pdf'
+            && isset($job->payload['document']['id']));
+    });
+
+    it('does not fire document.pdf_generated for preview renders', function () {
+        Event::fake([AuditableEvent::class]);
+        Queue::fake();
+
+        ['opportunity' => $opportunity, 'template' => $template] = documentEventFixture();
+
+        app(GenerateDocument::class)(GenerateDocumentData::from([
+            'document_template_id' => $template->id,
+            'documentable_type' => 'opportunity',
+            'documentable_id' => $opportunity->id,
+            'output_format' => DocumentOutputFormat::Preview->value,
+        ]));
+
+        Event::assertNotDispatched(AuditableEvent::class, fn (AuditableEvent $event): bool => $event->action === 'document.pdf_generated');
+        Queue::assertNotPushed(DeliverWebhook::class, fn (DeliverWebhook $job): bool => $job->event === 'document.pdf_generated');
+    });
+
+    it('registers document.pdf_generated in the webhook allow-list', function () {
+        expect(WebhookService::EVENTS)->toContain('document.pdf_generated');
+    });
+
     it('fires document.finalised audit and webhook', function () {
         Event::fake([AuditableEvent::class]);
         Queue::fake();

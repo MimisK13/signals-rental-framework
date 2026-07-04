@@ -166,6 +166,7 @@ class GenerateBillingIssueDocument
         $document->refresh();
 
         app(DocumentEventDispatcher::class)->document($document, 'document.created');
+        app(DocumentEventDispatcher::class)->pdfGenerated($document);
 
         return DocumentData::fromModel($document, includeDownloadUrl: true);
     }

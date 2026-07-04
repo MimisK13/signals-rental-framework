@@ -108,6 +108,17 @@ class SandboxedBladeRenderer
      */
     private function evaluateCompiled(string $compiledPath, array $data): string
     {
+        return self::executeCompiledTemplate($compiledPath, $data);
+    }
+
+    /**
+     * Execute compiled template bytecode without object scope so templates cannot
+     * reach {@see self} via {@code $this}.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function executeCompiledTemplate(string $compiledPath, array $data): string
+    {
         extract($data, EXTR_SKIP);
 
         $__env = new SandboxedLoopEnvironment;

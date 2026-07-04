@@ -198,6 +198,7 @@ when the event store is rebuilt.
 | Event | Trigger |
 |-------|---------|
 | `document.created` | A document is generated from a template |
+| `document.pdf_generated` | A PDF is generated and stored for a document |
 | `document.finalised` | A document is finalised (locked for sharing) |
 | `document.voided` | A finalised document is voided |
 | `document.emailed` | A document is emailed to a recipient (Notification Engine, P38) |

@@ -64,6 +64,20 @@ describe('SandboxedBladeRenderer loop support', function () {
             ->and($html)->not->toContain('Row 4');
     });
 
+    it('blocks template access to the renderer instance via $this', function () {
+        expect(fn () => $this->renderer->render(
+            '{{ $this->files }}',
+            ['label' => 'safe'],
+            'sandbox-this-property-probe',
+        ))->toThrow(DocumentRenderException::class);
+
+        expect(fn () => $this->renderer->render(
+            '@php var_dump($this); @endphp',
+            [],
+            'sandbox-this-php-probe',
+        ))->toThrow(DocumentRenderException::class);
+    });
+
     it('renders forelse empty branches', function () {
         $html = $this->renderer->render(
             '@forelse ($items as $item)<p>{{ $item->name }}</p>@empty<p>No lines</p>@endforelse',
