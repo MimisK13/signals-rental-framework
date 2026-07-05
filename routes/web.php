@@ -302,16 +302,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin', 'admin.index')->name('admin.index');
     Route::redirect('admin/settings', 'admin');
 
-    // Editor Lab — the chosen "local-first" prototype, KEPT as the design
-    // reference for the production line-item editor rebuild (RMS-unified model)
-    // until that rebuild is confirmed. The three non-chosen prototypes
-    // (jquery / sortable-tree / sortablejs) were removed 2026-06-22. NOT a
-    // production route: it lives behind the admin gate so only admins/owners can
-    // reach the design reference. The live Overview editor (opportunities.items)
-    // is untouched.
-    Volt::route('opportunities/{opportunity}/editor-lab/local-first', 'opportunities.prototypes.editor-local-first')
-        ->name('opportunities.editor-lab.local-first')->withTrashed();
-
     // Account
     Volt::route('admin/settings/company', 'admin.settings.company')->name('admin.settings.company');
     Volt::route('admin/settings/stores', 'admin.settings.stores')->name('admin.settings.stores');
