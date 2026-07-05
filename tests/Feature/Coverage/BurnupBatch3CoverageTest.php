@@ -445,8 +445,8 @@ it('EscalateUnresolvedShortages respects the configured batch size limit', funct
     ]);
 
     $store = Store::factory()->create(['timezone' => 'UTC']);
-    [$firstOpp, $firstItem] = shortConfirmedOrderNearDispatch($store, daysUntilStart: 2);
-    [$secondOpp, $secondItem] = shortConfirmedOrderNearDispatch($store, daysUntilStart: 2);
+    [$firstOpp, $firstItem] = burnupBatch3ShortConfirmedOrder($store, daysUntilStart: 2);
+    [$secondOpp, $secondItem] = burnupBatch3ShortConfirmedOrder($store, daysUntilStart: 2);
 
     $this->artisan(EscalateUnresolvedShortages::class)->assertSuccessful();
 
@@ -483,7 +483,7 @@ it('OpportunityNumberGenerator nextOrCreate provisions a sequence after a missin
 /**
  * @return array{0: Opportunity, 1: OpportunityItem}
  */
-function shortConfirmedOrderNearDispatch(Store $store, int $daysUntilStart = 2): array
+function burnupBatch3ShortConfirmedOrder(Store $store, int $daysUntilStart = 2): array
 {
     $store->update([
         'shortage_policy' => ShortagePolicy::Allow->value,
