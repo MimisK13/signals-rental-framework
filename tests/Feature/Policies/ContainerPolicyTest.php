@@ -84,3 +84,15 @@ it('resolves store from housing serialised item when store_id is null', function
     expect($container->store_id)->toBeNull()
         ->and($this->policy->view($viewer, $container))->toBeTrue();
 });
+
+it('allows container store access when neither container nor housing asset has a store', function () {
+    $container = Container::factory()->create([
+        'store_id' => null,
+        'serialised_item_id' => null,
+    ]);
+
+    $viewer = User::factory()->create();
+    $viewer->givePermissionTo(['containers.view', 'stock.access']);
+
+    expect($this->policy->view($viewer, $container))->toBeTrue();
+});

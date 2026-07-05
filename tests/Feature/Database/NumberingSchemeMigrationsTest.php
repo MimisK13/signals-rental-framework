@@ -6,6 +6,7 @@ use App\Models\DocumentSequence;
 use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Services\SequenceAllocator;
 use App\Support\Database\StoreNumberUniqueConstraintPreflight;
@@ -192,6 +193,28 @@ describe('numbering scheme migrations (sqlite)', function () {
             '--path' => 'database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php',
             '--force' => true,
         ]);
+    });
+
+    it('assertNoDuplicates returns cleanly for non-invoice tables without duplicates', function () {
+        $preflight = app(StoreNumberUniqueConstraintPreflight::class);
+
+        expect(fn () => $preflight->assertNoDuplicates('purchase_orders'))->not->toThrow(RuntimeException::class);
+    });
+
+    it('throws with the store_id number constraint message for duplicate purchase order numbers', function () {
+        $store = Store::factory()->create();
+
+        PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'number' => 'PO-DUP-1',
+        ]);
+        PurchaseOrder::factory()->create([
+            'store_id' => $store->id,
+            'number' => 'PO-DUP-1',
+        ]);
+
+        expect(fn () => app(StoreNumberUniqueConstraintPreflight::class)->assertNoDuplicates('purchase_orders'))
+            ->toThrow(RuntimeException::class, '(store_id, number)');
     });
 
     it('backfills credit note store_id from invoice when unique indexes are applied', function () {

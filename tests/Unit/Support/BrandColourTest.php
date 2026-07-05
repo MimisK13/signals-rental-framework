@@ -126,4 +126,8 @@ describe('invalid hex fallback', function () {
         expect(BrandColour::normalise('#ABC'))->toBe('#aabbcc');
         expect(BrandColour::normalise('1E3A5F'))->toBe('#1e3a5f');
     });
+
+    it('recurses invalid hex through the default primary rgb path', function () {
+        expect(BrandColour::normalise('@@@'))->toBe('#1e3a5f');
+    });
 });

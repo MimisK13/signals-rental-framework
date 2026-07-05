@@ -19,3 +19,7 @@ it('detects json strings', function () {
         ->and(JsonSyntaxHighlight::isJson('plain-text'))->toBeFalse()
         ->and(JsonSyntaxHighlight::isJson(''))->toBeFalse();
 });
+
+it('returns an empty string when highlighting empty json input', function () {
+    expect(JsonSyntaxHighlight::highlight(''))->toBe('');
+});

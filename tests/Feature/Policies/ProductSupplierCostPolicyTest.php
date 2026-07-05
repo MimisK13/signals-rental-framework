@@ -56,3 +56,11 @@ it('allows setPreferred with manage permission', function () {
 
     expect($this->policy->setPreferred($user, $cost))->toBeTrue();
 });
+
+it('allows view for a specific supplier cost when list access is granted', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo(['costs.view', 'products.view']);
+    $cost = ProductSupplierCost::factory()->create();
+
+    expect($this->policy->view($user, $cost))->toBeTrue();
+});

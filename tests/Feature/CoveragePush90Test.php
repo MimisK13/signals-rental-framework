@@ -112,6 +112,13 @@ describe('Timezone', function () {
         expect($result->timezoneName)->toBe('UTC');
         expect($result->day)->toBe(15);
     });
+
+    it('toZone() falls back to UTC for an empty timezone string', function () {
+        $tz = app(Timezone::class);
+        $converted = $tz->toZone('2026-06-15 12:00:00', '');
+
+        expect($converted->timezoneName)->toBe('UTC');
+    });
 });
 
 /*
