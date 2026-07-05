@@ -106,3 +106,25 @@ it('apportions via api when costs.view is present', function () {
         ->assertSuccessful()
         ->assertJsonPath('apportionment.strategy_key', 'even_split');
 });
+
+it('returns manual_mismatch_warning in the apportionment api payload', function () {
+    config(['shortages.cost_apportionment_strategy' => 'manual']);
+
+    $opportunity = Opportunity::factory()->create();
+    $resolution = ShortageResolution::factory()->create([
+        'virtual_stock_intake_id' => $this->intake->id,
+    ]);
+    ShortageResolutionItem::factory()->create([
+        'shortage_resolution_id' => $resolution->id,
+        'opportunity_item_id' => OpportunityItem::factory()->for($opportunity)->create()->id,
+        'quantity_allocated' => 2,
+    ]);
+
+    $this->withHeader('Authorization', "Bearer {$this->token}")
+        ->putJson("/api/v1/virtual_stock_intakes/{$this->intake->id}/cost_overrides", [
+            'opportunity_id' => $opportunity->id,
+            'unit_cost_override' => 100,
+        ])
+        ->assertSuccessful()
+        ->assertJsonPath('apportionment.manual_mismatch_warning', true);
+});

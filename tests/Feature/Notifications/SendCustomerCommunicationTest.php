@@ -21,6 +21,7 @@ use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
 
@@ -160,6 +161,53 @@ describe('SendCustomerCommunication', function () {
 
         expect($log->status)->toBe('suppressed')
             ->and($log->failure_reason)->toContain('opted out');
+    });
+
+    it('re-checks opt-out when the queued delivery job runs and suppresses stale sends', function () {
+        Notification::fake();
+
+        $recipient = Member::factory()->contact()->create();
+        $recipient->emails()->create(['address' => 'queued@example.com', 'is_primary' => true]);
+
+        $opportunity = Opportunity::factory()->create();
+        $type = NotificationType::factory()->create(['key' => 'invoice.created']);
+        $template = CommunicationTemplate::factory()->email()->create([
+            'notification_type_id' => $type->id,
+            'store_id' => $opportunity->store_id,
+        ]);
+
+        $log = CommunicationLog::query()->create([
+            'notification_type_key' => $type->key,
+            'channel' => 'email',
+            'template_id' => $template->id,
+            'notifiable_type' => Member::class,
+            'notifiable_id' => $recipient->id,
+            'subject_type' => Opportunity::class,
+            'subject_id' => $opportunity->id,
+            'recipient_address' => 'queued@example.com',
+            'subject_line' => 'Invoice ready',
+            'rendered_body' => 'Body',
+            'status' => 'queued',
+            'queued_at' => now(),
+        ]);
+
+        $recipient->update([
+            'communication_preferences' => [
+                'opt_out' => ['invoice.created'],
+            ],
+        ]);
+
+        (new DeliverCustomerCommunication(
+            communicationLogId: $log->id,
+            recipientId: $recipient->id,
+            templateId: $template->id,
+            notificationTypeKey: $type->key,
+        ))->handle();
+
+        Notification::assertNothingSent();
+
+        expect($log->fresh()->status)->toBe('suppressed')
+            ->and($log->fresh()->failure_reason)->toContain('opted out');
     });
 
     it('requires notifications.manage permission', function () {

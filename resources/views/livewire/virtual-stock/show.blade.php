@@ -10,6 +10,7 @@ use App\Livewire\Concerns\HandlesVerbsStateErrors;
 use App\Models\OpportunityCost;
 use App\Models\ShortageResolution;
 use App\Models\VirtualStockIntake;
+use App\Services\Shortages\CostApportionmentContextBuilder;
 use App\Services\Shortages\CostApportionmentRegistry;
 use App\Services\VirtualStock\VirtualStockIntakeProfitAndLossBuilder;
 use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
@@ -93,12 +94,13 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function with(): array
     {
-        $registry = app(VirtualStockStatusRegistry::class);
+        $statusRegistry = app(VirtualStockStatusRegistry::class);
         $canViewCosts = Gate::check('costs.view');
         $strategyKey = $this->resolveApportionmentStrategy();
+        $apportionmentRegistry = app(CostApportionmentRegistry::class);
         $strategyName = $canViewCosts
-            ? (app(CostApportionmentRegistry::class)->has($strategyKey)
-                ? app(CostApportionmentRegistry::class)->get($strategyKey)->name()
+            ? ($apportionmentRegistry->has($strategyKey)
+                ? $apportionmentRegistry->get($strategyKey)->name()
                 : $strategyKey)
             : null;
 
@@ -110,8 +112,18 @@ new #[Layout('components.layouts.app')] class extends Component {
             )
             : null;
 
+        $manualMismatchWarning = false;
+
+        if ($canViewCosts && $this->virtualStockIntake->status !== 'draft') {
+            if ($apportionmentRegistry->has($strategyKey) && $apportionmentRegistry->get($strategyKey)->requiresManualInput()) {
+                $context = app(CostApportionmentContextBuilder::class)->build($this->virtualStockIntake);
+                $allocations = $apportionmentRegistry->get($strategyKey)->calculate($context);
+                $manualMismatchWarning = array_sum($allocations) !== $context->totalCostMinor;
+            }
+        }
+
         return [
-            'statuses' => $registry->statuses(),
+            'statuses' => $statusRegistry->statuses(),
             'canConfirm' => Gate::check('confirm', $this->virtualStockIntake),
             'canReceive' => Gate::check('receive', $this->virtualStockIntake),
             'canReturn' => Gate::check('return', $this->virtualStockIntake),
@@ -121,6 +133,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'canViewCosts' => $canViewCosts,
             'apportionmentStrategy' => $strategyName,
             'profitAndLoss' => $profitAndLoss,
+            'manualMismatchWarning' => $manualMismatchWarning,
             'outstandingAllocations' => app(VirtualStockIntakeReturnGuard::class)
                 ->outstandingAllocations($this->virtualStockIntake),
             'isLateReturn' => $this->virtualStockIntake->isLateReturn(),
@@ -258,6 +271,11 @@ new #[Layout('components.layouts.app')] class extends Component {
             @if($profitAndLoss !== null)
                 <x-signals.panel title="Cost apportionment &amp; P&amp;L">
                     <div class="space-y-3">
+                        @if($manualMismatchWarning)
+                            <x-signals.alert type="warning">
+                                Manual cost overrides do not sum to the intake total. Apportioned costs were saved, but review overrides before relying on margin figures.
+                            </x-signals.alert>
+                        @endif
                         <div class="flex flex-wrap gap-4 text-sm">
                             <div>
                                 <span class="text-[var(--text-muted)]">Strategy</span>

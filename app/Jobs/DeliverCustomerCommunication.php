@@ -2,10 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Actions\Notifications\LogCommunication;
+use App\Data\Notifications\TransitionCommunicationLogData;
 use App\Models\CommunicationTemplate;
 use App\Models\Document;
 use App\Models\Member;
 use App\Notifications\CustomerCommunication;
+use App\Services\Notifications\CommunicationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -63,6 +66,9 @@ class DeliverCustomerCommunication implements ShouldQueue
 
     public function handle(): void
     {
+        $preferences = app(CommunicationPreferences::class);
+        $logCommunication = app(LogCommunication::class);
+
         $recipient = Member::query()->find($this->recipientId);
 
         if ($recipient === null) {
@@ -70,6 +76,16 @@ class DeliverCustomerCommunication implements ShouldQueue
                 'recipient_id' => $this->recipientId,
                 'communication_log_id' => $this->communicationLogId,
             ]);
+
+            return;
+        }
+
+        if ($preferences->isOptedOut($recipient, $this->notificationTypeKey)) {
+            $logCommunication->transition(new TransitionCommunicationLogData(
+                communicationLogId: $this->communicationLogId,
+                status: 'suppressed',
+                failureReason: 'Recipient opted out of this notification type.',
+            ));
 
             return;
         }

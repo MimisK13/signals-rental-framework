@@ -49,7 +49,7 @@ return [
     ],
 
     'transitions' => [
-        'queued' => ['sent', 'failed'],
+        'queued' => ['sent', 'failed', 'suppressed'],
         'sent' => ['delivered', 'failed', 'bounced', 'opened'],
         'delivered' => ['opened', 'clicked'],
         'opened' => ['clicked'],

@@ -11,6 +11,8 @@ use App\Events\AuditableEvent;
 use App\Models\CustomField;
 use App\Models\CustomFieldValue;
 use App\Models\Member;
+use App\Models\PriceCategory;
+use App\Models\PriceCategoryTier;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -202,9 +204,9 @@ it('rejects changing the active state of a user-type member', function () {
 });
 
 it('clears price category tier when category changes without an explicit tier', function () {
-    $categoryA = \App\Models\PriceCategory::factory()->create();
-    $categoryB = \App\Models\PriceCategory::factory()->create();
-    $tier = \App\Models\PriceCategoryTier::factory()->for($categoryA)->create();
+    $categoryA = PriceCategory::factory()->create();
+    $categoryB = PriceCategory::factory()->create();
+    $tier = PriceCategoryTier::factory()->for($categoryA)->create();
     $member = Member::factory()->create([
         'price_category_id' => $categoryA->id,
         'price_category_tier_id' => $tier->id,
@@ -216,6 +218,38 @@ it('clears price category tier when category changes without an explicit tier', 
 
     expect($member->fresh()->price_category_id)->toBe($categoryB->id)
         ->and($member->fresh()->price_category_tier_id)->toBeNull();
+});
+
+it('allows unrelated member updates when stored tier and category are inconsistent', function () {
+    $trade = PriceCategory::factory()->create(['name' => 'Trade']);
+    $retail = PriceCategory::factory()->create(['name' => 'Retail']);
+    $retailTier = PriceCategoryTier::factory()->for($retail)->create();
+
+    $member = Member::factory()->organisation()->create([
+        'price_category_id' => $trade->id,
+        'price_category_tier_id' => $retailTier->id,
+        'description' => 'Original notes',
+    ]);
+
+    $result = (new UpdateMember)($member, UpdateMemberData::from([
+        'description' => 'Updated phone notes',
+    ]));
+
+    expect($result->description)->toBe('Updated phone notes')
+        ->and($member->fresh()->price_category_id)->toBe($trade->id)
+        ->and($member->fresh()->price_category_tier_id)->toBe($retailTier->id);
+});
+
+it('still rejects a mismatched tier when price category fields are submitted', function () {
+    $trade = PriceCategory::factory()->create(['name' => 'Trade']);
+    $retail = PriceCategory::factory()->create(['name' => 'Retail']);
+    $retailTier = PriceCategoryTier::factory()->for($retail)->create();
+    $member = Member::factory()->organisation()->create(['price_category_id' => $trade->id]);
+
+    expect(fn () => (new UpdateMember)($member, UpdateMemberData::from([
+        'price_category_id' => $trade->id,
+        'price_category_tier_id' => $retailTier->id,
+    ])))->toThrow(ValidationException::class);
 });
 
 it('rejects changing the location type of a user-type member', function () {

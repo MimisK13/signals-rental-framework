@@ -108,7 +108,38 @@ class MergeFieldRenderer
                 continue;
             }
 
-            $output .= (string) $value;
+            $output .= $this->escapeMarkdownValue((string) $value);
+        }
+
+        return $output;
+    }
+
+    /**
+     * Neutralise user-controlled merge-field values so markdown metacharacters
+     * cannot alter template rendering (e.g. phishing links in member names).
+     */
+    private function escapeMarkdownValue(string $value): string
+    {
+        /** @var array<string, string> $replacements */
+        $replacements = [
+            '&' => '&amp;',
+            '<' => '&lt;',
+            '>' => '&gt;',
+            '[' => '&#91;',
+            ']' => '&#93;',
+            '(' => '&#40;',
+            ')' => '&#41;',
+            '*' => '&#42;',
+            '_' => '&#95;',
+            '#' => '&#35;',
+            '`' => '&#96;',
+            '~' => '&#126;',
+        ];
+
+        $output = '';
+
+        foreach (mb_str_split($value) as $character) {
+            $output .= $replacements[$character] ?? $character;
         }
 
         return $output;

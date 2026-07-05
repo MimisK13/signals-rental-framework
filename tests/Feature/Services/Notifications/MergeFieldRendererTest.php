@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\CommunicationTemplate;
 use App\Models\Currency;
 use App\Models\User;
+use App\Services\Notifications\CommunicationTemplateRenderer;
 use App\Services\Notifications\CoreMergeFieldFilters;
 use App\Services\Notifications\MergeFieldFilterRegistry;
 use App\Services\Notifications\MergeFieldRenderContext;
@@ -213,6 +215,21 @@ it('supports configurable unknown field behaviour', function () {
     $context = new MergeFieldRenderContext(unknownFieldBehaviour: '—');
 
     expect($this->renderer->render('{{ missing }}', [], $context))->toBe('—');
+});
+
+it('escapes markdown metacharacters in merge-field values before template markdown rendering', function () {
+    $renderer = app(CommunicationTemplateRenderer::class);
+    $template = CommunicationTemplate::factory()->email()->create([
+        'subject' => 'Hello {{ contact.name }}',
+        'body' => 'Name: {{ contact.name }}',
+    ]);
+
+    $rendered = $renderer->render($template, [
+        'contact' => ['name' => '[click](https://evil.example)'],
+    ]);
+
+    expect($rendered['body'])->toContain('&#91;click&#93;&#40;https://evil.example&#41;')
+        ->and($rendered['html'])->not->toContain('href="https://evil.example"');
 });
 
 describe('filter matrix edge cases', function () {
