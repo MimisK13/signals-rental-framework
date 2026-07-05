@@ -527,6 +527,7 @@ it('RepackReturnItem shouldPackIntoContainer honours free-scan and predecessor m
         ->and(batch5Part2InvokeProtected($action, 'shouldPackIntoContainer', [$container, $stock, false]))->toBeFalse();
 });
 
+it('HasOpportunityActions restore un-trashes the opportunity from the show page', function () {
     $owner = batch5Part2Owner();
     $this->actingAs($owner);
 
