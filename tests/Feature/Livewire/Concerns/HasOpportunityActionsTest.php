@@ -386,6 +386,44 @@ it('flashes a permission error from runTransition when the actor lacks edit righ
         ->and($opportunity->fresh()->state)->toBe(OpportunityState::Draft);
 });
 
+it('confirmConvert returns early when pending key is unknown', function () {
+    $opportunity = Opportunity::factory()->quotation()->create();
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+        ->set('pendingConvertKey', 'unknown_convert_key')
+        ->call('confirmConvert')
+        ->assertNotDispatched('toast');
+});
+
+it('restore refreshes archived opportunities in place', function () {
+    $opportunity = covLiveOpportunity($this->owner, $this->store->id, 'Restore in place');
+    (new \App\Actions\Opportunities\DeleteOpportunity)($opportunity);
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+        ->call('restore');
+
+    expect($opportunity->fresh()->trashed())->toBeFalse();
+});
+
+it('broadcasts lifecycle changes without deal totals for standard opportunities', function () {
+    $opportunity = covLiveOpportunity($this->owner, $this->store->id, 'No deal broadcast');
+    (new ConvertToQuotation)($opportunity);
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+        ->call('changeStatus', OpportunityStatus::QuotationReserved->statusValue())
+        ->assertDispatched(
+            'opportunity-lifecycle-changed',
+            fn (string $event, array $params): bool => ($params['hasDealPrice'] ?? null) === false
+                && ($params['dealTotalRaw'] ?? null) === ''
+        );
+});
+
 it('includes the formatted deal total when broadcasting a lifecycle change for a deal-priced opportunity', function () {
     // A quotation with a manual deal-total override: a successful in-place
     // transition fires dispatchOpportunityLifecycleChanged, which formats the
