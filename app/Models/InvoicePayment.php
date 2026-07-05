@@ -121,6 +121,7 @@ class InvoicePayment extends Model implements HasSchema
         $builder->relation('invoice_id')->label('Invoice')
             ->relation('invoice', 'belongsTo', Invoice::class, 'number')
             ->filterable()->sortable();
+        $builder->string('number')->label('Number')->searchable()->filterable()->sortable();
         $builder->currency('amount')->label('Amount')->sortable();
         $builder->enum('payment_method')->label('Payment Method')->filterable()->groupable();
         $builder->string('reference')->label('Reference')->searchable()->filterable();

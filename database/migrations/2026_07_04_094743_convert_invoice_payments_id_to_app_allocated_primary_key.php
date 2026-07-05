@@ -17,9 +17,21 @@ return new class extends Migration
 {
     private const TEMP_TABLE = 'invoice_payments__app_pk';
 
+    /** @var list<string> */
+    private const LEGACY_INDEX_NAMES = [
+        self::TEMP_TABLE.'_invoice_id_index',
+        self::TEMP_TABLE.'_paid_at_index',
+    ];
+
     public function up(): void
     {
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            if (! $this->sqliteInvoicePaymentsUsesAutoIncrement()) {
+                $this->normalizeSqliteInvoicePaymentIndexNames();
+
+                return;
+            }
+
             $this->rebuildSqliteTable(withAutoIncrement: false);
 
             return;
@@ -32,6 +44,10 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            if ($this->sqliteInvoicePaymentsUsesAutoIncrement()) {
+                return;
+            }
+
             $this->rebuildSqliteTable(withAutoIncrement: true);
 
             return;
@@ -48,9 +64,9 @@ return new class extends Migration
 
     private function rebuildSqliteTable(bool $withAutoIncrement): void
     {
-        Schema::disableForeignKeyConstraints();
+        $this->dropSqliteConversionArtifacts();
 
-        Schema::dropIfExists(self::TEMP_TABLE);
+        Schema::disableForeignKeyConstraints();
 
         Schema::create(self::TEMP_TABLE, function (Blueprint $table) use ($withAutoIncrement): void {
             if ($withAutoIncrement) {
@@ -72,7 +88,6 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->index('invoice_id');
             $table->index('paid_at');
         });
 
@@ -106,6 +121,65 @@ return new class extends Migration
         Schema::drop('invoice_payments');
         Schema::rename(self::TEMP_TABLE, 'invoice_payments');
 
+        $this->normalizeSqliteInvoicePaymentIndexNames();
+
         Schema::enableForeignKeyConstraints();
+    }
+
+    private function dropSqliteConversionArtifacts(): void
+    {
+        Schema::dropIfExists(self::TEMP_TABLE);
+
+        foreach (self::LEGACY_INDEX_NAMES as $indexName) {
+            DB::statement('DROP INDEX IF EXISTS "'.$indexName.'"');
+        }
+    }
+
+    private function normalizeSqliteInvoicePaymentIndexNames(): void
+    {
+        if (! Schema::hasTable('invoice_payments')) {
+            return;
+        }
+
+        $targetIndexes = [
+            'invoice_payments_invoice_id_index' => 'invoice_id',
+            'invoice_payments_paid_at_index' => 'paid_at',
+        ];
+
+        foreach (self::LEGACY_INDEX_NAMES as $legacyIndex) {
+            DB::statement('DROP INDEX IF EXISTS "'.$legacyIndex.'"');
+        }
+
+        foreach ($targetIndexes as $indexName => $column) {
+            $exists = DB::scalar(
+                'SELECT 1 FROM sqlite_master WHERE type = ? AND name = ? LIMIT 1',
+                ['index', $indexName],
+            );
+
+            if ($exists === null) {
+                DB::statement(sprintf(
+                    'CREATE INDEX "%s" ON "invoice_payments" ("%s")',
+                    $indexName,
+                    $column,
+                ));
+            }
+        }
+    }
+
+    private function sqliteInvoicePaymentsUsesAutoIncrement(): bool
+    {
+        if (! Schema::hasTable('invoice_payments')) {
+            return false;
+        }
+
+        $ddl = DB::scalar(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'invoice_payments'",
+        );
+
+        if (! is_string($ddl)) {
+            return false;
+        }
+
+        return str_contains(strtoupper($ddl), 'AUTOINCREMENT');
     }
 };

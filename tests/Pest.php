@@ -46,6 +46,16 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+pest()->beforeEach(function (): void {
+    if (Store::query()->where('is_default', true)->doesntExist()) {
+        Store::factory()->create(['is_default' => true]);
+    }
+})->in(
+    'Feature/Verbs/Opportunities',
+    'Feature/Actions/Opportunities',
+    'Feature/Api',
+);
+
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Browser');

@@ -7,6 +7,9 @@ use App\Models\TaxRule;
 use App\Models\TaxZone;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\UsesIsolatedSqliteMigrations;
+
+uses(UsesIsolatedSqliteMigrations::class);
 
 const TAX_BUYER_TYPE_WIDEN_MIGRATION = 'database/migrations/2026_07_04_092927_widen_tax_buyer_type_columns.php';
 const TAX_BUYER_TYPE_DATA_MIGRATION = 'database/migrations/2026_07_04_092928_migrate_tax_buyer_type_values_and_seeded_rules.php';

@@ -4,6 +4,8 @@ namespace App\Services\Documents;
 
 use App\Enums\InvoiceType;
 use App\Models\DocumentSequence;
+use App\Models\Opportunity;
+use App\Models\Scopes\StoreScope;
 use App\Models\Store;
 use App\Services\Invoices\CreditNoteNumberGenerator;
 use App\Services\Invoices\PaymentNumberGenerator;
@@ -32,7 +34,6 @@ class DocumentSequenceDefaults
         'return_list' => 'RL-',
         'statement' => 'STM-',
         'receipt' => 'REC-',
-        'purchase_order' => 'PO-',
         'member' => 'MEM-',
         'invoice_payment' => 'PAY-',
         'opportunity' => '',
@@ -99,7 +100,7 @@ class DocumentSequenceDefaults
      *     is_entity_number: bool
      * }
      */
-    public static function attributes(string $documentType): array
+    public static function attributes(string $documentType, ?int $storeId = null): array
     {
         if ($documentType === OpportunityNumberGenerator::DOCUMENT_TYPE) {
             return [
@@ -107,8 +108,8 @@ class DocumentSequenceDefaults
                 'suffix' => '',
                 'include_year' => false,
                 'include_month' => false,
-                'next_number' => 1,
-                'padding' => 10,
+                'next_number' => self::seededOpportunityNextNumber($storeId),
+                'padding' => (int) settings('opportunities.number_pad', 10),
                 'reset_frequency' => 'never',
                 'is_entity_number' => true,
             ];
@@ -128,13 +129,65 @@ class DocumentSequenceDefaults
 
     public static function ensureExists(int $storeId, string $documentType): DocumentSequence
     {
-        return DocumentSequence::query()->firstOrCreate(
-            [
-                'store_id' => $storeId,
-                'document_type' => $documentType,
-            ],
-            self::attributes($documentType),
-        );
+        return StoreScope::withoutScoping(function () use ($storeId, $documentType): DocumentSequence {
+            return DocumentSequence::query()->firstOrCreate(
+                [
+                    'store_id' => $storeId,
+                    'document_type' => $documentType,
+                ],
+                self::attributes($documentType, $storeId),
+            );
+        });
+    }
+
+    private static function seededOpportunityNextNumber(?int $storeId): int
+    {
+        if ($storeId === null) {
+            return 1;
+        }
+
+        /** @var 'store'|'global' $scope @deprecated migration-input only */
+        $scope = settings('opportunities.number_scope', 'store');
+
+        if ($scope === 'global') {
+            return self::globalOpportunityNumericMax() + 1;
+        }
+
+        return self::storeOpportunityNumericMax($storeId) + 1;
+    }
+
+    private static function globalOpportunityNumericMax(): int
+    {
+        $max = Opportunity::withTrashed()
+            ->whereNotNull('number')
+            ->pluck('number')
+            ->map(fn (string $number): int => self::opportunityNumericPortion($number))
+            ->max();
+
+        return (int) $max;
+    }
+
+    private static function storeOpportunityNumericMax(int $storeId): int
+    {
+        $max = Opportunity::withTrashed()
+            ->where('store_id', $storeId)
+            ->whereNotNull('number')
+            ->pluck('number')
+            ->map(fn (string $number): int => self::opportunityNumericPortion($number))
+            ->max();
+
+        return (int) $max;
+    }
+
+    private static function opportunityNumericPortion(string $number): int
+    {
+        $digits = preg_replace('/\D/', '', $number) ?? '';
+
+        if ($digits === '') {
+            return 0;
+        }
+
+        return (int) $digits;
     }
 
     public static function seedForStore(Store $store): void

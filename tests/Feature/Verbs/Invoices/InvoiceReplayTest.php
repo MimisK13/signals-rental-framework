@@ -126,7 +126,7 @@ it('allocates separate numbers per invoice type within a store', function () {
     ]));
 
     expect(Invoice::query()->whereKey($standard->id)->value('number'))->toBe('INV-2026-0001')
-        ->and(Invoice::query()->whereKey($deposit->id)->value('number'))->toBe('INV-2026-0001');
+        ->and(Invoice::query()->whereKey($deposit->id)->value('number'))->toBe('DEP-2026-0001');
 });
 
 it('forbids users without invoices.create permission', function () {

@@ -13,6 +13,9 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tests\Concerns\UsesIsolatedSqliteMigrations;
+
+uses(UsesIsolatedSqliteMigrations::class);
 
 /**
  * Numbering scheme migrations in reverse rollback order (last migrated first).

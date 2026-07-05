@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Member;
 use App\Models\PurchaseOrder;
+use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -62,13 +64,12 @@ it('creates a purchase order from the form', function () {
     ]);
     $this->actingAs($user);
 
-    $po = PurchaseOrder::factory()->make();
-    $supplierId = $po->supplier_id;
-    $storeId = $po->store_id;
+    $supplier = Member::factory()->organisation()->create();
+    $store = Store::factory()->create();
 
     Volt::test('purchase-orders.form')
-        ->set('supplierId', $supplierId)
-        ->set('storeId', $storeId)
+        ->set('supplierId', $supplier->id)
+        ->set('storeId', $store->id)
         ->set('lines', [[
             'description' => 'Test item',
             'quantity' => '1.00',
@@ -77,5 +78,5 @@ it('creates a purchase order from the form', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(PurchaseOrder::query()->where('supplier_id', $supplierId)->exists())->toBeTrue();
+    expect(PurchaseOrder::query()->where('supplier_id', $supplier->id)->exists())->toBeTrue();
 });

@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
+use Tests\Concerns\UsesIsolatedSqliteMigrations;
+
+uses(UsesIsolatedSqliteMigrations::class);
 
 /**
  * Document engine migrations in reverse rollback order (last migrated first).

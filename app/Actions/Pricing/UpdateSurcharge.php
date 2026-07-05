@@ -28,9 +28,7 @@ class UpdateSurcharge
 
         if (array_key_exists('percent_value', $payload)) {
             $payload['fixed_value_minor'] = null;
-        }
-
-        if (array_key_exists('fixed_value_minor', $payload)) {
+        } elseif (array_key_exists('fixed_value_minor', $payload)) {
             $payload['percent_value'] = null;
         }
 

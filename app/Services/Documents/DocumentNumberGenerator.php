@@ -6,8 +6,10 @@ use App\Enums\DocumentSequenceResetFrequency;
 use App\Exceptions\Documents\DuplicateDocumentNumberException;
 use App\Models\Document;
 use App\Models\DocumentSequence;
+use App\Models\Scopes\StoreScope;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Closure;
 use DateTimeInterface;
 
 /**
@@ -24,40 +26,47 @@ class DocumentNumberGenerator
      */
     public function next(int $storeId, string $documentType, ?DateTimeInterface $at = null): string
     {
-        return DocumentSequence::query()->getConnection()->transaction(function () use ($storeId, $documentType, $at): string {
-            $sequence = DocumentSequence::query()
-                ->where('store_id', $storeId)
-                ->where('document_type', $documentType)
-                ->lockForUpdate()
-                ->first();
-
-            if ($sequence === null) {
-                DocumentSequence::query()->create(array_merge(
-                    [
-                        'store_id' => $storeId,
-                        'document_type' => $documentType,
-                    ],
-                    DocumentSequenceDefaults::attributes($documentType),
-                ));
+        return $this->withAllocationTransaction(function () use ($storeId, $documentType, $at): string {
+            return StoreScope::withoutScoping(function () use ($storeId, $documentType, $at): string {
+                DocumentSequenceDefaults::ensureExists($storeId, $documentType);
 
                 $sequence = DocumentSequence::query()
                     ->where('store_id', $storeId)
                     ->where('document_type', $documentType)
                     ->lockForUpdate()
                     ->firstOrFail();
-            }
 
-            $instant = $this->resolveInstant($sequence, $at);
-            $this->applyPeriodReset($sequence, $instant);
+                $instant = $this->resolveInstant($sequence, $at);
+                $this->applyPeriodReset($sequence, $instant);
 
-            $number = $sequence->next_number;
-            $formatted = $this->format($sequence, $number, $instant);
+                $number = $sequence->next_number;
+                $formatted = $this->format($sequence, $number, $instant);
 
-            $sequence->next_number = $number + 1;
-            $sequence->save();
+                $sequence->next_number = $number + 1;
+                $sequence->save();
 
-            return $formatted;
+                return $formatted;
+            });
         });
+    }
+
+    /**
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    private function withAllocationTransaction(Closure $callback): mixed
+    {
+        $connection = DocumentSequence::query()->getConnection();
+
+        // Nested SQLite savepoints cannot see uncommitted rows from outer transactions,
+        // so reuse the caller's transaction (e.g. commitVerbs) instead of opening another.
+        if ($connection->transactionLevel() > 0) {
+            return $callback();
+        }
+
+        return $connection->transaction($callback);
     }
 
     /**

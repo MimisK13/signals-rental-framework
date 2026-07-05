@@ -158,6 +158,9 @@ class CreditNote extends Model implements HasSchema
         $builder->relation('invoice_id')->label('Invoice')
             ->relation('invoice', 'belongsTo', Invoice::class, 'number')
             ->filterable()->sortable();
+        $builder->relation('store_id')->label('Store')
+            ->relation('store', 'belongsTo', Store::class, 'name')
+            ->filterable()->sortable();
         $builder->currency('subtotal')->label('Subtotal')->sortable();
         $builder->currency('tax_total')->label('Tax Total')->sortable();
         $builder->currency('total')->label('Total')->sortable();

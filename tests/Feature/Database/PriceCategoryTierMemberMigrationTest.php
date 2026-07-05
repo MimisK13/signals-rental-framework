@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tests\Concerns\UsesIsolatedSqliteMigrations;
+
+uses(UsesIsolatedSqliteMigrations::class);
 
 const PRICE_CATEGORY_TIER_MEMBER_MIGRATION = '2026_07_04_120230_add_price_category_tier_id_to_members_table';
 
