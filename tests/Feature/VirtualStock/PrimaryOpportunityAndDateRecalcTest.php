@@ -19,6 +19,7 @@ use App\Services\Shortages\CostApportionmentContextBuilder;
 use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Thunk\Verbs\Facades\Verbs;
 
@@ -282,6 +283,8 @@ it('does not recalculate apportionment when a non-participating item date change
 });
 
 it('does not double-apportion costs when verbs replays after a date-driven recalc', function () {
+    Carbon::setTestNow(Carbon::parse('2026-08-05T10:00:00Z'));
+
     ['intake' => $intake, 'itemA' => $itemA] = durationApportionFixture();
 
     app(ChangeItemDates::class)(
@@ -308,4 +311,6 @@ it('does not double-apportion costs when verbs replays after a date-driven recal
 
     expect($costsAfter)->toBe($costsBefore)
         ->and(verbEventCount())->toBe($eventCountBeforeReplay);
+
+    Carbon::setTestNow();
 });
