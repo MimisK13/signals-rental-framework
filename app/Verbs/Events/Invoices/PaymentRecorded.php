@@ -40,8 +40,8 @@ class PaymentRecorded extends Event
 
     public function apply(InvoiceState $state): void
     {
-        $state->amount_paid = $this->amount_paid;
-        $state->amount_outstanding = $this->amount_outstanding;
+        $state->amount_paid += $this->amount;
+        $state->amount_outstanding = $state->total - $state->amount_paid - $state->credited_total;
         $state->status = $this->status;
         $state->paid_at = $this->paid_at !== null
             ? CarbonImmutable::parse($this->paid_at)

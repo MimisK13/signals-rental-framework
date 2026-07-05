@@ -86,6 +86,13 @@ class ReturnKitContainer
                 &$returnedIds,
                 &$overlay,
             ): void {
+                $container = $this->lockModelForMutation(
+                    $container,
+                    ContainerStatus::Dispatched->value,
+                    failureKey: 'container',
+                    assert: fn (Container $locked) => $this->guardContainer($locked),
+                );
+
                 app(AutoPromotionContext::class)->suppress(function () use (
                     $assignments,
                     $data,

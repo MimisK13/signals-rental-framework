@@ -101,6 +101,13 @@ class DispatchKitContainer
                 &$amended,
                 &$dispatchedAssetIds,
             ): void {
+                $container = $this->lockModelForMutation(
+                    $container,
+                    ContainerStatus::Sealed->value,
+                    failureKey: 'container',
+                    assert: fn (Container $locked) => $this->guardContainer($locked),
+                );
+
                 $opportunity->refresh()->load('items');
 
                 $this->applyAmendments(

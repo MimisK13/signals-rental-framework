@@ -2,6 +2,7 @@
 
 namespace App\Actions\Containers;
 
+use App\Concerns\LocksModelsForMutation;
 use App\Data\Containers\ContainerItemData;
 use App\Data\Containers\TransferContainerItemData;
 use App\Enums\ContainerItemUnpackReason;
@@ -29,6 +30,8 @@ use Illuminate\Validation\ValidationException;
  */
 class TransferContainerItem
 {
+    use LocksModelsForMutation;
+
     public function __invoke(Container $target, TransferContainerItemData $data): ContainerItemData
     {
         Gate::authorize('transfer', $target);
@@ -61,6 +64,30 @@ class TransferContainerItem
         BeforeContainerItemTransferred::dispatch($source, $target, $stockLevel, $membership);
 
         return DB::transaction(function () use ($source, $target, $membership, $stockLevel, $data): ContainerItemData {
+            $source = $this->lockModelForMutation(
+                $source,
+                failureKey: 'source_container_id',
+                assert: function (Container $locked): void {
+                    if ($locked->status !== ContainerStatus::Sealed && ! $locked->status->acceptsPacking()) {
+                        throw ValidationException::withMessages([
+                            'source_container_id' => __('Items can only be transferred from an open container.'),
+                        ]);
+                    }
+                },
+            );
+
+            $this->lockModelForMutation(
+                $target,
+                failureKey: 'container',
+                assert: function (Container $locked): void {
+                    if (! $locked->status->acceptsPacking()) {
+                        throw ValidationException::withMessages([
+                            'container' => __('Items can only be transferred into an open container.'),
+                        ]);
+                    }
+                },
+            );
+
             if ($source->status === ContainerStatus::Sealed) {
                 $source->update([
                     'status' => ContainerStatus::Open,

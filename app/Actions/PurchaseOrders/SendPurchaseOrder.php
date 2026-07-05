@@ -26,6 +26,12 @@ class SendPurchaseOrder
         $sentAt = CarbonImmutable::now('UTC');
 
         $this->commitVerbs(function () use ($purchaseOrder, $status, $sentAt, $supplierReference): void {
+            $this->lockModelForMutation(
+                $purchaseOrder,
+                assert: fn (PurchaseOrder $locked) => app(PurchaseOrderStatusRegistry::class)
+                    ->assertCanTransitionTo($locked->status, $status),
+            );
+
             PurchaseOrderSent::fire(
                 state_id: (int) $purchaseOrder->state_id,
                 status: $status,

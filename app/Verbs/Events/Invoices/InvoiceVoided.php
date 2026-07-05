@@ -38,6 +38,11 @@ class InvoiceVoided extends Event
             in_array($state->status, ['draft', 'issued', 'partially_paid', 'overdue'], true),
             'This invoice cannot be voided in its current status.',
         );
+
+        $this->assert(
+            $state->amount_paid === 0,
+            'Invoices with recorded payments cannot be voided. Issue a credit note instead.',
+        );
     }
 
     public function apply(InvoiceState $state): void

@@ -121,6 +121,13 @@ class DispatchContainer
                 &$dispatchedAssetIds,
                 &$containersDissolved,
             ): void {
+                $container = $this->lockModelForMutation(
+                    $container,
+                    ContainerStatus::Sealed->value,
+                    failureKey: 'container',
+                    assert: fn (Container $locked) => $this->guardTransportContainer($locked),
+                );
+
                 $opportunity->refresh()->load('items');
 
                 $this->applyAmendments(

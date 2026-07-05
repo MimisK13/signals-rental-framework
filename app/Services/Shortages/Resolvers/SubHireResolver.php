@@ -7,6 +7,7 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Contracts\BatchShortageResolverContract;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
+use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\ProductSupplierCost;
 use App\Models\ShortageResolution;
@@ -304,6 +305,12 @@ class SubHireResolver extends AbstractShortageResolver implements BatchShortageR
                 $product,
                 $currency,
             ): ShortageResolution {
+                OpportunityItem::query()
+                    ->whereIn('id', array_keys($allocations))
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
+
                 $resolution = ShortageResolution::query()->create([
                     'resolver_key' => $this->key(),
                     'resolution_type' => $this->resolutionType()->value,

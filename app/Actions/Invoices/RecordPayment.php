@@ -28,8 +28,6 @@ class RecordPayment
     {
         Gate::authorize('recordPayment', $invoice);
 
-        $this->assertPayableStatus($invoice, $isRefund);
-
         $signedAmount = $isRefund ? -abs($data->amount) : abs($data->amount);
 
         if (! $isRefund && $signedAmount <= 0) {
@@ -38,39 +36,7 @@ class RecordPayment
             ]);
         }
 
-        if ($isRefund && $data->amount > $invoice->amount_paid) {
-            throw ValidationException::withMessages([
-                'amount' => ['Refund amount cannot exceed the total amount paid on this invoice.'],
-            ]);
-        }
-
-        if (! $isRefund && $signedAmount > max(0, $invoice->amount_outstanding)) {
-            throw ValidationException::withMessages([
-                'amount' => ['Payment amount exceeds the outstanding balance on this invoice.'],
-            ]);
-        }
-
         $receivedAt = CarbonImmutable::now('UTC');
-        $newAmountPaid = $invoice->amount_paid + $signedAmount;
-        $newAmountOutstanding = $invoice->total - $newAmountPaid - $invoice->credited_total;
-
-        $resolver = app(InvoiceStatusResolver::class);
-        $resolvedStatus = $resolver->resolve(
-            $invoice->status,
-            $newAmountPaid,
-            $invoice->total,
-            $newAmountOutstanding,
-            $invoice->due_at,
-            $receivedAt,
-        );
-
-        app(InvoiceStatusRegistry::class)->assertKnown($resolvedStatus);
-        app(InvoiceStatusRegistry::class)->assertCanTransitionTo($invoice->status, $resolvedStatus);
-
-        $paidAt = $resolvedStatus === 'paid'
-            ? $receivedAt->toIso8601String()
-            : null;
-
         $auditAction = $isRefund ? 'payment.refunded' : 'payment.recorded';
         $paymentId = app(SequenceAllocator::class)->next('invoice_payments');
 
@@ -80,12 +46,45 @@ class RecordPayment
             $signedAmount,
             $data,
             $receivedAt,
-            $resolvedStatus,
-            $newAmountPaid,
-            $newAmountOutstanding,
-            $paidAt,
             $auditAction,
+            $isRefund,
         ): void {
+            $invoice = $this->lockModelForMutation($invoice);
+
+            $this->assertPayableStatus($invoice, $isRefund);
+
+            if ($isRefund && $data->amount > $invoice->amount_paid) {
+                throw ValidationException::withMessages([
+                    'amount' => ['Refund amount cannot exceed the total amount paid on this invoice.'],
+                ]);
+            }
+
+            if (! $isRefund && $signedAmount > max(0, $invoice->amount_outstanding)) {
+                throw ValidationException::withMessages([
+                    'amount' => ['Payment amount exceeds the outstanding balance on this invoice.'],
+                ]);
+            }
+
+            $newAmountPaid = $invoice->amount_paid + $signedAmount;
+            $newAmountOutstanding = $invoice->total - $newAmountPaid - $invoice->credited_total;
+
+            $resolver = app(InvoiceStatusResolver::class);
+            $resolvedStatus = $resolver->resolve(
+                $invoice->status,
+                $newAmountPaid,
+                $invoice->total,
+                $newAmountOutstanding,
+                $invoice->due_at,
+                $receivedAt,
+            );
+
+            app(InvoiceStatusRegistry::class)->assertKnown($resolvedStatus);
+            app(InvoiceStatusRegistry::class)->assertCanTransitionTo($invoice->status, $resolvedStatus);
+
+            $paidAt = $resolvedStatus === 'paid'
+                ? $receivedAt->toIso8601String()
+                : null;
+
             $number = app(PaymentNumberGenerator::class)->nextOrCreate(
                 (int) $invoice->store_id,
                 $receivedAt,

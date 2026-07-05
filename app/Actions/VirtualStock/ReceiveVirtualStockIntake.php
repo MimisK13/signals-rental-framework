@@ -32,6 +32,12 @@ class ReceiveVirtualStockIntake
         $coordinator = app(SerialisedVirtualStockAssetCoordinator::class);
 
         $this->commitVerbs(function () use ($intake, $status, $receivedAt, $coordinator): void {
+            $this->lockModelForMutation(
+                $intake,
+                assert: fn (VirtualStockIntake $locked) => app(VirtualStockStatusRegistry::class)
+                    ->assertCanTransitionTo($locked->status, $status),
+            );
+
             VirtualStockIntakeReceived::fire(
                 state_id: (int) $intake->state_id,
                 status: $status,

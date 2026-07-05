@@ -129,6 +129,7 @@ class CreditNoteTaxMirror
         }
 
         $resolved = [];
+        $seenItemIds = [];
 
         foreach ($selections as $selection) {
             $itemId = (int) $selection['invoice_item_id'];
@@ -139,6 +140,14 @@ class CreditNoteTaxMirror
                     'lines' => ['Each credit line selection must include a valid invoice_item_id.'],
                 ]);
             }
+
+            if (isset($seenItemIds[$itemId])) {
+                throw ValidationException::withMessages([
+                    'lines' => ["Invoice item [{$itemId}] appears more than once in the credit line selection."],
+                ]);
+            }
+
+            $seenItemIds[$itemId] = true;
 
             $item = $items->firstWhere('id', $itemId);
 

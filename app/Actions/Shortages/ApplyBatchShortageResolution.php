@@ -12,6 +12,7 @@ use App\ValueObjects\ResolutionResult;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageCollection;
 use App\ValueObjects\ShortageGroup;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -61,7 +62,15 @@ class ApplyBatchShortageResolution
             ]);
         }
 
-        return $resolver->applyBatch($group, $options[$data->option_index]);
+        return DB::transaction(function () use ($resolver, $group, $options, $data): ResolutionResult {
+            OpportunityItem::query()
+                ->whereIn('id', $data->opportunity_item_ids)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            return $resolver->applyBatch($group, $options[$data->option_index]);
+        });
     }
 
     /**

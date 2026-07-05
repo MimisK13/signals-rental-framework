@@ -22,15 +22,8 @@ class VoidInvoice
     {
         Gate::authorize('void', $invoice);
 
-        if ($invoice->amount_paid > 0) {
-            throw ValidationException::withMessages([
-                'invoice' => ['Invoices with recorded payments cannot be voided. Issue a credit note instead.'],
-            ]);
-        }
-
         $status = 'void';
         app(InvoiceStatusRegistry::class)->assertKnown($status);
-        app(InvoiceStatusRegistry::class)->assertCanTransitionTo($invoice->status, $status);
 
         $voidedAt = CarbonImmutable::now('UTC');
 
@@ -50,6 +43,21 @@ class VoidInvoice
         }
 
         $this->commitVerbs(function () use ($invoice, $voidedAt, $status, $quantityReleases): void {
+            $this->lockModelForMutation(
+                $invoice,
+                ['draft', 'issued', 'partially_paid', 'overdue', 'paid'],
+                failureKey: 'invoice',
+                assert: function (Invoice $locked) use ($status): void {
+                    if ($locked->amount_paid > 0) {
+                        throw ValidationException::withMessages([
+                            'invoice' => ['Invoices with recorded payments cannot be voided. Issue a credit note instead.'],
+                        ]);
+                    }
+
+                    app(InvoiceStatusRegistry::class)->assertCanTransitionTo($locked->status, $status);
+                },
+            );
+
             InvoiceVoided::fire(
                 state_id: (int) $invoice->state_id,
                 status: $status,

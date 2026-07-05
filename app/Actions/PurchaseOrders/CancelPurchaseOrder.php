@@ -26,6 +26,12 @@ class CancelPurchaseOrder
         $cancelledAt = CarbonImmutable::now('UTC');
 
         $this->commitVerbs(function () use ($purchaseOrder, $status, $cancelledAt, $reason): void {
+            $this->lockModelForMutation(
+                $purchaseOrder,
+                assert: fn (PurchaseOrder $locked) => app(PurchaseOrderStatusRegistry::class)
+                    ->assertCanTransitionTo($locked->status, $status),
+            );
+
             PurchaseOrderCancelled::fire(
                 state_id: (int) $purchaseOrder->state_id,
                 status: $status,

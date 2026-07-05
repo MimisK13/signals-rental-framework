@@ -21,6 +21,7 @@ use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
 use App\Services\SequenceAllocator;
 use App\Services\Shortages\ItemShortageProbe;
 use App\Services\Shortages\ShortageEventRecorder;
+use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderReceiptRecorded;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeSupplyAdjusted;
@@ -204,7 +205,15 @@ class ReceivePurchaseOrder
                 $taxFinalised,
                 $taxPayload,
                 $intakeActions,
+                $stockReceipts,
             ): void {
+                $this->lockModelForMutation(
+                    $purchaseOrder,
+                    ['sent', 'partially_received'],
+                    failureKey: 'purchase_order',
+                    failureMessage: 'Only sent or partially received purchase orders can receive goods.',
+                );
+
                 PurchaseOrderReceiptRecorded::fire(
                     state_id: (int) $purchaseOrder->state_id,
                     lines: $deltas,
@@ -225,6 +234,12 @@ class ReceivePurchaseOrder
                     $intake = $action['intake'];
 
                     if ($action['type'] === 'update_and_confirm') {
+                        $this->lockModelForMutation(
+                            $intake,
+                            assert: fn (VirtualStockIntake $locked) => app(VirtualStockStatusRegistry::class)
+                                ->assertCanTransitionTo($locked->status, 'confirmed'),
+                        );
+
                         VirtualStockIntakeUpdated::fire(
                             state_id: (int) $intake->state_id,
                             purchase_order_id: $intake->purchase_order_id,
@@ -249,6 +264,12 @@ class ReceivePurchaseOrder
                     }
 
                     if ($action['type'] === 'adjust_supply') {
+                        $this->lockModelForMutation(
+                            $intake,
+                            ['confirmed', 'received'],
+                            failureKey: 'virtual_stock_intake',
+                        );
+
                         VirtualStockIntakeSupplyAdjusted::fire(
                             state_id: (int) $intake->state_id,
                             quantity: $action['quantity'],
@@ -256,15 +277,15 @@ class ReceivePurchaseOrder
                         );
                     }
                 }
+
+                foreach ($stockReceipts as $stockReceipt) {
+                    $this->recordStockReceipt($stockReceipt);
+                }
             });
         } catch (\Throwable $e) {
             $this->resetVerbsState();
 
             throw $e;
-        }
-
-        foreach ($stockReceipts as $stockReceipt) {
-            $this->recordStockReceipt($stockReceipt);
         }
 
         foreach ($resolutionTargets as $resolution) {
