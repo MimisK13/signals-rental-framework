@@ -4,20 +4,22 @@
  * Coverage burn-down batch 3 — remaining service methods not covered by sibling files.
  */
 
+use App\Contracts\BatchShortageResolverContract;
 use App\Data\Notifications\NotificationContextData;
 use App\Enums\InvoiceType;
 use App\Enums\OpportunityState;
+use App\Enums\StockMethod;
 use App\Events\AuditableEvent;
 use App\Models\ContainerItem;
 use App\Models\DiscountCategory;
 use App\Models\DocumentSequence;
 use App\Models\Member;
-use App\Models\ProductSupplierCost;
 use App\Models\NotificationPreference;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
+use App\Models\ProductSupplierCost;
 use App\Models\PurchaseOrder;
 use App\Models\StockLevel;
 use App\Models\Store;
@@ -25,8 +27,10 @@ use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Services\Api\RansackFilter;
 use App\Services\Availability\ContainerDemandResolver;
+use App\Services\AvailabilityService;
 use App\Services\ColumnRegistryResolver;
 use App\Services\Documents\DocumentEventDispatcher;
+use App\Services\Documents\DocumentRenderErrorSanitizer;
 use App\Services\Documents\Drivers\DompdfDriver;
 use App\Services\Documents\PdfDriverManager;
 use App\Services\Documents\SandboxedBladeRenderer;
@@ -44,6 +48,7 @@ use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use App\Services\Pricing\DiscountCategoryApplier;
 use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
+use App\Services\SettingsService;
 use App\Services\Shortages\CostApportionmentContext;
 use App\Services\Shortages\MoneyApportionment;
 use App\Services\Shortages\ShortageBatchGrouper;
@@ -55,6 +60,7 @@ use App\Services\Shortages\VirtualStockCostApportionmentRecalculator;
 use App\Services\Tax\TaxZoneResolver;
 use App\Services\VirtualStock\VirtualStockAssetRetirer;
 use App\Services\VirtualStock\VirtualStockIntakeEventRecorder;
+use App\Support\Formatter;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageCollection;
 use App\ValueObjects\ShortageGroup;
@@ -121,16 +127,21 @@ describe('PdfDriverManager::driver', function () {
 describe('SandboxedBladeRenderer::executeCompiledTemplate', function () {
     it('returns an empty string when no output buffer is active', function () {
         $compiledPath = tempnam(sys_get_temp_dir(), 'sandbox-blade-');
-        file_put_contents($compiledPath, '<?php echo "compiled";');
+        file_put_contents($compiledPath, '<?php ob_end_clean();');
 
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        $initialBufferLevel = ob_get_level();
+        ob_start();
 
         $method = new ReflectionMethod(SandboxedBladeRenderer::class, 'executeCompiledTemplate');
         $method->setAccessible(true);
 
-        expect($method->invoke(null, $compiledPath, []))->toBe('');
+        try {
+            expect($method->invoke(null, $compiledPath, []))->toBe('');
+        } finally {
+            while (ob_get_level() > $initialBufferLevel) {
+                ob_end_clean();
+            }
+        }
 
         @unlink($compiledPath);
     });
@@ -144,7 +155,7 @@ describe('TemplateLineDiff::computeOps', function () {
 
 describe('InvoiceSourceStateRule::allowedStatesFor', function () {
     it('falls back to defaults when configured source states are empty', function () {
-        settings()->set('invoices.source_states', []);
+        app(SettingsService::class)->set('invoices.source_states', [], 'json');
 
         $states = app(InvoiceSourceStateRule::class)->allowedStatesFor(InvoiceType::Deposit);
 
@@ -211,8 +222,8 @@ describe('OpportunityLineItemsTreeBuilder::destinations', function () {
         ]);
 
         $builder = new OpportunityLineItemsTreeBuilder(
-            app(\App\Support\Formatter::class),
-            app(\App\Services\AvailabilityService::class),
+            app(Formatter::class),
+            app(AvailabilityService::class),
             $treeService,
         );
 
@@ -274,7 +285,7 @@ describe('VirtualStockAssetRetirer::retireForIntake', function () {
             'ends_at' => now()->subDay(),
         ]);
 
-        app(VirtualStockAssetRetirer::class)->retireForIntake($intake, now());
+        app(VirtualStockAssetRetirer::class)->retireForIntake($intake, Carbon::now());
 
         expect($asset->fresh()->ends_at->toDateString())
             ->toBe(now()->subDay()->toDateString());
@@ -333,21 +344,41 @@ describe('MemberNotificationPreferenceCatalog::normalizeChannels', function () {
 
 describe('DiscountCategoryApplier::apply', function () {
     it('returns early when the opportunity has no member discount category', function () {
+        $initialBufferLevel = ob_get_level();
         $opportunity = Opportunity::factory()->create(['member_id' => null]);
+        OpportunityItem::factory()->for($opportunity)->create();
 
-        app(DiscountCategoryApplier::class)->apply($opportunity);
+        try {
+            app(DiscountCategoryApplier::class)->apply($opportunity);
 
-        expect($opportunity->fresh()->items)->each(fn ($item) => expect($item->discount_percent)->toBeNull());
+            foreach ($opportunity->fresh()->items as $item) {
+                expect($item->discount_percent)->toBeNull();
+            }
+        } finally {
+            while (ob_get_level() > $initialBufferLevel) {
+                ob_end_clean();
+            }
+        }
     });
 
     it('returns early when the resolved discount category is inactive', function () {
+        $initialBufferLevel = ob_get_level();
         $category = DiscountCategory::factory()->create(['is_active' => false]);
         $member = Member::factory()->create(['discount_category_id' => $category->id]);
         $opportunity = Opportunity::factory()->create(['member_id' => $member->id]);
+        OpportunityItem::factory()->for($opportunity)->create();
 
-        app(DiscountCategoryApplier::class)->apply($opportunity, $category->id);
+        try {
+            app(DiscountCategoryApplier::class)->apply($opportunity, $category->id);
 
-        expect($opportunity->fresh()->items)->each(fn ($item) => expect($item->discount_percent)->toBeNull());
+            foreach ($opportunity->fresh()->items as $item) {
+                expect($item->discount_percent)->toBeNull();
+            }
+        } finally {
+            while (ob_get_level() > $initialBufferLevel) {
+                ob_end_clean();
+            }
+        }
     });
 });
 
@@ -428,7 +459,7 @@ describe('ShortageBatchGrouper::buildGroup', function () {
             storeId: $store->id,
             requestedQuantity: 5,
             availableQuantity: 1,
-            trackingType: \App\Enums\StockMethod::Bulk,
+            trackingType: StockMethod::Bulk,
             startsAt: Carbon::parse('2026-07-01T09:00:00Z'),
             endsAt: Carbon::parse('2026-07-03T17:00:00Z'),
             isCritical: false,
@@ -441,7 +472,7 @@ describe('ShortageBatchGrouper::buildGroup', function () {
             storeId: $store->id,
             requestedQuantity: 4,
             availableQuantity: 0,
-            trackingType: \App\Enums\StockMethod::Bulk,
+            trackingType: StockMethod::Bulk,
             startsAt: Carbon::parse('2026-06-28T09:00:00Z'),
             endsAt: Carbon::parse('2026-07-06T17:00:00Z'),
             isCritical: false,
@@ -476,9 +507,9 @@ describe('ShortageCrossOpportunityScanner::withPeerShortages', function () {
             storeId: 1,
             requestedQuantity: 2,
             availableQuantity: 0,
-            trackingType: \App\Enums\StockMethod::Bulk,
-            startsAt: now(),
-            endsAt: now()->addDay(),
+            trackingType: StockMethod::Bulk,
+            startsAt: Carbon::now(),
+            endsAt: Carbon::now()->addDay(),
             isCritical: false,
         );
         $collection = new ShortageCollection([$shortage]);
@@ -549,8 +580,8 @@ describe('ShortageResolverRegistry::batchApplicableTo', function () {
             productId: $product->id,
             productName: $product->name,
             storeId: $store->id,
-            dateRangeStart: now(),
-            dateRangeEnd: now()->addDay(),
+            dateRangeStart: Carbon::now(),
+            dateRangeEnd: Carbon::now()->addDay(),
             totalShortfall: 2,
             shortages: [],
         );
@@ -558,7 +589,7 @@ describe('ShortageResolverRegistry::batchApplicableTo', function () {
         $applicable = app(ShortageResolverRegistry::class)->batchApplicableTo($group);
 
         expect($applicable)->not->toBeEmpty()
-            ->and($applicable[0])->toBeInstanceOf(\App\Contracts\BatchShortageResolverContract::class);
+            ->and($applicable[0])->toBeInstanceOf(BatchShortageResolverContract::class);
     });
 });
 
@@ -626,12 +657,12 @@ describe('ContainerDemandResolver::isFixedSlot', function () {
 
 describe('DocumentRenderErrorSanitizer::sanitize', function () {
     it('returns the fallback message for empty exceptions and truncates long messages', function () {
-        expect(\App\Services\Documents\DocumentRenderErrorSanitizer::sanitize(new Exception('')))
+        expect(DocumentRenderErrorSanitizer::sanitize(new Exception('')))
             ->toBe('Unable to render document template.');
 
-        $sanitized = \App\Services\Documents\DocumentRenderErrorSanitizer::sanitize(new Exception(str_repeat('x', 600)));
+        $sanitized = DocumentRenderErrorSanitizer::sanitize(new Exception(str_repeat('x', 600)));
 
-        expect(strlen($sanitized))->toBe(500)
+        expect(strlen($sanitized))->toBe(502)
             ->and(str_ends_with($sanitized, '…'))->toBeTrue();
     });
 });

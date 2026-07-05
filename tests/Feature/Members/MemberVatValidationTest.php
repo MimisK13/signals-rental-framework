@@ -248,9 +248,11 @@ describe('VAT validation webhook', function () {
     it('ProcessMemberVatValidation returns early when tax number is blank', function () {
         $member = Member::factory()->organisation()->create(['tax_number' => '   ']);
 
-        $result = app(ProcessMemberVatValidation::class)($member);
+        // Refresh so DB-default columns (e.g. bookable) are populated, matching how
+        // the action receives a DB-loaded member in production.
+        $result = app(ProcessMemberVatValidation::class)($member->refresh());
 
-        expect($result->tax_number_validated)->toBeNull();
+        expect($result->membership['tax_number_validated'])->toBeNull();
     });
 
     it('registers member.vat_validated in the webhook catalogue', function () {

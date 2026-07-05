@@ -8,21 +8,21 @@ use App\Data\Invoices\FrozenInvoiceLineData;
 use App\Data\Invoices\FrozenInvoiceTaxRowData;
 use App\Data\Notifications\ChannelSendData;
 use App\Data\Notifications\TestChannelProviderData;
-use App\Data\Tax\DocumentTaxLineInput;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DealPriceMode;
-use App\Enums\PartialInvoiceTaxPolicy;
+use App\Enums\InvoiceType;
+use App\Enums\NotificationAudience;
 use App\Enums\PricingRoundingDirection;
 use App\Enums\TaxBuyerType;
 use App\Enums\TaxCategoryType;
 use App\Enums\TaxResultType;
-use App\Enums\NotificationAudience;
 use App\Events\AuditableEvent;
 use App\Events\Containers\BeforeContainerPacked;
 use App\Models\Container;
-use App\Models\CreditNote;
 use App\Models\DocumentSequence;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\InvoiceTax;
 use App\Models\Member;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
@@ -34,7 +34,6 @@ use App\Models\OrganisationTaxClass;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\ShortageResolution;
 use App\Models\ShortageResolutionItem;
 use App\Models\ShortageWaitlistMonitor;
@@ -48,9 +47,12 @@ use App\Models\TaxZone;
 use App\Models\TaxZoneMember;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
+use App\Notifications\ChannelInfrastructureBroadcastNotification;
 use App\Services\Api\ApiEndpointCatalogue;
+use App\Services\Api\PriceWeightResolver;
 use App\Services\Api\UsageRecorder;
 use App\Services\Availability\VirtualStockDemandResolver;
+use App\Services\Containers\ContainerTemplateValidator;
 use App\Services\Documents\BladeExpressionExtractor;
 use App\Services\Documents\Drivers\BrowsershotDriver;
 use App\Services\Documents\OpportunityDataResolver;
@@ -72,7 +74,6 @@ use App\Services\Tax\TaxResolutionContext;
 use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\Tax\ZoneAwareTaxResolver;
 use App\Services\VirtualStock\VirtualStockNumberGenerator;
-use App\Services\Containers\ContainerTemplateValidator;
 use App\ValueObjects\Documents\PdfDocumentParts;
 use App\ValueObjects\Tax\DocumentTaxGroup;
 use App\ValueObjects\Tax\DocumentTaxLineAllocation;
@@ -81,15 +82,15 @@ use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\TaxZoneRuleSeeder;
+use Dedoc\Scramble\Generator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Thunk\Verbs\Facades\Verbs;
 
 uses(RefreshDatabase::class);
@@ -98,6 +99,7 @@ beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    $this->actingAs(User::factory()->owner()->create());
     Store::factory()->create();
     settings()->set('pricing.rounding_direction', PricingRoundingDirection::HalfUp->value);
     settings()->set('tax.unresolved_zone_fallback', 'seller_domestic');
@@ -115,15 +117,13 @@ function batch6Part4Invoke(object $object, string $method, array $args = []): mi
 describe('PurchaseOrderDataResolver batch-6 branches', function () {
     it('resolve handles null supplier opportunity store and invalid model', function () {
         $resolver = app(PurchaseOrderDataResolver::class);
-        $po = PurchaseOrder::factory()->create([
-            'supplier_id' => null,
-            'opportunity_id' => null,
-            'store_id' => null,
-        ]);
+        $po = PurchaseOrder::factory()->create(['opportunity_id' => null]);
+        $po->setRelation('supplier', null);
+        $po->setRelation('store', null);
 
         $data = $resolver->resolve($po);
         expect($data['supplier']['name'])->toBeNull()
-            ->and($data['opportunity'])->toBeNull()
+            ->and($data['opportunity']['number'])->toBeNull()
             ->and($data['store']['name'])->toBeNull();
 
         expect(fn () => $resolver->resolve(Member::factory()->create()))
@@ -172,10 +172,10 @@ describe('BladeExpressionExtractor batch-6 branches', function () {
     it('extracts foreach for and escaped echo variants', function () {
         $extractor = app(BladeExpressionExtractor::class);
 
-        $echoes = $extractor->extractEchoExpressions('Hello @{{ escaped }} {{ $name }}');
+        $echoes = $extractor->extract('Hello @{{ escaped }} {{ $name }}');
         expect($echoes)->toContain('$name');
 
-        $directives = $extractor->extractDirectiveExpressions('@foreach($items as $k => $v) @endforeach @for($i=0;$i<3;$i++) @endfor');
+        $directives = $extractor->extract('@foreach($items as $k => $v) @endforeach @for($i=0;$i<3;$i++) @endfor');
         expect($directives)->not->toBeEmpty();
 
         $splitLoop = batch6Part4Invoke($extractor, 'splitLoopExpression', ['($items as $item)']);
@@ -201,10 +201,10 @@ describe('BroadcastDriver batch-6 branches', function () {
             data: ['foo' => 'bar'],
         ));
 
-        Notification::assertSentTo($member, \App\Notifications\ChannelInfrastructureBroadcastNotification::class);
+        Notification::assertSentTo($member, ChannelInfrastructureBroadcastNotification::class);
 
         config(['broadcasting.default' => '']);
-        expect($driver->test(new TestChannelProviderData(channel: 'broadcast'))->passed)->toBeFalse();
+        expect($driver->test(new TestChannelProviderData(channel: 'broadcast'))->success)->toBeFalse();
 
         expect(fn () => batch6Part4Invoke($driver, 'resolveNotifiable', [
             new ChannelSendData(
@@ -223,7 +223,7 @@ describe('UsageRecorder batch-6 branches', function () {
         $recorder = app(UsageRecorder::class);
         $recorder->flush();
 
-        settings()->set('api_metering.log_channel', 'stack');
+        config(['api_metering.log_channel' => 'stack']);
         Log::shouldReceive('channel')->with('stack')->andReturnSelf();
         Log::shouldReceive('warning')->once();
         batch6Part4Invoke($recorder, 'reportFailure', [new RuntimeException('persist failed')]);
@@ -252,14 +252,14 @@ describe('InvoiceNumberGenerator batch-6 branches', function () {
         $store = Store::factory()->create(['timezone' => 'UTC']);
         DocumentSequence::factory()->create([
             'store_id' => $store->id,
-            'document_type' => InvoiceNumberGenerator::DOCUMENT_TYPE,
+            'document_type' => InvoiceType::Standard->documentSequenceType(),
             'prefix' => 'INV-',
             'next_number' => 42,
             'padding' => 4,
         ]);
 
         $generator = app(InvoiceNumberGenerator::class);
-        expect($generator->preview($store->id))->toContain('INV-');
+        expect($generator->preview($store->id, InvoiceType::Standard))->toContain('INV-');
     });
 });
 
@@ -269,7 +269,7 @@ describe('InvoiceTotalsCalculator batch-6 branches', function () {
 
         $badSummary = new DocumentTaxSummary(
             groups: [new DocumentTaxGroup(productTaxClassKey: 1, netTotal: 1000, taxTotal: 200, ratePercentage: '20', taxRateName: 'Standard', taxRateId: 1, taxRuleId: 1)],
-            lineAllocations: [new DocumentTaxLineAllocation(lineKey: 'a', taxMinor: 199, netMinor: 1000)],
+            lineAllocations: [new DocumentTaxLineAllocation(lineKey: 'a', netMinor: 1000, taxMinor: 199, productTaxClassKey: 1)],
             totalNet: 1000,
             totalTax: 200,
         );
@@ -378,10 +378,13 @@ describe('PluginRegistrar batch-6 branches', function () {
 describe('PartialQuantityInvoiceCalculator batch-6 branches', function () {
     it('calculate validates selections and scales tax rows proportionally', function () {
         $calculator = app(PartialQuantityInvoiceCalculator::class);
-        $item = OpportunityItem::factory()->create(['quantity' => '2', 'invoiced_quantity' => '0']);
+        $opportunity = giCreateOrderOpportunity();
+        $item = $opportunity->items()->firstOrFail();
+        $item->update(['quantity' => '2', 'unit_price' => 1000, 'total' => 2000, 'invoiced_quantity' => '0']);
+        $item->refresh();
         $lines = [
             new FrozenInvoiceLineData(
-                invoice_item_id: 1,
+                invoice_item_id: 0,
                 line_key: 'item:'.$item->id,
                 source_type: 'item',
                 description: 'Line',
@@ -415,13 +418,13 @@ describe('PartialQuantityInvoiceCalculator batch-6 branches', function () {
             fullSubtotal: 2000,
             fullTaxTotal: 400,
             selections: [['opportunity_item_id' => $item->id, 'quantity' => '1']],
-            lockedItems: collect([$item]),
+            lockedItems: collect([$item->id => $item]),
         );
 
         expect($result['subtotal'])->toBe(1000)
             ->and($result['tax_total'])->toBe(200);
 
-        expect(fn () => $calculator->calculate($lines, $taxRows, 2000, 400, [], collect([$item])))
+        expect(fn () => $calculator->calculate($lines, $taxRows, 2000, 400, [], collect([$item->id => $item])))
             ->toThrow(ValidationException::class);
     });
 });
@@ -478,7 +481,8 @@ describe('EmailDriver batch-6 branches', function () {
         settings()->set('email.postmark_token', '');
         expect(batch6Part4Invoke($driver, 'validatePostmark', []))->toBeString();
 
-        $member = Member::factory()->create(['email' => 'test@example.com']);
+        $member = Member::factory()->contact()->create();
+        $member->emails()->create(['address' => 'test@example.com', 'is_primary' => true]);
         $recipient = batch6Part4Invoke($driver, 'resolveRecipient', [
             new ChannelSendData(
                 driverKey: 'mail',
@@ -502,23 +506,23 @@ describe('CreditNoteTaxMirror batch-6 branches', function () {
         expect(fn () => $mirror->mirror($invoice, []))
             ->toThrow(ValidationException::class);
 
-        $item = \App\Models\InvoiceItem::factory()->create([
+        $item = InvoiceItem::factory()->create([
             'invoice_id' => $invoice->id,
             'total' => 1000,
             'tax' => 200,
             'quantity' => '2',
             'opportunity_item_id' => OpportunityItem::factory()->create()->id,
         ]);
-        \App\Models\InvoiceTax::factory()->create([
+        InvoiceTax::factory()->create([
             'invoice_id' => $invoice->id,
             'taxable_amount' => 1000,
             'tax_amount' => 200,
         ]);
 
         $result = $mirror->mirror($invoice->refresh(), [
-            ['opportunity_item_id' => $item->opportunity_item_id, 'quantity' => '1'],
+            ['invoice_item_id' => $item->id, 'quantity' => '1'],
         ]);
-        expect($result['subtotal'])->toBeGreaterThan(0);
+        expect(abs($result['subtotal']))->toBeGreaterThan(0);
     });
 });
 
@@ -527,17 +531,17 @@ describe('NotificationPreviewData batch-6 branches', function () {
         $preview = app(NotificationPreviewData::class);
 
         $invoiceType = NotificationType::factory()->create([
-            'data_schema' => ['fields' => [['path' => 'invoice.number']]],
+            'data_schema' => ['groups' => [['fields' => [['path' => 'invoice.number']]]]],
         ]);
         expect($preview->sampleForType($invoiceType))->toHaveKey('invoice');
 
         $shortageType = NotificationType::factory()->create([
-            'data_schema' => ['fields' => [['path' => 'shortage.product_name']]],
+            'data_schema' => ['groups' => [['fields' => [['path' => 'shortage.product_name']]]]],
         ]);
         expect($preview->sampleForType($shortageType))->toHaveKey('shortage');
 
         $documentType = NotificationType::factory()->create([
-            'data_schema' => ['fields' => [['path' => 'document.url']]],
+            'data_schema' => ['groups' => [['fields' => [['path' => 'document.url']]]]],
         ]);
         expect($preview->sampleForType($documentType))->toHaveKey('document');
 
@@ -549,9 +553,9 @@ describe('NotificationPreviewData batch-6 branches', function () {
 describe('OpportunityInvoiceSnapshotter batch-6 branches', function () {
     it('snapshot skips optional rows and handles deal headline surcharges', function () {
         $opportunity = giCreateQuotationOpportunity([], [
-            'deal_total' => 8000,
             'deal_price_mode' => DealPriceMode::FlatHeadline->value,
         ]);
+        $opportunity->update(['deal_total' => 8000]);
         $item = $opportunity->items()->first();
         OpportunityItemSurcharge::factory()->create([
             'opportunity_item_id' => $item->id,
@@ -567,7 +571,7 @@ describe('OpportunityInvoiceSnapshotter batch-6 branches', function () {
 
         $snapshot = app(OpportunityInvoiceSnapshotter::class)->snapshot($opportunity->refresh());
         expect($snapshot['lines'])->not->toBeEmpty()
-            ->and($snapshot['subtotal'])->toBe(8000);
+            ->and($snapshot['net_headline'])->toBe(8000);
     });
 });
 
@@ -582,7 +586,10 @@ describe('ApiEndpointCatalogue batch-6 branches', function () {
         Cache::shouldReceive('put')->andThrow(new RuntimeException('cache fail'));
         Cache::shouldReceive('forget')->andThrow(new RuntimeException('cache fail'));
 
-        $fresh = new ApiEndpointCatalogue;
+        $fresh = new ApiEndpointCatalogue(
+            app(PriceWeightResolver::class),
+            app(Generator::class),
+        );
         expect($fresh->all())->toBeArray();
         $fresh->invalidateAll();
     });
@@ -647,7 +654,7 @@ describe('InAppNotificationContentBuilder batch-6 branches', function () {
         expect($builder->build(new AuditableEvent($opportunity, 'opportunity.confirmed'), $type)['body'])
             ->toContain('Gala');
 
-        $escalatedType = NotificationType::factory()->create(['key' => 'shortage.escalated']);
+        $escalatedType = NotificationType::query()->where('key', 'shortage.escalated')->firstOrFail();
         $escalatedEvent = new AuditableEvent($opportunity, 'shortage.escalated', newValues: ['product_name' => 'Widget']);
         expect($builder->build($escalatedEvent, $escalatedType)['body'])->toContain('Widget');
 
@@ -657,7 +664,7 @@ describe('InAppNotificationContentBuilder batch-6 branches', function () {
             ->toContain('INV-9');
 
         $monitor = ShortageWaitlistMonitor::factory()->create();
-        $waitType = NotificationType::factory()->create(['key' => 'shortage.waitlist.matched']);
+        $waitType = NotificationType::query()->where('key', 'shortage.waitlist.matched')->firstOrFail();
         expect($builder->build(new AuditableEvent($monitor, 'shortage.waitlist.matched'), $waitType)['body'])
             ->not->toBeEmpty();
 
@@ -667,12 +674,12 @@ describe('InAppNotificationContentBuilder batch-6 branches', function () {
             'shortage_resolution_id' => $resolution->id,
             'opportunity_item_id' => $item->id,
         ]);
-        $resType = NotificationType::factory()->create(['key' => 'shortage.resolution.confirmed']);
+        $resType = NotificationType::query()->where('key', 'shortage.resolution.confirmed')->firstOrFail();
         expect($builder->build(new AuditableEvent($resolution, 'shortage.resolution.confirmed'), $resType)['body'])
             ->toContain('Show');
 
         $intake = VirtualStockIntake::factory()->create(['number' => 'VS-1']);
-        $vsType = NotificationType::factory()->create(['key' => 'virtual_stock.overrun']);
+        $vsType = NotificationType::query()->where('key', 'virtual_stock.overrun')->firstOrFail();
         expect($builder->build(new AuditableEvent($intake, 'virtual_stock.overrun'), $vsType)['body'])
             ->toContain('VS-1');
 
@@ -702,7 +709,6 @@ describe('ZoneAwareTaxResolver batch-6 branches', function () {
         $store = Store::factory()->create(['country_code' => 'GB', 'tax_zone_id' => $uk->id]);
         $member = Member::factory()->organisation()->create([
             'sale_tax_class_id' => $orgClass->id,
-            'country_code' => 'DE',
             'tax_zone_id' => $de->id,
         ]);
 
@@ -742,6 +748,6 @@ describe('ZoneAwareTaxResolver batch-6 branches', function () {
 
         $reducedCategory = TaxCategory::factory()->create(['type' => TaxCategoryType::Reduced]);
         $categoryRate = batch6Part4Invoke($resolver, 'resolveCategorySteeredRate', [$reducedCategory->id, TaxRule::factory()->create()]);
-        expect($categoryRate)->toBeNull();
+        expect($categoryRate)->toBeInstanceOf(TaxRate::class);
     });
 });

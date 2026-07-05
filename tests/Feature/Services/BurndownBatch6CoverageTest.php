@@ -4,9 +4,10 @@
  * P4-CL4b coverage burn-down batch 6 — first 30 service classes (cheapest-first slice).
  */
 
-use App\Contracts\Documents\DocumentRenderer;
 use App\Contracts\Notifications\ChannelDriver;
 use App\Data\Notifications\ChannelConfigFieldData;
+use App\Data\Notifications\ChannelSendData;
+use App\Data\Notifications\ChannelTestResultData;
 use App\Data\Notifications\TestChannelProviderData;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\ContainerCheckinMode;
@@ -14,7 +15,6 @@ use App\Enums\ContainerStatus;
 use App\Enums\DocumentSequenceResetFrequency;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
-use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
 use App\Events\AuditableEvent;
 use App\Models\ApiIdempotencyKey;
@@ -32,16 +32,11 @@ use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\OpportunityItemSurcharge;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
-use App\Models\ProductTaxClass;
 use App\Models\SerialisedComponent;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
 use App\Models\StockLevel;
 use App\Models\Store;
-use App\Models\Surcharge;
+use App\Models\SurchargeGroup;
 use App\Models\User;
-use App\Models\VirtualStockCostOverride;
 use App\Models\VirtualStockIntake;
 use App\Services\Api\IdempotencyKeyService;
 use App\Services\Api\WebhookEventRegistry;
@@ -53,37 +48,30 @@ use App\Services\Documents\DocumentNumberGenerator;
 use App\Services\Documents\DocumentResolverRegistry;
 use App\Services\Documents\DocumentSequenceDefaults;
 use App\Services\Documents\PageDimensions;
-use App\Services\Documents\SandboxedLoopEnvironment;
 use App\Services\Notifications\ChannelProviderConfigService;
 use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Notifications\CommunicationLogStatusRegistry;
 use App\Services\Notifications\CommunicationPreferences;
 use App\Services\Notifications\CustomerCommunicationAttachmentResolver;
+use App\Services\Notifications\Drivers\EmailDriver;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
 use App\Services\Notifications\EventNotificationMapRegistry;
-use App\Services\Notifications\Drivers\EmailDriver;
 use App\Services\Opportunities\OpportunityNumberGenerator;
 use App\Services\Pricing\DiscountCriteriaPredicateRegistry;
 use App\Services\Pricing\DiscountRuleEvaluator;
 use App\Services\Pricing\OpportunitySurchargeApplicator;
 use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\Shortages\CostApportionmentContext;
-use App\Services\Shortages\CostApportionmentContextBuilder;
 use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Services\Tax\TaxResolutionContext;
 use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
-use App\ValueObjects\Shortage;
-use App\ValueObjects\ShortageCollection;
-use App\ValueObjects\ShortageGroup;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\App;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Thunk\Verbs\Facades\Verbs;
@@ -157,7 +145,7 @@ describe('DiscountRuleEvaluator batch-6 branches', function () {
 
         $opportunity = Opportunity::factory()->create();
         $header = OpportunityItem::factory()->for($opportunity)->create([
-            'item_type' => OpportunityItemType::Header,
+            'item_type' => OpportunityItemType::Group,
             'itemable_id' => null,
             'itemable_type' => null,
         ]);
@@ -181,7 +169,9 @@ describe('DiscountRuleEvaluator batch-6 branches', function () {
 
 describe('OpportunitySurchargeApplicator batch-6 branches', function () {
     it('clears auto snapshots when no surcharge groups are active', function () {
-        $opportunity = Opportunity::factory()->create(['surcharge_group_ids' => []]);
+        SurchargeGroup::query()->update(['is_default' => false, 'is_active' => false]);
+
+        $opportunity = Opportunity::factory()->create();
         $item = OpportunityItem::factory()->for($opportunity)->create();
         OpportunityItemSurcharge::factory()->create([
             'opportunity_item_id' => $item->id,
@@ -333,15 +323,15 @@ describe('DocumentSequenceDefaults batch-6 branches', function () {
 describe('CommunicationPreferences batch-6 branches', function () {
     it('returns empty opt-outs for null preferences and masks invalid emails', function () {
         $service = app(CommunicationPreferences::class);
-        $member = Member::factory()->create(['communication_preferences' => null]);
+        $member = Member::factory()->contact()->create(['communication_preferences' => null]);
 
         expect($service->optedOutTypes($member))->toBe([]);
 
-        $member->forceFill(['email' => ''])->saveQuietly();
-        expect($service->maskedEmail($member))->toBeNull();
+        $member->emails()->create(['address' => '', 'is_primary' => true]);
+        expect($service->maskedEmail($member->fresh()))->toBeNull();
 
-        $member->forceFill(['email' => 'not-an-email'])->saveQuietly();
-        expect($service->maskedEmail($member))->toBeNull();
+        $member->emails()->where('is_primary', true)->update(['address' => 'not-an-email']);
+        expect($service->maskedEmail($member->fresh()))->toBeNull();
     });
 });
 
@@ -369,7 +359,7 @@ describe('RecalculationPipeline batch-6 private early returns', function () {
             $method->setAccessible(true);
 
             if ($methodName === 'rollUpDailySummaries') {
-                $method->invoke($pipeline, 1, 1, [], 'UTC', now());
+                $method->invoke($pipeline, 1, 1, [], 'UTC', Carbon::now());
             } elseif ($methodName === 'previousAvailability') {
                 expect($method->invoke($pipeline, 1, 1, collect()))->toBe([]);
             } else {
@@ -571,11 +561,11 @@ describe('ChannelProviderConfigService batch-6 branches', function () {
                 return [];
             }
 
-            public function send(\App\Data\Notifications\ChannelSendData $payload): void {}
+            public function send(ChannelSendData $payload): void {}
 
-            public function test(TestChannelProviderData $data): \App\Data\Notifications\ChannelTestResultData
+            public function test(TestChannelProviderData $data): ChannelTestResultData
             {
-                return \App\Data\Notifications\ChannelTestResultData::passed($this, 'ok');
+                return ChannelTestResultData::passed($this, 'ok');
             }
         }, ['token' => 'updated'], null);
 
@@ -590,19 +580,20 @@ describe('KitContainerReturnCompletion batch-6 branches', function () {
         $product = Product::factory()->kit()->create([
             'container_checkin_mode' => ContainerCheckinMode::Individual,
         ]);
-        $container = Container::factory()->create([
-            'product_id' => $product->id,
-            'opportunity_id' => $opportunity->id,
-            'status' => ContainerStatus::Dispatched->value,
-        ]);
         $stockLevel = StockLevel::factory()->serialised()->create([
             'product_id' => $product->id,
             'store_id' => $store->id,
         ]);
+        $container = Container::factory()->create([
+            'product_id' => $product->id,
+            'opportunity_id' => $opportunity->id,
+            'serialised_item_id' => $stockLevel->id,
+            'status' => ContainerStatus::Dispatched->value,
+        ]);
         $item = OpportunityItem::factory()->for($opportunity)->create();
         OpportunityItemAsset::factory()->for($item, 'item')->create([
             'stock_level_id' => $stockLevel->id,
-            'status' => AssetAssignmentStatus::Returned->value,
+            'status' => AssetAssignmentStatus::Dispatched->value,
         ]);
 
         $service = app(KitContainerReturnCompletion::class);
@@ -614,10 +605,14 @@ describe('KitContainerReturnCompletion batch-6 branches', function () {
 
 describe('CustomerCommunicationAttachmentResolver batch-6 branches', function () {
     it('rejects documents blocked by template attachment config and failed renders', function () {
+        $documentTemplate = DocumentTemplate::factory()->create();
         $template = CommunicationTemplate::factory()->create([
             'attachments_config' => ['document_template_ids' => [999999]],
         ]);
-        $document = Document::factory()->create(['document_template_id' => 1]);
+        $document = Document::factory()->create([
+            'document_template_id' => $documentTemplate->id,
+            'store_id' => $documentTemplate->store_id,
+        ]);
 
         expect(app(CustomerCommunicationAttachmentResolver::class)->resolve($document, $template))->toBeNull();
 

@@ -2,6 +2,10 @@
 
 use App\Data\Tax\DocumentTaxLineInput;
 use App\Services\Tax\DocumentTaxBreakdown;
+use Tests\TestCase;
+
+// DocumentTaxBreakdown resolves TaxResolver from the container, so the app must boot.
+uses(TestCase::class);
 
 it('returns empty largest-remainder allocations for empty member sets', function () {
     $method = new ReflectionMethod(DocumentTaxBreakdown::class, 'distributeLargestRemainder');

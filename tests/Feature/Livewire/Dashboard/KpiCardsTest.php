@@ -205,7 +205,12 @@ it('subtracts credit notes issued in the same period from revenue', function () 
 it('KpiCards metrics() uses global metrics for guests without per-user cache', function () {
     Opportunity::factory()->count(2)->quotation()->create();
 
-    Livewire::test(KpiCards::class)
-        ->assertOk()
-        ->assertSee('Active Opportunities');
+    // Exercise the guest branch of metrics() directly: with no authenticated user it
+    // returns the un-cached global metrics array (rather than the per-user cached
+    // {cached_at, data} envelope).
+    $metrics = (new KpiCards)->metrics();
+
+    expect($metrics)->toHaveKey('active_opportunities')
+        ->and($metrics)->toHaveKey('revenue')
+        ->and($metrics['active_opportunities']['total'])->toBe(2);
 });

@@ -364,7 +364,7 @@ describe('InvoiceSourceStateRule', function () {
     });
 
     it('falls back to defaults when configured source states are empty', function () {
-        settings()->set('invoices.source_states', []);
+        settings()->set('invoices.source_states', [], 'json');
 
         $states = app(InvoiceSourceStateRule::class)->allowedStatesFor(InvoiceType::Deposit);
 

@@ -89,14 +89,22 @@ it('UpdateSurchargeGroupData constructs and merges nested surcharge rules', func
 });
 
 it('OpportunitySectionData fromModel maps section fields', function () {
-    $section = OpportunitySection::factory()->create([
+    // The opportunity_sections table was dropped at the unified-line-items cutover,
+    // so build the (still-present) model in-memory to exercise fromModel() mapping.
+    $section = new OpportunitySection([
+        'opportunity_id' => 7,
+        'parent_id' => null,
         'name' => 'Rigging',
         'sort_order' => 4,
     ]);
+    $section->id = 123;
+    $section->created_at = now();
+    $section->updated_at = now();
 
     $dto = OpportunitySectionData::fromModel($section);
 
-    expect($dto->id)->toBe($section->id)
+    expect($dto->id)->toBe(123)
+        ->and($dto->opportunity_id)->toBe(7)
         ->and($dto->name)->toBe('Rigging')
         ->and($dto->sort_order)->toBe(4);
 });

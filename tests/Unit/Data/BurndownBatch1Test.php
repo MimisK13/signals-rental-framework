@@ -13,6 +13,11 @@ use App\Models\Opportunity;
 use App\ValueObjects\Tax\DocumentTaxLineAllocation;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Spatie\LaravelData\Support\Validation\ValidationPath;
+use Tests\TestCase;
+
+// GenerateDocumentData::from() resolves the Spatie Data pipeline (config) from
+// the container, so these DTO tests need the Laravel app booted.
+uses(TestCase::class);
 
 describe('FrozenInvoiceLineData::grossTotal', function () {
     it('sums net and tax minor units', function () {

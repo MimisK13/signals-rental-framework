@@ -72,7 +72,7 @@ it('tag names predicate requires every configured tag to be present', function (
 
 it('transaction types predicate rejects uncoercible context transaction types', function () {
     $predicate = new TransactionTypesPredicate;
-    $context = new DiscountCriteriaContext(transaction_type: ['invalid' => 'array']);
+    $context = new DiscountCriteriaContext(transaction_type: 'not-a-real-type');
 
     expect($predicate->matches(['rental'], $context))->toBeFalse();
 });

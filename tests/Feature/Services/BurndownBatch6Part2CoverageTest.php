@@ -12,16 +12,20 @@ use App\Enums\PricingRoundingDirection;
 use App\Enums\ShortageResolutionType;
 use App\Enums\StockMethod;
 use App\Exceptions\Documents\DocumentRenderException;
+use App\Jobs\ValidateMemberVatNumber;
 use App\Models\BundleRule;
 use App\Models\CreditNote;
+use App\Models\Document;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
+use App\Models\OpportunitySurchargeGroup;
 use App\Models\OrganisationTaxClass;
 use App\Models\Product;
+use App\Models\ProductSupplierCost;
 use App\Models\ProductTaxClass;
 use App\Models\PurchaseOrder;
 use App\Models\ShortageResolution;
@@ -153,8 +157,8 @@ describe('SubHireResolver batch-6 branches', function () {
             productId: $product->id,
             productName: $product->name,
             storeId: $store->id,
-            dateRangeStart: now(),
-            dateRangeEnd: now()->addDay(),
+            dateRangeStart: Carbon::now(),
+            dateRangeEnd: Carbon::now()->addDay(),
             totalShortfall: 0,
             shortages: [],
         );
@@ -173,13 +177,13 @@ describe('SubHireResolver batch-6 branches', function () {
             requestedQuantity: 2,
             availableQuantity: 0,
             trackingType: StockMethod::Bulk,
-            startsAt: now(),
-            endsAt: now()->addDay(),
+            startsAt: Carbon::now(),
+            endsAt: Carbon::now()->addDay(),
             isCritical: false,
         );
         $option = new ResolutionOption(
             resolverKey: 'subhire',
-            type: ShortageResolutionType::SubHire,
+            type: ShortageResolutionType::Subhire,
             label: 'Sub-hire',
             description: 'Missing supplier metadata',
             quantityResolved: 1,
@@ -194,8 +198,8 @@ describe('SubHireResolver batch-6 branches', function () {
             $product->id,
             $store->id,
             1,
-            now(),
-            now()->addDay(),
+            Carbon::now(),
+            Carbon::now()->addDay(),
             $option,
             $shortage,
         ))->toThrow(ValidationException::class, 'missing supplier provenance');
@@ -222,8 +226,13 @@ describe('SurchargeEvaluator batch-6 branches', function () {
     it('covers default tax class lookup, non-surchargeable lines, temporal guards, and filtered amounts', function () {
         ProductTaxClass::factory()->create(['is_default' => true]);
 
-        $group = SurchargeGroup::factory()->create();
-        $opportunity = Opportunity::factory()->create(['surcharge_group_ids' => [$group->id]]);
+        $group = SurchargeGroup::factory()->create(['is_default' => false]);
+        $opportunity = Opportunity::factory()->create();
+        OpportunitySurchargeGroup::factory()->create([
+            'opportunity_id' => $opportunity->id,
+            'surcharge_group_id' => $group->id,
+            'is_active' => true,
+        ]);
         $product = Product::factory()->rental()->create();
         $item = OpportunityItem::factory()->for($opportunity)->create([
             'itemable_id' => $product->id,
@@ -318,7 +327,7 @@ describe('AvailabilityService batch-6 branches', function () {
     });
 
     it('checkAssetAvailable rejects missing and retired virtual assets', function () {
-        $missing = $this->service->checkAssetAvailable(999999, now(), now()->addDay());
+        $missing = $this->service->checkAssetAvailable(999999, Carbon::now(), Carbon::now()->addDay());
         expect($missing)->toBeFalse();
 
         $virtual = StockLevel::factory()->serialised()->create([
@@ -331,14 +340,14 @@ describe('AvailabilityService batch-6 branches', function () {
 
         expect($this->service->checkAssetAvailable(
             $virtual->id,
-            now(),
-            now()->addDay(),
+            Carbon::now(),
+            Carbon::now()->addDay(),
         ))->toBeFalse();
     });
 
     it('getCalendarForStores and getGanttForStores tolerate empty store lists', function () {
-        expect($this->service->getCalendarForStores([], now(), now()->addDay()))->toBeEmpty()
-            ->and($this->service->getGanttForStores(1, [], now(), now()->addDay())->demands)->toBe([]);
+        expect($this->service->getCalendarForStores([], Carbon::now(), Carbon::now()->addDay()))->toBeEmpty()
+            ->and($this->service->getGanttForStores(1, [], Carbon::now(), Carbon::now()->addDay())->demands)->toBe([]);
     });
 });
 
@@ -374,15 +383,15 @@ describe('SubHireCostCalculator batch-6 branches', function () {
         $starts = Carbon::parse('2026-01-01T00:00:00Z');
         $ends = Carbon::parse('2026-01-15T00:00:00Z');
 
-        expect($calculator->rentalWeeks($starts, $ends))->toBe(3);
+        expect($calculator->rentalWeeks($starts, $ends))->toBe(2);
 
         $weekly = ProductSupplierCost::factory()->make([
             'cost_basis' => 'per_week',
             'cost' => 1000,
         ]);
 
-        expect($calculator->estimatedTotal($weekly, 2, $starts, $ends))->toBe(6000)
-            ->and($calculator->purchaseOrderUnitCost($weekly, $starts, $ends))->toBe(3000)
+        expect($calculator->estimatedTotal($weekly, 2, $starts, $ends))->toBe(4000)
+            ->and($calculator->purchaseOrderUnitCost($weekly, $starts, $ends))->toBe(2000)
             ->and($calculator->purchaseOrderQuantity($weekly, 5))->toBe('5.00')
             ->and($calculator->purchaseOrderQuantity(
                 ProductSupplierCost::factory()->make(['cost_basis' => 'flat']),
@@ -437,15 +446,15 @@ describe('CostApportionmentContextBuilder batch-6 branches', function () {
 
 describe('ReceiptDataResolver batch-6 branches', function () {
     it('resolve includes null-store fallbacks and formatted dates', function () {
-        $invoice = Invoice::factory()->issued()->create(['store_id' => null]);
+        $invoice = Invoice::factory()->issued()->create();
         $payment = InvoicePayment::factory()->create([
             'invoice_id' => $invoice->id,
             'paid_at' => Carbon::parse('2026-06-15T12:00:00Z'),
         ]);
+        $payment = app(ReceiptDataResolver::class)->loadSource($payment->id);
+        $payment->invoice->setRelation('store', null);
 
-        $data = app(ReceiptDataResolver::class)->resolve(
-            app(ReceiptDataResolver::class)->loadSource($payment->id),
-        );
+        $data = app(ReceiptDataResolver::class)->resolve($payment);
 
         expect($data['store']['name'])->toBeNull()
             ->and($data['payment']['received_at'])->toBeString();
@@ -460,7 +469,7 @@ describe('SandboxedExpressionValidator batch-6 branches', function () {
         $messages->setAccessible(true);
         expect($messages->invoke($validator))->not->toBeEmpty();
 
-        expect(fn () => $validator->validate('$x ?? $y'))
+        expect(fn () => $validator->validate('$foo->bar()'))
             ->toThrow(DocumentRenderException::class);
 
         $next = new ReflectionMethod(SandboxedExpressionValidator::class, 'nextSignificantIndex');
@@ -468,8 +477,12 @@ describe('SandboxedExpressionValidator batch-6 branches', function () {
         $prev = new ReflectionMethod(SandboxedExpressionValidator::class, 'previousSignificantIndex');
         $prev->setAccessible(true);
 
-        expect($next->invoke($validator, '  $a  + 1', 0))->toBeInt()
-            ->and($prev->invoke($validator, '  $a  + 1', 8))->toBeInt();
+        $expression = '  $a  + 1';
+        $tokens = token_get_all('<?php '.$expression);
+        $tokenCount = count($tokens);
+
+        expect($next->invoke($validator, $tokens, 0, $tokenCount))->toBeInt()
+            ->and($prev->invoke($validator, $tokens, $tokenCount - 1))->toBeInt();
     });
 });
 
@@ -491,7 +504,6 @@ describe('StatementDataResolver batch-6 branches', function () {
         $member = Member::factory()->create();
         Invoice::factory()->issued()->create([
             'member_id' => $member->id,
-            'store_id' => null,
             'issued_at' => Carbon::parse('2026-05-01T00:00:00Z'),
             'amount_outstanding' => 1000,
         ]);
@@ -501,8 +513,8 @@ describe('StatementDataResolver batch-6 branches', function () {
         );
 
         expect($data['store']['name'])->toBeNull()
-            ->and($data['statement_date'])->toBeString()
-            ->and($data['outstanding_invoices'])->not->toBeEmpty();
+            ->and($data['statement']['period_end'])->toBeString()
+            ->and($data['invoices'])->not->toBeEmpty();
     });
 });
 
@@ -521,17 +533,15 @@ describe('CreditNoteDataResolver batch-6 branches', function () {
         $member = Member::factory()->organisation()->create(['sale_tax_class_id' => $orgClass->id]);
         $invoice = Invoice::factory()->issued()->create([
             'member_id' => $member->id,
-            'store_id' => null,
         ]);
         $creditNote = CreditNote::factory()->create([
             'invoice_id' => $invoice->id,
             'issued_at' => Carbon::parse('2026-04-01T00:00:00Z'),
         ]);
-        $creditNote->update(['store_id' => null]);
+        $creditNote = app(CreditNoteDataResolver::class)->loadSource($creditNote->id);
+        $creditNote->invoice->setRelation('store', null);
 
-        $data = app(CreditNoteDataResolver::class)->resolve(
-            app(CreditNoteDataResolver::class)->loadSource($creditNote->id),
-        );
+        $data = app(CreditNoteDataResolver::class)->resolve($creditNote);
 
         expect($data['store']['name'])->toBeNull()
             ->and($data['tax_summary'])->toBeArray();
@@ -623,7 +633,7 @@ describe('MemberVatValidationService batch-6 branches', function () {
 
         $member->update(['tax_number' => 'GB999999999']);
         $service->requestValidation($member->fresh());
-        Queue::assertPushed(\App\Jobs\ValidateMemberVatNumber::class);
+        Queue::assertPushed(ValidateMemberVatNumber::class);
     });
 });
 

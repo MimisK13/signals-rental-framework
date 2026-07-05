@@ -22,6 +22,6 @@ it('returns the fallback message for empty exceptions', function () {
 it('truncates very long messages', function () {
     $sanitized = DocumentRenderErrorSanitizer::sanitize(new Exception(str_repeat('x', 600)));
 
-    expect(strlen($sanitized))->toBe(500)
+    expect(mb_strlen($sanitized))->toBe(500)
         ->and(str_ends_with($sanitized, '…'))->toBeTrue();
 });

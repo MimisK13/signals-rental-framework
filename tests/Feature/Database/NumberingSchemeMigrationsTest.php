@@ -34,9 +34,12 @@ function numberingSchemeMigrationPaths(): array
 
 function rollbackSingleMigration(string $path): void
 {
+    // No --step: migrate:fresh puts every migration in batch 1, so --step=1 would
+    // target the alphabetically-last migration (not this path) and silently no-op.
+    // Without --step, rollback reverts the last batch filtered to this --path file,
+    // i.e. exactly the target migration.
     Artisan::call('migrate:rollback', [
         '--path' => $path,
-        '--step' => 1,
         '--force' => true,
     ]);
 }
@@ -202,6 +205,10 @@ describe('numbering scheme migrations (sqlite)', function () {
     });
 
     it('throws with the store_id number constraint message for duplicate purchase order numbers', function () {
+        // Remove the store-scoped unique index so the duplicate rows can be inserted
+        // for the preflight to detect (mirrors the invoice preflight test setup).
+        rollbackSingleMigration('database/migrations/2026_07_04_185942_add_store_number_unique_indexes_to_numbered_entities_table.php');
+
         $store = Store::factory()->create();
 
         PurchaseOrder::factory()->create([

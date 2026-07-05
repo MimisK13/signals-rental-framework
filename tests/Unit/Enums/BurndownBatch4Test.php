@@ -5,6 +5,10 @@
  */
 
 use App\Enums\ContainerDissolveReason;
+use Tests\TestCase;
+
+// ContainerDissolveReason::configValues() reads config(), which needs the app.
+uses(TestCase::class);
 
 it('ContainerDissolveReason label and configValues', function () {
     expect(ContainerDissolveReason::Dispatched->label())->toBe('Dispatched')

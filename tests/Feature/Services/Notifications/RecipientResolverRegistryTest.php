@@ -11,6 +11,7 @@ use App\Models\Opportunity;
 use App\Models\User;
 use App\Services\Notifications\RecipientResolverRegistry;
 use App\Services\Plugins\PluginRegistrar;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 
@@ -93,7 +94,13 @@ describe('RecipientResolverRegistry core resolvers', function () {
     it('resolves contact from generic subject objects with member_id', function () {
         $contact = Member::factory()->contact()->create();
         $type = NotificationType::factory()->create();
-        $context = new NotificationContextData(type: $type, subject: (object) ['member_id' => $contact->id]);
+        $subject = new class(['member_id' => $contact->id]) extends Model
+        {
+            protected $guarded = [];
+
+            public $timestamps = false;
+        };
+        $context = new NotificationContextData(type: $type, subject: $subject);
 
         $recipients = app(RecipientResolverRegistry::class)->resolveAll(
             [['type' => 'contact']],

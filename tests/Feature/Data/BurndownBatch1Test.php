@@ -119,12 +119,13 @@ it('maps PriceCategoryData without tiers when the tiers relation is not loaded',
 });
 
 it('maps CommunicationLogData friendly types and preserves null polymorphic types', function () {
-    $log = CommunicationLog::factory()->create([
-        'notifiable_type' => null,
-        'subject_type' => null,
-    ]);
+    // The polymorphic type columns are NOT NULL in the schema, so build a valid row
+    // then null the types in-memory to exercise fromModel()'s null-handling branch.
+    $log = CommunicationLog::factory()->create();
+    $log->notifiable_type = null;
+    $log->subject_type = null;
 
-    $output = CommunicationLogData::fromModel($log->fresh())->toArray();
+    $output = CommunicationLogData::fromModel($log)->toArray();
 
     expect($output['notifiable_type'])->toBeNull()
         ->and($output['subject_type'])->toBeNull();

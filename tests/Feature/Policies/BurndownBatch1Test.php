@@ -34,6 +34,15 @@ it('exposes pricing view permissions on pricing policies', function (string $pol
     DiscountRulePolicy::class,
     SurchargeGroupPolicy::class,
     SurchargePolicy::class,
+]);
+
+it('exposes tax-classes view permission on tax policies', function (string $policyClass) {
+    $policy = new $policyClass;
+    $method = new ReflectionMethod($policy, 'viewPermission');
+    $method->setAccessible(true);
+
+    expect($method->invoke($policy))->toBe('tax-classes.view');
+})->with([
     TaxCategoryPolicy::class,
     TaxZonePolicy::class,
 ]);

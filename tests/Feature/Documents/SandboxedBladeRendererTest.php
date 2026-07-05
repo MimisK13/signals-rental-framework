@@ -89,18 +89,29 @@ describe('SandboxedBladeRenderer loop support', function () {
     });
 
     it('returns an empty string from executeCompiledTemplate when no buffer is active', function () {
-        $compiledPath = tempnam(sys_get_temp_dir(), 'sandbox-blade-');
-        file_put_contents($compiledPath, '<?php echo "compiled";');
+        $initialObLevel = ob_get_level();
 
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        $compiledPath = tempnam(sys_get_temp_dir(), 'sandbox-blade-');
+        // The compiled template tears down every active output buffer (including
+        // the one executeCompiledTemplate opens), so the renderer's finally block
+        // sees ob_get_level() === 0 and takes the no-active-buffer branch.
+        file_put_contents($compiledPath, '<?php while (ob_get_level() > 0) { ob_end_clean(); }');
 
         $method = new ReflectionMethod(SandboxedBladeRenderer::class, 'executeCompiledTemplate');
         $method->setAccessible(true);
 
-        expect($method->invoke(null, $compiledPath, []))->toBe('');
+        try {
+            $result = $method->invoke(null, $compiledPath, []);
+        } finally {
+            // Restore the output-buffer stack PHPUnit relies on so the test is not
+            // flagged risky for an unbalanced buffer level.
+            while (ob_get_level() < $initialObLevel) {
+                ob_start();
+            }
 
-        @unlink($compiledPath);
+            @unlink($compiledPath);
+        }
+
+        expect($result)->toBe('');
     });
 });

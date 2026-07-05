@@ -8,5 +8,6 @@ it('masks short secret values with a fixed bullet run', function () {
 });
 
 it('masks longer secret values while preserving leading and trailing characters', function () {
-    expect(ChannelConfigMasker::maskValue('hunter2secret'))->toBe('hu••••••••••••et');
+    // 16 chars → middle run capped at 12 bullets, first/last two preserved.
+    expect(ChannelConfigMasker::maskValue('hunterverysecret'))->toBe('hu'.str_repeat('•', 12).'et');
 });

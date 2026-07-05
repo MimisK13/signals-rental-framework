@@ -1,18 +1,18 @@
 <?php
 
+use App\Data\Notifications\NotificationContextData;
 use App\Models\Member;
+use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\ShortageWaitlistMonitor;
-use App\Models\Store;
 use App\Models\User;
 use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
 use App\Services\Notifications\RecipientResolvers\RoleRecipientResolver;
 use App\Services\Notifications\RecipientResolvers\SpecificMemberRecipientResolver;
 use App\Services\Notifications\RecipientResolvers\SubjectOwnerRecipientResolver;
-use App\Data\Notifications\NotificationContextData;
-use App\Models\NotificationType;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -20,7 +20,7 @@ beforeEach(function () {
     $this->type = NotificationType::factory()->create();
 });
 
-function recipientContext(object $subject): NotificationContextData
+function recipientContext(Model $subject): NotificationContextData
 {
     return new NotificationContextData(
         type: test()->type,
@@ -28,9 +28,19 @@ function recipientContext(object $subject): NotificationContextData
     );
 }
 
+function recipientGenericSubject(int $memberId): Model
+{
+    return new class(['member_id' => $memberId]) extends Model
+    {
+        protected $guarded = [];
+
+        public $timestamps = false;
+    };
+}
+
 it('contact resolver reads member_id from generic subject objects', function () {
     $contact = Member::factory()->contact()->create();
-    $subject = (object) ['member_id' => $contact->id];
+    $subject = recipientGenericSubject($contact->id);
 
     $recipients = app(ContactRecipientResolver::class)->resolve([], recipientContext($subject));
 
@@ -54,7 +64,9 @@ it('role resolver returns empty collections for missing roles and empty assignme
         ->and(app(RoleRecipientResolver::class)->resolve(['role' => 'Missing Role'], $context))->toBeEmpty();
 
     $role = Role::create(['name' => 'Empty Role', 'guard_name' => 'web']);
-    User::factory()->create(['member_id' => null])->assignRole($role);
+    $user = User::factory()->create();
+    $user->assignRole($role);
+    $user->forceFill(['member_id' => null])->saveQuietly();
 
     expect(app(RoleRecipientResolver::class)->resolve(['role' => 'Empty Role'], $context))->toBeEmpty();
 });

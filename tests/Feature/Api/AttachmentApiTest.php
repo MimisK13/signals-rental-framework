@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Models\Attachment;
 use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -124,14 +126,32 @@ describe('POST /api/v1/attachments', function () {
 
     it('returns 422 when the file key is not an UploadedFile instance', function () {
         $member = Member::factory()->create();
+        $upload = UploadedFile::fake()->create('doc.pdf', 100, 'application/pdf');
 
-        $this->postJson('/api/v1/attachments', [
-            'file' => 'not-an-upload',
-            'attachable_type' => 'Member',
-            'attachable_id' => $member->id,
-        ])
-            ->assertUnprocessable()
-            ->assertJsonPath('message', 'File upload failed. The file may exceed server size limits.');
+        // A real upload sits in the files bag so validation passes, but file('file')
+        // yields a non-UploadedFile — the only way to reach the controller's
+        // defensive PHP-upload-failure guard (validation rejects a bare string first).
+        $request = new class extends Request
+        {
+            public function file($key = null, $default = null)
+            {
+                return 'not-an-upload';
+            }
+        };
+        $request->initialize(
+            [],
+            ['attachable_type' => 'Member', 'attachable_id' => $member->id],
+            [],
+            [],
+            ['file' => $upload],
+            ['REQUEST_METHOD' => 'POST'],
+        );
+
+        $response = (new AttachmentController)->store($request);
+
+        expect($response->getStatusCode())->toBe(422)
+            ->and($response->getData(true)['message'])
+            ->toBe('File upload failed. The file may exceed server size limits.');
     });
 });
 

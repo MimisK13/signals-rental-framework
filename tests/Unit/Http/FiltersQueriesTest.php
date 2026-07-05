@@ -105,7 +105,10 @@ describe('resolveSortParam — q[s][] array-sort form', function () {
     });
 
     it('returns null when the parsed sort field is whitespace only', function () {
-        $request = Request::create('/api/v1/products', 'GET', ['q' => ['s' => ['   desc']]]);
+        // A form-feed (\f) is matched by the \s split but is not stripped by
+        // trim(), so the value survives the "trimmed is empty" guard yet parses
+        // to an empty first field — exercising the whitespace-only field branch.
+        $request = Request::create('/api/v1/products', 'GET', ['q' => ['s' => ["\f"]]]);
 
         expect(filtersQueriesDouble()->callResolveSortParam($request))->toBeNull();
     });

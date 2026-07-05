@@ -9,7 +9,6 @@ use App\Models\CommunicationLog;
 use App\Models\CommunicationTemplate;
 use App\Models\Document;
 use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
 use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
@@ -18,7 +17,6 @@ use App\Models\OpportunityCost;
 use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use App\Policies\CommunicationLogPolicy;
 use App\Policies\CommunicationTemplatePolicy;
 use App\Policies\DocumentPolicy;
@@ -104,13 +102,19 @@ it('PurchaseOrderPolicy view update delete without models and store-restricted v
 });
 
 it('VirtualStockIntakePolicy list abilities and manageCostOverrides gate', function () {
+    // Creating the intake fixture authorises via the create policy; act as an owner.
+    $this->actingAs(User::factory()->owner()->create());
+
     $policy = new VirtualStockIntakePolicy;
     $store = Store::factory()->create();
-    $intake = createTestVirtualStockIntake(['store_id' => $store->id, 'status' => 'confirmed']);
+    $intake = createTestVirtualStockIntake(['store_id' => $store->id]);
+    // manageCostOverrides only gates confirmed/received intakes.
+    $intake->status = 'confirmed';
     $user = batch4PolicyUser([
         'virtual_stock.view',
         'costs.view',
         'virtual_stock.edit',
+        'virtual_stock.delete',
     ]);
     batch4GrantStore($user, $store);
 
@@ -199,6 +203,9 @@ it('CommunicationLogPolicy canAccessSubjectStore branches', function () {
         'subject_id' => $opportunity->id,
     ]);
 
+    // Grant the manager access to the subject's store so the store-access branch passes.
+    batch4GrantStore($manager, $store);
+
     expect($policy->view($manager))->toBeTrue()
         ->and($policy->update($manager))->toBeTrue()
         ->and($policy->view($manager, $log))->toBeTrue();
@@ -278,6 +285,9 @@ it('DocumentPolicy view finalise void share deny wrong store access', function (
 });
 
 it('VirtualStockIntakePolicy view denies store-restricted users', function () {
+    // Creating the intake fixture authorises via the create policy; act as an owner.
+    $this->actingAs(User::factory()->owner()->create());
+
     $policy = new VirtualStockIntakePolicy;
     $store = Store::factory()->create();
     $intake = createTestVirtualStockIntake(['store_id' => $store->id]);

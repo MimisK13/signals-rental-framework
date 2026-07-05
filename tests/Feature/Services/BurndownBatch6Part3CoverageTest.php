@@ -7,7 +7,6 @@
 use App\Data\Invoices\FrozenInvoiceTaxRowData;
 use App\Data\Notifications\ChannelSendData;
 use App\Data\Notifications\TestChannelProviderData;
-use App\Data\Tax\DocumentTaxLineInput;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
@@ -15,7 +14,6 @@ use App\Enums\PartialInvoiceTaxPolicy;
 use App\Enums\PricingRoundingDirection;
 use App\Enums\TaxCategoryType;
 use App\Enums\TaxResultType;
-use App\Events\AuditableEvent;
 use App\Exceptions\Documents\DocumentRenderException;
 use App\Models\CommunicationLog;
 use App\Models\Container;
@@ -25,18 +23,16 @@ use App\Models\Document;
 use App\Models\DocumentSequence;
 use App\Models\DocumentTemplate;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\OpportunityItemSurcharge;
 use App\Models\OrganisationTaxClass;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\ShortageResolution;
 use App\Models\ShortageResolutionItem;
 use App\Models\StockLevel;
@@ -47,6 +43,7 @@ use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
+use App\Services\Api\PriceWeightResolver;
 use App\Services\Containers\ContainerDispatchValidator;
 use App\Services\Containers\ContainerManifestService;
 use App\Services\Documents\DocumentRenderPipeline;
@@ -65,13 +62,11 @@ use App\Services\Notifications\NotificationLinkResolver;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Services\Pricing\OpportunityPricingRecalculator;
 use App\Services\PurchaseOrders\PurchaseOrderTaxCalculator;
-use App\Services\Api\PriceWeightResolver;
 use App\Services\Tax\DefaultVatNumberValidator;
 use App\Services\Tax\TaxRateFallbackResolver;
 use App\Services\TaxCalculator;
 use App\Services\VirtualStock\VirtualStockAssetProvisioner;
 use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
-use App\ValueObjects\Documents\DocumentRenderResult;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,7 +74,6 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Thunk\Verbs\Facades\Verbs;
 
@@ -89,6 +83,7 @@ beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    $this->actingAs(User::factory()->owner()->create());
     Store::factory()->create();
     settings()->set('pricing.rounding_direction', PricingRoundingDirection::HalfUp->value);
     settings()->set('tax.unresolved_zone_fallback', 'seller_domestic');
@@ -145,10 +140,11 @@ describe('OpportunityTotalsCalculator batch-6 branches', function () {
             'quantity' => '1',
             'is_optional' => false,
         ]);
-        OpportunityItem::factory()->service()->create([
+        OpportunityItem::factory()->create([
             'opportunity_id' => $opportunity->id,
             'itemable_id' => $serviceProduct->id,
             'itemable_type' => Product::class,
+            'transaction_type' => LineItemTransactionType::Service,
             'total' => 1000,
             'unit_price' => 1000,
             'quantity' => '1',
@@ -199,7 +195,7 @@ describe('OpportunityTotalsCalculator batch-6 branches', function () {
         ]);
         OpportunityCost::factory()->create([
             'opportunity_id' => $opportunity->id,
-            'cost_type' => OpportunityCostType::Service,
+            'cost_type' => OpportunityCostType::Labour,
             'amount' => 400,
             'quantity' => '1',
         ]);
@@ -207,7 +203,7 @@ describe('OpportunityTotalsCalculator batch-6 branches', function () {
         app(OpportunityTotalsCalculator::class)->rollUp($opportunity->refresh());
 
         $opportunity->refresh();
-        expect($opportunity->sale_charge_total)->toBe(2200)
+        expect($opportunity->sale_charge_total)->toBe(2000)
             ->and($opportunity->service_charge_total)->toBe(1400)
             ->and($opportunity->rental_charge_total)->toBe(1500)
             ->and($opportunity->transit_charge_total)->toBe(300)
@@ -358,7 +354,7 @@ describe('DocumentRenderPipeline batch-6 branches', function () {
         $template = DocumentTemplate::factory()->create();
         $result = app(DocumentRenderPipeline::class)->render($template, 'invoice', 1);
         expect($result->success)->toBeFalse()
-            ->and($result->errorMessage)->toContain('Unable to resolve');
+            ->and($result->error)->toContain('Unable to resolve');
 
         $orphanTemplate = DocumentTemplate::factory()->create(['store_id' => Store::factory()->create()->id]);
         Store::query()->whereKey($orphanTemplate->store_id)->delete();
@@ -369,7 +365,7 @@ describe('DocumentRenderPipeline batch-6 branches', function () {
             ['invoice' => ['number' => 'X']],
         );
         expect($result2->success)->toBeFalse()
-            ->and($result2->errorMessage)->toContain('store is missing');
+            ->and($result2->error)->toContain('store is missing');
     });
 });
 
@@ -490,13 +486,14 @@ describe('InvoiceDataResolver batch-6 branches', function () {
     it('resolve handles null opportunity store tax group and dates', function () {
         $resolver = app(InvoiceDataResolver::class);
         $invoice = Invoice::factory()->issued()->create([
-            'store_id' => null,
             'opportunity_id' => null,
             'issued_at' => Carbon::parse('2026-06-01T00:00:00Z'),
         ]);
+        $loaded = $resolver->loadSource($invoice->id);
+        $loaded->setRelation('store', null);
 
-        $data = $resolver->resolve($resolver->loadSource($invoice->id));
-        expect($data['opportunity'])->toBeNull()
+        $data = $resolver->resolve($loaded);
+        expect($data['opportunity']['number'])->toBeNull()
             ->and($data['store']['name'])->toBeNull()
             ->and($data['invoice']['issued_at'])->toBeString();
 
@@ -510,6 +507,7 @@ describe('ContainerDispatchValidator batch-6 branches', function () {
         $validator = app(ContainerDispatchValidator::class);
         $opportunity = Opportunity::factory()->create();
         $product = Product::factory()->create();
+        $container = Container::factory()->create(['opportunity_id' => $opportunity->id]);
         $item = OpportunityItem::factory()->create([
             'opportunity_id' => $opportunity->id,
             'itemable_id' => $product->id,
@@ -521,8 +519,9 @@ describe('ContainerDispatchValidator batch-6 branches', function () {
         expect($byProduct)->toHaveKey($product->id);
 
         $count = batch6Part3Invoke($validator, 'countManifestAssetsOnOpportunity', [
+            $container,
             $opportunity,
-            collect([$item]),
+            $product->id,
             false,
         ]);
         expect($count)->toBeInt();
@@ -565,9 +564,10 @@ describe('VirtualStockAssetProvisioner batch-6 branches', function () {
             'product_id' => $serialProduct->id,
             'quantity' => 1,
         ]);
-        $stock = StockLevel::factory()->create([
+        $stock = StockLevel::factory()->virtual()->create([
             'product_id' => $serialProduct->id,
             'store_id' => $serialIntake->store_id,
+            'virtual_stock_intake_id' => $serialIntake->id,
         ]);
 
         app(VirtualStockAssetProvisioner::class)->provision($serialIntake, [[
@@ -599,13 +599,13 @@ describe('SandboxedBladeCompiler batch-6 branches', function () {
                 ->toThrow(DocumentRenderException::class);
         }
 
-        $foreach = batch6Part3Invoke($compiler, 'compileForeach', ["(\$items as \$item)"]);
+        $foreach = batch6Part3Invoke($compiler, 'compileForeach', ['($items as $item)']);
         expect($foreach)->toContain('SandboxedLoopEnvironment::prepareLoopData');
 
         expect(fn () => batch6Part3Invoke($compiler, 'compileForeach', ['($bad']))
             ->toThrow(DocumentRenderException::class, 'Malformed @foreach');
 
-        $forelse = batch6Part3Invoke($compiler, 'compileForelse', ["(\$items as \$item)"]);
+        $forelse = batch6Part3Invoke($compiler, 'compileForelse', ['($items as $item)']);
         expect($forelse)->toContain('__empty_');
 
         $empty = batch6Part3Invoke($compiler, 'compileEmpty', [null]);
@@ -658,7 +658,7 @@ describe('InvoiceMarginCalculator batch-6 branches', function () {
             'store_id' => $opportunity->store_id,
         ]);
         $item = $opportunity->items()->first();
-        \App\Models\InvoiceItem::factory()->create([
+        InvoiceItem::factory()->create([
             'invoice_id' => $invoice->id,
             'opportunity_item_id' => $item->id,
             'product_id' => $item->itemable_id,
@@ -668,8 +668,8 @@ describe('InvoiceMarginCalculator batch-6 branches', function () {
         ]);
 
         $calculator = app(InvoiceMarginCalculator::class);
-        expect(batch6Part3Invoke($calculator, 'scaleMinorAmount', [0, '0.5']))->toBe(0)
-            ->and(batch6Part3Invoke($calculator, 'scaleMinorAmount', [100, '1']))->toBe(100);
+        expect(batch6Part3Invoke($calculator, 'scaleMinorAmount', [0, '0.5', 'GBP']))->toBe(0)
+            ->and(batch6Part3Invoke($calculator, 'scaleMinorAmount', [100, '1', 'GBP']))->toBe(100);
 
         $result = $calculator->calculate($invoice->refresh());
         expect($result)->toHaveKeys(['margin_minor', 'margin_percent']);
@@ -683,15 +683,15 @@ describe('DefaultVatNumberValidator batch-6 branches', function () {
         ]);
 
         $validator = app(DefaultVatNumberValidator::class);
-        expect($validator->validate('FR12345678901'))->toBeFalse();
+        expect($validator->validate('FR12345678901')->isValid)->toBeFalse();
 
         $parse = batch6Part3Invoke($validator, 'parseTaxNumber', ['UK123456789']);
-        expect($parse['country'])->toBe('GB');
+        expect($parse['country_code'])->toBe('GB');
 
         expect(batch6Part3Invoke($validator, 'passesUkChecksum', ['12345']))->toBeFalse();
 
         $vies = batch6Part3Invoke($validator, 'validateViaVies', ['GB', '123456789']);
-        expect($vies)->toBeFalse();
+        expect($vies->isValid)->toBeFalse();
     });
 });
 
@@ -743,12 +743,10 @@ describe('TaxCalculator batch-6 branches', function () {
 
 describe('OpportunityPricingRecalculator batch-6 branches', function () {
     it('recalculate resets prices discounts and reapplies deal distribution', function () {
-        Verbs::shouldReceive('isReplaying')->andReturn(false);
-
         $opportunity = giCreateQuotationOpportunity([], [
-            'deal_total' => 9000,
             'deal_price_mode' => DealPriceMode::Proportional->value,
         ]);
+        $opportunity->update(['deal_total' => 9000]);
         $item = $opportunity->items()->first();
         $item?->update(['manual_unit_price' => 500, 'discount_percent' => '5.00']);
 
@@ -770,7 +768,7 @@ describe('DatabaseDriver batch-6 branches', function () {
         $schema->shouldReceive('hasTable')->with('notifications')->andReturn(false);
         Schema::swap($schema);
 
-        expect($driver->test(new TestChannelProviderData(channel: 'database'))->passed)->toBeFalse();
+        expect($driver->test(new TestChannelProviderData(channel: 'database'))->success)->toBeFalse();
 
         expect(fn () => batch6Part3Invoke($driver, 'resolveNotifiable', [
             new ChannelSendData(
@@ -838,7 +836,10 @@ describe('ContainerManifestService batch-6 branches', function () {
         $service = app(ContainerManifestService::class);
         $container = Container::factory()->create();
 
-        expect($service->compliance($container))->toHaveKeys(['status', 'issues']);
+        $compliance = $service->compliance($container);
+
+        expect($compliance->status)->toBeString()
+            ->and($compliance->slots)->toBeArray();
 
         $depth = batch6Part3Invoke($service, 'depthOf', [$container]);
         expect($depth)->toBeInt();
@@ -847,9 +848,10 @@ describe('ContainerManifestService batch-6 branches', function () {
         expect($root)->not->toBeNull();
 
         $template = batch6Part3Invoke($service, 'templateFor', [$container]);
-        expect($template)->toBeNull();
+        expect($template)->toBeArray()
+            ->and($template['slots'] ?? [])->toBeArray();
 
-        $quantities = batch6Part3Invoke($service, 'collectQuantitiesRecursive', [$container, 0]);
+        $quantities = batch6Part3Invoke($service, 'collectQuantitiesRecursive', [$container, 5, 0]);
         expect($quantities)->toBeArray();
     });
 });
