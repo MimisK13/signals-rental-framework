@@ -33,7 +33,8 @@ class GenerateDocument
     {
         Gate::authorize('create', Document::class);
 
-        $storeId = $this->resolveStoreId($data);
+        $source = $this->loadSource($data);
+        $storeId = $this->resolveStoreId($data, $source);
         $template = $this->templateResolver->resolveForGeneration(
             $storeId,
             $data->document_template_id,
@@ -41,8 +42,6 @@ class GenerateDocument
         );
 
         $this->assertTemplateAccessible($template);
-
-        $source = $this->loadSource($data);
         $documentType = $template->document_type;
         $resolverType = $template->resolverType();
         $outputFormat = $data->output_format;
@@ -120,28 +119,28 @@ class GenerateDocument
         return DocumentData::fromModel($document, includeDownloadUrl: true);
     }
 
-    private function resolveStoreId(GenerateDocumentData $data): int
+    private function resolveStoreId(GenerateDocumentData $data, Model $source): int
     {
-        if ($data->document_template_id !== null) {
+        if ($source instanceof Opportunity) {
+            return (int) $source->store_id;
+        }
+
+        if ($source instanceof InvoicePayment) {
+            return (int) $source->invoice->store_id;
+        }
+
+        if ($source instanceof Member) {
+            if ($data->document_template_id === null) {
+                throw ValidationException::withMessages([
+                    'document_template_id' => ['A document template is required when generating member documents.'],
+                ]);
+            }
+
             return (int) DocumentTemplate::query()->findOrFail($data->document_template_id)->store_id;
         }
 
-        $documentableClass = $data->resolvedDocumentableClass();
-
-        if ($documentableClass === Opportunity::class) {
-            return (int) Opportunity::query()->findOrFail($data->resolvedSourceId())->store_id;
-        }
-
-        if ($documentableClass === InvoicePayment::class) {
-            return (int) InvoicePayment::query()
-                ->with('invoice')
-                ->findOrFail($data->resolvedSourceId())
-                ->invoice
-                ->store_id;
-        }
-
         throw ValidationException::withMessages([
-            'document_template_id' => ['A document template is required when generating member documents.'],
+            'source_id' => ['Unsupported document source type.'],
         ]);
     }
 

@@ -22,6 +22,7 @@ class DocumentRenderPipeline implements DocumentRenderer
         private readonly DocumentResolverRegistry $resolverRegistry,
         private readonly SandboxedBladeRenderer $bladeRenderer,
         private readonly DocumentBrandingResolver $brandingResolver,
+        private readonly DocumentStylesSanitizer $stylesSanitizer,
         private readonly PdfDriverManager $pdfDriverManager,
         private readonly DocumentRenderContext $renderContext,
     ) {}
@@ -124,7 +125,7 @@ class DocumentRenderPipeline implements DocumentRenderer
      */
     private function assemble(array $compiled, DocumentTemplate $template, array $branding): array
     {
-        $styles = (string) ($template->styles_css ?? '');
+        $styles = $this->stylesSanitizer->sanitize((string) ($template->styles_css ?? ''));
 
         $previewHtml = <<<HTML
 <!DOCTYPE html>
