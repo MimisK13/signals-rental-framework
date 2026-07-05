@@ -24,9 +24,9 @@ use Tests\Concerns\UsesPostgres;
 | translated into a friendly field-scoped ValidationException — not a raw 500.
 |
 | The race is simulated with DB::listen: a duplicate ACTIVE membership row for the
-| same serialised item is inserted directly the moment the guard's membership-
-| existence SELECT runs, so the action's own INSERT then violates the partial-
-| unique index and is caught.
+| same serialised item is inserted directly the moment the guard's active-
+| membership SELECT (guardConflicts → first()) runs, so the action's own INSERT
+| then violates the partial-unique index and is caught.
 |
 |   php artisan test --compact --group=pgsql
 */
@@ -50,10 +50,9 @@ it('translates a raced partial-unique violation into a 422', function () {
     $container = Container::factory()->kit()->create(['store_id' => $this->store->id]);
     $otherContainer = Container::factory()->kit()->create(['store_id' => $this->store->id]);
 
-    // Simulate a concurrent pack: the instant the guard's membership-existence
-    // SELECT runs, insert a duplicate ACTIVE membership for the same item via a
-    // SEPARATE connection (so it commits independently of the action's transaction
-    // and is visible to the partial-unique index when the action's INSERT runs).
+    // Simulate a concurrent pack: when the guard's active-membership SELECT runs,
+    // insert a duplicate ACTIVE membership for the same item so the action's
+    // own INSERT then violates uq_container_items_active_membership.
     $injected = false;
     DB::listen(function ($query) use (&$injected, $asset, $otherContainer, $product): void {
         if ($injected) {
@@ -61,7 +60,9 @@ it('translates a raced partial-unique violation into a 422', function () {
         }
 
         if (str_contains($query->sql, 'container_items')
-            && str_contains($query->sql, 'exists')) {
+            && str_contains($query->sql, 'serialised_item_id')
+            && str_contains($query->sql, 'unpacked_at')
+            && str_starts_with(strtolower(ltrim($query->sql)), 'select')) {
             $injected = true;
 
             DB::connection($query->connectionName)->table('container_items')->insert([
