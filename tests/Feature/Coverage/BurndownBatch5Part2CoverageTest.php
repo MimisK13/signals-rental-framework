@@ -9,7 +9,14 @@ use App\Actions\Documents\CreateDocumentTemplate;
 use App\Actions\Documents\GenerateBillingIssueDocument;
 use App\Actions\Invoices\CreateDraftInvoice;
 use App\Actions\Invoices\RecordPayment;
-use App\Actions\Notifications\LogCommunication;
+use App\Actions\Opportunities\AddOpportunityItem;
+use App\Actions\Opportunities\ConvertToOrder;
+use App\Actions\Opportunities\ConvertToQuotation;
+use App\Actions\Opportunities\CreateOpportunity;
+use App\Actions\Opportunities\DeleteOpportunity;
+use App\Actions\Opportunities\UpdateOpportunity;
+use App\Actions\Pricing\DeleteSurchargeGroup;
+use App\Actions\Pricing\UpdateSurchargeGroup;
 use App\Actions\PurchaseOrders\CreatePurchaseOrder;
 use App\Actions\PurchaseOrders\UpdateDraftPurchaseOrder;
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
@@ -17,11 +24,18 @@ use App\Contracts\Documents\DocumentRenderer;
 use App\Data\Documents\CreateDocumentTemplateData;
 use App\Data\Invoices\CreateDraftInvoiceData;
 use App\Data\Invoices\RecordPaymentData;
-use App\Data\Notifications\TransitionCommunicationLogData;
+use App\Data\Opportunities\AddOpportunityItemData;
+use App\Data\Opportunities\CreateOpportunityData;
+use App\Data\Opportunities\OpportunityData;
+use App\Data\Opportunities\UpdateOpportunityData;
+use App\Data\Pricing\SurchargeGroupData;
+use App\Data\Pricing\UpdateSurchargeGroupData;
 use App\Data\PurchaseOrders\CreatePurchaseOrderData;
 use App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Enums\DocumentOutputFormat;
+use App\Enums\DocumentStatus;
+use App\Enums\LineItemTransactionType;
 use App\Enums\PaymentMethod;
 use App\Enums\PricingRoundingDirection;
 use App\Http\Controllers\Api\V1\OpportunityController;
@@ -34,9 +48,13 @@ use App\Models\Container;
 use App\Models\Document;
 use App\Models\DocumentTemplate;
 use App\Models\ExchangeRate;
+use App\Models\InboundWebhookLog;
+use App\Models\InboundWebhookSource;
 use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\RequestLog;
@@ -48,9 +66,9 @@ use App\Notifications\CustomerCommunication;
 use App\ValueObjects\Documents\DocumentRenderResult;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -119,25 +137,25 @@ it('GenerateBillingIssueDocument reuses existing PDFs and resolves currency fall
 
     DocumentTemplate::factory()->for($store)->create([
         'document_type' => 'receipt',
-        'model_type' => \App\Models\InvoicePayment::class,
+        'model_type' => InvoicePayment::class,
         'body_html' => '<p>Receipt</p>',
         'is_default' => true,
         'is_active' => false,
     ]);
 
     $paymentInvoice = Invoice::factory()->for($store)->create(['currency_code' => 'GBP', 'status' => 'issued']);
-    $payment = \App\Models\InvoicePayment::factory()->for($paymentInvoice)->create(['amount' => 1000]);
+    $payment = InvoicePayment::factory()->for($paymentInvoice)->create(['amount' => 1000]);
 
     expect(fn () => app(GenerateBillingIssueDocument::class)->forReceipt($payment))
         ->toThrow(ValidationException::class, 'No active template exists');
 
     $this->mock(DocumentRenderer::class, function ($mock): void {
-        $mock->shouldReceive('render')->andReturn(DocumentRenderResult::failure('PDF render failed'));
+        $mock->shouldReceive('render')->andReturn(DocumentRenderResult::failure('PDF render failed', DocumentOutputFormat::Pdf));
     });
 
     DocumentTemplate::factory()->for($store)->create([
         'document_type' => 'receipt',
-        'model_type' => \App\Models\InvoicePayment::class,
+        'model_type' => InvoicePayment::class,
         'body_html' => '<p>Receipt</p>',
         'is_default' => true,
         'is_active' => true,
@@ -150,12 +168,7 @@ it('GenerateBillingIssueDocument reuses existing PDFs and resolves currency fall
 it('CreateDraftInvoice resolves explicit currency and foreign exchange rates', function () {
     $this->actingAs(batch5Part2Owner());
     settings()->set('company.base_currency', 'GBP');
-    ExchangeRate::factory()->create([
-        'base_currency_code' => 'USD',
-        'target_currency_code' => 'GBP',
-        'rate' => '0.800000',
-        'effective_at' => now()->subDay(),
-    ]);
+    ExchangeRate::factory()->pair('USD', 'GBP', '0.800000')->effectiveFrom(Carbon::now()->subDay())->create();
 
     $store = Store::factory()->create();
     $member = Member::factory()->create();
@@ -219,10 +232,10 @@ it('SurchargeGroupController index update and destroy execute resource wiring', 
     Sanctum::actingAs(batch5Part2Owner(), ['pricing:read', 'pricing:write']);
     $controller = new SurchargeGroupController;
 
-    expect(batch5Part2InvokeProtected($controller, 'responseDataClass'))->toBe(\App\Data\Pricing\SurchargeGroupData::class)
-        ->and(batch5Part2InvokeProtected($controller, 'updateDataClass'))->toBe(\App\Data\Pricing\UpdateSurchargeGroupData::class)
-        ->and(batch5Part2InvokeProtected($controller, 'updateActionClass'))->toBe(\App\Actions\Pricing\UpdateSurchargeGroup::class)
-        ->and(batch5Part2InvokeProtected($controller, 'deleteActionClass'))->toBe(\App\Actions\Pricing\DeleteSurchargeGroup::class)
+    expect(batch5Part2InvokeProtected($controller, 'responseDataClass'))->toBe(SurchargeGroupData::class)
+        ->and(batch5Part2InvokeProtected($controller, 'updateDataClass'))->toBe(UpdateSurchargeGroupData::class)
+        ->and(batch5Part2InvokeProtected($controller, 'updateActionClass'))->toBe(UpdateSurchargeGroup::class)
+        ->and(batch5Part2InvokeProtected($controller, 'deleteActionClass'))->toBe(DeleteSurchargeGroup::class)
         ->and(batch5Part2InvokeProtected($controller, 'pluralKey'))->toBe('surcharge_groups')
         ->and(batch5Part2InvokeProtected($controller, 'entityType'))->toBe('surcharge_groups');
 
@@ -249,7 +262,7 @@ it('PublicDocumentController verifyPin redirects when pin is not required and re
     $document = Document::factory()->create([
         'public_token' => 'no-pin-token',
         'public_pin_hash' => null,
-        'status' => \App\Enums\DocumentStatus::Final,
+        'status' => DocumentStatus::Final,
         'pdf_path' => 'documents/sample.pdf',
     ]);
     Storage::put('documents/sample.pdf', '%PDF-sample');
@@ -260,14 +273,14 @@ it('PublicDocumentController verifyPin redirects when pin is not required and re
 
     $document->update([
         'public_token' => 'void-token',
-        'status' => \App\Enums\DocumentStatus::Void,
+        'status' => DocumentStatus::Void,
     ]);
 
     $this->get(route('documents.public.show', ['token' => 'void-token']))->assertNotFound();
 
     $document->update([
         'public_token' => 'missing-path-token',
-        'status' => \App\Enums\DocumentStatus::Final,
+        'status' => DocumentStatus::Final,
         'pdf_path' => null,
         'html_snapshot_path' => null,
     ]);
@@ -278,7 +291,7 @@ it('PublicDocumentController verifyPin redirects when pin is not required and re
 it('CreateVirtualStockIntake resolveFields derives values from sub-hire purchase order lines', function () {
     $this->actingAs(batch5Part2Owner());
     $store = Store::factory()->create();
-    $product = \App\Models\Product::factory()->create();
+    $product = Product::factory()->create();
     $po = PurchaseOrder::factory()->create([
         'store_id' => $store->id,
         'po_type' => 'sub_hire',
@@ -291,9 +304,13 @@ it('CreateVirtualStockIntake resolveFields derives values from sub-hire purchase
     ]);
 
     $created = (new CreateVirtualStockIntake)(CreateVirtualStockIntakeData::from([
-        'purchase_order_item_id' => $line->id,
+        'product_id' => $product->id,
+        'store_id' => $store->id,
+        'quantity' => 4,
         'available_from' => now()->addDay()->toIso8601String(),
         'available_until' => now()->addDays(3)->toIso8601String(),
+        'unit_cost' => 2500,
+        'purchase_order_item_id' => $line->id,
     ]));
 
     expect($created->product_id)->toBe($product->id)
@@ -314,50 +331,56 @@ it('OpportunityController exposes resource wiring and returns held-item dispatch
     Sanctum::actingAs(batch5Part2Owner(), ['opportunities:read', 'opportunities:write']);
     $controller = new OpportunityController;
 
-    expect(batch5Part2InvokeProtected($controller, 'responseDataClass'))->toBe(\App\Data\Opportunities\OpportunityData::class)
-        ->and(batch5Part2InvokeProtected($controller, 'createDataClass'))->toBe(\App\Data\Opportunities\CreateOpportunityData::class)
-        ->and(batch5Part2InvokeProtected($controller, 'updateDataClass'))->toBe(\App\Data\Opportunities\UpdateOpportunityData::class)
-        ->and(batch5Part2InvokeProtected($controller, 'createActionClass'))->toBe(\App\Actions\Opportunities\CreateOpportunity::class)
-        ->and(batch5Part2InvokeProtected($controller, 'updateActionClass'))->toBe(\App\Actions\Opportunities\UpdateOpportunity::class)
+    expect(batch5Part2InvokeProtected($controller, 'responseDataClass'))->toBe(OpportunityData::class)
+        ->and(batch5Part2InvokeProtected($controller, 'createDataClass'))->toBe(CreateOpportunityData::class)
+        ->and(batch5Part2InvokeProtected($controller, 'updateDataClass'))->toBe(UpdateOpportunityData::class)
+        ->and(batch5Part2InvokeProtected($controller, 'createActionClass'))->toBe(CreateOpportunity::class)
+        ->and(batch5Part2InvokeProtected($controller, 'updateActionClass'))->toBe(UpdateOpportunity::class)
         ->and(batch5Part2InvokeProtected($controller, 'singularKey'))->toBe('opportunity')
         ->and(batch5Part2InvokeProtected($controller, 'pluralKey'))->toBe('opportunities')
         ->and(batch5Part2InvokeProtected($controller, 'entityType'))->toBe('opportunities');
 
-    $store = Store::factory()->create(['shortage_policy' => \App\Enums\ShortagePolicy::WarnPartial->value]);
-    $product = \App\Models\Product::factory()->rental()->bulk()->create();
+    $store = Store::factory()->create();
+    $product = Product::factory()->rental()->bulk()->create();
     StockLevel::factory()->bulk()->create([
         'product_id' => $product->id,
         'store_id' => $store->id,
-        'quantity_held' => 5,
+        'quantity_held' => 100,
     ]);
-
-    $opportunity = Opportunity::factory()->for($store)->create([
-        'state' => \App\Enums\OpportunityState::Order,
-        'starts_at' => now()->addDays(3),
-        'ends_at' => now()->addDays(5),
-    ]);
-
-    $item = \App\Models\OpportunityItem::factory()->for($opportunity)->create([
+    $created = (new CreateOpportunity)(CreateOpportunityData::from([
+        'subject' => 'Fulfilment meta',
+        'store_id' => $store->id,
+        'starts_at' => '2026-09-01T09:00:00Z',
+        'ends_at' => '2026-09-05T17:00:00Z',
+    ]));
+    $opportunity = Opportunity::query()->findOrFail($created->id);
+    (new ConvertToQuotation)($opportunity);
+    (new AddOpportunityItem)($opportunity->refresh(), AddOpportunityItemData::from([
+        'name' => $product->name,
         'itemable_id' => $product->id,
-        'itemable_type' => \App\Models\Product::class,
-        'quantity' => '3',
-    ]);
+        'itemable_type' => Product::class,
+        'quantity' => '5',
+        'transaction_type' => LineItemTransactionType::Rental->value,
+    ]));
+    (new ConvertToOrder)($opportunity->refresh());
+    $item = $opportunity->fresh()->items()->firstOrFail();
 
-    $this->patchJson("/api/v1/opportunities/{$opportunity->id}/items/{$item->id}/bulk_quantity", [
+    $this->patchJson("/api/v1/opportunities/{$opportunity->id}/items/{$item->id}/fulfilment", [
         'action' => 'dispatch',
-        'quantity' => '2',
+        'quantity' => '1',
     ])->assertOk();
 });
 
 it('InboundWebhookController resolveEvent reads event type from headers when payload omits it', function () {
     config([
+        'signals.installed' => true,
+        'signals.setup_complete' => true,
         'api_metering.capture_bodies' => true,
         'api_metering.body_max_bytes' => 4096,
     ]);
 
-    $source = \App\Models\InboundWebhookSource::factory()->create();
+    $source = InboundWebhookSource::factory()->create();
     $payload = json_encode(['id' => 42], JSON_THROW_ON_ERROR);
-
     $signature = hash_hmac($source->signature_algo, $payload, $source->secret);
 
     $this->call(
@@ -367,26 +390,21 @@ it('InboundWebhookController resolveEvent reads event type from headers when pay
         [],
         [],
         [
-            'HTTP_CONTENT_TYPE' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT' => 'application/json',
-            $source->signature_header => $signature,
+            'HTTP_'.$source->signature_header => $signature,
             'HTTP_X-Event-Type' => 'partner.updated',
         ],
         $payload,
     )->assertOk();
 
-    expect(\App\Models\InboundWebhookLog::query()->value('event'))->toBe('partner.updated');
+    expect(InboundWebhookLog::query()->value('event'))->toBe('partner.updated');
 });
 
 it('CreatePurchaseOrder and UpdateDraftPurchaseOrder resolve foreign exchange rates', function () {
     $this->actingAs(batch5Part2Owner());
     settings()->set('company.base_currency', 'GBP');
-    ExchangeRate::factory()->create([
-        'base_currency_code' => 'USD',
-        'target_currency_code' => 'GBP',
-        'rate' => '0.790000',
-        'effective_at' => now()->subDay(),
-    ]);
+    ExchangeRate::factory()->pair('USD', 'GBP', '0.790000')->effectiveFrom(Carbon::now()->subDay())->create();
 
     $store = Store::factory()->create();
     $supplier = Member::factory()->organisation()->create();
@@ -407,6 +425,8 @@ it('CreatePurchaseOrder and UpdateDraftPurchaseOrder resolve foreign exchange ra
     $po = PurchaseOrder::query()->findOrFail($created->id);
 
     $updated = (new UpdateDraftPurchaseOrder)($po, UpdateDraftPurchaseOrderData::from([
+        'supplier_id' => $po->supplier_id,
+        'store_id' => $po->store_id,
         'currency' => 'USD',
         'notes' => 'Updated notes',
     ]));
@@ -414,6 +434,8 @@ it('CreatePurchaseOrder and UpdateDraftPurchaseOrder resolve foreign exchange ra
     expect($updated->notes)->toBe('Updated notes');
 
     expect(fn () => (new UpdateDraftPurchaseOrder)($po, UpdateDraftPurchaseOrderData::from([
+        'supplier_id' => $po->supplier_id,
+        'store_id' => $po->store_id,
         'currency' => 'JPY',
     ])))->toThrow(ValidationException::class, 'No exchange rate is configured');
 });
@@ -467,14 +489,14 @@ it('RecordPayment assertPayableStatus rejects draft void credited and invalid re
     expect(fn () => (new RecordPayment)($draft, RecordPaymentData::from([
         'amount' => 100,
         'payment_method' => PaymentMethod::Cash->value,
-    ])))->toThrow(ValidationException::class, 'Payments can only be recorded against issued invoices');
+    ])))->toThrow(AuthorizationException::class);
 
     $void = Invoice::factory()->create(['status' => 'void']);
 
     expect(fn () => (new RecordPayment)($void, RecordPaymentData::from([
         'amount' => 100,
         'payment_method' => PaymentMethod::Cash->value,
-    ])))->toThrow(ValidationException::class);
+    ])))->toThrow(AuthorizationException::class);
 
     $issued = Invoice::factory()->create(['status' => 'issued', 'total' => 1000, 'amount_outstanding' => 1000]);
 
@@ -489,7 +511,7 @@ it('CustomerCommunication toMail attaches PDFs and failed transitions the commun
     $member = Member::factory()->create();
     $template = CommunicationTemplate::factory()->create([
         'subject' => 'Hello {{ member.name }}',
-        'body_html' => '<p>Body</p>',
+        'body' => 'Your reference is **{{ opportunity.reference }}**.',
     ]);
     $log = CommunicationLog::factory()->create(['status' => 'queued']);
 
@@ -531,7 +553,7 @@ it('HasOpportunityActions restore un-trashes the opportunity from the show page'
     $this->actingAs($owner);
 
     $opportunity = Opportunity::factory()->create();
-    (new \App\Actions\Opportunities\DeleteOpportunity)($opportunity);
+    (new DeleteOpportunity)($opportunity);
 
     Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
         ->call('restore');

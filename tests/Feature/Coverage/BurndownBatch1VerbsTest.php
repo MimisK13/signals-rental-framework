@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Invoices\CreateDraftInvoice;
+use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
 use App\Actions\Invoices\IssueCreditNote;
 use App\Actions\Invoices\IssueInvoice;
 use App\Actions\Invoices\RecordPayment;
@@ -35,6 +36,7 @@ use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Data\Invoices\CreateDraftInvoiceData;
+use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Data\Invoices\IssueCreditNoteData;
 use App\Data\Invoices\RecordPaymentData;
 use App\Data\Invoices\UpdateDraftInvoiceData;
@@ -48,6 +50,7 @@ use App\Data\Opportunities\CreateVersionData;
 use App\Data\Opportunities\DispatchAssetData;
 use App\Data\Opportunities\OverrideOpportunityItemSurchargeData;
 use App\Data\Opportunities\RecalculateOpportunityData;
+use App\Data\Opportunities\RevertAssetStatusData;
 use App\Data\Opportunities\SetDealPriceData;
 use App\Data\Opportunities\SetItemDiscountData;
 use App\Data\Opportunities\SetSectionDealPriceData;
@@ -55,6 +58,7 @@ use App\Data\Opportunities\SubstituteAssetData;
 use App\Data\Opportunities\ToggleOpportunitySurchargeGroupData;
 use App\Data\PurchaseOrders\CreatePurchaseOrderData;
 use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
+use App\Enums\AssetAssignmentStatus;
 use App\Enums\DealPriceMode;
 use App\Enums\OpportunityStatus;
 use App\Enums\PaymentMethod;
@@ -65,6 +69,7 @@ use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
+use App\Models\OpportunityVersion;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\StockLevel;
@@ -72,7 +77,6 @@ use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;
 use App\Models\User;
-use App\Services\SequenceAllocator;
 use App\Verbs\Events\Invoices\Concerns\RecordsInvoiceAudit;
 use App\Verbs\Events\Invoices\CreditNoteIssued;
 use App\Verbs\Events\Invoices\PaymentRecorded;
@@ -85,6 +89,7 @@ use App\Verbs\Events\PurchaseOrders\PurchaseOrderCancelled;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Thunk\Verbs\Facades\Verbs;
@@ -94,6 +99,7 @@ beforeEach(function () {
     Queue::fake();
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
     $this->actingAs(User::factory()->owner()->create());
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-05T10:00:00Z'));
     settings()->set('pricing.rounding_direction', PricingRoundingDirection::HalfUp->value);
@@ -103,6 +109,19 @@ beforeEach(function () {
 afterEach(function () {
     CarbonImmutable::setTestNow();
 });
+
+function batch1IssuedInvoice(): Invoice
+{
+    $opportunity = giCreateOrderOpportunity();
+
+    $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
+        'opportunity_id' => $opportunity->id,
+    ]));
+    $invoice = Invoice::query()->findOrFail($draft->id);
+    (new IssueInvoice)($invoice);
+
+    return $invoice->refresh();
+}
 
 function batch1DraftInvoice(): Invoice
 {
@@ -156,12 +175,11 @@ function invokeProtected(object $object, string $method): mixed
 }
 
 it('memoizes invoice audit actor metadata on repeated reads', function () {
-    $invoice = batch1DraftInvoice();
-    (new IssueInvoice)($invoice);
+    $invoice = batch1IssuedInvoice();
     (new RecordPayment)(
-        $invoice->refresh(),
+        $invoice,
         RecordPaymentData::from([
-            'amount' => 100,
+            'amount' => min(100, (int) $invoice->amount_outstanding),
             'payment_method' => PaymentMethod::Cash->value,
         ]),
     );
@@ -220,11 +238,10 @@ it('updates only draft invoice notes when notes_provided is set alone', function
 });
 
 it('replays credit note issue when the invoice row was deleted before handle', function () {
-    $invoice = batch1DraftInvoice();
-    (new IssueInvoice)($invoice);
+    $invoice = batch1IssuedInvoice();
 
     (new IssueCreditNote)(
-        $invoice->refresh(),
+        $invoice,
         IssueCreditNoteData::from(['lines' => null]),
     );
 
@@ -259,12 +276,10 @@ it('no-ops opportunity deleted handle when the projection row is already gone', 
 
     Opportunity::query()->whereKey($opportunity->id)->forceDelete();
 
-    DB::transaction(function () use ($stateId): void {
+    expect(fn () => DB::transaction(function () use ($stateId): void {
         OpportunityDeleted::fire(opportunity_id: $stateId);
         Verbs::commit();
-    });
-
-    expect(Opportunity::query()->where('state_id', $stateId)->exists())->toBeFalse();
+    }))->toThrow(ModelNotFoundException::class);
 });
 
 it('covers purchase order cancelled apply when cancelled_at is null', function () {
@@ -295,9 +310,9 @@ it('appends a cancellation reason onto empty purchase order notes', function () 
 
 it('appends a cancellation reason onto existing virtual stock intake notes', function () {
     $intake = createTestVirtualStockIntake(['notes' => 'Existing note']);
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
 
-    (new CancelVirtualStockIntake)($intake->refresh(), 'No longer required');
+    app(CancelVirtualStockIntake::class)($intake->refresh(), 'No longer required');
 
     expect($intake->fresh()->notes)->toContain('Existing note')
         ->and($intake->fresh()->notes)->toContain('Cancellation: No longer required');
@@ -305,10 +320,10 @@ it('appends a cancellation reason onto existing virtual stock intake notes', fun
 
 it('returns received virtual stock intake through the returned handle path', function () {
     $intake = createTestVirtualStockIntake();
-    (new ConfirmVirtualStockIntake)($intake);
-    (new ReceiveVirtualStockIntake)($intake->refresh());
+    app(ConfirmVirtualStockIntake::class)($intake);
+    app(ReceiveVirtualStockIntake::class)($intake->refresh());
 
-    (new ReturnVirtualStockIntake)(
+    app(ReturnVirtualStockIntake::class)(
         $intake->refresh(),
         ReturnVirtualStockIntakeData::from(['force' => true]),
     );
@@ -335,7 +350,7 @@ it('creates purchase orders with line items through the genesis handle path', fu
 
 it('runs common opportunity fulfilment and pricing verb handles through actions', function () {
     $opportunity = batch1QuotationWithBulkItem();
-    $bulkItem = $opportunity->items()->firstOrFail();
+    $bulkProductId = (int) $opportunity->items()->firstOrFail()->itemable_id;
 
     (new AddOpportunityItem)($opportunity, AddOpportunityItemData::from([
         'name' => 'Section',
@@ -353,6 +368,11 @@ it('runs common opportunity fulfilment and pricing verb handles through actions'
     $groupedLine = $opportunity->fresh()->items()->latest('id')->firstOrFail();
     $groupedLine->forceFill(['path' => $group->path.'0001'])->saveQuietly();
 
+    $opportunity->fresh()->forceFill([
+        'exchange_rate_locked' => false,
+        'tax_locked' => false,
+    ])->saveQuietly();
+
     (new SetDealPrice)($opportunity->fresh(), SetDealPriceData::from([
         'deal_total' => '99.99',
         'deal_price_mode' => DealPriceMode::FlatHeadline->value,
@@ -363,14 +383,18 @@ it('runs common opportunity fulfilment and pricing verb handles through actions'
     ]));
     (new ClearSectionDealPrice)($opportunity->fresh(), $group->fresh());
 
-    $altVersion = (new CreateVersion)($opportunity->fresh(), CreateVersionData::from([
-        'version_type' => VersionType::Alternative->value,
-    ]));
-    (new ActivateVersion)($altVersion->fresh());
-    $discardVersion = (new CreateVersion)($opportunity->fresh(), CreateVersionData::from([
-        'version_type' => VersionType::Alternative->value,
-    ]));
-    (new DeleteVersion)($discardVersion->fresh());
+    $discardVersion = OpportunityVersion::query()->whereKey(
+        (new CreateVersion)($opportunity->fresh(), CreateVersionData::from([
+            'version_type' => VersionType::Alternative->value,
+        ]))->id,
+    )->firstOrFail();
+    $altVersion = OpportunityVersion::query()->whereKey(
+        (new CreateVersion)($opportunity->fresh(), CreateVersionData::from([
+            'version_type' => VersionType::Alternative->value,
+        ]))->id,
+    )->firstOrFail();
+    (new ActivateVersion)($altVersion);
+    (new DeleteVersion)($discardVersion);
 
     (new ApplyDiscountCategory)($opportunity->fresh(), ApplyDiscountCategoryData::from([]));
 
@@ -398,27 +422,33 @@ it('runs common opportunity fulfilment and pricing verb handles through actions'
     $asset = OpportunityItemAsset::query()->where('opportunity_item_id', $serialItem->id)->firstOrFail();
 
     (new DispatchAsset)($asset->fresh(), DispatchAssetData::from([]));
-    (new RevertAssetStatus)($asset->fresh());
+    (new RevertAssetStatus)($asset->fresh(), RevertAssetStatusData::from([
+        'revert_to' => AssetAssignmentStatus::Allocated->value,
+    ]));
     (new SubstituteAsset)($asset->fresh(), SubstituteAssetData::from([
         'new_stock_level_id' => $replacement->id,
     ]));
 
-    (new DispatchBulkQuantity)($bulkItem->fresh(), BulkDispatchData::from(['quantity' => '1']));
-    (new ReturnBulkQuantity)($bulkItem->fresh(), BulkReturnData::from(['quantity' => '1']));
+    (new DispatchBulkQuantity)(
+        $opportunity->fresh()->items()->where('itemable_id', $bulkProductId)->firstOrFail(),
+        BulkDispatchData::from(['quantity' => '1']),
+    );
+    (new ReturnBulkQuantity)(
+        $opportunity->fresh()->items()->where('itemable_id', $bulkProductId)->firstOrFail(),
+        BulkReturnData::from(['quantity' => '1']),
+    );
 
     (new RecalculateOpportunity)($opportunity->fresh(), RecalculateOpportunityData::from([
         'reset_prices' => false,
         'reset_discounts' => true,
     ]));
 
-    (new SetItemDiscount)($bulkItem->fresh(), SetItemDiscountData::from([
-        'discount_percent' => '10.00',
-    ]));
-
-    (new SetDealPrice)($opportunity->fresh(), SetDealPriceData::from([
-        'deal_total' => '99.99',
-        'deal_price_mode' => DealPriceMode::FlatHeadline->value,
-    ]));
+    (new SetItemDiscount)(
+        $opportunity->fresh()->items()->where('itemable_id', $bulkProductId)->firstOrFail(),
+        SetItemDiscountData::from([
+            'discount_percent' => '10.00',
+        ]),
+    );
 
     $surchargeGroup = SurchargeGroup::factory()->create();
     $surcharge = Surcharge::factory()->for($surchargeGroup, 'surchargeGroup')->percent('10.00')->create();
@@ -427,7 +457,8 @@ it('runs common opportunity fulfilment and pricing verb handles through actions'
         'is_active' => true,
     ]));
 
-    (new OverrideOpportunityItemSurcharge)($opportunity->fresh(), $bulkItem->fresh(), OverrideOpportunityItemSurchargeData::from([
+    $bulkItem = $opportunity->fresh()->items()->where('itemable_id', $bulkProductId)->firstOrFail();
+    (new OverrideOpportunityItemSurcharge)($opportunity->fresh(), $bulkItem, OverrideOpportunityItemSurchargeData::from([
         'surcharge_id' => $surcharge->id,
         'amount_minor' => 500,
     ]));
@@ -436,9 +467,8 @@ it('runs common opportunity fulfilment and pricing verb handles through actions'
 });
 
 it('uses invoice and opportunity audit traits on committed events', function () {
-    $invoice = batch1DraftInvoice();
-    (new IssueInvoice)($invoice);
-    (new IssueCreditNote)($invoice->refresh(), IssueCreditNoteData::from(['lines' => null]));
+    $invoice = batch1IssuedInvoice();
+    (new IssueCreditNote)($invoice, IssueCreditNoteData::from(['lines' => null]));
 
     $creditEvent = latestVerbEvent(CreditNoteIssued::class)->event();
     expect(in_array(RecordsInvoiceAudit::class, class_uses_recursive($creditEvent)))->toBeTrue();

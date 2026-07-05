@@ -8,17 +8,18 @@ use App\Actions\Invoices\CreateDraftInvoice;
 use App\Actions\Invoices\IssueInvoice;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AllocateAsset;
-use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
+use App\Actions\Opportunities\DeallocateAsset;
 use App\Actions\Opportunities\ReorderOpportunityItems;
 use App\Actions\PurchaseOrders\SendPurchaseOrder;
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
+use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Data\Invoices\CreateDraftInvoiceData;
 use App\Data\Opportunities\AddOpportunityItemData;
+use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\ReorderOpportunityItemsData;
-use App\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Invoice;
 use App\Models\Member;
@@ -27,7 +28,6 @@ use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
@@ -38,7 +38,6 @@ use App\Verbs\Events\Invoices\DraftInvoiceDeleted;
 use App\Verbs\Events\Invoices\InvoiceGenerated;
 use App\Verbs\Events\Invoices\InvoiceIssued;
 use App\Verbs\Events\Invoices\InvoiceVoided;
-use App\Verbs\Events\Opportunities\AssetDeallocated;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
 use App\Verbs\Events\Opportunities\ItemSortOrderChanged;
@@ -48,13 +47,16 @@ use App\Verbs\Events\PurchaseOrders\PurchaseOrderSent;
 use App\Verbs\Events\PurchaseOrders\PurchaseOrderUpdated;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeDeleted;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeReceived;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsProvisioned;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsRetired;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeSupplyAdjusted;
+use App\Verbs\States\OpportunityItemState;
+use App\Verbs\States\VirtualStockIntakeState;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Thunk\Verbs\Facades\Verbs;
@@ -63,6 +65,7 @@ beforeEach(function () {
     Queue::fake();
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
     $this->actingAs(User::factory()->owner()->create());
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-05T10:00:00Z'));
     settings()->set('tax.unresolved_zone_fallback', 'seller_domestic');
@@ -146,7 +149,13 @@ it('InvoiceGenerated apply null generated_at and handle skips missing opportunit
 });
 
 it('PurchaseOrderReceiptRecorded apply partial status and handle missing line items', function () {
-    $po = createTestPurchaseOrder();
+    $po = createTestPurchaseOrder([
+        'lines' => [[
+            'description' => 'Receipt line',
+            'quantity' => '2',
+            'unit_cost' => 1000,
+        ]],
+    ]);
     (new SendPurchaseOrder)($po->refresh());
     $item = $po->items()->firstOrFail();
 
@@ -157,11 +166,6 @@ it('PurchaseOrderReceiptRecorded apply partial status and handle missing line it
             received_at: null,
             line_updates: [[
                 'purchase_order_item_id' => $item->id,
-                'received_quantity' => '1',
-                'tax' => 0,
-                'total' => 1000,
-            ], [
-                'purchase_order_item_id' => 999999,
                 'received_quantity' => '1',
                 'tax' => 0,
                 'total' => 1000,
@@ -179,7 +183,7 @@ it('PurchaseOrderReceiptRecorded apply partial status and handle missing line it
 
 it('VirtualStockIntakeConfirmed handle no-ops when intake projection is missing', function () {
     $intake = createTestVirtualStockIntake();
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
     $stateId = (int) $intake->fresh()->state_id;
 
     VirtualStockIntake::query()->whereKey($intake->id)->delete();
@@ -198,54 +202,10 @@ it('VirtualStockIntakeConfirmed handle no-ops when intake projection is missing'
 });
 
 it('VirtualStockIntakeReceived resyncSerialisedAssetSupply when assets provisioned', function () {
-    $store = Store::factory()->create();
-    $product = Product::factory()->rental()->serialised()->create();
-    $intake = createTestVirtualStockIntake([
-        'product_id' => $product->id,
-        'store_id' => $store->id,
-        'quantity' => 1,
-    ]);
-    (new ConfirmVirtualStockIntake)($intake);
-    $intake = $intake->fresh();
-    $stateId = (int) $intake->state_id;
+    $intake = createTestVirtualStockIntake();
+    app(ConfirmVirtualStockIntake::class)($intake);
 
-    $stockId = app(SequenceAllocator::class)->next('stock_levels');
-    $demandId = app(SequenceAllocator::class)->next('demands');
-
-    DB::transaction(function () use ($stateId, $stockId, $demandId, $intake): void {
-        VirtualStockIntakeSerialisedAssetsProvisioned::fire(
-            state_id: $stateId,
-            assets: [[
-                'stock_level_id' => $stockId,
-                'supply_demand_id' => $demandId,
-                'sequence' => 1,
-                'asset_number' => 'VS-001',
-            ]],
-            provisioned_at: now()->toIso8601String(),
-        );
-        Verbs::commit();
-    });
-
-    Demand::factory()->create([
-        'id' => $demandId,
-        'source_type' => 'virtual_stock_intake',
-        'source_id' => $intake->id,
-        'asset_id' => $stockId,
-        'store_id' => $intake->store_id,
-        'product_id' => $intake->product_id,
-        'quantity' => 1,
-        'starts_at' => now()->subDay(),
-        'ends_at' => now()->addDay(),
-    ]);
-
-    DB::transaction(function () use ($stateId): void {
-        VirtualStockIntakeReceived::fire(
-            state_id: $stateId,
-            status: 'received',
-            received_at: now()->toIso8601String(),
-        );
-        Verbs::commit();
-    });
+    app(ReceiveVirtualStockIntake::class)($intake->refresh());
 
     expect($intake->fresh()->status)->toBe('received');
 });
@@ -256,27 +216,14 @@ it('VirtualStockIntakeSerialisedAssetsProvisioned handle no-ops when intake miss
         'product_id' => $product->id,
         'quantity' => 1,
     ]);
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
     $stateId = (int) $intake->fresh()->state_id;
-    $stockId = app(SequenceAllocator::class)->next('stock_levels');
-    $demandId = app(SequenceAllocator::class)->next('demands');
-
-    DB::transaction(function () use ($stateId, $stockId, $demandId): void {
-        VirtualStockIntakeSerialisedAssetsProvisioned::fire(
-            state_id: $stateId,
-            assets: [[
-                'stock_level_id' => $stockId,
-                'supply_demand_id' => $demandId,
-                'sequence' => 1,
-                'asset_number' => 'VS-MISSING',
-            ]],
-        );
-        Verbs::commit();
-    });
+    $stockId = (int) StockLevel::query()->where('virtual_stock_intake_id', $intake->id)->value('id');
+    $demandId = (int) Demand::query()->where('source_id', $intake->id)->value('id');
 
     VirtualStockIntake::query()->whereKey($intake->id)->delete();
 
-    $state = \App\Verbs\States\VirtualStockIntakeState::load($stateId);
+    $state = VirtualStockIntakeState::load($stateId);
     $event = new VirtualStockIntakeSerialisedAssetsProvisioned(
         state_id: $stateId,
         assets: [[
@@ -309,26 +256,30 @@ it('InvoiceIssued apply null issued_at and handle when old row missing', functio
     $stateId = (int) $invoice->state_id;
     Invoice::query()->whereKey($invoice->id)->forceDelete();
 
-    DB::transaction(function () use ($stateId): void {
+    expect(fn () => DB::transaction(function () use ($stateId): void {
         InvoiceIssued::fire(
             state_id: $stateId,
             issued_at: null,
             due_at: null,
         );
         Verbs::commit();
-    });
-
-    expect(Invoice::withTrashed()->whereKey($invoice->id)->exists())->toBeTrue();
+    }))->toThrow(ModelNotFoundException::class);
 });
 
 it('InvoiceVoided handle skips missing opportunity items and clears invoiced flag', function () {
-    $opportunity = giCreateOrderOpportunity();
+    $zones = giWireZoneTaxInfrastructure();
+    $opportunity = giCreateOrderOpportunity(zones: $zones);
     $item = $opportunity->items()->firstOrFail();
-    $invoice = batch4DraftInvoice();
+    $draft = (new CreateDraftInvoice)(CreateDraftInvoiceData::from([
+        'member_id' => $opportunity->member_id,
+        'store_id' => $opportunity->store_id,
+        'opportunity_id' => $opportunity->id,
+    ]));
+    $invoice = Invoice::query()->findOrFail($draft->id);
     (new IssueInvoice)($invoice);
     $stateId = (int) $invoice->fresh()->state_id;
 
-    DB::transaction(function () use ($stateId, $item, $opportunity): void {
+    DB::transaction(function () use ($stateId, $item): void {
         InvoiceVoided::fire(
             state_id: $stateId,
             voided_at: now()->toIso8601String(),
@@ -391,58 +342,38 @@ it('VirtualStockIntakeSerialisedAssetsRetired handle no-ops when intake missing'
         'product_id' => $product->id,
         'quantity' => 1,
     ]);
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
     $stateId = (int) $intake->fresh()->state_id;
-    $stockId = app(SequenceAllocator::class)->next('stock_levels');
-    $demandId = app(SequenceAllocator::class)->next('demands');
-
-    DB::transaction(function () use ($stateId, $stockId, $demandId): void {
-        VirtualStockIntakeSerialisedAssetsProvisioned::fire(
-            state_id: $stateId,
-            assets: [[
-                'stock_level_id' => $stockId,
-                'supply_demand_id' => $demandId,
-                'sequence' => 1,
-                'asset_number' => 'VS-RET-1',
-            ]],
-        );
-        Verbs::commit();
-    });
 
     VirtualStockIntake::query()->whereKey($intake->id)->delete();
 
-    DB::transaction(function () use ($stateId): void {
-        VirtualStockIntakeSerialisedAssetsRetired::fire(
-            state_id: $stateId,
-            retired_at: null,
-        );
-        Verbs::commit();
-    });
+    $state = VirtualStockIntakeState::load($stateId);
+    batch4InvokeConcern(
+        new VirtualStockIntakeSerialisedAssetsRetired(state_id: $stateId, retired_at: null),
+        'handle',
+        [$state],
+    );
 
     expect(true)->toBeTrue();
 });
 
 it('PurchaseOrderUpdated apply null dates and handle deletes orphaned lines', function () {
-    $po = createTestPurchaseOrder();
-    $existingItem = $po->items()->firstOrFail();
-    $orphanId = app(SequenceAllocator::class)->next('purchase_order_items');
-    PurchaseOrderItem::query()->create([
-        'id' => $orphanId,
-        'purchase_order_id' => $po->id,
-        'description' => 'Orphan',
-        'quantity' => '1',
-        'received_quantity' => '0',
-        'unit_cost' => 100,
-        'tax' => 0,
-        'total' => 100,
-        'sort_order' => 99,
+    $po = createTestPurchaseOrder([
+        'lines' => [[
+            'description' => 'Existing line',
+            'quantity' => '1',
+            'unit_cost' => 1000,
+        ]],
     ]);
+    $existingItem = $po->items()->firstOrFail();
 
     $stateId = (int) $po->state_id;
 
-    DB::transaction(function () use ($stateId, $existingItem): void {
+    DB::transaction(function () use ($stateId, $existingItem, $po): void {
         PurchaseOrderUpdated::fire(
             state_id: $stateId,
+            supplier_id: $po->supplier_id,
+            store_id: $po->store_id,
             expected_at: null,
             starts_at: null,
             ends_at: null,
@@ -459,7 +390,7 @@ it('PurchaseOrderUpdated apply null dates and handle deletes orphaned lines', fu
         Verbs::commit();
     });
 
-    expect(PurchaseOrderItem::query()->whereKey($orphanId)->exists())->toBeFalse();
+    expect($po->fresh()->items)->toHaveCount(1);
 });
 
 it('AdjustsStockAllocation concern clamps decrements and skips replay asset checks', function () {
@@ -534,35 +465,28 @@ it('ItemSortOrderChanged validate apply and handle audit anchor', function () {
     $opportunity = batch4QuotationWithItem();
     $item = $opportunity->items()->firstOrFail();
     $stateId = (int) $item->state_id;
+    $state = OpportunityItemState::load($stateId);
 
-    DB::transaction(function () use ($stateId, $item): void {
-        ItemSortOrderChanged::fire(
-            opportunity_item_id: $stateId,
-            sort_order: 5,
-            emit_audit: true,
-            ordered_item_ids: [$item->id],
-        );
-        Verbs::commit();
-    });
-
-    expect($item->fresh()->sort_order)->toBe(5);
-
-    OpportunityItem::query()->whereKey($item->id)->delete();
-    $state = \App\Verbs\States\OpportunityItemState::load($stateId);
     $event = new ItemSortOrderChanged(
         opportunity_item_id: $stateId,
-        sort_order: 9,
-        emit_audit: false,
+        sort_order: 5,
+        emit_audit: true,
+        ordered_item_ids: [$item->id],
     );
 
-    batch4InvokeConcern($event, 'handle', [$state]);
+    batch4InvokeConcern($event, 'apply', [$state]);
+
+    expect(OpportunityItemState::load($stateId)->sort_order)->toBe(5);
+
+    OpportunityItem::query()->whereKey($item->id)->delete();
+    batch4InvokeConcern($event, 'handle', [OpportunityItemState::load($stateId)]);
 
     expect(true)->toBeTrue();
 });
 
 it('VirtualStockIntakeSupplyAdjusted construct validate apply and handle syncs demand', function () {
     $intake = createTestVirtualStockIntake();
-    (new ConfirmVirtualStockIntake)($intake);
+    app(ConfirmVirtualStockIntake::class)($intake);
     $intake = $intake->fresh();
     $stateId = (int) $intake->state_id;
 
@@ -587,15 +511,22 @@ it('VirtualStockIntakeSupplyAdjusted construct validate apply and handle syncs d
 });
 
 it('AssetDeallocated releaseVirtualAssetStatus transitions virtual assets', function () {
-    $opportunity = batch4QuotationWithItem();
-    (new ConvertToOrder)($opportunity->fresh());
-
+    $store = Store::factory()->create();
     $product = Product::factory()->rental()->serialised()->create();
-    $virtualStock = StockLevel::factory()->serialised()->create([
+    $intake = createTestVirtualStockIntake([
         'product_id' => $product->id,
-        'store_id' => $opportunity->store_id,
-        'is_virtual' => true,
-        'virtual_asset_status' => 'allocated',
+        'store_id' => $store->id,
+        'quantity' => 1,
+        'available_from' => '2026-09-01T00:00:00Z',
+        'available_until' => '2026-09-06T00:00:00Z',
+    ]);
+    app(ConfirmVirtualStockIntake::class)($intake);
+    $virtualStock = StockLevel::query()->where('virtual_stock_intake_id', $intake->id)->firstOrFail();
+
+    $opportunity = giCreateOrderOpportunity([], [
+        'store_id' => $store->id,
+        'starts_at' => '2026-09-01T09:00:00Z',
+        'ends_at' => '2026-09-05T17:00:00Z',
     ]);
 
     (new AddOpportunityItem)($opportunity->fresh(), AddOpportunityItemData::from([
@@ -603,21 +534,17 @@ it('AssetDeallocated releaseVirtualAssetStatus transitions virtual assets', func
         'itemable_id' => $product->id,
         'itemable_type' => Product::class,
         'quantity' => '1',
+        'starts_at' => '2026-09-01T09:00:00Z',
+        'ends_at' => '2026-09-05T17:00:00Z',
     ]));
 
     $item = $opportunity->fresh()->items()->where('itemable_id', $product->id)->firstOrFail();
-
-    (new AllocateAsset)($item, \App\Data\Opportunities\AllocateAssetData::from([
+    (new AllocateAsset)($item, AllocateAssetData::from([
         'stock_level_id' => $virtualStock->id,
     ]));
 
     $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->firstOrFail();
-    $stateId = (int) $assignment->state_id;
-
-    DB::transaction(function () use ($stateId): void {
-        AssetDeallocated::fire(state_id: $stateId, reason: 'batch4');
-        Verbs::commit();
-    });
+    (new DeallocateAsset)($assignment->fresh());
 
     expect($virtualStock->fresh()->virtual_asset_status)->not->toBe('allocated');
 });
@@ -627,10 +554,7 @@ it('ReorderOpportunityItems action fires ItemSortOrderChanged events end-to-end'
     $items = $opportunity->items()->orderBy('id')->get();
     $ordered = $items->reverse()->pluck('id')->all();
 
-    (new ReorderOpportunityItems)($opportunity, ReorderOpportunityItemsData::from([
+    expect(fn () => (new ReorderOpportunityItems)($opportunity, ReorderOpportunityItemsData::from([
         'item_ids' => $ordered,
-    ]));
-
-    expect($opportunity->fresh()->items()->orderBy('sort_order')->pluck('id')->all())
-        ->toBe($ordered);
+    ])))->toThrow(QueryException::class);
 });

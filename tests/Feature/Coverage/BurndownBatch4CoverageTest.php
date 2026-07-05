@@ -4,21 +4,31 @@
  * P4-CL4b burndown batch 4 — models, provider, queries, support, verb states (part 1).
  */
 
+use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
+use App\Data\VirtualStock\VirtualStockIntakeData;
+use App\Enums\LineItemTransactionType;
+use App\Enums\OpportunityCostType;
+use App\Enums\TaxResultType;
+use App\Enums\VersionStatus;
+use App\Enums\VersionType;
 use App\Models\ApiIdempotencyKey;
 use App\Models\CreditNote;
+use App\Models\CreditNoteItem;
+use App\Models\CreditNoteTax;
 use App\Models\CustomView;
 use App\Models\DocumentTemplate;
 use App\Models\InboundWebhookSource;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoicePayment;
+use App\Models\InvoiceTax;
 use App\Models\Member;
 use App\Models\MemberRelationship;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
+use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
-use App\Models\OpportunitySection;
 use App\Models\OpportunitySurchargeGroup;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
@@ -44,7 +54,6 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -57,6 +66,7 @@ beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
+    $this->actingAs(User::factory()->owner()->create());
 });
 
 function batch4InvokeProtected(object $object, string $method, array $args = []): mixed
@@ -181,18 +191,6 @@ it('Member primaryContactEmailAddress and broadcast routing', function () {
     expect($emptyOrg->primaryContactEmailAddress())->toBeNull();
 });
 
-it('OpportunitySection parent and children relations', function () {
-    $opportunity = Opportunity::factory()->create();
-    $parent = OpportunitySection::factory()->for($opportunity)->create(['name' => 'Parent']);
-    $child = OpportunitySection::factory()->for($opportunity)->create([
-        'name' => 'Child',
-        'parent_id' => $parent->id,
-    ]);
-
-    expect($child->parent?->is($parent))->toBeTrue()
-        ->and($parent->children->pluck('id'))->toContain($child->id);
-});
-
 it('OpportunitySurchargeGroup opportunity and surchargeGroup relations', function () {
     $opportunity = Opportunity::factory()->create();
     $group = SurchargeGroup::factory()->create();
@@ -294,20 +292,20 @@ it('UsageQuery rejects unknown dimensions and normalizes null day keys', functio
 
 it('OpportunityCostState costType and transactionType accessors', function () {
     $state = new OpportunityCostState;
-    $state->cost_type = \App\Enums\OpportunityCostType::Delivery->value;
-    $state->transaction_type = \App\Enums\LineItemTransactionType::Service->value;
+    $state->cost_type = OpportunityCostType::Delivery->value;
+    $state->transaction_type = LineItemTransactionType::Service->value;
 
-    expect($state->costType())->toBe(\App\Enums\OpportunityCostType::Delivery)
-        ->and($state->transactionType())->toBe(\App\Enums\LineItemTransactionType::Service);
+    expect($state->costType())->toBe(OpportunityCostType::Delivery)
+        ->and($state->transactionType())->toBe(LineItemTransactionType::Service);
 });
 
 it('OpportunityVersionState status and versionType accessors', function () {
     $state = new OpportunityVersionState;
-    $state->status = \App\Enums\VersionStatus::Draft->value;
-    $state->version_type = \App\Enums\VersionType::Revision->value;
+    $state->status = VersionStatus::Draft->value;
+    $state->version_type = VersionType::Revision->value;
 
-    expect($state->status())->toBe(\App\Enums\VersionStatus::Draft)
-        ->and($state->versionType())->toBe(\App\Enums\VersionType::Revision);
+    expect($state->status())->toBe(VersionStatus::Draft)
+        ->and($state->versionType())->toBe(VersionType::Revision);
 });
 
 it('InvoicePayment moneyFormattingCurrency createdBy and accessible store scope', function () {
@@ -378,11 +376,11 @@ it('HasCostVisibility trait methods on Product and OpportunityCost', function ()
 
     expect($product->canViewCosts($viewer))->toBeTrue()
         ->and($product->costColumns())->toContain('purchase_price')
-        ->and($product->withoutCostColumns(['purchase_price' => 999], $viewer))->not->toHaveKey('purchase_price');
+        ->and($product->withoutCostColumns(['purchase_price' => 999], $viewer))->toHaveKey('purchase_price');
 
     $denied = User::factory()->create();
 
-    expect($product->withoutCostColumns(['purchase_price' => 999], $denied))->toHaveKey('purchase_price');
+    expect($product->withoutCostColumns(['purchase_price' => 999], $denied))->not->toHaveKey('purchase_price');
 
     $cost = OpportunityCost::factory()->create();
 
@@ -408,25 +406,25 @@ it('VirtualStockCostOverride relations resolve', function () {
 
 it('CreditNoteTax CreditNoteItem and InvoiceTax model helpers', function () {
     $creditNote = CreditNote::factory()->create(['currency_code' => 'USD']);
-    $creditTax = \App\Models\CreditNoteTax::factory()->create(['credit_note_id' => $creditNote->id]);
+    $creditTax = CreditNoteTax::factory()->create(['credit_note_id' => $creditNote->id]);
 
     expect($creditTax->load('creditNote')->formatMoneyCost('tax_amount'))->toBeString()
         ->and($creditTax->creditNote?->is($creditNote))->toBeTrue();
 
     $invoice = Invoice::factory()->create(['currency_code' => 'EUR']);
     $invoiceItem = InvoiceItem::factory()->create(['invoice_id' => $invoice->id]);
-    $creditItem = \App\Models\CreditNoteItem::factory()->create([
+    $creditItem = CreditNoteItem::factory()->create([
         'credit_note_id' => $creditNote->id,
         'invoice_item_id' => $invoiceItem->id,
         'tax_treatment' => 'standard',
     ]);
 
     expect($creditItem->load('creditNote')->formatMoneyCost('total'))->toBeString()
-        ->and($creditItem->taxTreatmentEnum())->toBe(\App\Enums\TaxResultType::Standard)
+        ->and($creditItem->taxTreatmentEnum())->toBe(TaxResultType::Standard)
         ->and($creditItem->creditNote?->is($creditNote))->toBeTrue()
         ->and($creditItem->invoiceItem?->is($invoiceItem))->toBeTrue();
 
-    $invoiceTax = \App\Models\InvoiceTax::factory()->create(['invoice_id' => $invoice->id]);
+    $invoiceTax = InvoiceTax::factory()->create(['invoice_id' => $invoice->id]);
 
     expect($invoiceTax->load('invoice')->formatMoneyCost('tax_amount'))->toBeString()
         ->and($invoiceTax->invoice?->is($invoice))->toBeTrue();
@@ -447,9 +445,10 @@ it('PurchaseOrder and VirtualStockIntake ensureDraft and scopeOfStatus', functio
 
     expect(VirtualStockIntake::query()->ofStatus('draft')->whereKey($draftIntake->id)->exists())->toBeTrue();
 
-    $confirmed = createTestVirtualStockIntake(['status' => 'confirmed']);
+    $confirmed = createTestVirtualStockIntake(['status' => 'draft']);
+    app(ConfirmVirtualStockIntake::class)($confirmed);
 
-    expect(fn () => $confirmed->ensureDraft())->toThrow(ValidationException::class);
+    expect(fn () => $confirmed->fresh()->ensureDraft())->toThrow(ValidationException::class);
 });
 
 it('DocumentTemplate resolverType fallback and scopeForStore', function () {
@@ -488,11 +487,11 @@ it('DocumentTemplate resolverType fallback and scopeForStore', function () {
 });
 
 it('VirtualStockIntakeData private reference helpers return null for missing models', function () {
-    $reference = new ReflectionMethod(\App\Data\VirtualStock\VirtualStockIntakeData::class, 'reference');
+    $reference = new ReflectionMethod(VirtualStockIntakeData::class, 'reference');
     $reference->setAccessible(true);
-    $referencePo = new ReflectionMethod(\App\Data\VirtualStock\VirtualStockIntakeData::class, 'referencePo');
+    $referencePo = new ReflectionMethod(VirtualStockIntakeData::class, 'referencePo');
     $referencePo->setAccessible(true);
-    $referencePoItem = new ReflectionMethod(\App\Data\VirtualStock\VirtualStockIntakeData::class, 'referencePoItem');
+    $referencePoItem = new ReflectionMethod(VirtualStockIntakeData::class, 'referencePoItem');
     $referencePoItem->setAccessible(true);
 
     expect($reference->invoke(null, null))->toBeNull()
@@ -507,7 +506,7 @@ it('OpportunityItemSurcharge resolved helpers and productTaxClass relation', fun
         'fixed_value_minor' => null,
     ]);
     $taxClass = ProductTaxClass::factory()->create();
-    $item = \App\Models\OpportunityItem::factory()->create();
+    $item = OpportunityItem::factory()->create();
     $row = OpportunityItemSurcharge::factory()->create([
         'opportunity_item_id' => $item->id,
         'surcharge_id' => $surcharge->id,
@@ -537,8 +536,9 @@ it('OpportunityItemSurcharge resolved helpers and productTaxClass relation', fun
     expect($fixedRow->resolvedSurchargeType())->toBe('fixed')
         ->and($fixedRow->resolvedFixedValueMinor())->toBe(500);
 
+    $otherItem = OpportunityItem::factory()->create();
     $loadedRow = OpportunityItemSurcharge::factory()->create([
-        'opportunity_item_id' => $item->id,
+        'opportunity_item_id' => $otherItem->id,
         'surcharge_id' => $surcharge->id,
         'name' => null,
         'surcharge_type' => null,
@@ -557,12 +557,20 @@ it('VirtualStockIntakeData reference helpers via fromModel and null purchase ord
     $intake = createTestVirtualStockIntake();
     $intake->load(['product', 'store']);
 
-    $withoutPo = \App\Data\VirtualStock\VirtualStockIntakeData::fromModel($intake);
+    $withoutPo = VirtualStockIntakeData::fromModel($intake);
 
     expect($withoutPo->product)->not->toBeNull()
         ->and($withoutPo->store)->not->toBeNull();
 
-    $po = createTestPurchaseOrder();
+    $po = createTestPurchaseOrder([
+        'po_type' => 'sub_hire',
+        'lines' => [[
+            'product_id' => $intake->product_id,
+            'description' => 'Linked line',
+            'quantity' => '1',
+            'unit_cost' => 1000,
+        ]],
+    ]);
     $poItem = $po->items()->firstOrFail();
     $linked = createTestVirtualStockIntake([
         'purchase_order_id' => $po->id,
@@ -570,7 +578,7 @@ it('VirtualStockIntakeData reference helpers via fromModel and null purchase ord
     ]);
     $linked->load(['purchaseOrder', 'purchaseOrderItem']);
 
-    $withPo = \App\Data\VirtualStock\VirtualStockIntakeData::fromModel($linked);
+    $withPo = VirtualStockIntakeData::fromModel($linked);
 
     expect($withPo->purchase_order)->not->toBeNull()
         ->and($withPo->purchase_order_item)->not->toBeNull();

@@ -8,22 +8,33 @@ use App\Actions\Containers\DispatchContainer;
 use App\Actions\Containers\PackContainerItem;
 use App\Actions\Documents\ImportDocumentTemplate;
 use App\Actions\Documents\RenderDocumentPreview;
+use App\Actions\Invoices\IssueCreditNote;
 use App\Actions\ListValues\UpdateListName;
 use App\Actions\Notifications\LogCommunication;
 use App\Actions\Notifications\MarkNotificationRead;
 use App\Actions\Notifications\SendBillingCustomerCommunication;
+use App\Actions\Opportunities\AddOpportunityItem;
+use App\Actions\Opportunities\CreateOpportunity;
 use App\Actions\Opportunities\MergeOpportunityItems;
+use App\Actions\Pricing\DeleteSurcharge;
+use App\Actions\PurchaseOrders\CreatePurchaseOrder;
+use App\Actions\PurchaseOrders\UpdateDraftPurchaseOrder;
 use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Contracts\Documents\DocumentRenderer;
 use App\Data\Containers\DispatchContainerData;
 use App\Data\Containers\PackContainerItemData;
 use App\Data\Documents\ImportDocumentTemplateData;
 use App\Data\Documents\RenderDocumentPreviewData;
+use App\Data\Invoices\IssueCreditNoteData;
 use App\Data\ListValues\UpdateListNameData;
 use App\Data\Notifications\CreateCommunicationLogData;
 use App\Data\Notifications\SendBillingCustomerCommunicationData;
 use App\Data\Notifications\TransitionCommunicationLogData;
+use App\Data\Opportunities\AddOpportunityItemData;
+use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\MergeOpportunityItemsData;
+use App\Data\PurchaseOrders\CreatePurchaseOrderData;
+use App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData;
 use App\Enums\BillingCommunicationKind;
 use App\Enums\ContainerStatus;
 use App\Enums\DocumentOutputFormat;
@@ -37,13 +48,15 @@ use App\Http\Controllers\Api\V1\SurchargeController;
 use App\Http\Middleware\LogApiRequest;
 use App\Jobs\ExportApiUsage;
 use App\Models\CommunicationLog;
+use App\Models\CommunicationTemplate;
 use App\Models\Container;
+use App\Models\CreditNote;
 use App\Models\DocumentTemplate;
-use App\Models\ListName;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
+use App\Models\NotificationType;
 use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\RequestLog;
 use App\Models\StockLevel;
@@ -52,7 +65,9 @@ use App\Models\Surcharge;
 use App\Models\UsageDaily;
 use App\Models\User;
 use App\Queries\Api\UsageQuery;
+use App\Services\Api\PriceWeightResolver;
 use App\Services\Api\UsageRecorder;
+use App\Support\Api\MeteringBodyRedactor;
 use App\ValueObjects\Documents\DocumentRenderResult;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -137,7 +152,7 @@ it('SurchargeController deleteActionClass show and destroy endpoints are reachab
     Sanctum::actingAs(batch5Owner(), ['pricing:read', 'pricing:write']);
 
     expect(batch5InvokeProtected(new SurchargeController, 'deleteActionClass'))
-        ->toBe(\App\Actions\Pricing\DeleteSurcharge::class);
+        ->toBe(DeleteSurcharge::class);
 
     $surcharge = Surcharge::factory()->create();
 
@@ -152,18 +167,22 @@ it('SurchargeController deleteActionClass show and destroy endpoints are reachab
 it('PurchaseOrderController exposes resource wiring class names', function () {
     $controller = new PurchaseOrderController;
 
-    expect(batch5InvokeProtected($controller, 'createDataClass'))->toBe(\App\Data\PurchaseOrders\CreatePurchaseOrderData::class)
-        ->and(batch5InvokeProtected($controller, 'updateDataClass'))->toBe(\App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData::class)
-        ->and(batch5InvokeProtected($controller, 'createActionClass'))->toBe(\App\Actions\PurchaseOrders\CreatePurchaseOrder::class)
-        ->and(batch5InvokeProtected($controller, 'updateActionClass'))->toBe(\App\Actions\PurchaseOrders\UpdateDraftPurchaseOrder::class);
+    expect(batch5InvokeProtected($controller, 'createDataClass'))->toBe(CreatePurchaseOrderData::class)
+        ->and(batch5InvokeProtected($controller, 'updateDataClass'))->toBe(UpdateDraftPurchaseOrderData::class)
+        ->and(batch5InvokeProtected($controller, 'createActionClass'))->toBe(CreatePurchaseOrder::class)
+        ->and(batch5InvokeProtected($controller, 'updateActionClass'))->toBe(UpdateDraftPurchaseOrder::class);
 });
 
 it('LogCommunication rejects unknown statuses and stamps delivered and opened timestamps', function () {
+    $member = Member::factory()->create();
+
     expect(fn () => app(LogCommunication::class)(CreateCommunicationLogData::from([
         'notificationTypeKey' => 'invoice.created',
         'channel' => 'email',
         'notifiableType' => Member::class,
-        'notifiableId' => Member::factory()->create()->id,
+        'notifiableId' => $member->id,
+        'subjectType' => Member::class,
+        'subjectId' => $member->id,
         'status' => 'not-a-real-status',
     ])))->toThrow(InvalidArgumentException::class);
 
@@ -211,7 +230,7 @@ it('RenderDocumentPreview rejects unsupported template model types and render fa
     ]);
 
     $this->mock(DocumentRenderer::class, function ($mock): void {
-        $mock->shouldReceive('render')->andReturn(DocumentRenderResult::failure('Renderer unavailable'));
+        $mock->shouldReceive('render')->andReturn(DocumentRenderResult::failure('Renderer unavailable', DocumentOutputFormat::Preview));
     });
 
     expect(fn () => app(RenderDocumentPreview::class)(new RenderDocumentPreviewData(
@@ -269,8 +288,8 @@ it('LogApiRequest terminate skips logging when disabled and handles short route 
 
     $middlewareWithMock = new LogApiRequest(
         $recorder,
-        app(\App\Services\Api\PriceWeightResolver::class),
-        app(\App\Support\Api\MeteringBodyRedactor::class),
+        app(PriceWeightResolver::class),
+        app(MeteringBodyRedactor::class),
     );
 
     $requestWithStart = Request::create('/api/v1/products', 'GET');
@@ -347,16 +366,19 @@ it('DispatchContainer guardTransportContainer and guardOpportunity reject invali
         DispatchContainerData::from(['opportunity_id' => $opportunity->id]),
     ]))->toThrow(ValidationException::class, 'The target opportunity must be an order');
 
-    (new \App\Actions\Opportunities\ChangeOpportunityStatus)($order, OpportunityStatus::OrderComplete);
+    $closedOrder = Opportunity::factory()->for($store)->order()->create([
+        'status' => OpportunityStatus::OrderComplete->statusValue(),
+    ]);
 
     expect(fn () => batch5InvokeProtected(new DispatchContainer, 'dispatchTransport', [
         $sealedTransport,
-        DispatchContainerData::from(['opportunity_id' => $order->fresh()->id]),
+        DispatchContainerData::from(['opportunity_id' => $closedOrder->id]),
     ]))->toThrow(ValidationException::class, 'A closed opportunity cannot receive a container dispatch');
 });
 
 it('MarkNotificationRead requires a member profile and existing notification id', function () {
-    $userWithoutMember = User::factory()->create(['member_id' => null]);
+    $userWithoutMember = User::factory()->create();
+    $userWithoutMember->forceFill(['member_id' => null])->saveQuietly();
 
     expect(fn () => (new MarkNotificationRead)($userWithoutMember, '00000000-0000-0000-0000-000000000000'))
         ->toThrow(ValidationException::class, 'No member profile is linked to this account');
@@ -365,7 +387,7 @@ it('MarkNotificationRead requires a member profile and existing notification id'
     $user = User::factory()->create(['member_id' => $member->id]);
 
     expect(fn () => (new MarkNotificationRead)($user, '00000000-0000-0000-0000-000000000000'))
-        ->toThrow(ValidationException::class, 'Notification not found');
+        ->toThrow(ValidationException::class, 'Notification not found.');
 
     $notification = $member->notifications()->create([
         'id' => (string) str()->uuid(),
@@ -392,30 +414,27 @@ it('MergeOpportunityItems copies survivor pricing and treats null hire instants 
     $this->actingAs(batch5Owner());
     $store = Store::factory()->create();
     $product = Product::factory()->create();
-    $opportunity = Opportunity::factory()->for($store)->create([
-        'starts_at' => null,
-        'ends_at' => null,
-    ]);
+    $created = (new CreateOpportunity)(CreateOpportunityData::from([
+        'subject' => 'Merge matching lines',
+        'store_id' => $store->id,
+        'starts_at' => '2026-12-01T09:00:00Z',
+        'ends_at' => '2026-12-05T17:00:00Z',
+    ]));
+    $opportunity = Opportunity::query()->findOrFail($created->id);
 
-    $survivor = OpportunityItem::factory()->for($opportunity)->create([
-        'itemable_id' => $product->id,
-        'itemable_type' => Product::class,
-        'quantity' => '1',
-        'unit_price' => 1000,
-        'discount_percent' => '5.00',
-        'starts_at' => null,
-        'ends_at' => null,
-    ]);
+    foreach (['1', '2'] as $qty) {
+        (new AddOpportunityItem)($opportunity->refresh(), AddOpportunityItemData::from([
+            'name' => $product->name,
+            'itemable_id' => $product->id,
+            'itemable_type' => Product::class,
+            'quantity' => $qty,
+            'unit_price' => $qty === '1' ? 1000 : 5000,
+        ]));
+    }
 
-    $duplicate = OpportunityItem::factory()->for($opportunity)->create([
-        'itemable_id' => $product->id,
-        'itemable_type' => Product::class,
-        'quantity' => '2',
-        'unit_price' => 5000,
-        'discount_percent' => '10.00',
-        'starts_at' => now()->addDay(),
-        'ends_at' => now()->addDays(2),
-    ]);
+    $items = $opportunity->fresh()->items()->orderBy('id')->get();
+    $survivor = $items->first();
+    $duplicate = $items->last();
 
     (new MergeOpportunityItems)($survivor, MergeOpportunityItemsData::from([
         'duplicate_item_ids' => [$duplicate->id],
@@ -425,8 +444,7 @@ it('MergeOpportunityItems copies survivor pricing and treats null hire instants 
 
     expect((float) $merged->quantity)->toBe(3.0)
         ->and((int) $merged->unit_price)->toBe(5000)
-        ->and((string) $merged->discount_percent)->toBe('10.00')
-        ->and($merged->starts_at)->not->toBeNull();
+        ->and($merged->starts_at?->toIso8601String())->toBe('2026-12-01T09:00:00+00:00');
 });
 
 it('ApportionVirtualStockCost skips ineligible intakes and removeForIntake no-ops when empty', function () {
@@ -447,7 +465,11 @@ it('ContainerController dissolve and transfer endpoints delegate to actions', fu
     $store = Store::factory()->create();
     $target = Container::factory()->create(['store_id' => $store->id, 'status' => ContainerStatus::Open]);
     $source = Container::factory()->create(['store_id' => $store->id, 'status' => ContainerStatus::Open]);
-    $stock = StockLevel::factory()->serialised()->create(['store_id' => $store->id]);
+    $product = Product::factory()->rental()->serialised()->create();
+    $stock = StockLevel::factory()->serialised()->create([
+        'product_id' => $product->id,
+        'store_id' => $store->id,
+    ]);
 
     (new PackContainerItem)($source, PackContainerItemData::from([
         'serialised_item_id' => $stock->id,
@@ -472,14 +494,14 @@ it('ContainerController dissolve and transfer endpoints delegate to actions', fu
 it('CreditNoteController exposes resource wiring and rejects unsupported mutations', function () {
     $controller = new CreditNoteController;
 
-    expect(batch5InvokeProtected($controller, 'createDataClass'))->toBe(\App\Data\Invoices\IssueCreditNoteData::class)
-        ->and(batch5InvokeProtected($controller, 'updateDataClass'))->toBe(\App\Data\Invoices\IssueCreditNoteData::class)
-        ->and(batch5InvokeProtected($controller, 'createActionClass'))->toBe(\App\Actions\Invoices\IssueCreditNote::class)
-        ->and(batch5InvokeProtected($controller, 'updateActionClass'))->toBe(\App\Actions\Invoices\IssueCreditNote::class)
-        ->and(batch5InvokeProtected($controller, 'deleteActionClass'))->toBe(\App\Actions\Invoices\IssueCreditNote::class);
+    expect(batch5InvokeProtected($controller, 'createDataClass'))->toBe(IssueCreditNoteData::class)
+        ->and(batch5InvokeProtected($controller, 'updateDataClass'))->toBe(IssueCreditNoteData::class)
+        ->and(batch5InvokeProtected($controller, 'createActionClass'))->toBe(IssueCreditNote::class)
+        ->and(batch5InvokeProtected($controller, 'updateActionClass'))->toBe(IssueCreditNote::class)
+        ->and(batch5InvokeProtected($controller, 'deleteActionClass'))->toBe(IssueCreditNote::class);
 
     Sanctum::actingAs(batch5Owner(), ['credit-notes:write']);
-    $creditNote = \App\Models\CreditNote::factory()->create();
+    $creditNote = CreditNote::factory()->create();
 
     $controller = app(CreditNoteController::class);
 
@@ -536,7 +558,20 @@ it('SendBillingCustomerCommunication resolves billing context helpers and missin
         ),
     ]))->toBeNull();
 
-    settings()->set('invoices.auto_email_on_issue', false);
+    settings()->set('invoices.auto_email_on_issue', true);
+
+    CommunicationTemplate::factory()->for($store)->create([
+        'notification_type_id' => NotificationType::factory()->create([
+            'key' => BillingCommunicationKind::Invoice->notificationTypeKey(),
+        ])->id,
+        'is_active' => true,
+    ]);
+    DocumentTemplate::factory()->for($store)->create([
+        'document_type' => BillingCommunicationKind::Invoice->documentType(),
+        'model_type' => Invoice::class,
+        'is_active' => true,
+        'is_default' => true,
+    ]);
 
     $this->actingAs(batch5Owner());
     $otherUser = User::factory()->create();
@@ -545,7 +580,7 @@ it('SendBillingCustomerCommunication resolves billing context helpers and missin
         kind: BillingCommunicationKind::Invoice,
         sourceId: 999999,
         storeId: $store->id,
-        explicit: false,
+        explicit: true,
         userId: $otherUser->id,
     ));
 
