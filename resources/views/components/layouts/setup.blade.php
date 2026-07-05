@@ -27,7 +27,7 @@
 
             <footer class="s-auth-footer">
                 <div class="s-auth-footer-text">
-                    Signals Rental Framework &mdash; Free &amp; Open Source &mdash; MIT License
+                    Signals Rental Framework &mdash; Free &amp; Open Source &mdash; AGPL-3.0 License
                 </div>
             </footer>
         </div>
