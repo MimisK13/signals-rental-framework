@@ -1265,9 +1265,9 @@ new #[Layout('components.layouts.app')] class extends Component
                             <option value="revert_status">{{ __('Revert status') }}</option>
                             <option value="set_container">{{ __('Set container') }}</option>
                             {{-- Phase-4 sub-hire / transfer surface — not built; honestly disabled. --}}
-                            <option value="" disabled>{{ __('Set sub-rent supplier — coming in Phase 4') }}</option>
-                            <option value="" disabled>{{ __('Transfer in — coming in Phase 4') }}</option>
-                            <option value="" disabled>{{ __('Clear transfer — coming in Phase 4') }}</option>
+                            <option value="" disabled>{{ __('Set sub-rent supplier — coming in Phase 5.5') }}</option>
+                            <option value="" disabled>{{ __('Transfer in — coming in Phase 5.5') }}</option>
+                            <option value="" disabled>{{ __('Clear transfer — coming in Phase 5.5') }}</option>
                         </select>
                     </div>
 
