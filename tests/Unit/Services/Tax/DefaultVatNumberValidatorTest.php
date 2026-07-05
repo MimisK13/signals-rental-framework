@@ -20,8 +20,9 @@ it('validates a UK VAT number with a passing checksum', function (string $taxNum
         ->and($result->source)->toBe('uk_checksum')
         ->and($result->countryCode)->toBe('GB');
 })->with([
-    'standard' => 'GB100000018',
-    'alternate' => 'GB382500035',
+    'pre-2010 mod 97 (published worked example)' => 'GB337440071',
+    'pre-2010 mod 97 (KM Stewart worked example)' => 'GB314159283',
+    'post-2010 mod 9755 (published worked example)' => 'GB337440016',
 ]);
 
 it('rejects a UK VAT number with a failing checksum', function (string $taxNumber) {
@@ -31,7 +32,8 @@ it('rejects a UK VAT number with a failing checksum', function (string $taxNumbe
         ->and($result->source)->toBe('uk_checksum');
 })->with([
     'wrong digits' => 'GB123456789',
-    'another invalid' => 'GB999999999',
+    'single-digit typo from valid' => 'GB337440072',
+    'legacy fixture with wrong formula' => 'GB382500035',
 ]);
 
 it('accepts a valid EU VAT number from VIES', function () {

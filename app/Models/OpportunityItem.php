@@ -141,7 +141,7 @@ class OpportunityItem extends Model implements HasSchema
             'total' => 'integer',
             'surcharge_total' => 'integer',
             'discount_percent' => 'decimal:2',
-            'deal_price_discount_percent' => 'decimal:2',
+            'deal_price_discount_percent' => 'decimal:10',
             'deal_price' => 'integer',
             'deal_price_original_total' => 'integer',
             'is_discount_manual' => 'boolean',

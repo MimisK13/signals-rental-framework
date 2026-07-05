@@ -198,9 +198,9 @@ class DealPriceProportionalDistributor
         $discount = $baselineNet - $targetNet;
 
         return bcdiv(
-            bcmul((string) $discount, '100', 10),
+            bcmul((string) $discount, '100', 12),
             (string) $baselineNet,
-            2,
+            10,
         );
     }
 

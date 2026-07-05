@@ -146,6 +146,42 @@ it('distributes proportional deal price penny-exactly across adjustable lines', 
     expect($discountableLines)->toHaveCount(3);
 });
 
+it('keeps prime-number baselines penny-exact after proportional deal price and recalculate', function () {
+    $opportunity = p11Opportunity();
+    p11AddManualLine($opportunity, 'Prime A', 10_007);
+    p11AddManualLine($opportunity->fresh(), 'Prime B', 10_009);
+    p11AddManualLine($opportunity->fresh(), 'Prime C', 10_013);
+
+    (new SetDealPrice)($opportunity->fresh(), SetDealPriceData::from([
+        'deal_total' => '250.01',
+        'deal_price_mode' => DealPriceMode::Proportional->value,
+    ]));
+
+    $opportunity->refresh();
+
+    expect($opportunity->deal_total)->toBe(25_001)
+        ->and($opportunity->charge_total)->toBe(25_001)
+        ->and(p11LineNetSum($opportunity))->toBe(25_001);
+
+    $percents = $opportunity->items
+        ->pluck('deal_price_discount_percent')
+        ->filter()
+        ->map(fn (?string $percent): string => (string) $percent);
+
+    expect($percents->contains(fn (string $percent): bool => strlen(explode('.', $percent)[1] ?? '') > 2))->toBeTrue();
+
+    (new RecalculateOpportunity)($opportunity->fresh(), RecalculateOpportunityData::from([
+        'reset_prices' => false,
+        'reset_discounts' => false,
+    ]));
+
+    $opportunity->refresh();
+
+    expect($opportunity->deal_total)->toBe(25_001)
+        ->and($opportunity->charge_total)->toBe(25_001)
+        ->and(p11LineNetSum($opportunity))->toBe(25_001);
+});
+
 it('replays legacy DealPriceSet payloads as flat headline mode', function () {
     $opportunity = p11Opportunity();
     p11AddManualLine($opportunity, 'Legacy line', 12_500);

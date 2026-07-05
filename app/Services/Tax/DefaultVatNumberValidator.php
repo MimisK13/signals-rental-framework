@@ -100,10 +100,10 @@ class DefaultVatNumberValidator implements VatNumberValidator
             $sum += ((int) $vatNumber[$index]) * $weights[$index];
         }
 
-        $sum += ((int) $vatNumber[7]) * 9;
-        $sum += ((int) $vatNumber[8]) * 10;
+        $checkNumber = ((int) $vatNumber[7] * 10) + (int) $vatNumber[8];
+        $total = $sum + $checkNumber;
 
-        return $sum % 97 === 0;
+        return $total % 97 === 0 || ($total + 55) % 97 === 0;
     }
 
     private function validateViaVies(string $countryCode, string $vatNumber): VatValidationResult
