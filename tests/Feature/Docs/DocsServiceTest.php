@@ -17,7 +17,7 @@ test('getNavigation returns display sections with pages or nested api reference'
         ->and($nav['sections'][6]['pages'])->toHaveCount(4)
         ->and($nav['sections'][6])->toHaveKey('subSections')
         ->and($nav['sections'][6]['subSections'])->toHaveCount(1)
-        ->and($nav['sections'][6]['subSections'][0]['groups'])->toHaveCount(5);
+        ->and($nav['sections'][6]['subSections'][0]['groups'])->toHaveCount(9);
 });
 
 test('display sections expose platform pages under new groupings', function () {
@@ -36,7 +36,12 @@ test('display sections expose platform pages under new groupings', function () {
     ]);
 
     $operations = $sections->firstWhere('slug', 'operations');
-    expect(array_column($operations['pages'], 'slug'))->toContain('api-console', 'dashboard', 'lists');
+    expect(array_column($operations['pages'], 'slug'))->toContain(
+        'api-console', 'dashboard', 'lists', 'documents', 'notifications', 'sub-hire', 'containers',
+    );
+
+    $finance = $sections->firstWhere('slug', 'finance');
+    expect(array_column($finance['pages'], 'slug'))->toContain('invoicing', 'pricing', 'tax');
 });
 
 test('flat sections still expose pages without groups', function () {
@@ -387,11 +392,11 @@ test('getLandingCards returns flat sections and grouped subsections', function (
     $service = app(DocsService::class);
     $cards = $service->getLandingCards();
 
-    expect($cards)->toHaveCount(12)
+    expect($cards)->toHaveCount(16)
         ->and($cards[0])->toHaveKeys(['title', 'description', 'icon', 'sectionSlug', 'sectionTitle', 'pages', 'viewAllUrl'])
         ->and($cards[0]['title'])->toBe('Getting Started')
         ->and($cards[0]['pages'])->toHaveCount(4)
-        ->and(collect($cards)->pluck('title')->all())->toContain('CRM', 'Pricing & Tax', 'Development', 'Core Resources');
+        ->and(collect($cards)->pluck('title')->all())->toContain('CRM', 'Pricing & Tax', 'Development', 'Core Resources', 'Billing', 'Documents');
 });
 
 test('getLatestChangelogVersion returns the newest changelog filename', function () {

@@ -90,15 +90,15 @@ test('docs index renders the landing page', function () {
         ->assertSee('Job Planning', false)
         ->assertSee('Getting Started', false)
         ->assertSee('Latest release:', false)
-        ->assertSee('0.5.1');
+        ->assertSee('0.6.0');
 });
 
 test('landing cards match manifest flat sections and groups', function () {
     $service = app(DocsService::class);
     $cards = $service->getLandingCards();
 
-    expect($cards)->toHaveCount(12)
-        ->and(collect($cards)->pluck('title')->all())->toContain('Getting Started', 'CRM', 'Development', 'Core Resources', 'Pricing & Tax');
+    expect($cards)->toHaveCount(16)
+        ->and(collect($cards)->pluck('title')->all())->toContain('Getting Started', 'CRM', 'Development', 'Core Resources', 'Pricing & Tax', 'Billing');
 
     get(route('docs.index'))
         ->assertOk()

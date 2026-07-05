@@ -225,7 +225,7 @@ it('lists the availability page in the API reference navigation groups', functio
         ->toContain('usage');
 
     $groupLabels = array_column($apiReference['groups'], 'label');
-    expect($groupLabels)->toContain('Rental', 'Platform');
+    expect($groupLabels)->toContain('Rental', 'Platform', 'Billing', 'Documents', 'Procurement', 'Communications');
 });
 
 it('lists api-console in the operations navigation section', function () {

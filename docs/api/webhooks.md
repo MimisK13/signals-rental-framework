@@ -221,8 +221,8 @@ when the event store is rebuilt.
 | `invoice.issued` | A draft invoice is issued to the customer |
 | `invoice.voided` | An invoice is voided |
 | `invoice.overdue` | An issued invoice passes its due date with an outstanding balance |
-| `payment.recorded` | A payment is recorded against an invoice |
-| `payment.refunded` | A refund is recorded against an invoice |
+| `payment.recorded` | A payment is recorded against an invoice — payload embeds payment fields (see [Invoices API](/docs/api/invoices)) |
+| `payment.refunded` | A refund is recorded against an invoice — payload embeds payment/refund fields (see [Invoices API](/docs/api/invoices)) |
 | `credit_note.issued` | A credit note is issued against an invoice |
 
 ### Availability

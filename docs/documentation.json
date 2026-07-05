@@ -85,7 +85,7 @@
                 {
                     "title": "Shortages",
                     "slug": "shortages",
-                    "description": "Detect inventory shortfalls on an opportunity, gate conversion with Block/Warn/Allow, and resolve shortages through six resolvers.",
+                    "description": "Detect inventory shortfalls on an opportunity, gate conversion with Block/Warn/Allow, and resolve shortages through resolvers including sub-hire.",
                     "urlSection": "platform"
                 },
                 {
@@ -138,8 +138,26 @@
             "title": "Finance",
             "slug": "finance",
             "icon": "banknotes",
-            "description": "Rate definitions, tax classes, multi-currency, and countries.",
+            "description": "Invoicing, payments, pricing rules, tax zones, and multi-currency.",
             "pages": [
+                {
+                    "title": "Invoicing & Payments",
+                    "slug": "invoicing",
+                    "description": "Quote-to-cash: checkout, issue, payments, credit notes, deposit/pro-forma invoices, and PDFs.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Pricing & Discounts",
+                    "slug": "pricing",
+                    "description": "Four-stage pricing pipeline: price categories, discount rules, surcharges, bundle pricing, and deal price.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Tax & Compliance",
+                    "slug": "tax",
+                    "description": "EU/UK tax zones, buyer types, zone-aware resolution, VIES validation, and finance settings.",
+                    "urlSection": "platform"
+                },
                 {
                     "title": "Rate Definitions",
                     "slug": "rate-definitions",
@@ -155,7 +173,7 @@
                 {
                     "title": "Multi-Currency & Tax",
                     "slug": "multi-currency",
-                    "description": "Currencies, exchange rates, and the tax resolution engine — the financial foundation Signals ships in Phase 2.",
+                    "description": "Currencies, exchange rates, and the tax resolution engine used across opportunities, invoices, and purchase orders.",
                     "urlSection": "platform"
                 },
                 {
@@ -170,12 +188,36 @@
             "title": "Operations",
             "slug": "operations",
             "icon": "cog",
-            "description": "Dashboard, admin panel, API console, custom fields, and lists.",
+            "description": "Documents, notifications, sub-hire, containers, dashboard, and administration.",
             "pages": [
                 {
                     "title": "Dashboard",
                     "slug": "dashboard",
                     "description": "Your operational overview with KPIs, recent opportunities, and quick actions.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Documents & Templates",
+                    "slug": "documents",
+                    "description": "Per-store document templates, PDF rendering, numbering sequences, public sharing, and the template editor.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Notifications & Comms",
+                    "slug": "notifications",
+                    "description": "Notification channels, communication templates, customer emails, preferences, and the communication log.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Sub-Hire & Procurement",
+                    "slug": "sub-hire",
+                    "description": "Purchase orders, virtual stock intakes, sub-hire shortage resolution, and cost apportionment.",
+                    "urlSection": "platform"
+                },
+                {
+                    "title": "Containers & Kits",
+                    "slug": "containers",
+                    "description": "Serialised container pack/seal/dispatch/return lifecycle and warehouse UI.",
                     "urlSection": "platform"
                 },
                 {
@@ -324,13 +366,59 @@
                                 {
                                     "title": "Containers",
                                     "slug": "containers",
-                                    "description": "List containers and pack or unpack serialised assets into dispatchable units.",
+                                    "description": "Container lifecycle — pack, seal, dispatch, return, and repack serialised assets.",
                                     "urlSection": "api"
                                 },
                                 {
                                     "title": "Calendar Feeds",
                                     "slug": "calendar-feeds",
                                     "description": "Secure iCalendar feeds for subscribing to scheduled activities.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Billing",
+                            "pages": [
+                                {
+                                    "title": "Invoices",
+                                    "slug": "invoices",
+                                    "description": "Invoice CRUD, checkout from opportunities, issue/void, payments, refunds, and credit notes.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Credit Notes",
+                                    "slug": "credit-notes",
+                                    "description": "List and show issued credit notes with Ransack filtering and includes.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Payments",
+                                    "slug": "payments",
+                                    "description": "Record payments and refunds against issued invoices via nested invoice routes.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Documents",
+                            "pages": [
+                                {
+                                    "title": "Documents",
+                                    "slug": "documents",
+                                    "description": "Generate, finalise, void, and share PDF documents with public links.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Document Templates",
+                                    "slug": "document-templates",
+                                    "description": "CRUD for per-store Blade templates with versioning, import/export, and defaults.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Document Sequences",
+                                    "slug": "document-sequences",
+                                    "description": "Read and update store-scoped numbering sequences for invoices, opportunities, and other entities.",
                                     "urlSection": "api"
                                 }
                             ]
@@ -351,6 +439,12 @@
                                     "urlSection": "api"
                                 },
                                 {
+                                    "title": "Tax Zones",
+                                    "slug": "tax-zones",
+                                    "description": "Manage zone-aware tax configuration and buyer-type rules.",
+                                    "urlSection": "api"
+                                },
+                                {
                                     "title": "Currencies",
                                     "slug": "currencies",
                                     "description": "Manage ISO 4217 currencies and their platform configuration.",
@@ -360,6 +454,76 @@
                                     "title": "Exchange Rates",
                                     "slug": "exchange-rates",
                                     "description": "Read and manage effective-dated exchange rates between currencies.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Discount Categories",
+                                    "slug": "discount-categories",
+                                    "description": "Manage discount category groupings for the pricing pipeline.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Discount Rules",
+                                    "slug": "discount-rules",
+                                    "description": "JSONB criteria discount rules with auto-apply for opportunities.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Price Categories",
+                                    "slug": "price-categories",
+                                    "description": "Price category tiers threaded through the rate engine.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Surcharge Groups",
+                                    "slug": "surcharge-groups",
+                                    "description": "Group surcharges for optional toggling on opportunities.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Surcharges",
+                                    "slug": "surcharges",
+                                    "description": "Per-surcharge tax classes and line snapshots on opportunities.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Procurement",
+                            "pages": [
+                                {
+                                    "title": "Purchase Orders",
+                                    "slug": "purchase-orders",
+                                    "description": "Event-sourced purchase orders with send, receive, and cancel lifecycle.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Virtual Stock Intakes",
+                                    "slug": "virtual-stock-intakes",
+                                    "description": "Virtual stock intakes feeding signed availability supply from sub-hire.",
+                                    "urlSection": "api"
+                                }
+                            ]
+                        },
+                        {
+                            "label": "Communications",
+                            "pages": [
+                                {
+                                    "title": "Communication Templates",
+                                    "slug": "communication-templates",
+                                    "description": "Merge-field communication templates with version restore.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Communication Log",
+                                    "slug": "communication-log",
+                                    "description": "Read-only log of dispatched customer communications.",
+                                    "urlSection": "api"
+                                },
+                                {
+                                    "title": "Notification Preferences",
+                                    "slug": "notification-preferences",
+                                    "description": "System and per-member notification channel preferences.",
                                     "urlSection": "api"
                                 }
                             ]
