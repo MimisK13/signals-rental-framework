@@ -116,18 +116,18 @@
         "test:coverage": [
             "Composer\\Config::disableProcessTimeout",
             "@php -r \"@mkdir('build/coverage', 0755, true); array_map('unlink', glob('build/coverage/*.php') ?: []);\"",
-            "@php bin/php-for-coverage.php artisan test --parallel --testsuite=Unit,Feature --exclude-group=env-writing --coverage-php build/coverage/parallel.php",
+            "@php bin/php-for-coverage.php vendor/bin/pest --parallel --testsuite=Unit,Feature --exclude-group=env-writing --coverage-php build/coverage/parallel.php",
             "@php bin/php-for-coverage.php artisan test --group=env-writing --coverage-php build/coverage/env-writing.php",
             "@php bin/php-for-coverage.php artisan test --testsuite=Pgsql --coverage-php build/coverage/pgsql.php",
-            "@php bin/coverage-merge.php build/coverage --text"
+            "@php bin/php-for-coverage.php bin/coverage-merge.php build/coverage --text"
         ],
         "test:coverage-html": [
             "Composer\\Config::disableProcessTimeout",
             "@php -r \"@mkdir('build/coverage', 0755, true); array_map('unlink', glob('build/coverage/*.php') ?: []);\"",
-            "@php bin/php-for-coverage.php artisan test --parallel --testsuite=Unit,Feature --exclude-group=env-writing --coverage-php build/coverage/parallel.php",
+            "@php bin/php-for-coverage.php vendor/bin/pest --parallel --testsuite=Unit,Feature --exclude-group=env-writing --coverage-php build/coverage/parallel.php",
             "@php bin/php-for-coverage.php artisan test --group=env-writing --coverage-php build/coverage/env-writing.php",
             "@php bin/php-for-coverage.php artisan test --testsuite=Pgsql --coverage-php build/coverage/pgsql.php",
-            "@php bin/coverage-merge.php build/coverage --html=build/coverage/html"
+            "@php bin/php-for-coverage.php bin/coverage-merge.php build/coverage --html=build/coverage/html"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
