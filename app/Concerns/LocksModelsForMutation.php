@@ -19,7 +19,11 @@ trait LocksModelsForMutation
      *
      * Call only inside {@see CommitsVerbsEvents::commitVerbs()} (or another DB transaction).
      *
+     * @template TModel of Model
+     *
+     * @param  TModel  $model
      * @param  list<string|BackedEnum|UnitEnum>|string|BackedEnum|UnitEnum  $allowedStatuses
+     * @return TModel
      */
     protected function lockModelForMutation(
         Model $model,

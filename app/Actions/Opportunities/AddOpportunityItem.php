@@ -123,13 +123,11 @@ class AddOpportunityItem
 
                 Verbs::commit();
 
-                if ($itemId !== null) {
-                    app(DiscountCategoryApplier::class)->apply(
-                        opportunity: $opportunity->fresh(['items.item', 'member']),
-                    );
+                app(DiscountCategoryApplier::class)->apply(
+                    opportunity: $opportunity->fresh(['items.item', 'member']),
+                );
 
-                    Verbs::commit();
-                }
+                Verbs::commit();
             });
         } catch (Throwable $e) {
             $this->resetVerbsState();
