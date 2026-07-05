@@ -106,6 +106,9 @@ beforeEach(function () {
     settings()->set('company.date_format_php', 'd/m/Y');
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch6Part4Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);

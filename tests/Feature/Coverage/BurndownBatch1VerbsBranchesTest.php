@@ -80,6 +80,9 @@ afterEach(function () {
     CarbonImmutable::setTestNow();
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function branchInvokeConcern(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -93,6 +96,9 @@ function branchVersionFromDto(OpportunityVersionData $version): OpportunityVersi
     return OpportunityVersion::query()->whereKey($version->id)->firstOrFail();
 }
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem}
+ */
 function branchQuotationWithBulkItem(): array
 {
     $created = (new CreateOpportunity)(CreateOpportunityData::from([
@@ -209,7 +215,7 @@ it('no-ops bulk dispatch audit when the parent opportunity is soft-deleted', fun
         new BulkQuantityDispatched(opportunity_item_id: $itemStateId, quantity: '1'),
         'handle',
         [$state],
-    ))->toThrow(\ErrorException::class);
+    ))->toThrow(ErrorException::class);
 });
 
 it('no-ops asset dispatched handle when the opportunity item projection is missing', function () {
@@ -447,7 +453,7 @@ it('no-ops asset status reverted audit when the parent opportunity is soft-delet
         ),
         'handle',
         [$state],
-    ))->toThrow(\ErrorException::class);
+    ))->toThrow(ErrorException::class);
 });
 
 it('no-ops asset substituted handle when the opportunity item projection is missing', function () {
@@ -581,7 +587,7 @@ it('no-ops bulk return audit when the parent opportunity is soft-deleted', funct
         new BulkQuantityReturned(opportunity_item_id: $itemStateId, quantity: '1'),
         'handle',
         [$state],
-    ))->toThrow(\ErrorException::class);
+    ))->toThrow(ErrorException::class);
 });
 
 it('no-ops manual discount audit when the parent opportunity is soft-deleted', function () {

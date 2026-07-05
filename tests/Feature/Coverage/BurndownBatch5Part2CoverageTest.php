@@ -86,6 +86,9 @@ beforeEach(function () {
     settings()->set('tax.unresolved_zone_fallback', 'seller_domestic');
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch5Part2InvokeProtected(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -441,7 +444,7 @@ it('CreatePurchaseOrder and UpdateDraftPurchaseOrder resolve foreign exchange ra
 });
 
 it('DeliverCustomerCommunication handle and failed cover missing recipient and failure logging', function () {
-    Log::spy();
+    $log = Log::spy();
 
     $template = CommunicationTemplate::factory()->create();
     $job = new DeliverCustomerCommunication(
@@ -453,10 +456,10 @@ it('DeliverCustomerCommunication handle and failed cover missing recipient and f
 
     $job->handle();
 
-    Log::shouldHaveReceived('warning');
+    $log->shouldHaveReceived('warning');
 
     $job->failed(new RuntimeException('delivery failed'));
-    Log::shouldHaveReceived('error');
+    $log->shouldHaveReceived('error');
 });
 
 it('CreateDocumentTemplate clearDefaultForType demotes prior defaults', function () {
@@ -507,7 +510,7 @@ it('RecordPayment assertPayableStatus rejects draft void credited and invalid re
 });
 
 it('CustomerCommunication toMail attaches PDFs and failed transitions the communication log', function () {
-    Log::spy();
+    $logSpy = Log::spy();
     $member = Member::factory()->create();
     $template = CommunicationTemplate::factory()->create([
         'subject' => 'Hello {{ member.name }}',
@@ -530,7 +533,7 @@ it('CustomerCommunication toMail attaches PDFs and failed transitions the commun
     $notification->failed(new RuntimeException('SMTP unavailable'));
 
     expect($log->fresh()->status)->toBe('failed');
-    Log::shouldHaveReceived('error');
+    $logSpy->shouldHaveReceived('error');
 });
 
 it('RepackReturnItem shouldPackIntoContainer honours free-scan and predecessor manifests', function () {

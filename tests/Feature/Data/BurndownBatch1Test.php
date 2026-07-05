@@ -122,8 +122,10 @@ it('maps CommunicationLogData friendly types and preserves null polymorphic type
     // The polymorphic type columns are NOT NULL in the schema, so build a valid row
     // then null the types in-memory to exercise fromModel()'s null-handling branch.
     $log = CommunicationLog::factory()->create();
-    $log->notifiable_type = null;
-    $log->subject_type = null;
+    $attributes = $log->getAttributes();
+    $attributes['notifiable_type'] = null;
+    $attributes['subject_type'] = null;
+    $log->setRawAttributes($attributes, sync: true);
 
     $output = CommunicationLogData::fromModel($log)->toArray();
 

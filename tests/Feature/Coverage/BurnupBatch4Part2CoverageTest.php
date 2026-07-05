@@ -87,6 +87,9 @@ afterEach(function () {
     CarbonImmutable::setTestNow();
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup4Part2Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -95,6 +98,9 @@ function burnup4Part2Invoke(object $object, string $method, array $args = []): m
     return $reflection->invoke($object, ...$args);
 }
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem}
+ */
 function burnup4QuotationWithBulkItem(): array
 {
     $created = (new CreateOpportunity)(CreateOpportunityData::from([
@@ -119,6 +125,9 @@ function burnup4QuotationWithBulkItem(): array
     return [$opportunity->fresh(), $opportunity->fresh()->items()->firstOrFail()];
 }
 
+/**
+ * @return array{0: OpportunityItem, 1: OpportunityItemAsset, 2: StockLevel}
+ */
 function burnup4SerialAssetOnOrder(Opportunity $opportunity): array
 {
     (new ConvertToOrder)($opportunity->fresh());

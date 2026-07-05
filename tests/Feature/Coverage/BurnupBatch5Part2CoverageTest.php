@@ -74,6 +74,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
+use Thunk\Verbs\Event;
 use Thunk\Verbs\Facades\Verbs;
 
 uses(RefreshDatabase::class);
@@ -94,6 +95,9 @@ afterEach(function () {
     CarbonImmutable::setTestNow();
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup5InvokeConcern(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -130,6 +134,9 @@ function burnup5EnsureItemSortOrderColumn(): void
     });
 }
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem}
+ */
 function burnup5QuotationWithBulkItem(): array
 {
     $created = (new CreateOpportunity)(CreateOpportunityData::from([
@@ -154,6 +161,9 @@ function burnup5QuotationWithBulkItem(): array
     return [$opportunity->fresh(), $opportunity->fresh()->items()->firstOrFail()];
 }
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem|null}
+ */
 function burnup5QuotationWithGroup(): array
 {
     $created = (new CreateOpportunity)(CreateOpportunityData::from([
@@ -299,7 +309,7 @@ it('BulkQuantityDispatched handle no-ops when the item projection is missing', f
 });
 
 it('AdjustsStockAllocation adjustStockAllocation skips null ids and clamps decrements', function () {
-    $concern = new class
+    $concern = new class extends Event
     {
         use AdjustsStockAllocation;
     };
@@ -488,7 +498,7 @@ it('ItemSortOrderChanged handle updates sort order and skips audit when emit_aud
         [OpportunityItemState::load($stateId)],
     );
 
-    expect($item->fresh()->sort_order)->toBe(8);
+    expect($item->fresh()->getAttribute('sort_order'))->toBe(8);
 });
 
 it('ItemSortOrderChanged handle records audit when emit_audit is true', function () {
@@ -506,7 +516,7 @@ it('ItemSortOrderChanged handle records audit when emit_audit is true', function
         Verbs::commit();
     });
 
-    expect($item->fresh()->sort_order)->toBe(7);
+    expect($item->fresh()->getAttribute('sort_order'))->toBe(7);
 });
 
 it('PurchaseOrderSent apply stores supplier reference and handle updates projection', function () {
@@ -523,9 +533,9 @@ it('PurchaseOrderSent apply stores supplier reference and handle updates project
         Verbs::commit();
     });
 
-    expect($po->fresh())
-        ->status->toBe('sent')
-        ->supplier_reference->toBe('SUP-5');
+    $fresh = $po->fresh();
+    expect($fresh->status)->toBe('sent')
+        ->and($fresh->supplier_reference)->toBe('SUP-5');
 });
 
 it('VirtualStockIntakeSerialisedAssetsRetired apply uses current time when retired_at is omitted', function () {

@@ -69,6 +69,9 @@ beforeEach(function () {
     $this->actingAs(User::factory()->owner()->create());
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch4InvokeProtected(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);

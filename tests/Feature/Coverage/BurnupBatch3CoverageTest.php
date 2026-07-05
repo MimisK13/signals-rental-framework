@@ -75,6 +75,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
+use function Pest\Laravel\actingAs;
+
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
@@ -87,7 +89,10 @@ beforeEach(function () {
 
 function batch3Owner(): User
 {
-    return tap(User::factory()->owner()->create(), fn (User $user) => test()->actingAs($user));
+    $user = User::factory()->owner()->create();
+    actingAs($user);
+
+    return $user;
 }
 
 function batch3KitContainer(Store $store): Container
@@ -335,7 +340,7 @@ it('RestructureOpportunityItems removeOrphanItems deletes items omitted from the
 
     $opportunity = $opportunity->fresh(['items']);
     $items = $opportunity->items->keyBy('id');
-    $orphan = $items->except($keep->id)->firstOrFail();
+    $orphan = $items->except([$keep->id])->firstOrFail();
 
     batch3Invoke(new RestructureOpportunityItems, 'removeOrphanItems', [
         $opportunity,
@@ -362,6 +367,9 @@ it('RestructureOpportunityItems removeOrphanItems skips missing collection entri
     expect(OpportunityItem::query()->find($keep->id))->not->toBeNull();
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch3Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);

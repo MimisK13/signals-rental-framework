@@ -39,6 +39,9 @@ beforeEach(function () {
     $this->seed(RoleSeeder::class);
 });
 
+/**
+ * @param  array<int, string>  $permissions
+ */
 function batch4PolicyUser(array $permissions = []): User
 {
     $user = User::factory()->create();

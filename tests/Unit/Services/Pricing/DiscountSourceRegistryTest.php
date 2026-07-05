@@ -20,7 +20,7 @@ it('registers discount sources by key', function () {
             OpportunityItem $item,
             Opportunity $opportunity,
             CarbonInterface $at,
-        ): ?string {
+        ): string {
             return '10.00';
         }
     };

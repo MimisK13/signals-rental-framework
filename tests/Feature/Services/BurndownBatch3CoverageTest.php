@@ -426,8 +426,8 @@ describe('CostApportionmentContext::opportunityWindow', function () {
     });
 
     it('returns precomputed rental windows when provided on the context', function () {
-        $from = now()->subDays(2)->utc();
-        $until = now()->addDays(2)->utc();
+        $from = Carbon::now()->subDays(2)->utc();
+        $until = Carbon::now()->addDays(2)->utc();
         $intake = VirtualStockIntake::factory()->confirmed()->create();
         $context = new CostApportionmentContext(
             intake: $intake,

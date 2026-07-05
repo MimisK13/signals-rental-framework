@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 
 beforeEach(function () {
     $default = config('filesystems.default', 'local');
@@ -131,21 +132,16 @@ describe('POST /api/v1/attachments', function () {
         // A real upload sits in the files bag so validation passes, but file('file')
         // yields a non-UploadedFile — the only way to reach the controller's
         // defensive PHP-upload-failure guard (validation rejects a bare string first).
-        $request = new class extends Request
-        {
-            public function file($key = null, $default = null)
-            {
-                return 'not-an-upload';
-            }
-        };
-        $request->initialize(
-            [],
+        $request = Request::create(
+            '/api/v1/attachments',
+            'POST',
             ['attachable_type' => 'Member', 'attachable_id' => $member->id],
             [],
-            [],
             ['file' => $upload],
-            ['REQUEST_METHOD' => 'POST'],
         );
+        /** @var Request&MockInterface $request */
+        $request = Mockery::mock($request)->makePartial();
+        $request->shouldReceive('file')->with('file')->andReturn('not-an-upload');
 
         $response = (new AttachmentController)->store($request);
 

@@ -78,6 +78,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 uses(RefreshDatabase::class);
@@ -89,6 +90,9 @@ beforeEach(function () {
     Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch5InvokeProtected(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -281,6 +285,7 @@ it('LogApiRequest terminate skips logging when disabled and handles short route 
     $requestWithoutStart = Request::create('/api/v1/schema', 'GET');
     expect(batch5InvokeProtected($middleware, 'resolveDurationMs', [$requestWithoutStart]))->toBeInt();
 
+    /** @var UsageRecorder&MockInterface $recorder */
     $recorder = mock(UsageRecorder::class, function ($mock): void {
         $mock->shouldReceive('record')->andThrow(new RuntimeException('recorder down'));
         $mock->shouldReceive('reportFailure')->once();

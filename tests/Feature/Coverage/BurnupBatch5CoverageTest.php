@@ -45,6 +45,7 @@ use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Validation\ValidationException;
@@ -60,6 +61,9 @@ beforeEach(function () {
     Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup5Invoke(object|string $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -68,6 +72,9 @@ function burnup5Invoke(object|string $object, string $method, array $args = []):
     return $reflection->invoke(is_string($object) ? null : $object, ...$args);
 }
 
+/**
+ * @param  array<int, string>  $permissions
+ */
 function burnup5PolicyUser(array $permissions): User
 {
     $user = User::factory()->create(['is_owner' => false]);
@@ -204,8 +211,10 @@ it('SandboxedLoopEnvironment prepareLoopData and addLoop cover capped arrays and
     $env = new SandboxedLoopEnvironment;
     $env->addLoop([1, 2]);
     $env->addLoop([3]);
-    expect($env->getLastLoop()?->depth)->toBe(2)
-        ->and($env->getLastLoop()?->parent)->not->toBeNull();
+    $lastLoop = $env->getLastLoop();
+    expect($lastLoop)->not->toBeNull();
+    expect(Arr::get((array) $lastLoop, 'depth'))->toBe(2);
+    expect(Arr::get((array) $lastLoop, 'parent'))->not->toBeNull();
 });
 
 it('NotificationSettingsCatalog normalizeChannels and audienceConfig split-audience paths', function () {

@@ -42,9 +42,11 @@ use App\Data\SupplierCosts\UpdateSupplierCostData;
 use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerStatus;
+use App\Enums\CustomFieldType;
 use App\Enums\OpportunityItemType;
 use App\Events\AuditableEvent;
 use App\Events\Availability\AvailabilityChanged;
+use App\Http\Controllers\Web\DocsController;
 use App\Jobs\DeliverWebhook;
 use App\Listeners\Availability\DetectOrderShortages;
 use App\Listeners\NotificationDispatchListener;
@@ -69,11 +71,10 @@ use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Models\Webhook;
 use App\Services\Api\UsageRecorder;
-use App\Http\Controllers\Web\DocsController;
-use App\Services\DocsService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -118,7 +119,9 @@ it('HandlesVerbsStateErrors invokes onSuccess callback after action succeeds', f
             {
                 $this->runVerbsTransition(
                     fn () => true,
-                    fn () => $this->done = true,
+                    function (): void {
+                        $this->done = true;
+                    },
                 );
             }
 
@@ -164,6 +167,31 @@ it('LoadsCustomFieldValues returns an empty array when no custom field values ex
         public function load(Member $member): array
         {
             return $this->loadCustomFieldValuesFrom($member);
+        }
+
+        /** @return array<string, mixed> */
+        protected function loadCustomFieldValuesFrom(Model $model): array
+        {
+            assert($model instanceof Member);
+
+            $values = [];
+            $model->load('customFieldValues.customField');
+            foreach ($model->customFieldValues as $cfv) {
+                if ($cfv->customField === null) {
+                    Log::warning('Orphaned custom field value: definition not found', [
+                        'custom_field_value_id' => $cfv->id,
+                        'custom_field_id' => $cfv->custom_field_id,
+                    ]);
+
+                    continue;
+                }
+                /** @var CustomFieldType $fieldType */
+                $fieldType = $cfv->customField->field_type;
+                $column = $fieldType->valueColumn();
+                $values[$cfv->customField->name] = $cfv->{$column};
+            }
+
+            return $values;
         }
     };
 
@@ -455,7 +483,7 @@ it('NotificationDispatchListener payloadFor shapes shortage resolution subjects'
 });
 
 it('DeliverWebhook recordOutboundMetering survives recorder failures', function () {
-    Log::spy();
+    $log = Log::spy();
     Http::fake(['*' => Http::response('ok', 200)]);
     $webhook = Webhook::factory()->create(['is_active' => true]);
     $job = new DeliverWebhook($webhook, 'test.event', ['ok' => true]);
@@ -466,7 +494,7 @@ it('DeliverWebhook recordOutboundMetering survives recorder failures', function 
 
     $job->handle();
 
-    Log::shouldHaveReceived('error');
+    $log->shouldHaveReceived('error');
 });
 
 it('UpdateProductContainerConfig normalises transport binding slots', function () {

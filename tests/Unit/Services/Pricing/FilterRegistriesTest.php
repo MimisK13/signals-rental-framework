@@ -15,7 +15,7 @@ it('exposes registered discount percent filters via all()', function () {
 
 it('exposes registered surcharge amount filters via all()', function () {
     $registry = new OpportunityItemSurchargeAmountFilterRegistry;
-    $filter = static fn (OpportunityItem $item, string $amount, int $surchargeId): ?string => $amount;
+    $filter = static fn (OpportunityItem $item, string $amount, int $surchargeId): string => $amount;
 
     $registry->register('floor', $filter);
 

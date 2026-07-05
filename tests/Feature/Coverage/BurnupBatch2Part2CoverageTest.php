@@ -60,6 +60,9 @@ beforeEach(function () {
     Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup2Part2Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -68,6 +71,9 @@ function burnup2Part2Invoke(object $object, string $method, array $args = []): m
     return $reflection->invoke($object, ...$args);
 }
 
+/**
+ * @param  array<int, string>  $permissions
+ */
 function burnup2Part2PolicyUser(array $permissions): User
 {
     $user = User::factory()->create(['is_owner' => false]);

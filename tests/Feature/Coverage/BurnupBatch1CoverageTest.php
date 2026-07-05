@@ -92,9 +92,11 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
+use Mockery\MockInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+use function Pest\Laravel\actingAs;
 use function Pest\Laravel\mock;
 
 uses(RefreshDatabase::class);
@@ -109,9 +111,15 @@ beforeEach(function () {
 
 function burnup1Owner(): User
 {
-    return tap(User::factory()->owner()->create(), fn (User $user) => test()->actingAs($user));
+    $user = User::factory()->owner()->create();
+    actingAs($user);
+
+    return $user;
 }
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup1Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -517,6 +525,7 @@ it('CreditNoteItem moneyFormattingCurrency reads credit note currency when the r
 
 it('PaymentNumberGenerator nextOrCreate provisions a sequence after ModelNotFoundException', function () {
     $store = Store::factory()->create(['timezone' => 'UTC']);
+    /** @var DocumentNumberGenerator&MockInterface $inner */
     $inner = mock(DocumentNumberGenerator::class);
     $inner->shouldReceive('next')
         ->once()
@@ -591,7 +600,7 @@ it('casts enum instances through TaxBuyerTypeCast without re-coercion', function
 });
 
 it('CustomerCommunication failed reports transition failures without rethrowing', function () {
-    Log::spy();
+    $logSpy = Log::spy();
     $this->mock(LogCommunication::class, function ($mock): void {
         $mock->shouldReceive('transition')->andThrow(new RuntimeException('database unavailable'));
     });
@@ -609,7 +618,7 @@ it('CustomerCommunication failed reports transition failures without rethrowing'
 
     $notification->failed(new RuntimeException('SMTP unavailable'));
 
-    Log::shouldHaveReceived('error');
+    $logSpy->shouldHaveReceived('error');
 });
 
 it('ColumnRegistryResolver validateCostGatedColumns rejects cost-gated sort columns for viewers without costs.view', function () {

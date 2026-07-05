@@ -91,6 +91,9 @@ beforeEach(function () {
     settings()->set('company.time_format_php', 'H:i');
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch6Part3Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -617,7 +620,7 @@ describe('PriceWeightResolver batch-6 branches', function () {
     it('weightForMethod build and persistent cache methods handle edge cases', function () {
         $resolver = app(PriceWeightResolver::class);
 
-        expect($resolver->weightForMethod(self::class, 'nonexistentMethod'))->toBe(1);
+        expect($resolver->weightForMethod(PriceWeightResolver::class, 'nonexistentMethod'))->toBe(1);
 
         Cache::shouldReceive('supportsTags')->andReturn(false);
         Cache::shouldReceive('get')->andThrow(new RuntimeException('cache down'));
@@ -637,13 +640,13 @@ describe('CoreMergeFieldFilters batch-6 branches', function () {
         expect(CoreMergeFieldFilters::time(null, null, $context))->toBeNull()
             ->and(CoreMergeFieldFilters::time('not-a-date', null, $context))->toBe('not-a-date')
             ->and(CoreMergeFieldFilters::number('abc', null, $context))->toBe('abc')
-            ->and(CoreMergeFieldFilters::number('12.5', 0, $context))->toBeString()
+            ->and(CoreMergeFieldFilters::number('12.5', '0', $context))->toBeString()
             ->and(CoreMergeFieldFilters::upper(null, null, $context))->toBeNull()
             ->and(CoreMergeFieldFilters::lower('AbC', null, $context))->toBe('abc')
             ->and(CoreMergeFieldFilters::title('hello world', null, $context))->toBe('Hello World')
             ->and(CoreMergeFieldFilters::default('', 'fallback', $context))->toBe('fallback')
-            ->and(CoreMergeFieldFilters::truncate('short', 50, $context))->toBe('short')
-            ->and(CoreMergeFieldFilters::truncate('abcdefghij', 7, $context))->toBe('abcd...')
+            ->and(CoreMergeFieldFilters::truncate('short', '50', $context))->toBe('short')
+            ->and(CoreMergeFieldFilters::truncate('abcdefghij', '7', $context))->toBe('abcd...')
             ->and(CoreMergeFieldFilters::plural(2, null, $context))->toBe(2)
             ->and(CoreMergeFieldFilters::plural(1, 'item|items', $context))->toBe('item')
             ->and(CoreMergeFieldFilters::currency('-100', null, $context))->toBeString();

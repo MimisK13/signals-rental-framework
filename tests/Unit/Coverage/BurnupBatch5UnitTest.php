@@ -14,6 +14,9 @@ use Tests\TestCase;
 
 uses(TestCase::class);
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup5UnitInvoke(object|string $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);

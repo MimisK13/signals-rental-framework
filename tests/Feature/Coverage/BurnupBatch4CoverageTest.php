@@ -64,6 +64,9 @@ beforeEach(function () {
     Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function burnup4Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -72,6 +75,9 @@ function burnup4Invoke(object $object, string $method, array $args = []): mixed
     return $reflection->invoke($object, ...$args);
 }
 
+/**
+ * @param  array<int, string>  $permissions
+ */
 function burnup4PolicyUser(array $permissions = []): User
 {
     $user = User::factory()->create();
@@ -477,11 +483,13 @@ it('ExportApiRequestLog handle exports CSV and applyStatusClassFilter filters st
 
     (new ExportApiRequestLog($user->id, 'api', ['window' => '7d', 'status_class' => '2xx']))->handle();
     $twoXx = Storage::get(Cache::get("api-logs-export:{$user->id}"));
-    expect($twoXx)->toContain('api.v1.ok')->not->toContain('api.v1.bad');
+    expect($twoXx)->toContain('api.v1.ok');
+    expect($twoXx)->not->toContain('api.v1.bad');
 
     (new ExportApiRequestLog($user->id, 'api', ['window' => '7d', 'status_class' => '4xx']))->handle();
     $fourXx = Storage::get(Cache::get("api-logs-export:{$user->id}"));
-    expect($fourXx)->toContain('api.v1.bad')->not->toContain('api.v1.ok');
+    expect($fourXx)->toContain('api.v1.bad');
+    expect($fourXx)->not->toContain('api.v1.ok');
 
     (new ExportApiRequestLog($user->id, 'api', ['window' => '7d', 'status_class' => '5xx']))->handle();
     expect(Storage::get(Cache::get("api-logs-export:{$user->id}")))->toContain('api.v1.fail');

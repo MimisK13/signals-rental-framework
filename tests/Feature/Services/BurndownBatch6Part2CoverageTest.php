@@ -61,6 +61,7 @@ use App\ValueObjects\ShortageGroup;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
@@ -216,9 +217,12 @@ describe('SandboxedLoopEnvironment batch-6 branches', function () {
 
         $env = new SandboxedLoopEnvironment;
         $env->addLoop([1, 2]);
-        expect($env->getLastLoop()?->depth)->toBe(1);
+        $firstLoop = $env->getLastLoop();
+        expect(Arr::get((array) $firstLoop, 'depth'))->toBe(1);
         $env->incrementLoopIndices();
-        expect($env->getLastLoop()?->iteration)->toBe(1);
+        $lastLoop = $env->getLastLoop();
+        expect($lastLoop)->not->toBeNull();
+        expect(Arr::get((array) $lastLoop, 'iteration'))->toBe(1);
     });
 });
 
@@ -451,6 +455,7 @@ describe('ReceiptDataResolver batch-6 branches', function () {
             'invoice_id' => $invoice->id,
             'paid_at' => Carbon::parse('2026-06-15T12:00:00Z'),
         ]);
+        /** @var InvoicePayment $payment */
         $payment = app(ReceiptDataResolver::class)->loadSource($payment->id);
         $payment->invoice->setRelation('store', null);
 
@@ -538,6 +543,7 @@ describe('CreditNoteDataResolver batch-6 branches', function () {
             'invoice_id' => $invoice->id,
             'issued_at' => Carbon::parse('2026-04-01T00:00:00Z'),
         ]);
+        /** @var CreditNote $creditNote */
         $creditNote = app(CreditNoteDataResolver::class)->loadSource($creditNote->id);
         $creditNote->invoice->setRelation('store', null);
 

@@ -74,6 +74,7 @@ use App\Services\Api\UsageRecorder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -81,6 +82,7 @@ use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
@@ -88,6 +90,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Thunk\Verbs\Lifecycle\Broker;
+
+use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
@@ -112,7 +116,10 @@ function batch2WhileReplaying(Closure $callback): void
 
 function batch2Owner(): User
 {
-    return tap(User::factory()->owner()->create(), fn (User $user) => test()->actingAs($user));
+    $user = User::factory()->owner()->create();
+    actingAs($user);
+
+    return $user;
 }
 
 it('RestoreDocumentTemplateVersion rejects a version from another template', function () {
@@ -508,7 +515,7 @@ it('ChannelInfrastructureBroadcastNotification toArray exposes payload fields', 
 });
 
 it('SendChannelNotification failed logs permanent delivery failure', function () {
-    Log::spy();
+    $log = Log::spy();
     $job = new SendChannelNotification(new ChannelSendData(
         driverKey: 'email',
         notifiableId: 1,
@@ -519,16 +526,15 @@ it('SendChannelNotification failed logs permanent delivery failure', function ()
 
     $job->failed(new RuntimeException('SMTP down'));
 
-    Log::shouldHaveReceived('error');
+    $log->shouldHaveReceived('error');
 });
 
 it('RecordCustomerCommunicationDelivery ignores non-customer notifications', function () {
     $listener = app(RecordCustomerCommunicationDelivery::class);
     $event = new NotificationSent(
-        User::factory()->create(),
-        new AnonymousNotifiable,
-        'mail',
-        new Notification,
+        notifiable: new AnonymousNotifiable,
+        notification: new Notification,
+        channel: 'mail',
     );
 
     $listener->handle($event);
@@ -540,6 +546,12 @@ it('HasAuditTimeline default timelineColorMap returns standard colours', functio
     $double = new class
     {
         use HasAuditTimeline;
+
+        /** @return Collection<int, array{title: string, meta: string, color: ?string, body: ?string}> */
+        protected function auditTimelineFor(Model $model): Collection
+        {
+            return collect();
+        }
 
         /** @return array<string, list<string>> */
         public function map(): array
@@ -556,7 +568,7 @@ it('ReKeysCustomFieldErrors re-keys prefixed, bare, and passthrough errors', fun
     {
         use ReKeysCustomFieldErrors;
 
-        public function run(): never
+        public function run(): void
         {
             $this->reKeyCustomFieldErrors(
                 ValidationException::withMessages([
@@ -569,15 +581,16 @@ it('ReKeysCustomFieldErrors re-keys prefixed, bare, and passthrough errors', fun
         }
     };
 
+    $caught = null;
+
     try {
         $double->run();
     } catch (ValidationException $e) {
-        expect($e->errors())->toHaveKey('customFieldValues.po')
-            ->and($e->errors())->toHaveKey('customFieldValues.name')
-            ->and($e->errors())->toHaveKey('notes');
-
-        return;
+        $caught = $e;
     }
 
-    expect(false)->toBeTrue('Expected ValidationException');
+    expect($caught)->toBeInstanceOf(ValidationException::class);
+    expect($caught->errors())->toHaveKey('customFieldValues.po')
+        ->and($caught->errors())->toHaveKey('customFieldValues.name')
+        ->and($caught->errors())->toHaveKey('notes');
 });

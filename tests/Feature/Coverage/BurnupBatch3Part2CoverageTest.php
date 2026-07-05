@@ -11,6 +11,7 @@ use App\Data\Notifications\NotificationContextData;
 use App\Data\Notifications\TestChannelProviderData;
 use App\Data\Products\ProductData;
 use App\Enums\ContainerAvailabilityMode;
+use App\Enums\CustomFieldType;
 use App\Enums\MeteringChannel;
 use App\Enums\TaxResultType;
 use App\Http\Controllers\Web\SearchController;
@@ -43,7 +44,7 @@ use App\Queries\Api\UsageQuery;
 use App\Services\Containers\RepackOnReturnEligibility;
 use App\Services\Documents\DocumentRenderPipeline;
 use App\Services\Documents\InvoiceDataResolver;
-use App\Services\Documents\TemplateBladeRenderer;
+use App\Services\Documents\SandboxedBladeRenderer;
 use App\Services\Invoices\InvoiceTotalsCalculator;
 use App\Services\Notifications\Drivers\DatabaseDriver;
 use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
@@ -60,6 +61,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Mockery\MockInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 uses(RefreshDatabase::class);
@@ -71,6 +73,9 @@ beforeEach(function () {
     Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
 });
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch3Part2Invoke(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -145,7 +150,8 @@ it('SearchController iconUrl resolves signed URLs when a thumbnail path exists',
     $controller = app(SearchController::class);
     $url = batch3Part2Invoke($controller, 'iconUrl', ['icons/search.png']);
 
-    expect($url)->toBeString()->not->toBeEmpty();
+    expect($url)->toBeString();
+    expect($url)->not->toBeEmpty();
 });
 
 it('ExportActionLog writes System for action logs without a linked user', function () {
@@ -190,7 +196,7 @@ it('RecordCustomerCommunicationDelivery transitions customer communication logs 
 });
 
 it('RecordCustomerCommunicationDelivery logs transition failures without rethrowing', function () {
-    Log::spy();
+    $logSpy = Log::spy();
     $this->mock(LogCommunication::class, function ($mock): void {
         $mock->shouldReceive('transition')->andThrow(new RuntimeException('transition failed'));
     });
@@ -209,7 +215,7 @@ it('RecordCustomerCommunicationDelivery logs transition failures without rethrow
         channel: 'mail',
     ));
 
-    Log::shouldHaveReceived('warning');
+    $logSpy->shouldHaveReceived('warning');
 });
 
 it('DataTable exportCsv prepends an ID column when it is not already visible', function () {
@@ -235,7 +241,7 @@ it('DataTable exportCsv prepends an ID column when it is not already visible', f
 });
 
 it('LoadsCustomFieldValues maps values and warns on orphaned custom field rows', function () {
-    Log::spy();
+    $logSpy = Log::spy();
 
     $field = CustomField::factory()->forModule('Member')->string()->create([
         'name' => 'po_reference',
@@ -257,6 +263,7 @@ it('LoadsCustomFieldValues maps values and warns on orphaned custom field rows',
     ]);
     $orphanValue->setRelation('customField', null);
 
+    /** @var Member&MockInterface $member */
     $member = Mockery::mock($member)->makePartial();
     $member->shouldReceive('load')
         ->once()
@@ -276,12 +283,37 @@ it('LoadsCustomFieldValues maps values and warns on orphaned custom field rows',
         {
             return $this->loadCustomFieldValuesFrom($member);
         }
+
+        /** @return array<string, mixed> */
+        protected function loadCustomFieldValuesFrom(Model $model): array
+        {
+            assert($model instanceof Member);
+
+            $values = [];
+            $model->load('customFieldValues.customField');
+            foreach ($model->customFieldValues as $cfv) {
+                if ($cfv->customField === null) {
+                    Log::warning('Orphaned custom field value: definition not found', [
+                        'custom_field_value_id' => $cfv->id,
+                        'custom_field_id' => $cfv->custom_field_id,
+                    ]);
+
+                    continue;
+                }
+                /** @var CustomFieldType $fieldType */
+                $fieldType = $cfv->customField->field_type;
+                $column = $fieldType->valueColumn();
+                $values[$cfv->customField->name] = $cfv->{$column};
+            }
+
+            return $values;
+        }
     };
 
     $values = (new $double)->load($member);
 
     expect($values)->toBe(['po_reference' => 'PO-123']);
-    Log::shouldHaveReceived('warning');
+    $logSpy->shouldHaveReceived('warning');
 });
 
 it('Opportunity remainingInvoiceQuantitiesByItem loads items when the relation is not eager loaded', function () {
@@ -334,7 +366,7 @@ it('RepackOnReturnEligibility rejects kit housings that are not transport mode',
 });
 
 it('DocumentRenderPipeline renderWithData sanitises unexpected renderer failures', function () {
-    $this->mock(TemplateBladeRenderer::class, function ($mock): void {
+    $this->mock(SandboxedBladeRenderer::class, function ($mock): void {
         $mock->shouldReceive('render')->andThrow(new RuntimeException('renderer exploded'));
     });
 

@@ -77,6 +77,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Thunk\Verbs\Exceptions\EventNotValid;
 use Thunk\Verbs\Lifecycle\Broker;
 
+use function Pest\Laravel\actingAs;
+
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
@@ -88,7 +90,10 @@ beforeEach(function () {
 
 function burnup2Owner(): User
 {
-    return tap(User::factory()->owner()->create(), fn (User $user) => test()->actingAs($user));
+    $user = User::factory()->owner()->create();
+    actingAs($user);
+
+    return $user;
 }
 
 function burnup2GrantStore(User $user, Store $store): void
@@ -169,6 +174,9 @@ function burnup2WhileReplaying(Closure $callback): void
     }
 }
 
+/**
+ * @return array{0: Opportunity, 1: OpportunityItem|null}
+ */
 function burnup2QuotationWithGroup(): array
 {
     burnup2Owner();

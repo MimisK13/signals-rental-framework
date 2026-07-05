@@ -59,6 +59,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Thunk\Verbs\Event;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -112,6 +113,9 @@ function batch4QuotationWithItem(): Opportunity
     return $opportunity->fresh();
 }
 
+/**
+ * @param  array<int, mixed>  $args
+ */
 function batch4InvokeConcern(object $object, string $method, array $args = []): mixed
 {
     $reflection = new ReflectionMethod($object, $method);
@@ -394,7 +398,7 @@ it('PurchaseOrderUpdated apply null dates and handle deletes orphaned lines', fu
 });
 
 it('AdjustsStockAllocation concern clamps decrements and skips replay asset checks', function () {
-    $concern = new class
+    $concern = new class extends Event
     {
         use AdjustsStockAllocation;
 

@@ -18,6 +18,7 @@ use App\Models\DocumentTemplateVersion;
 use App\Models\InvoiceTax;
 use App\Models\OpportunitySection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -98,8 +99,8 @@ it('OpportunitySectionData fromModel maps section fields', function () {
         'sort_order' => 4,
     ]);
     $section->id = 123;
-    $section->created_at = now();
-    $section->updated_at = now();
+    $section->created_at = Carbon::now();
+    $section->updated_at = Carbon::now();
 
     $dto = OpportunitySectionData::fromModel($section);
 
