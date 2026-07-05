@@ -1,9 +1,11 @@
 <?php
 
 use App\Services\ColumnRegistryResolver;
+use App\Models\User;
 use App\Views\Column;
 use App\Views\ColumnRegistry;
 use App\Views\MemberColumnRegistry;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 
@@ -177,3 +179,16 @@ it('resolves a registry whose entityType matches the registered key', function (
 it('returns null for an unregistered entity type', function () {
     expect(app(ColumnRegistryResolver::class)->resolve('nonexistent_entities'))->toBeNull();
 });
+
+it('allows cost-gated columns when the user has costs.view', function () {
+    $this->seed(PermissionSeeder::class);
+    $user = User::factory()->create();
+    $user->givePermissionTo('costs.view');
+
+    app(ColumnRegistryResolver::class)->validateColumns(
+        'purchase_orders',
+        ['number', 'total'],
+        'total',
+        $user,
+    );
+})->throwsNoExceptions();

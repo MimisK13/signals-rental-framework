@@ -71,6 +71,11 @@ describe('NotificationChannelResolver three-layer narrowing', function () {
             ->toBe(['database', 'broadcast', 'mail']);
     });
 
+    it('passes through non-email logical channels unchanged', function () {
+        expect($this->resolver->toLaravelChannels(['sms']))
+            ->toBe(['sms']);
+    });
+
     it('does not narrow when tenant setting channels are null', function () {
         $type = NotificationType::factory()->create([
             'default_channels' => ['in_app', 'email'],

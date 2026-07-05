@@ -29,6 +29,13 @@ it('exposes all core filters', function () {
     expect($registry->all())->not->toBeEmpty();
 });
 
+it('returns the original value when the filter is unknown', function () {
+    $registry = app(MergeFieldFilterRegistry::class);
+
+    expect($registry->apply('missing', 'keep-me', null, MergeFieldRenderContext::defaults()))
+        ->toBe('keep-me');
+});
+
 it('core filters register through service provider boot', function () {
     expect(app(MergeFieldFilterRegistry::class)->has('currency'))->toBeTrue();
     expect(app(MergeFieldFilterRegistry::class)->apply('currency', 100, null, MergeFieldRenderContext::defaults()))

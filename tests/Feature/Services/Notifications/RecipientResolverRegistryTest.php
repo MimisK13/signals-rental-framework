@@ -90,6 +90,20 @@ describe('RecipientResolverRegistry core resolvers', function () {
             ->and($recipients->first()->id)->toBe($contact->id);
     });
 
+    it('resolves contact from generic subject objects with member_id', function () {
+        $contact = Member::factory()->contact()->create();
+        $type = NotificationType::factory()->create();
+        $context = new NotificationContextData(type: $type, subject: (object) ['member_id' => $contact->id]);
+
+        $recipients = app(RecipientResolverRegistry::class)->resolveAll(
+            [['type' => 'contact']],
+            $context,
+        );
+
+        expect($recipients)->toHaveCount(1)
+            ->and($recipients->first()->id)->toBe($contact->id);
+    });
+
     it('resolves role members linked through users', function () {
         $role = Role::create(['name' => 'Ops Lead', 'guard_name' => 'web']);
 
@@ -129,6 +143,18 @@ describe('RecipientResolverRegistry core resolvers', function () {
         ], $context);
 
         expect($recipients)->toHaveCount(1);
+    });
+
+    it('skips rules with unknown resolver types', function () {
+        $type = NotificationType::factory()->create();
+        $context = new NotificationContextData(
+            type: $type,
+            subject: Opportunity::factory()->create(),
+        );
+
+        expect(app(RecipientResolverRegistry::class)->resolveAll([
+            ['type' => 'not_registered'],
+        ], $context))->toBeEmpty();
     });
 
     it('allows plugins to register additional recipient resolver types', function () {

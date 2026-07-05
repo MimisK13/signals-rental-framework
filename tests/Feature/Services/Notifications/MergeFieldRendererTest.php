@@ -41,6 +41,10 @@ it('returns blank for unknown fields by default', function () {
     expect($result)->toBe('Value: ');
 });
 
+it('returns null from parseExpression for empty strings', function () {
+    expect($this->renderer->parseExpression(''))->toBeNull();
+});
+
 it('leaves malformed unclosed merge tags as literal text', function () {
     $result = $this->renderer->render('Keep {{ unclosed tag here', [], $this->context);
 

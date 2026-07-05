@@ -22,6 +22,14 @@ test('sms segment counter uses concatenated segment size for long messages', fun
         ->and($stats['per_segment'])->toBe(153);
 });
 
+test('sms segment counter reports zero segments for empty messages', function () {
+    expect(app(SmsSegmentCounter::class)->analyse(''))->toBe([
+        'characters' => 0,
+        'segments' => 0,
+        'per_segment' => 160,
+    ]);
+});
+
 test('channel config masker masks secret values for ui round trip', function () {
     $schema = [
         new ChannelConfigFieldData('api_key', 'API Key', 'password', secret: true),

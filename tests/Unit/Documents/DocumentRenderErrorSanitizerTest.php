@@ -13,3 +13,15 @@ it('sanitises render exceptions without file paths or stack traces', function ()
         ->and($message)->not->toContain('/var/www')
         ->and($message)->not->toContain('Stack trace');
 });
+
+it('returns the fallback message for empty exceptions', function () {
+    expect(DocumentRenderErrorSanitizer::sanitize(new Exception('')))
+        ->toBe('Unable to render document template.');
+});
+
+it('truncates very long messages', function () {
+    $sanitized = DocumentRenderErrorSanitizer::sanitize(new Exception(str_repeat('x', 600)));
+
+    expect(strlen($sanitized))->toBe(500)
+        ->and(str_ends_with($sanitized, '…'))->toBeTrue();
+});

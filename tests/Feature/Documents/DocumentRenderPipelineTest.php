@@ -218,4 +218,9 @@ describe('PdfDriverManager', function () {
         config(['documents.pdf_driver' => 'browsershot']);
         expect(app(PdfDriverManager::class)->driver())->toBeInstanceOf(BrowsershotDriver::class);
     });
+
+    it('throws for unknown driver names', function () {
+        expect(fn () => app(PdfDriverManager::class)->driver('missing-driver'))
+            ->toThrow(InvalidArgumentException::class, 'Unknown document PDF driver');
+    });
 });

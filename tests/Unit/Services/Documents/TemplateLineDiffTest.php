@@ -13,6 +13,10 @@ describe('TemplateLineDiff', function () {
         expect($this->diff->diff($input, $input))->toBe([]);
     });
 
+    it('treats both empty inputs as an empty diff', function () {
+        expect($this->diff->diff('', ''))->toBe([]);
+    });
+
     it('treats empty old content as a full insert', function () {
         $ops = $this->diff->diff('', "line one\nline two");
 

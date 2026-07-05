@@ -33,4 +33,9 @@ describe('PurchaseOrderStatusRegistry', function () {
     it('throws when transitioning to an unknown status', function () {
         app(PurchaseOrderStatusRegistry::class)->assertCanTransitionTo('draft', 'mystery');
     })->throws(InvalidArgumentException::class);
+
+    it('assertKnown rejects unknown statuses', function () {
+        expect(fn () => app(PurchaseOrderStatusRegistry::class)->assertKnown('mystery'))
+            ->toThrow(InvalidArgumentException::class, 'Unknown purchase order status');
+    });
 });

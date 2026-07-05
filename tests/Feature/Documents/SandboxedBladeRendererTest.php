@@ -87,4 +87,20 @@ describe('SandboxedBladeRenderer loop support', function () {
 
         expect($html)->toContain('No lines');
     });
+
+    it('returns an empty string from executeCompiledTemplate when no buffer is active', function () {
+        $compiledPath = tempnam(sys_get_temp_dir(), 'sandbox-blade-');
+        file_put_contents($compiledPath, '<?php echo "compiled";');
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $method = new ReflectionMethod(SandboxedBladeRenderer::class, 'executeCompiledTemplate');
+        $method->setAccessible(true);
+
+        expect($method->invoke(null, $compiledPath, []))->toBe('');
+
+        @unlink($compiledPath);
+    });
 });

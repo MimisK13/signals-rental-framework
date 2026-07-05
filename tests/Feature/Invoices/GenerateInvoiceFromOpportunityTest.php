@@ -362,4 +362,13 @@ describe('InvoiceSourceStateRule', function () {
             ->and($rule->allowedStatesFor(InvoiceType::Standard))
             ->toContain(OpportunityState::Order->value);
     });
+
+    it('falls back to defaults when configured source states are empty', function () {
+        settings()->set('invoices.source_states', []);
+
+        $states = app(InvoiceSourceStateRule::class)->allowedStatesFor(InvoiceType::Deposit);
+
+        expect($states)->toContain(OpportunityState::Quotation->value)
+            ->and($states)->toContain(OpportunityState::Order->value);
+    });
 });

@@ -24,6 +24,11 @@ it('returns zeros when all weights are zero', function () {
         ->toBe([1 => 0, 2 => 0]);
 });
 
+it('returns floors immediately when the target divides evenly', function () {
+    expect((new MoneyApportionment)->apportion([1 => 1, 2 => 1], 100))
+        ->toBe([1 => 50, 2 => 50]);
+});
+
 it('assigns the full total to a single participant', function () {
     expect((new MoneyApportionment)->apportion([42 => 99], 7500))
         ->toBe([42 => 7500]);
