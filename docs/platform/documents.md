@@ -78,6 +78,96 @@ Authenticated downloads use **signed temporary URLs**. Every download path sets 
 
 Document rendering incorporates per-store branding (logo, colours) from store and company settings seeded with system templates on fresh installs.
 
+## Using it in the app
+
+Document administration lives under **Admin → Documents** (sidebar group `documents`).
+
+| Screen | Route | Permission |
+|--------|-------|------------|
+| Numbering | `/admin/settings/numbering` | `numbering.view` / `numbering.edit` |
+| Document templates index | `/admin/document-templates` | `document_templates.view` |
+| Template editor | `/admin/document-templates/{template}/edit` | `document_templates.view`; save needs `document_templates.edit` |
+| Opportunity Documents tab | `/opportunities/{opportunity}/documents` | Tab: `documents.view`; generate: `documents.create` |
+
+Communication templates (billing emails) use a separate editor at `/admin/settings/communication-templates/{template}/edit` — see [Notifications & Comms](/docs/platform/notifications).
+
+### Document templates index
+
+The index is a full data table with custom views, column toggles, and export.
+
+**Columns:** Name, Document Type, Store, Status badges (Default / System / Active / Inactive), Version, Last Edited, Actions
+
+**Toolbar:** **New template** (when `document_templates.edit`) opens a modal with three starting points:
+
+| Starting point | Use when |
+|----------------|----------|
+| Base on existing | Clone a template |
+| Blank for document type | System starter for a type |
+| Completely empty | From scratch |
+
+**Row actions** (edit permission + store scope): Edit, Duplicate, Set default, Restore default (system templates), Delete (non-system)
+
+### Three-panel template editor
+
+Full-screen editor at `/admin/document-templates/{id}/edit`.
+
+| Area | Contents |
+|------|----------|
+| **Field browser** | Searchable snippet list from the field registry — click to insert at cursor |
+| **CodeMirror tabs** | Body, Header, Footer, Styles — sandboxed Blade source |
+| **Live preview** | Rendered output; toggle **Sample** vs **Real entity** data; optional record picker; zoom control |
+| **Version sidebar** | Version history with diff viewer and **Restore** |
+| **Top bar** | Page, branding & numbering modal; Refresh preview; Save |
+
+**Page setup modal** covers margins, page size, logo upload, and per-template document sequence (prefix, suffix, year/month toggles, next number, padding) with live next-number preview.
+
+Open preview in a new window via the preview panel controls when you need a detached render.
+
+### Numbering admin
+
+**Route:** `/admin/settings/numbering`
+
+Two sections:
+
+1. **Per-store table** — Standard Invoice, Deposit Invoice, Pro Forma Invoice, Credit Note, Purchase Order, Virtual Stock Intake, Opportunity — each row shows a live **next number preview** and an edit pencil (when `numbering.edit`)
+2. **Global** — Member and Payment numbers shared across stores
+
+The edit modal exposes prefix, suffix, next number, digit padding, and include year/month switches with a live preview string.
+
+### Opportunity and invoice documents
+
+On an opportunity, the **Documents** tab (badge = document count) shows:
+
+**Generate document card** — pick Template, Output (PDF or HTML), click **Generate**.
+
+**Document table** — Number, Type, Status, Created, First viewed, Actions:
+
+| Action | Permission |
+|--------|------------|
+| Download | Signed URL when file exists |
+| Share | `documents.share` — opens public link modal |
+| Copy link / QR | When link already exists |
+| Configure | Update expiry / PIN on existing link |
+| Revoke | Remove public link |
+
+**Share modal:** optional expiry datetime, optional PIN (min 4 chars), QR code for the public URL, copy-to-clipboard. Public URLs use `/d/{token}` (configurable prefix).
+
+**Finalise** and **void** document actions exist on the API but are **not** exposed as buttons on the opportunity Documents tab — generated documents move through statuses via backend rules and API calls.
+
+Invoice PDFs from invoice detail use the billing document type for that invoice's store; see [Invoicing](/docs/platform/invoicing).
+
+### Permissions summary
+
+| Permission | UI effect |
+|------------|-----------|
+| `document_templates.view` | Templates index and editor (read) |
+| `document_templates.edit` | Save template, row mutations, new template |
+| `numbering.view` | Numbering admin page |
+| `numbering.edit` | Edit sequence modal |
+| `documents.view` | Opportunity Documents tab |
+| `documents.create` | Generate document card |
+| `documents.share` | Share / configure / revoke public links |
+
 ## Related documentation
 
 - [Invoicing](/docs/platform/invoicing) — invoice and credit-note PDFs

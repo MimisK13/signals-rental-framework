@@ -59,6 +59,97 @@ After kit return, **repack-on-return** lets operators scan items back into the c
 
 Container pack, seal, dissolve, dispatch, return, and repack events appear in the **webhook catalogue** for integrations (barcode scanners, WMS, etc.).
 
+## Using it in the app
+
+### Navigation
+
+| Screen | Route | Nav | Gate |
+|--------|-------|-----|------|
+| Containers index | `/containers` | Warehouse → Containers ("Cases, flightcases & kits") | `containers.view` |
+| Container show | `/containers/{container}` | — | `containers.view` + store |
+| Pack | `/containers/{container}/pack` | — | `containers.pack` |
+| Repack | `/containers/{container}/repack/{opportunity}` | — | `containers.create` + `opportunities.edit` |
+| Product container config | `/products/{product}/container-config` | Product tab (serialised products) | View all; save needs `containers.manage_templates` |
+
+### Product container config tab
+
+**Tab:** Container Config (serialised products only)
+
+| Field | Purpose |
+|-------|---------|
+| Containerable | Whether the product can act as a container |
+| Availability Mode | Kit / Hybrid / Transport behaviour |
+| Check-in Mode | How returns are processed |
+| Max Nesting Depth | Nested container limit |
+| Repack on Return | Enable repack workflow after kit return |
+| Warehouse Addable at Dispatch | Allow adds during dispatch |
+| Warehouse Add Default Charge | Default charge for warehouse adds |
+| Template Slots | Product, quantity, binding for default pack list |
+
+**Save Container Config** requires **`containers.manage_templates`**. Without it the form is view-only with a warning banner.
+
+### Containers index
+
+**Scan barcode** field resolves an existing container or housing — may navigate to show, open pack, or start repack.
+
+**Filters:** search, store, mode chips (Transport / Kit / Hybrid), status chips (defaults to Active)
+
+**Table:** Barcode, Name, Status, Mode, Store, Type (Temporary / Product-backed), Items
+
+Scan-create and repack-from-return flows require **`containers.create`** and **`opportunities.edit`** respectively.
+
+### Pack page
+
+**Route:** `/containers/{container}/pack`
+
+Scan-to-pack workflow while the container is **open**:
+
+- **Strict checklist** vs **free list** scan modes (configured on the container)
+- Inline **conflict dialog** when a scan hits an asset already elsewhere — options include transfer, auto-return, and nesting resolution
+- **Seal** when packing is complete
+
+### Container show
+
+**Actions** (each policy-gated): Pack items, Repack session, Seal, Dissolve, Unseal (requires reason), Dispatch (kit/transport), Return kit, Verify check-in, Transfer items, Save scan mode
+
+**Panels:** barcode, status, mode, check-in mode, scan mode, store, **contents tree**, **audit timeline**
+
+**Dissolve-on-dispatch:** transport containers configured for this mode dissolve automatically when dispatched from an opportunity — contents move to the dispatch workflow; the container record completes.
+
+**Seal / unseal:** sealed containers carry a compliance manifest; unseal prompts for a reason.
+
+### Repack-on-return
+
+**Route:** `/containers/{container}/repack/{opportunity}`
+
+Editable scan mode after kit return — scan items back into the container with lineage preserved. Also reachable from the index scan box ("start repack from return" modal).
+
+### Opportunity Assets tab
+
+**Route:** `/opportunities/{id}/assets` (visible for Order or Quotation+Reserved)
+
+Sub-tabs: Functions, Allocate, Prepare, Book out, Check in
+
+| Workflow | Container behaviour |
+|----------|---------------------|
+| Dispatch | Transport dissolve-on-dispatch; kit dispatch ties container to opportunity; amendment modal for held items under WarnPartial policy |
+| Verify check-in | Post-return verification on kit containers |
+| Repack split view | Shows repack progress with lineage after return |
+
+**Set container** (bulk Functions menu) assigns containers to opportunity lines. Dispatch and return reuse the same container policies as standalone container pages (`containers.dispatch`, `containers.return`, plus **`opportunities.edit`**).
+
+### Permissions summary
+
+| Permission | UI effect |
+|------------|-----------|
+| `containers.view` | Index, show, Warehouse nav link |
+| `containers.create` | Temporary containers, repack sessions |
+| `containers.pack` | Pack page |
+| `containers.seal` / `dissolve` / `transfer` | Show page actions |
+| `containers.dispatch` / `return` | Dispatch/return (also needs `opportunities.edit` on opportunity) |
+| `containers.manage_templates` | Product container config save |
+| `opportunities.edit` | Assets tab mutations, repack |
+
 ## Related documentation
 
 - [Containers API](/docs/api/containers) — full REST lifecycle

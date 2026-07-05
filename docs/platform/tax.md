@@ -82,6 +82,78 @@ Tax configuration changes are recorded in the **tax configuration audit trail**.
 | Credit note | Negated mirror of invoice tax |
 | Purchase order | Purchase-axis tax for sub-hire procurement |
 
+## Using it in the app
+
+Tax admin lives under **Admin → Tax** (sidebar group `tax`, gated on **`tax-classes.view`** for the Tax nav link). Mutations on tax classes, rates, rules, zones, and categories go through action classes that require **`tax-classes.manage`**.
+
+| Screen | Route |
+|--------|-------|
+| Finance settings | `/admin/settings/finance` |
+| Tax Zones | `/admin/settings/tax/zones` |
+| Tax Categories | `/admin/settings/tax/categories` |
+| Product Tax Classes | `/admin/settings/tax/product-tax-classes` |
+| Organisation Tax Classes | `/admin/settings/tax/organisation-tax-classes` |
+| Tax Rates | `/admin/settings/tax/rates` |
+| Tax Rules | `/admin/settings/tax/rules` |
+
+Tax Zones and Tax Categories are in the admin sidebar but not on the admin landing overview cards (those cards list Finance, legacy classes, rates, and rules only).
+
+### Finance settings
+
+**Route:** `/admin/settings/finance`
+
+| Section | Fields |
+|---------|--------|
+| **Tax Point** | Tax point date — Supply date or Invoice date |
+| **Pricing Defaults** | New opportunities default to prices include tax; Show tax breakdown on documents |
+| **VAT Validation** | VAT validation validity (days) — how long a VIES/HMRC check remains trusted |
+| **Reverse Charge Display** | Reverse charge label — text shown on tax breakdowns and documents when reverse charge applies |
+
+Click **Save Changes** to persist. There is no dedicated tax-configuration audit UI — changes surface in the general [Action Log](/docs/platform/admin-panel) when auditable events fire.
+
+### Tax zones, categories, and rules
+
+**Tax Zones** — list shows Name, Slug, Countries (member-country count), Priority, Status. Form fields: Name, Slug, Description, Priority, Active.
+
+**Tax Categories** — list shows Name, Slug, Type, Default, Status. Form: Name, Slug, Type (Standard / Reduced / Zero rated / Exempt), Description, Default category, Active.
+
+**Tax Rules** index combines legacy **Class** rules and **Zone** rules in one table (Type, Name/Mapping, Zones, Buyer, Result, Priority, Status).
+
+- **Add Class Rule** — organisation tax class + product tax class → tax rate, priority, active
+- **Add Zone Rule** — seller zone, buyer zone, optional buyer type, requires validated tax ID, tax category, result type (Standard / Reverse charge / Zero rated / Exempt / Outside scope), legal text, priority, active
+
+Reverse-charge **legal text** on zone rules feeds document and totals rendering; the configurable display label comes from Finance settings.
+
+### Member tax fields
+
+On the member form (organisations and venues), the **Account** section shows **Tax Number** with validation badges:
+
+| Badge | Meaning |
+|-------|---------|
+| Pending validation | VAT number entered, check not yet complete |
+| Valid | Passed VIES/HMRC validation |
+| Invalid | Validation failed |
+
+**Re-check VAT** (`members.edit`) re-queues validation.
+
+The **Tax & Pricing** section also exposes **Sale Tax Class** and **Purchase Tax Class** (legacy class axis). Fields for **tax zone**, **buyer type**, and **tax exempt** exist on the member model but are **not** on the member form UI yet — zone resolution uses member country and organisation data at runtime.
+
+### Store seller zone
+
+Stores are managed at `/admin/settings/stores` (Admin → Setup). The form covers name and address only — there is **no Tax Zone picker** on the store modal. Seller zone for documents is resolved from each store's country/`tax_zone_id` at runtime via `TaxZoneResolver`.
+
+### Reverse charge in documents
+
+When zone resolution returns reverse charge, totals and generated documents show the **reverse charge label** from Finance settings plus any **legal text** configured on the zone rule. No separate reverse-charge editor exists outside those admin screens.
+
+### Permissions summary
+
+| Permission | UI effect |
+|------------|-----------|
+| `tax-classes.view` | Tax admin sidebar link |
+| `tax-classes.manage` | Create / edit / delete tax classes, rates, rules, zones, categories |
+| `members.edit` | Re-check VAT on member form |
+
 ## Related documentation
 
 - [Multi-Currency & Tax](/docs/platform/multi-currency) — currencies, exchange rates, base engine

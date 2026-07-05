@@ -143,19 +143,19 @@
                 {
                     "title": "Invoicing & Payments",
                     "slug": "invoicing",
-                    "description": "Quote-to-cash: checkout, issue, payments, credit notes, deposit/pro-forma invoices, and PDFs.",
+                    "description": "Quote-to-cash: checkout, issue, payments, credit notes, deposit/pro-forma invoices, PDFs, and Finance UI walkthrough.",
                     "urlSection": "platform"
                 },
                 {
                     "title": "Pricing & Discounts",
                     "slug": "pricing",
-                    "description": "Four-stage pricing pipeline: price categories, discount rules, surcharges, bundle pricing, and deal price.",
+                    "description": "Four-stage pricing pipeline plus admin Pricing screens and opportunity line-item editor controls.",
                     "urlSection": "platform"
                 },
                 {
                     "title": "Tax & Compliance",
                     "slug": "tax",
-                    "description": "EU/UK tax zones, buyer types, zone-aware resolution, VIES validation, and finance settings.",
+                    "description": "EU/UK tax zones, VIES validation, finance settings, and admin/member tax UI.",
                     "urlSection": "platform"
                 },
                 {
@@ -199,25 +199,25 @@
                 {
                     "title": "Documents & Templates",
                     "slug": "documents",
-                    "description": "Per-store document templates, PDF rendering, numbering sequences, public sharing, and the template editor.",
+                    "description": "Document templates, numbering admin, opportunity Documents tab, and public sharing UI.",
                     "urlSection": "platform"
                 },
                 {
                     "title": "Notifications & Comms",
                     "slug": "notifications",
-                    "description": "Notification channels, communication templates, customer emails, preferences, and the communication log.",
+                    "description": "Admin notification settings, bell, preferences, communication log, and unsubscribe flows.",
                     "urlSection": "platform"
                 },
                 {
                     "title": "Sub-Hire & Procurement",
                     "slug": "sub-hire",
-                    "description": "Purchase orders, virtual stock intakes, sub-hire shortage resolution, and cost apportionment.",
+                    "description": "Supplier costs, POs, virtual stock, shortage resolution, and opportunity Costs tab.",
                     "urlSection": "platform"
                 },
                 {
                     "title": "Containers & Kits",
                     "slug": "containers",
-                    "description": "Serialised container pack/seal/dispatch/return lifecycle and warehouse UI.",
+                    "description": "Container config, warehouse pack/seal/dispatch, and opportunity Assets integration.",
                     "urlSection": "platform"
                 },
                 {

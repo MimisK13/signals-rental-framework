@@ -103,6 +103,92 @@ When the viewer has **`costs.view`**, invoice detail shows real margin figures c
 
 All monetary fields serialise as **decimal strings** (e.g. `"125.50"`), not floats or raw integers. Values are stored in integer minor units internally. Tax follows the framework's **ex-tax** model with tax computed finally and grouped by tax class.
 
+## Using it in the app
+
+Finance screens live under the **Finance** section of the main sidebar and header mega-menu. The whole Finance block — Invoices, Credit Notes, and Payments — is visible only when the user holds **`invoices.access`**. Individual pages then check finer-grained invoice permissions (`invoices.view`, `invoices.create`, and so on).
+
+| Screen | Route | Mount permission |
+|--------|-------|------------------|
+| Invoices index | `/invoices` | `invoices.access` |
+| Credit notes index | `/credit-notes` | `invoices.view` |
+| Payments index | `/payments` | `invoices.view` |
+| Invoice detail | `/invoices/{invoice}` | `view` policy on invoice |
+| Invoice communications | `/invoices/{invoice}/communications` | `view` policy on invoice |
+| Opportunity Invoices tab | `/opportunities/{opportunity}/invoices` | `invoices.view` |
+| Member Invoices tab | `/members/{member}/invoices` | `invoices.view` |
+
+### Finance index pages
+
+All three Finance list pages use the shared **data table** with column toggles, export, Ransack-style column filters, and a **custom view** selector (Default / System / Shared / My Custom Views). Saved views drive columns, filters, and sort — the same machinery as other Phase-4 index pages.
+
+**Invoices** (`/invoices`) shows status chips across the top (All, Draft, Issued, Paid, Overdue, and so on) with live counts. Columns include Number, Type, Status, Member, Store, Total, Outstanding, and Issued. Overdue invoices carry a red **Overdue** badge in the Status column. The toolbar offers **New Draft** when the user has `invoices.create`.
+
+**Credit Notes** (`/credit-notes`) mirrors the same pattern with status chips and columns for Number, Invoice, Member, Issued, Total, and Status. The header mega-menu labels this area **Refunds & adjustments**.
+
+**Payments** (`/payments`) lists every payment and refund recorded against invoices. Columns include Reference, Invoice, Member, Method, Paid date, Amount, and Type — refunds appear with an amber **Refund** badge.
+
+### Invoice detail — quote to cash
+
+Open any invoice from the index, an opportunity, or a member tab. The page header shows the invoice number, **status badge** (colour-coded — red for overdue), **type badge**, and deposit/pro-forma chips when applicable.
+
+Header actions are policy-gated and appear only when legal for the current status:
+
+| Action | Permission | When shown |
+|--------|------------|------------|
+| Edit | `invoices.edit` | Draft only |
+| Issue | `invoices.issue` | Draft |
+| Record Payment | `payments.record` | Issued with balance |
+| Credit Note | `invoices.credit` | Issued with creditable balance |
+| Download PDF | — | Non-draft |
+| Email | — | Non-draft (dispatches billing communication) |
+| Void | `invoices.void` | Issued per policy |
+| Delete | `invoices.delete` | Draft only |
+
+The **Overview** tab shows line items, payments, credit notes, and a summary sidebar (subtotal, tax, total, paid, outstanding). When the viewer has **`costs.view`**, line items gain a **Margin** column and the summary panel shows an aggregate **Margin** figure; without that permission the cost columns are omitted entirely — totals remain visible.
+
+The **Communications** tab lists billing emails and related customer communications for this invoice (channel, status, subject, timeline) using the same log table component as the admin Communication Log.
+
+**Credit notes from invoice show:** click **Credit Note** to open a modal. Choose **full credit** or partial credit with per-line quantities capped at the remaining creditable amount. Notes are optional. Issued credit notes appear in the Credit Notes panel and on `/credit-notes`.
+
+**Payments:** **Record Payment** opens a modal pre-filled with the outstanding balance. Enter amount, method (bank transfer, card, cash, and so on), and an optional reference.
+
+PDF download uses an existing generated document when available; otherwise it queues generation and prompts you to retry shortly. **Email** triggers the invoice billing communication through the notification engine.
+
+### Opportunity Invoices tab
+
+On an opportunity, open the **Invoices** tab (`/opportunities/{opportunity}/invoices`, badge = invoice count). The tab requires **`invoices.view`**; generation buttons require **`invoices.create`** plus an allowed opportunity source state.
+
+| Button | Creates |
+|--------|---------|
+| **Invoice** | Standard invoice from the active quote (hidden when fully invoiced) |
+| **Generate Deposit** | Deposit invoice using the default deposit percentage setting |
+| **Generate Pro-forma** | Pro-forma invoice |
+
+When every order line has been fully invoiced, the primary **Invoice** button is replaced by a **Fully invoiced** label — no further standard invoices can be generated from the UI. Progressive partial-quantity checkout is supported by the API (`lines` on the checkout payload) but is **not** exposed as a line-selection UI on this tab yet.
+
+Successful generation redirects to the new invoice's detail page.
+
+### Member Invoices tab and statement
+
+The member **Invoices** tab (`/members/{member}/invoices`) shows an **Outstanding Balance** summary panel and a table of all invoices for that member. Users with **`members.view`** can pick a **Statement store** and click **Email Statement** to dispatch a member statement communication (`SendMemberStatement`).
+
+### Permissions summary
+
+| Permission | UI effect |
+|------------|-----------|
+| `invoices.access` | Finance nav links (Invoices, Credit Notes, Payments) |
+| `invoices.view` | View lists, opportunity/member tabs, invoice detail |
+| `invoices.create` | New Draft, opportunity generate buttons |
+| `invoices.edit` | Edit draft header |
+| `invoices.issue` | Issue action |
+| `invoices.void` | Void action |
+| `invoices.delete` | Delete draft |
+| `invoices.credit` | Credit Note modal |
+| `payments.record` | Record Payment modal |
+| `costs.view` | Invoice margin column and summary |
+
+Recording **refunds** and **write-offs** are not yet exposed in the invoice detail UI — use the [Payments API](/docs/api/payments) for refunds.
+
 ## Related documentation
 
 - [Tax & Compliance](/docs/platform/tax) — zone-aware tax frozen at checkout

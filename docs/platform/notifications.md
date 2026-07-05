@@ -70,6 +70,111 @@ Administrators with appropriate permissions can browse dispatched communications
 
 See [Notification Preferences API](/docs/api/notification-preferences).
 
+## Using it in the app
+
+### Admin notification settings
+
+**Route:** `/admin/settings/notifications` (Admin → Preferences → Notifications)  
+**Permission:** `notifications.manage` on mount and all actions
+
+Header action **Communication log** links to `/admin/settings/communication-log` (no sidebar entry).
+
+#### Channel providers
+
+Card per registered driver (In-App, Real-Time, Email) showing status badge (Tested / Failing / Untested).
+
+| Action | Purpose |
+|--------|---------|
+| Configure | Slide-over with provider fields (SMTP host, credentials masked on save, and so on) |
+| Send test | Fires test delivery; email providers accept an optional test recipient |
+
+#### Notification types matrix
+
+Types group by category. Each row shows name, description, Required badge, audience (Internal / External / Both), and an enable switch.
+
+For each audience channel row:
+
+| Control | Purpose |
+|---------|---------|
+| In-App / Real-Time / Email toggles | Default channels for that type |
+| Edit rules | Recipient rules modal — contact, role, specific member, subject owner, trigger actor |
+| Template link | Opens communication template editor for that type |
+
+Footer settings: log retention days, prune safety window, unsubscribe link lifetime (days).
+
+#### Communication template editor
+
+**Route:** `/admin/settings/communication-templates/{template}/edit`
+
+| Panel | Contents |
+|-------|----------|
+| Subject + Body | Markdown body with merge-field browser (search + insert) |
+| SMS stats | Segment counter when SMS channel applies |
+| Version history | Snapshots with change notes; **Restore** |
+| Live preview | Sample vs real entity; optional opportunity picker; rendered subject/body/HTML |
+
+System templates are read-only — **Duplicate to customise** creates an editable copy.
+
+### Header notification bell
+
+The header hosts `<livewire:notifications.bell />` for every authenticated user with a linked member.
+
+| Element | Behaviour |
+|---------|-----------|
+| Bell icon | Unread count badge (caps at 99+) |
+| Slide-out pane | Title "Notifications", paginated list, relative timestamps |
+| Mark all read / per-item Read | Clears database notifications |
+| Footer link | **Notification preferences** → `/settings/notifications` |
+
+Real-time updates arrive via **Reverb** on the user's private channel; the bell also polls every 60 seconds.
+
+### My Notifications (user settings)
+
+**Route:** `/settings/notifications` (Settings sidebar → Notifications)
+
+Per notification type (grouped by category):
+
+- **Mute** checkbox
+- Channel toggles — only channels your organisation has enabled (In-app, Email, SMS, Slack, Teams)
+
+Click **Save** to persist preferences. Users cannot enable channels the tenant has disabled.
+
+### Communication log (admin)
+
+**Route:** `/admin/settings/communication-log`  
+**Permission:** `notifications.manage` + store scoping on opportunity subjects
+
+**Filters:** Status, Channel, Type, Recipient, From, To — **Clear filters**
+
+**Table:** When, Type, Recipient, Channel, Status, Subject, View
+
+**Detail modal:** rendered body, status timeline (Queued / Sent / Delivered / Opened), **Pin / Unpin**, failure reason callout
+
+The same log table partial appears on **invoice Communications**, **opportunity Communications**, and **member Communications** tabs — scoped to that subject.
+
+### Opportunity and member Communications tabs
+
+| Tab | Route | Gate |
+|-----|-------|------|
+| Opportunity | `/opportunities/{opportunity}/communications` | `opportunities.view` |
+| Member | `/members/{member}/communications` | Member view policy |
+
+Both render paginated communication log entries for that subject.
+
+### Public unsubscribe
+
+Signed URLs at `GET /communications/unsubscribe/{member}?type={notification_type_key}`.
+
+The page shows masked email, explains the opt-out, and offers an **Unsubscribe** button (POST with CSRF). Success state confirms removal. Link lifetime follows **Unsubscribe link lifetime (days)** on the notifications admin page.
+
+### Permissions summary
+
+| Permission | UI effect |
+|------------|-----------|
+| `notifications.manage` | Admin notifications, communication log, template editor |
+| Authenticated user | Bell, pane, `/settings/notifications` |
+| `members.view` | Member communications tab (via member access) |
+
 ## Related documentation
 
 - [Invoicing](/docs/platform/invoicing) — billing email triggers
