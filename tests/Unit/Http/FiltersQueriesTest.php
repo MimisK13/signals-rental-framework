@@ -104,6 +104,12 @@ describe('resolveSortParam — q[s][] array-sort form', function () {
         expect(filtersQueriesDouble()->callResolveSortParam($request))->toBeNull();
     });
 
+    it('returns null when the parsed sort field is whitespace only', function () {
+        $request = Request::create('/api/v1/products', 'GET', ['q' => ['s' => ['   desc']]]);
+
+        expect(filtersQueriesDouble()->callResolveSortParam($request))->toBeNull();
+    });
+
     it('returns null when no sort parameter is present', function () {
         $request = Request::create('/api/v1/products', 'GET');
 

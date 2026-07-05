@@ -110,6 +110,29 @@ it('skips opportunity locking when setting is disabled at fire-time', function (
         ->and($opportunity->tax_locked)->toBeFalse();
 });
 
+it('skips opportunity locking when the linked opportunity row is missing at fire-time', function () {
+    ['store' => $store, 'member' => $member] = invoiceLifecycleFixture();
+
+    $opportunity = Opportunity::factory()->create([
+        'store_id' => $store->id,
+        'member_id' => $member->id,
+    ]);
+
+    $draft = (new CreateDraftInvoice)(CreateDraftInvoiceData::from([
+        'member_id' => $member->id,
+        'store_id' => $store->id,
+        'opportunity_id' => $opportunity->id,
+    ]));
+
+    $opportunity->delete();
+
+    $eventsBeforeIssue = verbEventCount();
+
+    (new IssueInvoice)(Invoice::query()->findOrFail($draft->id));
+
+    expect(verbEventCount())->toBe($eventsBeforeIssue + 1);
+});
+
 it('skips opportunity locking when the opportunity is already locked at fire-time', function () {
     ['store' => $store, 'member' => $member] = invoiceLifecycleFixture();
 

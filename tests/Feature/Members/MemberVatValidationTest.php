@@ -245,6 +245,14 @@ describe('VAT validation webhook', function () {
         Queue::assertPushed(DeliverWebhook::class, fn (DeliverWebhook $job): bool => $job->event === 'member.vat_validated');
     });
 
+    it('ProcessMemberVatValidation returns early when tax number is blank', function () {
+        $member = Member::factory()->organisation()->create(['tax_number' => '   ']);
+
+        $result = app(ProcessMemberVatValidation::class)($member);
+
+        expect($result->tax_number_validated)->toBeNull();
+    });
+
     it('registers member.vat_validated in the webhook catalogue', function () {
         expect(WebhookService::EVENTS)->toContain('member.vat_validated');
     });

@@ -39,6 +39,25 @@ it('builds the outgoing request with method, url, query, headers, and bearer tok
         ->and($result)->not->toHaveKey('error');
 });
 
+it('returns an empty body when the upstream response has no content', function () {
+    config(['app.url' => 'https://signals.test']);
+
+    Http::fake([
+        '*' => Http::response('', 204),
+    ]);
+
+    $result = app(ExecuteExplorerRequest::class)(
+        method: 'GET',
+        path: '/api/v1/products',
+        query: [],
+        headers: [],
+        bearerToken: 'secret-token',
+    );
+
+    expect($result['body'])->toBe('')
+        ->and($result['status'])->toBe(204);
+});
+
 it('handles non-json responses with a raw body fallback', function () {
     config(['app.url' => 'https://signals.test']);
 

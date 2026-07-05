@@ -110,6 +110,21 @@ describe('GET /api/v1/products/{product}/supplier_costs', function () {
     });
 });
 
+describe('GET /api/v1/products/{product}/supplier_costs/{supplierCost}', function () {
+    it('shows a single supplier cost row', function () {
+        $cost = ProductSupplierCost::factory()->create([
+            'product_id' => $this->product->id,
+            'supplier_id' => $this->supplier->id,
+        ]);
+        $token = $this->owner->createToken('test', ['products:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/products/{$this->product->id}/supplier_costs/{$cost->id}")
+            ->assertOk()
+            ->assertJsonPath('supplier_cost.id', $cost->id);
+    });
+});
+
 describe('POST /api/v1/products/{product}/supplier_costs', function () {
     it('creates a supplier cost', function () {
         $token = $this->owner->createToken('test', ['products:write'])->plainTextToken;

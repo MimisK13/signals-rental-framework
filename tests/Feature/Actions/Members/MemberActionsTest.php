@@ -201,6 +201,23 @@ it('rejects changing the active state of a user-type member', function () {
     expect($member->fresh()->is_active)->toBeTrue();
 });
 
+it('clears price category tier when category changes without an explicit tier', function () {
+    $categoryA = \App\Models\PriceCategory::factory()->create();
+    $categoryB = \App\Models\PriceCategory::factory()->create();
+    $tier = \App\Models\PriceCategoryTier::factory()->for($categoryA)->create();
+    $member = Member::factory()->create([
+        'price_category_id' => $categoryA->id,
+        'price_category_tier_id' => $tier->id,
+    ]);
+
+    (new UpdateMember)($member, UpdateMemberData::from([
+        'price_category_id' => $categoryB->id,
+    ]));
+
+    expect($member->fresh()->price_category_id)->toBe($categoryB->id)
+        ->and($member->fresh()->price_category_tier_id)->toBeNull();
+});
+
 it('rejects changing the location type of a user-type member', function () {
     $member = Member::factory()->user()->create(['location_type' => 0]);
 

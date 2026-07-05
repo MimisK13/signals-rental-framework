@@ -121,6 +121,18 @@ describe('POST /api/v1/attachments', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['attachable_type']);
     });
+
+    it('returns 422 when the file key is not an UploadedFile instance', function () {
+        $member = Member::factory()->create();
+
+        $this->postJson('/api/v1/attachments', [
+            'file' => 'not-an-upload',
+            'attachable_type' => 'Member',
+            'attachable_id' => $member->id,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'File upload failed. The file may exceed server size limits.');
+    });
 });
 
 describe('DELETE /api/v1/attachments/{id}', function () {

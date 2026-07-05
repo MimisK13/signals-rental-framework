@@ -82,4 +82,14 @@ describe('Bundle Rules API', function () {
 
         expect(BundleRule::query()->find($rule->id))->toBeNull();
     });
+
+    it('shows a single bundle rule', function () {
+        $rule = BundleRule::factory()->create();
+        $token = $this->owner->createToken('test', ['pricing:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/bundle_rules/{$rule->id}")
+            ->assertOk()
+            ->assertJsonPath('bundle_rule.id', $rule->id);
+    });
 });

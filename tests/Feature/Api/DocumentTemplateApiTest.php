@@ -205,6 +205,16 @@ describe('document template CRUD and lifecycle', function () {
             ->assertJsonPath('document_template.version', 3);
     });
 
+    it('returns 404 when restoring a version from another template', function () {
+        $template = DocumentTemplate::factory()->create();
+        $foreignVersion = DocumentTemplateVersion::factory()
+            ->for(DocumentTemplate::factory()->create())
+            ->create();
+
+        $this->postJson("/api/v1/document_templates/{$template->id}/versions/{$foreignVersion->id}/restore")
+            ->assertNotFound();
+    });
+
     it('returns 422 when deleting a system template', function () {
         $store = Store::factory()->create();
         seedTemplatesForStore($store);

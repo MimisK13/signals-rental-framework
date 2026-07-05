@@ -169,4 +169,14 @@ describe('Price Categories API', function () {
             ->postJson('/api/v1/price_categories', ['name' => 'Blocked'])
             ->assertForbidden();
     });
+
+    it('shows a single price category with tiers', function () {
+        $category = PriceCategory::factory()->create();
+        $token = $this->owner->createToken('test', ['pricing:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/price_categories/{$category->id}?include=tiers")
+            ->assertOk()
+            ->assertJsonPath('price_category.id', $category->id);
+    });
 });

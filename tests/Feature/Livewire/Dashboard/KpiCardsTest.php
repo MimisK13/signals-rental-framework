@@ -201,3 +201,11 @@ it('subtracts credit notes issued in the same period from revenue', function () 
 
     expect($metrics['revenue']['current_minor'])->toBe(8800);
 });
+
+it('KpiCards metrics() uses global metrics for guests without per-user cache', function () {
+    Opportunity::factory()->count(2)->quotation()->create();
+
+    Livewire::test(KpiCards::class)
+        ->assertOk()
+        ->assertSee('Active Opportunities');
+});

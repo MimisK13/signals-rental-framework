@@ -748,3 +748,28 @@ it('exports current results as CSV across all value types', function () {
         ->and($csv)->toContain('Standard')     // related model name
         ->and($csv)->toContain('vip');         // json-encoded array
 });
+
+it('exportCsv falls back when json_encode fails for complex cell values', function () {
+    $columns = [
+        ['key' => 'name', 'label' => 'Name'],
+        ['key' => 'tag_list', 'label' => 'Tags'],
+    ];
+
+    /** @var DataTable $instance */
+    $instance = Livewire::test(DataTable::class, [
+        'columns' => $columns,
+        'model' => Member::class,
+    ])->instance();
+
+    Member::factory()->create([
+        'name' => 'Bad encoding',
+        'tag_list' => ["\xB1\x31"],
+    ]);
+
+    $response = $instance->exportCsv();
+    ob_start();
+    $response->sendContent();
+    $csv = ob_get_clean();
+
+    expect($csv)->toContain('[encoding error]');
+});

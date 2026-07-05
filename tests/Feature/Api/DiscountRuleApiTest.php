@@ -91,6 +91,16 @@ describe('Discount Rules API', function () {
         $this->assertDatabaseMissing('discount_rules', ['id' => $rule->id]);
     });
 
+    it('shows a single discount rule', function () {
+        $rule = DiscountRule::factory()->create();
+        $token = $this->owner->createToken('test', ['pricing:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/discount_rules/{$rule->id}")
+            ->assertOk()
+            ->assertJsonPath('discount_rule.id', $rule->id);
+    });
+
     it('requires pricing:write ability for mutations', function () {
         $token = $this->owner->createToken('test', ['pricing:read'])->plainTextToken;
 

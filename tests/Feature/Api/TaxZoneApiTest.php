@@ -76,6 +76,16 @@ describe('Tax Zones API', function () {
             ->getJson('/api/v1/tax_zones')
             ->assertForbidden();
     });
+
+    it('shows a single tax zone', function () {
+        $zone = TaxZone::factory()->create();
+        $token = $this->owner->createToken('test', ['tax-classes:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/tax_zones/{$zone->id}")
+            ->assertOk()
+            ->assertJsonPath('tax_zone.id', $zone->id);
+    });
 });
 
 describe('Tax Categories API', function () {
@@ -128,6 +138,16 @@ describe('Tax Categories API', function () {
             ->assertNoContent();
 
         expect(TaxCategory::find($category->id))->toBeNull();
+    });
+
+    it('shows a single tax category', function () {
+        $category = TaxCategory::factory()->create();
+        $token = $this->owner->createToken('test', ['tax-classes:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/tax_categories/{$category->id}")
+            ->assertOk()
+            ->assertJsonPath('tax_category.id', $category->id);
     });
 });
 

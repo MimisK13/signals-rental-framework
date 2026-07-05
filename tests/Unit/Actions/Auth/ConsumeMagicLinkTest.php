@@ -119,6 +119,23 @@ it('throws when SSO has been enforced after minting', function () {
     expect(fn () => ($this->consume)(new ConsumeMagicLinkData(secret: $secret)))->toThrow(InvalidMagicLinkException::class);
 });
 
+it('throws when the resolved user id does not match the token user_id', function () {
+    $tokenOwner = User::factory()->create();
+    $mismatchedUser = User::factory()->create();
+    [$secret, $token] = mintMagicLinkToken($tokenOwner);
+    $expectedHash = hash('sha256', $secret);
+
+    MagicLinkToken::retrieved(function (MagicLinkToken $loaded) use ($mismatchedUser, $expectedHash): void {
+        if ($loaded->token_hash !== $expectedHash) {
+            return;
+        }
+
+        $loaded->setRelation('user', $mismatchedUser);
+    });
+
+    expect(fn () => ($this->consume)(new ConsumeMagicLinkData(secret: $secret)))->toThrow(InvalidMagicLinkException::class);
+});
+
 it('does not mark the token consumed when validation fails', function () {
     $user = User::factory()->deactivated()->create();
     [$secret, $token] = mintMagicLinkToken($user);
