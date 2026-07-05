@@ -20,7 +20,6 @@ use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\ReorderOpportunityItemsData;
 use App\Enums\StockMethod;
 use App\Models\Demand;
-use App\Models\Demand;
 use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\Opportunity;
