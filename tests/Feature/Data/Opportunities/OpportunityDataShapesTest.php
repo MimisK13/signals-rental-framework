@@ -95,6 +95,10 @@ it('includes lazy nested collections when eager-loaded on OpportunityData', func
 });
 
 it('maps OpportunityCostData with enum labels and decimal-string amount', function () {
+    $this->seed(PermissionSeeder::class);
+    $this->seed(RoleSeeder::class);
+    $this->actingAs(User::factory()->owner()->create());
+
     $cost = OpportunityCost::factory()->delivery()->create([
         'amount' => 9999,
         'quantity' => 2,

@@ -15,6 +15,7 @@ use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
@@ -96,7 +97,7 @@ it('updates draft purchase orders only', function () {
         'supplier_id' => $sent->supplier_id,
         'store_id' => $sent->store_id,
         'lines' => [],
-    ])))->toThrow(ValidationException::class);
+    ])))->toThrow(AuthorizationException::class);
 });
 
 it('sends a draft purchase order', function () {

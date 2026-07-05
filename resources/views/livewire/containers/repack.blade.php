@@ -28,7 +28,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(Container $container, Opportunity $opportunity): void
     {
         Gate::authorize('view', $container);
-        Gate::authorize('opportunities.view', $opportunity);
+        Gate::authorize('view', $opportunity);
 
         if ($container->previous_container_id === null) {
             abort(404);

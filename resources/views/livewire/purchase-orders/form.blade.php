@@ -32,7 +32,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function mount(?PurchaseOrder $purchaseOrder = null): void
     {
-        if ($purchaseOrder !== null) {
+        if ($purchaseOrder?->exists) {
             Gate::authorize('update', $purchaseOrder);
             $purchaseOrder->ensureDraft();
             $purchaseOrder->load('items');
@@ -165,9 +165,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <flux:field>
                     <flux:label>Supplier (Organisation)</flux:label>
                     <flux:select wire:model="supplierId">
-                        <flux:select.option value="0">Select supplier…</flux:select.option>
+                        <option value="0">Select supplier…</option>
                         @foreach($suppliers as $supplier)
-                            <flux:select.option :value="$supplier->id">{{ $supplier->name }}</flux:select.option>
+                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                         @endforeach
                     </flux:select>
                     <flux:error name="supplierId" />
@@ -177,7 +177,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <flux:label>Store</flux:label>
                     <flux:select wire:model="storeId">
                         @foreach($stores as $store)
-                            <flux:select.option :value="$store->id">{{ $store->name }}</flux:select.option>
+                            <option value="{{ $store->id }}">{{ $store->name }}</option>
                         @endforeach
                     </flux:select>
                     <flux:error name="storeId" />
@@ -187,7 +187,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <flux:label>Type</flux:label>
                     <flux:select wire:model="poType">
                         @foreach($poTypes as $typeKey => $typeMeta)
-                            <flux:select.option :value="$typeKey">{{ $typeMeta['label'] ?? $typeKey }}</flux:select.option>
+                            <option value="{{ $typeKey }}">{{ $typeMeta['label'] ?? $typeKey }}</option>
                         @endforeach
                     </flux:select>
                 </flux:field>
@@ -220,10 +220,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                             @foreach($lines as $index => $line)
                                 <tr wire:key="line-{{ $index }}-{{ $line['id'] ?? 'new' }}">
                                     <td>
-                                        <flux:select wire:model.live="lines.{{ $index }}.product_id">
-                                            <flux:select.option value="">—</flux:select.option>
+                                        <flux:select wire:model="lines.{{ $index }}.product_id">
+                                            <option value="">—</option>
                                             @foreach($products as $product)
-                                                <flux:select.option :value="$product->id">{{ $product->name }}</flux:select.option>
+                                                <option value="{{ $product->id }}">{{ $product->name }}</option>
                                             @endforeach
                                         </flux:select>
                                     </td>

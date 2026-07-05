@@ -44,6 +44,8 @@ function legacyApiTokenAbilities(): array
         'documents:write' => 'Write documents',
         'invoices:read' => 'Read invoices',
         'invoices:write' => 'Write invoices',
+        'credit-notes:read' => 'Read credit notes',
+        'credit-notes:write' => 'Write credit notes',
         'purchase_orders:read' => 'Read purchase orders',
         'purchase_orders:write' => 'Write purchase orders',
         'virtual_stock:read' => 'Read virtual stock',

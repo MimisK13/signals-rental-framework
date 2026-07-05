@@ -9,7 +9,7 @@ test('getNavigation returns display sections with pages or nested api reference'
     expect($nav)->toHaveKey('sections')
         ->and($nav['sections'])->toBeArray()->toHaveCount(7)
         ->and($nav['sections'][0])->toHaveKeys(['title', 'slug', 'icon', 'description', 'pages'])
-        ->and($nav['sections'][0]['pages'])->toBeArray()->toHaveCount(5)
+        ->and($nav['sections'][0]['pages'])->toBeArray()->toHaveCount(6)
         ->and($nav['sections'][0]['pages'][0])->toHaveKeys(['title', 'slug', 'description'])
         ->and($nav['sections'][1]['slug'])->toBe('crm')
         ->and($nav['sections'][1]['pages'])->toHaveCount(3)
@@ -44,7 +44,7 @@ test('flat sections still expose pages without groups', function () {
     $gettingStarted = collect($service->getNavigation()['sections'])->firstWhere('slug', 'getting-started');
 
     expect($gettingStarted)->not->toHaveKey('groups')
-        ->and($gettingStarted['pages'])->toHaveCount(5)
+        ->and($gettingStarted['pages'])->toHaveCount(6)
         ->and(array_column($gettingStarted['pages'], 'slug'))->not->toContain('sso', 'magic-link');
 });
 

@@ -111,6 +111,11 @@ class StockLevel extends Model implements HasSchema
         $builder->datetime('starts_at')->label('Starts At')->filterable()->sortable();
         $builder->datetime('ends_at')->label('Ends At')->filterable()->sortable();
         $builder->datetime('last_count_at')->label('Last Count At')->sortable();
+        $builder->boolean('is_virtual')->label('Is Virtual')->filterable();
+        $builder->relation('virtual_stock_intake_id')->label('Virtual Stock Intake')
+            ->relation('virtualStockIntake', 'belongsTo', VirtualStockIntake::class, 'number')
+            ->filterable();
+        $builder->string('virtual_asset_status')->label('Virtual Asset Status')->filterable();
         $builder->datetime('created_at')->label('Created')->sortable()->filterable();
         $builder->datetime('updated_at')->label('Updated')->sortable();
     }

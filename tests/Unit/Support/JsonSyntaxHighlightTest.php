@@ -7,8 +7,8 @@ it('highlights json keys strings numbers booleans and null', function () {
     $html = JsonSyntaxHighlight::highlight($json);
 
     expect($html)
-        ->toContain('<span class="s-json-key">"name"</span>:')
-        ->toContain('<span class="s-json-string">"Signals"</span>')
+        ->toContain('<span class="s-json-key">&quot;name&quot;</span>:')
+        ->toContain('<span class="s-json-string">&quot;Signals&quot;</span>')
         ->toContain('<span class="s-json-number">3</span>')
         ->toContain('<span class="s-json-bool">true</span>')
         ->toContain('<span class="s-json-null">null</span>');

@@ -64,17 +64,15 @@ it('creates a purchase order from the form', function () {
     ]);
     $this->actingAs($user);
 
-    $supplier = Member::factory()->organisation()->create();
     $store = Store::factory()->create();
+    $supplier = Member::factory()->organisation()->create();
 
     Volt::test('purchase-orders.form')
         ->set('supplierId', $supplier->id)
         ->set('storeId', $store->id)
-        ->set('lines', [[
-            'description' => 'Test item',
-            'quantity' => '1.00',
-            'unit_cost' => '10.00',
-        ]])
+        ->set('lines.0.description', 'Test item')
+        ->set('lines.0.quantity', '1.00')
+        ->set('lines.0.unit_cost', '10.00')
         ->call('save')
         ->assertHasNoErrors();
 

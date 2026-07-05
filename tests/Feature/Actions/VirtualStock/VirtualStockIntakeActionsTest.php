@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
@@ -117,7 +118,7 @@ it('rejects illegal transitions', function () {
     $intake = createTestVirtualStockIntake();
 
     expect(fn () => app(ReceiveVirtualStockIntake::class)($intake))
-        ->toThrow(InvalidArgumentException::class);
+        ->toThrow(AuthorizationException::class);
 });
 
 it('deletes draft intakes via event sourcing', function () {
