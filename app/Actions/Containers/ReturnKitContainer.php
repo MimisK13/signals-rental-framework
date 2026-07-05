@@ -86,7 +86,7 @@ class ReturnKitContainer
                 &$returnedIds,
                 &$overlay,
             ): void {
-                $container = $this->lockModelForMutation(
+                $this->lockModelForMutation(
                     $container,
                     ContainerStatus::Dispatched->value,
                     failureKey: 'container',

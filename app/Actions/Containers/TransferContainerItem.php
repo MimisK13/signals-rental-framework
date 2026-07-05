@@ -64,7 +64,7 @@ class TransferContainerItem
         BeforeContainerItemTransferred::dispatch($source, $target, $stockLevel, $membership);
 
         return DB::transaction(function () use ($source, $target, $membership, $stockLevel, $data): ContainerItemData {
-            $source = $this->lockModelForMutation(
+            $this->lockModelForMutation(
                 $source,
                 failureKey: 'source_container_id',
                 assert: function (Container $locked): void {
@@ -75,6 +75,7 @@ class TransferContainerItem
                     }
                 },
             );
+            $source->refresh();
 
             $this->lockModelForMutation(
                 $target,
@@ -87,6 +88,7 @@ class TransferContainerItem
                     }
                 },
             );
+            $target->refresh();
 
             if ($source->status === ContainerStatus::Sealed) {
                 $source->update([

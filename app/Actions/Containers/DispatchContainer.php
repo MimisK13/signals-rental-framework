@@ -121,7 +121,7 @@ class DispatchContainer
                 &$dispatchedAssetIds,
                 &$containersDissolved,
             ): void {
-                $container = $this->lockModelForMutation(
+                $this->lockModelForMutation(
                     $container,
                     ContainerStatus::Sealed->value,
                     failureKey: 'container',
