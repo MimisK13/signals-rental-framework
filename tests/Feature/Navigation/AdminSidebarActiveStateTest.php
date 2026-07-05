@@ -29,6 +29,14 @@ function assertNavLinkActive(string $html, string $hrefRouteName): void
         ->toBeTrue("Expected an active anchor for {$hrefRouteName}");
 }
 
+function adminSecondSidebarHtml(string $html): string
+{
+    expect(preg_match('/<nav class="s-admin-sidebar">(.*?)<\/nav>/s', $html, $matches))
+        ->toBe(1, 'Expected the admin second sidebar nav');
+
+    return $matches[1];
+}
+
 describe('first-level group active state (previously broken mappings)', function () {
     it('marks the Users group active on the API tokens page', function () {
         $html = $this->get(route('admin.settings.api'))->assertOk()->getContent();
@@ -43,10 +51,10 @@ describe('first-level group active state (previously broken mappings)', function
         assertNavLinkActive($html, 'admin.settings.preferences');
     });
 
-    it('marks the System group active on the webhooks page', function () {
-        $html = $this->get(route('admin.settings.webhooks'))->assertOk()->getContent();
+    it('marks the Documents group active on the document templates page', function () {
+        $html = $this->get(route('admin.document-templates.index'))->assertOk()->getContent();
 
-        assertNavLinkActive($html, 'admin.settings.action-log');
+        assertNavLinkActive($html, 'admin.document-templates.index');
     });
 });
 
@@ -74,10 +82,11 @@ describe('second-level item active state', function () {
         assertNavLinkActive($html, 'admin.settings.integrations');
     });
 
-    it('marks the Webhooks item active on the webhooks page', function () {
-        $html = $this->get(route('admin.settings.webhooks'))->assertOk()->getContent();
+    it('does not render a webhooks item in the admin sidebar', function () {
+        $html = $this->get(route('admin.settings.api'))->assertOk()->getContent();
 
-        assertNavLinkActive($html, 'admin.settings.webhooks');
+        expect(preg_match('/s-admin-nav-item[^>]*href="'.preg_quote(route('admin.settings.webhooks'), '/').'"/', $html))
+            ->toBe(0);
     });
 
     it('does not over-match Email when on the Email Templates page', function () {
@@ -94,5 +103,28 @@ describe('second-level item active state', function () {
 
         expect($emailTag)->not->toBeNull();
         expect(str_contains($emailTag, 'active'))->toBeFalse();
+    });
+});
+
+describe('contextual second sidebar sections', function () {
+    it('shows only the documents section on the document templates page', function () {
+        $html = $this->get(route('admin.document-templates.index'))->assertOk()->getContent();
+        $sidebar = adminSecondSidebarHtml($html);
+
+        expect($sidebar)->toContain('Documents');
+        expect($sidebar)->toContain(route('admin.document-templates.index'));
+        expect($sidebar)->not->toContain(route('admin.settings.tax.zones'));
+        expect($sidebar)->not->toContain('Tax Zones');
+        expect($sidebar)->not->toContain(route('admin.settings.users'));
+    });
+
+    it('shows only the tax section on the tax zones page', function () {
+        $html = $this->get(route('admin.settings.tax.zones'))->assertOk()->getContent();
+        $sidebar = adminSecondSidebarHtml($html);
+
+        expect($sidebar)->toContain('Tax Zones');
+        expect($sidebar)->toContain(route('admin.settings.tax.zones'));
+        expect($sidebar)->not->toContain(route('admin.document-templates.index'));
+        expect($sidebar)->not->toContain('Document Templates');
     });
 });

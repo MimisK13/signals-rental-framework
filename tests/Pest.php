@@ -1,8 +1,18 @@
 <?php
 
+use App\Actions\PurchaseOrders\CreatePurchaseOrder;
+use App\Actions\VirtualStock\CreateVirtualStockIntake;
+use App\Data\PurchaseOrders\CreatePurchaseOrderData;
+use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Models\Member;
+use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\Store;
+use App\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Thunk\Verbs\Models\VerbEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +45,20 @@ if (file_exists($envBackup)) {
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+pest()->beforeEach(function (): void {
+    if (Store::query()->where('is_default', true)->doesntExist()) {
+        Store::factory()->create(['is_default' => true]);
+    }
+})->in(
+    'Feature/Verbs/Opportunities',
+    'Feature/Actions/Opportunities',
+    'Feature/Api',
+);
+
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('Browser');
 
 /*
 | The PostgreSQL lane (tests/Pgsql) runs against a real Postgres connection and
@@ -77,6 +101,51 @@ function something(): void
     // ..
 }
 
+require_once __DIR__.'/Support/GenerateInvoiceFixtures.php';
+
+/**
+ * @param  array<string, mixed>  $overrides
+ */
+function createTestPurchaseOrder(array $overrides = []): PurchaseOrder
+{
+    $store = Store::factory()->create();
+    $supplier = Member::factory()->organisation()->create();
+
+    $result = (new CreatePurchaseOrder)(
+        CreatePurchaseOrderData::from([
+            'supplier_id' => $supplier->id,
+            'store_id' => $store->id,
+            'po_type' => 'purchase',
+            ...$overrides,
+        ]),
+    );
+
+    return PurchaseOrder::query()->findOrFail($result->id);
+}
+
+/**
+ * @param  array<string, mixed>  $overrides
+ */
+function createTestVirtualStockIntake(array $overrides = []): VirtualStockIntake
+{
+    $store = Store::factory()->create();
+    $product = Product::factory()->bulk()->create();
+
+    $result = (new CreateVirtualStockIntake)(
+        CreateVirtualStockIntakeData::from([
+            'product_id' => $product->id,
+            'store_id' => $store->id,
+            'quantity' => 5,
+            'available_from' => '2026-08-01T00:00:00Z',
+            'available_until' => '2026-08-06T00:00:00Z',
+            'unit_cost' => 2500,
+            ...$overrides,
+        ]),
+    );
+
+    return VirtualStockIntake::query()->findOrFail($result->id);
+}
+
 /**
  * Assert that the AuditableEvent → LogAction listener wrote an action_logs row
  * end-to-end for the given action against the given model.
@@ -100,6 +169,14 @@ function assertActionLogged(string $action, string $auditableType, int $auditabl
     }
 
     \Pest\Laravel\assertDatabaseHas('action_logs', $expected);
+}
+
+/**
+ * Return the current row count in the Verbs event store.
+ */
+function verbEventCount(): int
+{
+    return VerbEvent::query()->count();
 }
 
 /**

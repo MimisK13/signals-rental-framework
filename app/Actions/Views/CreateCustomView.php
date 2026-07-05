@@ -18,6 +18,7 @@ class CreateCustomView
             $data->entity_type,
             $data->columns,
             $data->sort_column,
+            auth()->user(),
         );
 
         $view = CustomView::create([

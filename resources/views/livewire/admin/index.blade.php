@@ -57,10 +57,19 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                 'title' => 'Tax',
                 'description' => 'Tax classifications for products and organisations.',
                 'items' => [
+                    ['label' => 'Finance', 'description' => 'Tax-point policy and pricing display defaults', 'icon' => 'banknotes', 'route' => 'admin.settings.finance'],
                     ['label' => 'Product Tax Classes', 'description' => 'Tax rates applied to products', 'icon' => 'receipt-percent', 'route' => 'admin.settings.tax.product-tax-classes'],
                     ['label' => 'Organisation Tax Classes', 'description' => 'Tax exemptions for organisations', 'icon' => 'building-office-2', 'route' => 'admin.settings.tax.organisation-tax-classes'],
                     ['label' => 'Tax Rates', 'description' => 'Tax rate percentages', 'icon' => 'calculator', 'route' => 'admin.settings.tax.rates'],
                     ['label' => 'Tax Rules', 'description' => 'Map tax classes to rates', 'icon' => 'table-cells', 'route' => 'admin.settings.tax.rules'],
+                ],
+            ],
+            'documents' => [
+                'title' => 'Documents',
+                'description' => 'PDF templates, numbering, and print layouts.',
+                'items' => [
+                    ['label' => 'Numbering', 'description' => 'Entity number formats for invoices, orders, and members', 'icon' => 'hashtag', 'route' => 'admin.settings.numbering', 'gate' => 'numbering.view'],
+                    ['label' => 'Document Templates', 'description' => 'Edit quote, invoice, and warehouse document templates', 'icon' => 'document-text', 'route' => 'admin.document-templates.index', 'gate' => 'document_templates.view'],
                 ],
             ],
             'pricing' => [
@@ -68,6 +77,8 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                 'description' => 'Rate definitions and pricing engines.',
                 'items' => [
                     ['label' => 'Rate Definitions', 'description' => 'Composable pricing engines for products', 'icon' => 'calculator', 'route' => 'admin.settings.rate-definitions', 'gate' => 'rates.view'],
+                    ['label' => 'Discount Categories', 'description' => 'Organisation discount category definitions', 'icon' => 'receipt-percent', 'route' => 'admin.settings.pricing.discount-categories', 'gate' => 'pricing.view'],
+                    ['label' => 'Price Categories', 'description' => 'Alternative base price lists for organisations', 'icon' => 'currency-pound', 'route' => 'admin.settings.pricing.price-categories', 'gate' => 'pricing.view'],
                 ],
             ],
             'system' => [

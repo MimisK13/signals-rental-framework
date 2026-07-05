@@ -79,6 +79,11 @@ class SchemaBuilder
         return $this->addBuilder($builder);
     }
 
+    public function collection(string $name): FieldBuilder
+    {
+        return $this->addBuilder(new FieldBuilder($name, 'collection'));
+    }
+
     /**
      * Build all registered field definitions.
      *

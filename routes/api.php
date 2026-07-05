@@ -5,31 +5,53 @@ use App\Http\Controllers\Api\V1\ActionLogController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
+use App\Http\Controllers\Api\V1\BundleRuleController;
+use App\Http\Controllers\Api\V1\ChannelProviderController;
+use App\Http\Controllers\Api\V1\CommunicationLogController;
+use App\Http\Controllers\Api\V1\CommunicationTemplateController;
 use App\Http\Controllers\Api\V1\ContainerController;
 use App\Http\Controllers\Api\V1\CountryController;
+use App\Http\Controllers\Api\V1\CreditNoteController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomFieldController;
 use App\Http\Controllers\Api\V1\CustomFieldGroupController;
 use App\Http\Controllers\Api\V1\CustomViewController;
+use App\Http\Controllers\Api\V1\DiscountCategoryController;
+use App\Http\Controllers\Api\V1\DiscountRuleController;
+use App\Http\Controllers\Api\V1\DocumentController;
+use App\Http\Controllers\Api\V1\DocumentSequenceController;
+use App\Http\Controllers\Api\V1\DocumentTemplateController;
+use App\Http\Controllers\Api\V1\DocumentTypeController;
+use App\Http\Controllers\Api\V1\EndpointCatalogueController;
 use App\Http\Controllers\Api\V1\ExchangeRateController;
+use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\ListNameController;
 use App\Http\Controllers\Api\V1\ListValueController;
 use App\Http\Controllers\Api\V1\MemberAddressController;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\MemberEmailController;
 use App\Http\Controllers\Api\V1\MemberLinkController;
+use App\Http\Controllers\Api\V1\MemberNotificationPreferenceController;
 use App\Http\Controllers\Api\V1\MemberPhoneController;
 use App\Http\Controllers\Api\V1\MemberRelationshipController;
+use App\Http\Controllers\Api\V1\NotificationPreferenceController;
+use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\OpportunityController;
+use App\Http\Controllers\Api\V1\OpportunityInvoiceController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
 use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
+use App\Http\Controllers\Api\V1\PriceCategoryController;
+use App\Http\Controllers\Api\V1\ProductContainerTemplateController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
+use App\Http\Controllers\Api\V1\ProductSupplierCostController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
+use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;
 use App\Http\Controllers\Api\V1\RateEngineMetaController;
+use App\Http\Controllers\Api\V1\RequestLogController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SchemaController;
 use App\Http\Controllers\Api\V1\SerialisedComponentController;
@@ -37,12 +59,19 @@ use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShortageController;
 use App\Http\Controllers\Api\V1\StockLevelController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
+use App\Http\Controllers\Api\V1\SurchargeController;
+use App\Http\Controllers\Api\V1\SurchargeGroupController;
 use App\Http\Controllers\Api\V1\SystemController;
+use App\Http\Controllers\Api\V1\TaxCategoryController;
 use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\TaxRuleController;
+use App\Http\Controllers\Api\V1\TaxZoneController;
+use App\Http\Controllers\Api\V1\UsageController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\VirtualStockIntakeController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,7 +85,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth:sanctum', 'signals.active-user'])->group(function (): void {
+Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth:sanctum', LogApiRequest::class, 'signals.active-user'])->group(function (): void {
 
     // System
     Route::get('system/health', [SystemController::class, 'health'])->name('api.v1.system.health');
@@ -64,6 +93,49 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Schema Discovery
     Route::get('schema', [SchemaController::class, 'index'])->name('api.v1.schema.index');
     Route::get('schema/{model}', [SchemaController::class, 'show'])->name('api.v1.schema.show');
+
+    // Document type field browser
+    Route::get('document_types', [DocumentTypeController::class, 'index'])->name('api.v1.document_types.index');
+    Route::get('document_types/{type}/fields', [DocumentTypeController::class, 'fields'])->name('api.v1.document_types.fields');
+    Route::get('document_sequences', [DocumentSequenceController::class, 'index'])->name('api.v1.document_sequences.index');
+    Route::put('document_sequences/{documentSequence}', [DocumentSequenceController::class, 'update'])->name('api.v1.document_sequences.update');
+    Route::post('document_templates/import', [DocumentTemplateController::class, 'import'])->name('api.v1.document_templates.import');
+    Route::get('document_templates/{documentTemplate}/export', [DocumentTemplateController::class, 'export'])->name('api.v1.document_templates.export');
+    Route::get('document_templates', [DocumentTemplateController::class, 'index'])->name('api.v1.document_templates.index');
+    Route::post('document_templates', [DocumentTemplateController::class, 'store'])->name('api.v1.document_templates.store');
+    Route::get('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'show'])->name('api.v1.document_templates.show');
+    Route::put('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'update'])->name('api.v1.document_templates.update');
+    Route::delete('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'destroy'])->name('api.v1.document_templates.destroy');
+    Route::post('document_templates/{documentTemplate}/set_default', [DocumentTemplateController::class, 'setDefault'])->name('api.v1.document_templates.set_default');
+    Route::post('document_templates/{documentTemplate}/duplicate', [DocumentTemplateController::class, 'duplicate'])->name('api.v1.document_templates.duplicate');
+    Route::post('document_templates/{documentTemplate}/restore_default', [DocumentTemplateController::class, 'restoreDefault'])->name('api.v1.document_templates.restore_default');
+    Route::post('document_templates/{documentTemplate}/versions/{version}/restore', [DocumentTemplateController::class, 'restoreVersion'])->name('api.v1.document_templates.restore_version');
+
+    Route::apiResource('communication_log', CommunicationLogController::class)->only(['index', 'show'])->names('api.v1.communication_log');
+    Route::get('communication_templates/{communicationTemplate}/versions', [CommunicationTemplateController::class, 'versions'])->name('api.v1.communication_templates.versions');
+    Route::post('communication_templates/{communicationTemplate}/versions/{version}/restore', [CommunicationTemplateController::class, 'restoreVersion'])->name('api.v1.communication_templates.restore_version');
+    Route::apiResource('communication_templates', CommunicationTemplateController::class)->names('api.v1.communication_templates');
+
+    Route::get('notification_preferences', [NotificationPreferenceController::class, 'index'])->name('api.v1.notification_preferences.index');
+    Route::put('notification_preferences', [NotificationPreferenceController::class, 'update'])->name('api.v1.notification_preferences.update');
+    Route::get('members/{member}/notification_preferences', [MemberNotificationPreferenceController::class, 'index'])->name('api.v1.members.notification_preferences.index');
+    Route::put('members/{member}/notification_preferences', [MemberNotificationPreferenceController::class, 'update'])->name('api.v1.members.notification_preferences.update');
+
+    Route::post('channel_providers/{channel_provider}/test', [ChannelProviderController::class, 'test'])->name('api.v1.channel_providers.test');
+    Route::apiResource('channel_providers', ChannelProviderController::class)->names('api.v1.channel_providers');
+
+    Route::get('notification_settings', [NotificationSettingController::class, 'index'])->name('api.v1.notification_settings.index');
+    Route::put('notification_settings', [NotificationSettingController::class, 'update'])->name('api.v1.notification_settings.update');
+
+    Route::get('documents', [DocumentController::class, 'index'])->name('api.v1.documents.index');
+    Route::post('documents/generate', [DocumentController::class, 'generate'])->name('api.v1.documents.generate');
+    Route::post('documents/batch_generate', [DocumentController::class, 'batchGenerate'])->name('api.v1.documents.batch_generate');
+    Route::get('documents/{document}', [DocumentController::class, 'show'])->name('api.v1.documents.show');
+    Route::post('documents/{document}/finalise', [DocumentController::class, 'finalise'])->name('api.v1.documents.finalise');
+    Route::post('documents/{document}/void', [DocumentController::class, 'void'])->name('api.v1.documents.void');
+    Route::post('documents/{document}/public_link', [DocumentController::class, 'createPublicLink'])->name('api.v1.documents.public_link.create');
+    Route::put('documents/{document}/public_link', [DocumentController::class, 'configurePublicLink'])->name('api.v1.documents.public_link.configure');
+    Route::delete('documents/{document}/public_link', [DocumentController::class, 'revokePublicLink'])->name('api.v1.documents.public_link.revoke');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index'])->name('api.v1.settings.index');
@@ -80,6 +152,12 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('actions', [ActionLogController::class, 'index'])->name('api.v1.actions.index');
     Route::post('actions/export', [ActionLogController::class, 'export'])->name('api.v1.actions.export');
 
+    // API Console — usage, request logs, endpoint catalogue
+    Route::get('usage/export', [UsageController::class, 'export'])->name('api.v1.usage.export');
+    Route::get('usage', [UsageController::class, 'index'])->name('api.v1.usage.index');
+    Route::get('request_logs', [RequestLogController::class, 'index'])->name('api.v1.request_logs.index');
+    Route::get('endpoints', [EndpointCatalogueController::class, 'index'])->name('api.v1.endpoints.index');
+
     // Webhooks
     Route::apiResource('webhooks', WebhookController::class)->names('api.v1.webhooks');
     Route::get('webhooks/{webhook}/logs', [WebhookController::class, 'logs'])->name('api.v1.webhooks.logs');
@@ -88,6 +166,7 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('members', MemberController::class)->names('api.v1.members');
     Route::post('members/{member}/merge', [MemberController::class, 'merge'])->name('api.v1.members.merge');
     Route::post('members/{member}/anonymise', [MemberController::class, 'anonymise'])->name('api.v1.members.anonymise');
+    Route::post('members/{member}/statement/email', [MemberController::class, 'emailStatement'])->name('api.v1.members.statement.email');
     Route::post('members/{member}/restore', [MemberController::class, 'restore'])
         ->withTrashed()
         ->name('api.v1.members.restore');
@@ -121,7 +200,17 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('organisation_tax_classes', OrganisationTaxClassController::class)->names('api.v1.organisation_tax_classes');
     Route::apiResource('product_tax_classes', ProductTaxClassController::class)->names('api.v1.product_tax_classes');
 
+    // Pricing Categories
+    Route::apiResource('discount_categories', DiscountCategoryController::class)->names('api.v1.discount_categories');
+    Route::apiResource('discount_rules', DiscountRuleController::class)->names('api.v1.discount_rules');
+    Route::apiResource('bundle_rules', BundleRuleController::class)->names('api.v1.bundle_rules');
+    Route::apiResource('surcharge_groups', SurchargeGroupController::class)->names('api.v1.surcharge_groups');
+    Route::apiResource('surcharges', SurchargeController::class)->names('api.v1.surcharges');
+    Route::apiResource('price_categories', PriceCategoryController::class)->names('api.v1.price_categories');
+
     // Tax Rates & Rules
+    Route::apiResource('tax_zones', TaxZoneController::class)->names('api.v1.tax_zones');
+    Route::apiResource('tax_categories', TaxCategoryController::class)->names('api.v1.tax_categories');
     Route::apiResource('tax_rates', TaxRateController::class)->names('api.v1.tax_rates');
     Route::apiResource('tax_rules', TaxRuleController::class)->names('api.v1.tax_rules');
 
@@ -139,12 +228,21 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('products/{product}/merge', [ProductController::class, 'merge'])->name('api.v1.products.merge');
     Route::apiResource('products.accessories', AccessoryController::class)->only(['index', 'store', 'update', 'destroy'])->names('api.v1.products.accessories');
     Route::apiResource('products.rates', ProductRateController::class)->names('api.v1.products.rates');
+    Route::post('products/{product}/supplier_costs/{supplierCost}/set_preferred', [ProductSupplierCostController::class, 'setPreferred'])
+        ->name('api.v1.products.supplier_costs.set_preferred');
+    Route::apiResource('products.supplier_costs', ProductSupplierCostController::class)
+        ->parameters(['supplier_costs' => 'supplierCost'])
+        ->names('api.v1.products.supplier_costs');
     Route::post('products/{product}/calculate_rate', [RateCalculationController::class, 'calculate'])->name('api.v1.products.calculate_rate');
     // Kit composition (serialised_components — the product's bill-of-materials)
     Route::apiResource('products.components', SerialisedComponentController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['components' => 'component'])
         ->names('api.v1.products.components');
+    Route::get('products/{product}/container_template', [ProductContainerTemplateController::class, 'show'])
+        ->name('api.v1.products.container_template.show');
+    Route::put('products/{product}/container_template', [ProductContainerTemplateController::class, 'update'])
+        ->name('api.v1.products.container_template.update');
 
     // Product Groups
     Route::apiResource('product_groups', ProductGroupController::class)->names('api.v1.product_groups');
@@ -152,13 +250,26 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Stock Levels
     Route::apiResource('stock_levels', StockLevelController::class)->names('api.v1.stock_levels');
 
-    // Containers (M5-3b availability subset — read + pack/unpack only; the full
-    // seal/dissolve/scan/dispatch/return lifecycle is Phase-4). The pack/unpack
-    // sub-actions are declared before the resource routes so the explicit verbs win.
+    // Containers — routes bind by public UUID ({@see Container::resolveRouteBinding})
+    // with integer-id fallback for backward compatibility. The pack/unpack and
+    // temporary create routes are declared before the {container} segment routes.
+    Route::post('containers/temporary', [ContainerController::class, 'storeTemporary'])->name('api.v1.containers.temporary.store');
+    Route::post('containers/repack/start', [ContainerController::class, 'startRepack'])->name('api.v1.containers.repack.start');
     Route::post('containers/{container}/pack', [ContainerController::class, 'pack'])->name('api.v1.containers.pack');
+    Route::post('containers/{container}/transfer', [ContainerController::class, 'transfer'])->name('api.v1.containers.transfer');
     Route::post('containers/{container}/unpack', [ContainerController::class, 'unpack'])->name('api.v1.containers.unpack');
+    Route::post('containers/{container}/seal', [ContainerController::class, 'seal'])->name('api.v1.containers.seal');
+    Route::post('containers/{container}/unseal', [ContainerController::class, 'unseal'])->name('api.v1.containers.unseal');
+    Route::post('containers/{container}/dissolve', [ContainerController::class, 'dissolve'])->name('api.v1.containers.dissolve');
+    Route::post('containers/{container}/dispatch', [ContainerController::class, 'dispatch'])->name('api.v1.containers.dispatch');
+    Route::post('containers/{container}/return', [ContainerController::class, 'returnKit'])->name('api.v1.containers.return');
+    Route::post('containers/{container}/repack', [ContainerController::class, 'repackItem'])->name('api.v1.containers.repack.item');
+    Route::post('containers/{container}/verify-checkin', [ContainerController::class, 'verifyCheckin'])->name('api.v1.containers.verify-checkin');
+    Route::get('containers/{container}/compliance', [ContainerController::class, 'compliance'])->name('api.v1.containers.compliance');
     Route::get('containers', [ContainerController::class, 'index'])->name('api.v1.containers.index');
+    Route::post('containers', [ContainerController::class, 'store'])->name('api.v1.containers.store');
     Route::get('containers/{container}', [ContainerController::class, 'show'])->name('api.v1.containers.show');
+    Route::patch('containers/{container}', [ContainerController::class, 'update'])->name('api.v1.containers.update');
 
     // Availability (read-only: point query via ?date, range query via ?from&?to).
     // The static calendar/shortages grids and the {product}/gantt bar view are
@@ -236,6 +347,12 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Manual deal-total override
     Route::post('opportunities/{opportunity}/deal_price', [OpportunityController::class, 'setDealPrice'])->name('api.v1.opportunities.deal_price.set');
     Route::delete('opportunities/{opportunity}/deal_price', [OpportunityController::class, 'clearDealPrice'])->name('api.v1.opportunities.deal_price.clear');
+    Route::post('opportunities/{opportunity}/recalculate', [OpportunityController::class, 'recalculatePricing'])->name('api.v1.opportunities.recalculate');
+    Route::put('opportunities/{opportunity}/sections/{section}/deal_price', [OpportunityController::class, 'setSectionDealPrice'])->name('api.v1.opportunities.sections.deal_price.set');
+    Route::delete('opportunities/{opportunity}/sections/{section}/deal_price', [OpportunityController::class, 'clearSectionDealPrice'])->name('api.v1.opportunities.sections.deal_price.clear');
+    Route::post('opportunities/{opportunity}/apply_discount_category', [OpportunityController::class, 'applyDiscountCategory'])->name('api.v1.opportunities.apply_discount_category');
+    Route::post('opportunities/{opportunity}/toggle_surcharge_group', [OpportunityController::class, 'toggleSurchargeGroup'])->name('api.v1.opportunities.toggle_surcharge_group');
+    Route::post('opportunities/{opportunity}/items/{item}/override_surcharge', [OpportunityController::class, 'overrideItemSurcharge'])->name('api.v1.opportunities.override_item_surcharge');
     // Shortages (computed detection + non-PO resolution)
     Route::get('opportunities/{opportunity}/shortages', [ShortageController::class, 'index'])->name('api.v1.opportunities.shortages.index');
     // Persisted resolutions recorded against the opportunity (panel "active
@@ -247,9 +364,12 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('opportunities/{opportunity}/items/{item}/shortage_resolvers', [ShortageController::class, 'resolvers'])->name('api.v1.opportunities.shortage_resolvers');
     Route::post('opportunities/{opportunity}/shortages/acknowledge', [ShortageController::class, 'acknowledge'])->name('api.v1.opportunities.shortages.acknowledge');
     Route::post('shortage_resolutions', [ShortageController::class, 'resolve'])->name('api.v1.shortage_resolutions.store');
+    Route::get('shortage_resolutions/batch', [ShortageController::class, 'batchResolvers'])->name('api.v1.shortage_resolutions.batch.index');
+    Route::post('shortage_resolutions/batch', [ShortageController::class, 'batchResolve'])->name('api.v1.shortage_resolutions.batch.store');
     // Resolution status-transition lifecycle (§8.3): progress/cancel/fail a
     // recorded resolution. Each transition validates the §8.3 matrix (422 on an
     // illegal move) and emits the matching `shortage.resolution.*` event.
+    Route::post('shortage_resolutions/{resolution}/transition', [ShortageController::class, 'transitionResolution'])->name('api.v1.shortage_resolutions.transition');
     Route::patch('shortage_resolutions/{resolution}/confirm', [ShortageController::class, 'confirmResolution'])->name('api.v1.shortage_resolutions.confirm');
     Route::patch('shortage_resolutions/{resolution}/start', [ShortageController::class, 'startResolution'])->name('api.v1.shortage_resolutions.start');
     Route::patch('shortage_resolutions/{resolution}/fulfill', [ShortageController::class, 'fulfillResolution'])->name('api.v1.shortage_resolutions.fulfill');
@@ -271,6 +391,38 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::delete('opportunities/{opportunity}/versions/{version}', [OpportunityVersionController::class, 'destroy'])->name('api.v1.opportunities.versions.destroy');
 
     Route::apiResource('opportunities', OpportunityController::class)->names('api.v1.opportunities');
+
+    Route::post('opportunities/{opportunity}/invoices', [OpportunityInvoiceController::class, 'store'])
+        ->middleware('idempotency')
+        ->name('api.v1.opportunities.invoices.store');
+
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('api.v1.invoices.pdf');
+    Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('api.v1.invoices.issue');
+    Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('api.v1.invoices.void');
+    Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'recordPayment'])
+        ->middleware('idempotency')
+        ->name('api.v1.invoices.payments.store');
+    Route::post('invoices/{invoice}/refunds', [InvoiceController::class, 'recordRefund'])
+        ->middleware('idempotency')
+        ->name('api.v1.invoices.refunds.store');
+    Route::post('invoices/{invoice}/credit_notes', [InvoiceController::class, 'issueCreditNote'])->name('api.v1.invoices.credit_notes.store');
+    Route::apiResource('credit_notes', CreditNoteController::class)->only(['index', 'show'])->names('api.v1.credit_notes');
+    Route::post('invoices/{invoice}/email', [InvoiceController::class, 'email'])->name('api.v1.invoices.email');
+    Route::apiResource('invoices', InvoiceController::class)->names('api.v1.invoices');
+
+    Route::post('purchase_orders/{purchase_order}/send', [PurchaseOrderController::class, 'send'])->name('api.v1.purchase_orders.send');
+    Route::post('purchase_orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('api.v1.purchase_orders.receive');
+    Route::post('purchase_orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('api.v1.purchase_orders.cancel');
+    Route::apiResource('purchase_orders', PurchaseOrderController::class)->names('api.v1.purchase_orders');
+
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/confirm', [VirtualStockIntakeController::class, 'confirm'])->name('api.v1.virtual_stock_intakes.confirm');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/receive', [VirtualStockIntakeController::class, 'receive'])->name('api.v1.virtual_stock_intakes.receive');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/return', [VirtualStockIntakeController::class, 'return'])->name('api.v1.virtual_stock_intakes.return');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/cancel', [VirtualStockIntakeController::class, 'cancel'])->name('api.v1.virtual_stock_intakes.cancel');
+    Route::post('virtual_stock_intakes/{virtual_stock_intake}/apportion', [VirtualStockIntakeController::class, 'apportion'])->name('api.v1.virtual_stock_intakes.apportion');
+    Route::put('virtual_stock_intakes/{virtual_stock_intake}/cost_overrides', [VirtualStockIntakeController::class, 'setCostOverride'])->name('api.v1.virtual_stock_intakes.cost_overrides.set');
+    Route::delete('virtual_stock_intakes/{virtual_stock_intake}/cost_overrides/{opportunity}', [VirtualStockIntakeController::class, 'clearCostOverride'])->name('api.v1.virtual_stock_intakes.cost_overrides.clear');
+    Route::apiResource('virtual_stock_intakes', VirtualStockIntakeController::class)->names('api.v1.virtual_stock_intakes');
 
     // Rate Definitions
     Route::post('rate_definitions/{rate_definition}/duplicate', [RateDefinitionController::class, 'duplicate'])->name('api.v1.rate_definitions.duplicate');

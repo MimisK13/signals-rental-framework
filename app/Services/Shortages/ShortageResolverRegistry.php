@@ -2,9 +2,11 @@
 
 namespace App\Services\Shortages;
 
+use App\Contracts\BatchShortageResolverContract;
 use App\Contracts\ShortageResolverContract;
 use App\Services\DemandSourceRegistry;
 use App\ValueObjects\Shortage;
+use App\ValueObjects\ShortageGroup;
 use InvalidArgumentException;
 
 /**
@@ -95,5 +97,25 @@ class ShortageResolverRegistry
             $this->all(),
             static fn (ShortageResolverContract $resolver): bool => $resolver->canResolve($shortage),
         ));
+    }
+
+    /**
+     * Batch-capable resolvers applicable to a shortage group, in priority order.
+     *
+     * @return list<BatchShortageResolverContract>
+     */
+    public function batchApplicableTo(ShortageGroup $group): array
+    {
+        $applicable = [];
+
+        foreach ($this->all() as $resolver) {
+            if ($resolver instanceof BatchShortageResolverContract
+                && $resolver->supportsBatch()
+                && $resolver->canResolveBatch($group)) {
+                $applicable[] = $resolver;
+            }
+        }
+
+        return $applicable;
     }
 }

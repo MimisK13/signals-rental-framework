@@ -9,6 +9,7 @@ use App\Models\OpportunityItem;
 use App\Models\OpportunitySection;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\Store;
 use App\Models\User;
 use App\Services\SequenceAllocator;
 use Database\Seeders\PermissionSeeder;
@@ -34,6 +35,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true]);
     $this->owner = User::factory()->owner()->create();
     Auth::login($this->owner);
 

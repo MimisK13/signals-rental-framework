@@ -31,6 +31,7 @@ use Thunk\Verbs\Facades\Verbs;
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true]);
     $this->actor = User::factory()->owner()->create();
     $this->actingAs($this->actor);
 });

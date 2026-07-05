@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\HasSchema;
 use App\Enums\CustomFieldType;
 use App\Models\CustomField;
+use App\Services\Documents\DocumentResolverRegistry;
 use App\ValueObjects\FieldDefinition;
 use Illuminate\Support\Facades\Cache;
 
@@ -62,6 +63,25 @@ class SchemaRegistry
     public function for(string $modelClass): array
     {
         return $this->resolve($modelClass);
+    }
+
+    /**
+     * Resolve merge-field metadata for a document type via the document resolver registry.
+     *
+     * @return array<string, FieldDefinition>
+     */
+    public function resolveDocumentType(string $documentType): array
+    {
+        return app(DocumentResolverRegistry::class)->fieldDefinitions($documentType);
+    }
+
+    /**
+     * Bust cached document-type field metadata when a resolver re-registers.
+     */
+    public function invalidateDocumentType(string $documentType): void
+    {
+        unset($this->memory['document:'.$documentType]);
+        $this->persistentForget($this->documentTypeCacheKey($documentType));
     }
 
     /**
@@ -155,6 +175,11 @@ class SchemaRegistry
     private function cacheKey(string $modelClass): string
     {
         return 'schema:'.str_replace('\\', '.', $modelClass);
+    }
+
+    private function documentTypeCacheKey(string $documentType): string
+    {
+        return 'schema:document.'.$documentType;
     }
 
     /**

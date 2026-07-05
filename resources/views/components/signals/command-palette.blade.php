@@ -14,6 +14,11 @@
         productGroupResults: [],
         activityResults: [],
         opportunityResults: [],
+        invoiceResults: [],
+        creditNoteResults: [],
+        purchaseOrderResults: [],
+        virtualStockIntakeResults: [],
+        invoicePaymentResults: [],
         badgeColors: { 'organisation': 's-badge-blue', 'venue': 's-badge-amber', 'contact': 's-badge-green' },
         avatarColors: { 'organisation': 's-avatar-blue', 'venue': 's-avatar-amber', 'contact': 's-avatar-green' },
         searching: false,
@@ -38,6 +43,9 @@
             @endcan
             @can('opportunities.access')
             { group: 'Navigation', label: 'Opportunities', icon: 'briefcase', url: '{{ route('opportunities.index') }}', keywords: 'quotes orders hires opportunities jobs' },
+            @endcan
+            @can('invoices.access')
+            { group: 'Navigation', label: 'Invoices', icon: 'document-currency-pound', url: '{{ route('invoices.index') }}', keywords: 'invoices billing payments credit notes statements' },
             @endcan
             { group: 'Navigation', label: 'Admin Settings', icon: 'cog', url: '{{ route('admin.settings.company') }}', keywords: 'setup configuration company' },
             @can('members.create')
@@ -97,6 +105,17 @@
             @can('opportunities.view')
             this.opportunityResults.forEach(o => results.push({ group: 'Opportunities', label: o.name, hint: o.number, icon: 'briefcase', url: o.url }));
             @endcan
+            @can('invoices.view')
+            this.invoiceResults.forEach(i => results.push({ group: 'Invoices', label: i.name, hint: i.number, icon: 'document-currency-pound', url: i.url }));
+            this.creditNoteResults.forEach(c => results.push({ group: 'Credit Notes', label: c.name, hint: c.number, icon: 'document-currency-pound', url: c.url }));
+            this.invoicePaymentResults.forEach(p => results.push({ group: 'Payments', label: p.name, hint: p.number, icon: 'document-currency-pound', url: p.url }));
+            @endcan
+            @can('purchase_orders.view')
+            this.purchaseOrderResults.forEach(p => results.push({ group: 'Purchase Orders', label: p.name, hint: p.number, icon: 'briefcase', url: p.url }));
+            @endcan
+            @can('virtual_stock.view')
+            this.virtualStockIntakeResults.forEach(v => results.push({ group: 'Virtual Stock', label: v.name, hint: v.number, icon: 'archive', url: v.url }));
+            @endcan
             this.filteredCommands.forEach(c => results.push(c));
             return results;
         },
@@ -127,6 +146,11 @@
                     this.productGroupResults = data.product_groups || [];
                     this.activityResults = data.activities || [];
                     this.opportunityResults = data.opportunities || [];
+                    this.invoiceResults = data.invoices || [];
+                    this.creditNoteResults = data.credit_notes || [];
+                    this.purchaseOrderResults = data.purchase_orders || [];
+                    this.virtualStockIntakeResults = data.virtual_stock_intakes || [];
+                    this.invoicePaymentResults = data.invoice_payments || [];
                     this.searching = false;
                 })
                 .catch(() => {
@@ -136,6 +160,11 @@
                     this.productGroupResults = [];
                     this.activityResults = [];
                     this.opportunityResults = [];
+                    this.invoiceResults = [];
+                    this.creditNoteResults = [];
+                    this.purchaseOrderResults = [];
+                    this.virtualStockIntakeResults = [];
+                    this.invoicePaymentResults = [];
                     this.searching = false;
                 });
             }, 200);
@@ -151,6 +180,11 @@
                 this.productGroupResults = [];
                 this.activityResults = [];
                 this.opportunityResults = [];
+                this.invoiceResults = [];
+                this.creditNoteResults = [];
+                this.purchaseOrderResults = [];
+                this.virtualStockIntakeResults = [];
+                this.invoicePaymentResults = [];
                 this.$nextTick(() => this.$refs.searchInput?.focus());
             }
         },

@@ -2,9 +2,11 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Models\DocumentSequence;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\Opportunities\OpportunityNumberGenerator;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Thunk\Verbs\Facades\Verbs;
@@ -36,7 +38,7 @@ it('hands out sequential numbers within a store', function () {
         ->and(Opportunity::query()->whereKey($b->id)->value('number'))->toBe('0000000002');
 });
 
-it('scopes the running number per store', function () {
+it('scopes the running number per store on fresh installs', function () {
     $storeA = Store::factory()->create();
     $storeB = Store::factory()->create();
 
@@ -44,13 +46,12 @@ it('scopes the running number per store', function () {
     $b1 = (new CreateOpportunity)(CreateOpportunityData::from(['subject' => 'B1', 'store_id' => $storeB->id]));
     $a2 = (new CreateOpportunity)(CreateOpportunityData::from(['subject' => 'A2', 'store_id' => $storeA->id]));
 
-    // Each store keeps its own sequence, so both stores start at 1.
     expect(Opportunity::query()->whereKey($a1->id)->value('number'))->toBe('0000000001')
         ->and(Opportunity::query()->whereKey($b1->id)->value('number'))->toBe('0000000001')
         ->and(Opportunity::query()->whereKey($a2->id)->value('number'))->toBe('0000000002');
 });
 
-it('honours an overridden number_pad width from settings', function () {
+it('honours number_pad when provisioning the document sequence from settings', function () {
     settings()->set('opportunities.number_pad', 4, 'integer');
 
     $store = Store::factory()->create();
@@ -59,23 +60,27 @@ it('honours an overridden number_pad width from settings', function () {
         'subject' => 'Padded', 'store_id' => $store->id,
     ]));
 
-    // Width follows the setting (4) rather than the default (10).
-    expect(Opportunity::query()->whereKey($created->id)->value('number'))->toBe('0001');
+    expect(Opportunity::query()->whereKey($created->id)->value('number'))->toBe('0001')
+        ->and(DocumentSequence::query()
+            ->where('store_id', $store->id)
+            ->where('document_type', OpportunityNumberGenerator::DOCUMENT_TYPE)
+            ->value('padding'))->toBe(4);
 });
 
-it('shares one sequence across stores when number_scope is global', function () {
+it('continues after legacy global-scope numbers without re-issuing existing values', function () {
     settings()->set('opportunities.number_scope', 'global');
 
     $storeA = Store::factory()->create();
     $storeB = Store::factory()->create();
 
+    Opportunity::factory()->create(['store_id' => $storeA->id, 'number' => '0000000042']);
+    Opportunity::factory()->create(['store_id' => $storeB->id, 'number' => '0000000043']);
+
     $a = (new CreateOpportunity)(CreateOpportunityData::from(['subject' => 'A', 'store_id' => $storeA->id]));
     $b = (new CreateOpportunity)(CreateOpportunityData::from(['subject' => 'B', 'store_id' => $storeB->id]));
 
-    // Global scope: the second opportunity continues the same running number even
-    // though it belongs to a different store.
-    expect(Opportunity::query()->whereKey($a->id)->value('number'))->toBe('0000000001')
-        ->and(Opportunity::query()->whereKey($b->id)->value('number'))->toBe('0000000002');
+    expect(Opportunity::query()->whereKey($a->id)->value('number'))->toBe('0000000044')
+        ->and(Opportunity::query()->whereKey($b->id)->value('number'))->toBe('0000000045');
 });
 
 it('reproduces the same number on replay', function () {
@@ -86,9 +91,29 @@ it('reproduces the same number on replay', function () {
 
     expect($numberBefore)->toBe('0000000001');
 
-    // Replay re-applies the stored OpportunityCreated payload (which carries the
-    // baked-in number); it must NOT re-allocate from the sequence.
     Verbs::replay();
 
     expect(Opportunity::query()->whereKey($created->id)->value('number'))->toBe($numberBefore);
+});
+
+it('does not violate unique store_id and number when two stores continue from the seeded max', function () {
+    settings()->set('opportunities.number_scope', 'global');
+
+    $storeA = Store::factory()->create();
+    $storeB = Store::factory()->create();
+
+    Opportunity::factory()->create(['store_id' => $storeA->id, 'number' => '0000000010']);
+
+    (new CreateOpportunity)(CreateOpportunityData::from(['subject' => 'A', 'store_id' => $storeA->id]));
+    (new CreateOpportunity)(CreateOpportunityData::from(['subject' => 'B', 'store_id' => $storeB->id]));
+
+    $duplicateWithinStore = Opportunity::query()
+        ->whereIn('store_id', [$storeA->id, $storeB->id])
+        ->whereNotNull('number')
+        ->selectRaw('store_id, number, COUNT(*) as count')
+        ->groupBy('store_id', 'number')
+        ->havingRaw('COUNT(*) > 1')
+        ->exists();
+
+    expect($duplicateWithinStore)->toBeFalse();
 });

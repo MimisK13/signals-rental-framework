@@ -3,7 +3,6 @@
 namespace App\Services\Opportunities;
 
 use App\Enums\OpportunityItemType;
-use App\Services\Prototypes\PrototypeEditorService;
 use InvalidArgumentException;
 
 /**
@@ -20,9 +19,9 @@ use InvalidArgumentException;
  *
  * This is the REPLAY-CRITICAL core shared by the restructure action and its
  * event, so it performs NO database or model access and is fully deterministic:
- * identical input always yields identical output. The algorithm is ported from
- * {@see PrototypeEditorService::persistTree()} (its
- * counter/prefix/clamp logic) with all DB writes removed.
+ * identical input always yields identical output. The counter/prefix/clamp
+ * algorithm was ported from the (since removed) Editor Lab prototype's
+ * persistTree() with all DB writes removed.
  */
 class ItemPathService
 {

@@ -33,6 +33,8 @@ use Thunk\Verbs\Lifecycle\StateManager;
  */
 trait CommitsVerbsEvents
 {
+    use LocksModelsForMutation;
+
     /**
      * Run the given closure (which fires Verbs events), then commit, inside one
      * database transaction. On failure, reset Verbs' in-memory state and rethrow.

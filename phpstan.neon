@@ -5,6 +5,9 @@ includes:
 
 parameters:
     level: 6
+    stubFiles:
+        - phpstan-stubs/spatie-browsershot.php
+        - phpstan-stubs/pest-browser.php
     paths:
         - app/
         - database/
@@ -15,9 +18,10 @@ parameters:
         -
             message: '#Trait .+ is used zero times and is not analysed#'
             paths:
-                - app/Models/Traits/HasCostVisibility.php
                 - app/Models/Traits/HasStoreScoping.php
+                - app/Livewire/Concerns/HandlesVerbsStateErrors.php
                 - tests/Concerns/UsesPostgres.php
+                - tests/Concerns/UsesIsolatedSqliteMigrations.php
         -
             identifier: argument.templateType
             message: '#Unable to resolve the template type TComponent in call to method Livewire\\LivewireManager::test\(\)#'
@@ -32,6 +36,8 @@ parameters:
             path: app/Http/Traits/ResourceActions.php
     scanDirectories:
         - tests/
+    scanFiles:
+        - phpstan-stubs/pest-browser.php
     universalObjectCratesClasses:
         - Signals\PHPStan\PestTestCase
 

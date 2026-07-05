@@ -7,7 +7,7 @@ description: Signals Rental Framework is an open-source rental management framew
 
 Signals Rental Framework is a production-ready rental management framework built for the equipment rental and event hire industry. It covers the full rental lifecycle — quoting, ordering, invoicing, asset management, availability, scheduling, maintenance, and customer relationships.
 
-It's MIT licensed, self-hostable, and plugin-extensible. The same complete code for every rental business, from a sole trader with a van to a national operation with ten depots.
+It's AGPL-3.0 licensed, self-hostable, and plugin-extensible. The same complete code for every rental business, from a sole trader with a van to a national operation with ten depots.
 
 ## Why Signals Rental Framework?
 
@@ -16,7 +16,7 @@ Most rental businesses run on software designed for something else — inventory
 Signals Rental Framework is different:
 
 - **Purpose-built for rental** — availability, scheduling, maintenance cycles, kit prep, dry hire, wet hire, sub-hire, and cross-hire are the foundation, not afterthoughts
-- **Free forever** — MIT licensed with no open-core catch, no features held back for a paid edition, and no time-limited trials
+- **Open source, no held-back features** — AGPL-3.0 licensed with the complete feature set in the open code and no time-limited trials; [commercial licences](licensing) are available for organisations that can't meet AGPL obligations
 - **No vendor lock-in** — your data, your servers, your rules. You are never dependent on a single company
 - **Fully transparent** — every line of code is visible. Audit security, review logic, understand what runs your business
 

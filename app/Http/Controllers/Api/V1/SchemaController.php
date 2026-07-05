@@ -32,7 +32,9 @@ use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
 use App\Models\Webhook;
+use App\Schemas\DocumentTaxGroupSchema;
 use App\Services\SchemaRegistry;
+use App\Support\Api\Attributes\PriceWeight;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -74,11 +76,13 @@ class SchemaController extends Controller
         'opportunity_versions' => OpportunityVersion::class,
         'containers' => Container::class,
         'shortage_resolutions' => ShortageResolution::class,
+        'document_tax_groups' => DocumentTaxGroupSchema::class,
     ];
 
     /**
      * List all available schema model names.
      */
+    #[PriceWeight(0)]
     public function index(): JsonResponse
     {
         $this->authorizeApi('schema.read', 'schema:read');
@@ -95,6 +99,7 @@ class SchemaController extends Controller
      */
     #[ApiResponse(200, 'Model field schema', type: 'array{model: string, model_class: string, fields: array<string, array{name: string, label: string, type: string, required: bool, searchable: bool, filterable: bool, sortable: bool}>}')]
     #[ApiResponse(404, 'Unknown model', type: 'array{message: string, available: list<string>}')]
+    #[PriceWeight(0)]
     public function show(string $model, SchemaRegistry $registry): JsonResponse
     {
         $this->authorizeApi('schema.read', 'schema:read');

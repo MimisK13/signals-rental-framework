@@ -43,16 +43,25 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property string $quantity
  * @property int $unit_price
+ * @property int|null $price_category_tier_id
+ * @property string|null $price_category_tier_multiplier
  * @property ChargePeriod $charge_period
  * @property int $total
+ * @property int $surcharge_total
  * @property string|null $currency_code
  * @property string|null $discount_percent
+ * @property bool $is_discount_manual
+ * @property string|null $deal_price_discount_percent
+ * @property int|null $deal_price
+ * @property int|null $deal_price_original_total
  * @property string|null $tax_rate
  * @property LineItemTransactionType $transaction_type
  * @property Carbon|null $starts_at
  * @property Carbon|null $ends_at
  * @property string $dispatched_quantity
  * @property string $returned_quantity
+ * @property Carbon|null $shortage_escalated_at
+ * @property string $invoiced_quantity
  * @property int|null $dispatch_store_id
  * @property int|null $return_store_id
  * @property bool $is_optional
@@ -90,16 +99,25 @@ class OpportunityItem extends Model implements HasSchema
         'description',
         'quantity',
         'unit_price',
+        'price_category_tier_id',
+        'price_category_tier_multiplier',
         'charge_period',
         'total',
+        'surcharge_total',
         'currency_code',
         'discount_percent',
+        'is_discount_manual',
+        'deal_price_discount_percent',
+        'deal_price',
+        'deal_price_original_total',
         'tax_rate',
         'transaction_type',
         'starts_at',
         'ends_at',
         'dispatched_quantity',
         'returned_quantity',
+        'shortage_escalated_at',
+        'invoiced_quantity',
         'dispatch_store_id',
         'return_store_id',
         'is_optional',
@@ -117,15 +135,24 @@ class OpportunityItem extends Model implements HasSchema
             'revenue_group_id' => 'integer',
             'quantity' => 'decimal:2',
             'unit_price' => 'integer',
+            'price_category_tier_id' => 'integer',
+            'price_category_tier_multiplier' => 'decimal:4',
             'charge_period' => ChargePeriod::class,
             'total' => 'integer',
+            'surcharge_total' => 'integer',
             'discount_percent' => 'decimal:2',
+            'deal_price_discount_percent' => 'decimal:10',
+            'deal_price' => 'integer',
+            'deal_price_original_total' => 'integer',
+            'is_discount_manual' => 'boolean',
             'tax_rate' => 'decimal:2',
             'transaction_type' => LineItemTransactionType::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'dispatched_quantity' => 'decimal:2',
             'returned_quantity' => 'decimal:2',
+            'shortage_escalated_at' => 'datetime',
+            'invoiced_quantity' => 'decimal:2',
             'dispatch_store_id' => 'integer',
             'return_store_id' => 'integer',
             'is_optional' => 'boolean',
@@ -146,6 +173,7 @@ class OpportunityItem extends Model implements HasSchema
         $builder->string('name')->label('Name')->required()->searchable()->filterable()->sortable();
         $builder->text('description')->label('Description')->searchable();
         $builder->decimal('quantity')->label('Quantity')->filterable()->sortable();
+        $builder->decimal('invoiced_quantity')->label('Invoiced Quantity')->filterable()->sortable();
         $builder->integer('unit_price')->label('Unit Price')->sortable();
         $builder->enum('charge_period')->label('Charge Period')->filterable()->groupable();
         $builder->integer('total')->label('Total')->sortable();
@@ -214,6 +242,14 @@ class OpportunityItem extends Model implements HasSchema
     }
 
     /**
+     * @return HasMany<OpportunityItemSurcharge, $this>
+     */
+    public function itemSurcharges(): HasMany
+    {
+        return $this->hasMany(OpportunityItemSurcharge::class);
+    }
+
+    /**
      * The store this line dispatches from when it overrides the opportunity's
      * primary store (null = inherit the opportunity's store).
      *
@@ -233,6 +269,19 @@ class OpportunityItem extends Model implements HasSchema
     public function returnStore(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'return_store_id');
+    }
+
+    /** Remaining quantity available to invoice on this line. */
+    public function remainingInvoiceQuantity(): string
+    {
+        $remaining = bcsub((string) $this->quantity, (string) $this->invoiced_quantity, 2);
+
+        return bccomp($remaining, '0', 2) < 0 ? '0.00' : $remaining;
+    }
+
+    public function isFullyInvoiced(): bool
+    {
+        return bccomp($this->remainingInvoiceQuantity(), '0', 2) <= 0;
     }
 
     /**

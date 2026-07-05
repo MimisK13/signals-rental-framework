@@ -1,0 +1,49 @@
+Signals Rental Framework (SRF)
+Copyright (c) 2026 Signals Software Ltd, registered in England and Wales.
+All rights reserved except as expressly licensed below.
+
+================================================================================
+LICENSING
+================================================================================
+
+Signals Rental Framework version 0.5.2 and all later versions are licensed
+under the GNU Affero General Public License, version 3 only (AGPL-3.0-only).
+See the LICENSE file in this repository for the full licence text.
+
+Versions of Signals Rental Framework released prior to version 0.5.2 were
+released under the MIT License and remain available under that licence.
+No rights under the MIT License are granted in respect of version 0.5.2 or
+any later version, including any patch, diff, or modification first
+published in or after version 0.5.1.
+
+COMMERCIAL LICENSING
+
+Signals Software Ltd is the sole copyright holder of Signals Rental
+Framework and offers commercial licences on alternative terms for
+organisations that cannot, or prefer not to, comply with the AGPL-3.0-only
+obligations. Enquiries: info@signals.rent
+
+================================================================================
+TRADE MARKS
+================================================================================
+
+"Signals Rental Framework", "Signals Cloud", and "Signals Platform" are 
+trade marks of Signals Software Ltd.  "Signals Rental Framework" are registered 
+trade marks of Signals Software Ltd in the United Kingdom.
+
+Nothing in the AGPL-3.0-only licence, the MIT License applicable to
+pre-0.5.2 versions, or any other licence granted in respect of this software
+grants any right to use these trade marks. In particular, you may not use
+these marks, or any mark confusingly similar to them, in the name of any
+product, service, hosted offering, distribution, or fork of this software,
+or in any manner that suggests sponsorship, endorsement, or affiliation
+with Signals Software Ltd, in each case except for fair descriptive use
+required by applicable law.
+
+================================================================================
+CONTRIBUTIONS
+================================================================================
+
+Contributions to this repository are accepted only under the Signals
+Software Ltd Contributor License Agreement (see CLA.md). By submitting a
+contribution you agree to its terms.

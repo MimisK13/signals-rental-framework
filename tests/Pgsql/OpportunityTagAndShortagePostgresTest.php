@@ -54,6 +54,7 @@ beforeEach(function () {
 
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true]);
     $this->actingAs(User::factory()->owner()->create());
 });
 

@@ -15,7 +15,9 @@ use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductTaxClass;
 use App\Models\RevenueGroup;
+use App\Models\TaxCategory;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use App\Services\Api\RansackFilter;
 use Livewire\Attributes\Computed;
@@ -45,6 +47,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     public bool $discountable = true;
     public ?int $taxClassId = null;
     public ?int $purchaseTaxClassId = null;
+    public ?int $saleTaxCategoryId = null;
+    public ?int $purchaseTaxCategoryId = null;
     public ?int $rentalRevenueGroupId = null;
     public ?int $saleRevenueGroupId = null;
     public ?int $subRentalCostGroupId = null;
@@ -91,6 +95,8 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->discountable = $product->discountable ?? true;
             $this->taxClassId = $product->tax_class_id;
             $this->purchaseTaxClassId = $product->purchase_tax_class_id;
+            $this->saleTaxCategoryId = $product->sale_tax_category_id;
+            $this->purchaseTaxCategoryId = $product->purchase_tax_category_id;
             $this->rentalRevenueGroupId = $product->rental_revenue_group_id;
             $this->saleRevenueGroupId = $product->sale_revenue_group_id;
             $this->subRentalCostGroupId = $product->sub_rental_cost_group_id;
@@ -239,6 +245,8 @@ new #[Layout('components.layouts.app')] class extends Component {
             'discountable' => $this->discountable,
             'tax_class_id' => $this->taxClassId,
             'purchase_tax_class_id' => $this->purchaseTaxClassId,
+            'sale_tax_category_id' => $this->saleTaxCategoryId,
+            'purchase_tax_category_id' => $this->purchaseTaxCategoryId,
             'rental_revenue_group_id' => $this->rentalRevenueGroupId,
             'sale_revenue_group_id' => $this->saleRevenueGroupId,
             'sub_rental_cost_group_id' => $this->subRentalCostGroupId,
@@ -249,6 +257,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             'tag_list' => $this->tags !== [] ? $this->tags : null,
             'custom_fields' => $this->customFieldValues,
         ];
+
+        if (! Gate::check('costs.view')) {
+            unset($payload['purchase_price']);
+        }
 
         try {
             if ($this->productId) {
@@ -269,6 +281,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         return [
             'taxClasses' => ProductTaxClass::query()->orderBy('name')->get(),
+            'taxCategories' => TaxCategory::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'revenueGroups' => RevenueGroup::query()->orderBy('name')->get(['id', 'name']),
             'costGroups' => CostGroup::query()->orderBy('name')->get(['id', 'name']),
             'customFields' => CustomField::query()
@@ -313,6 +326,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'productTypes' => ProductType::cases(),
             'stockMethods' => StockMethod::cases(),
             'taxClasses' => $ref['taxClasses'],
+            'taxCategories' => $ref['taxCategories'],
             'revenueGroups' => $ref['revenueGroups'],
             'costGroups' => $ref['costGroups'],
             'customFields' => $ref['customFields'],
@@ -443,7 +457,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <flux:input wire:model.number="subRentalPrice" label="Sub-Rental Price" type="number" min="0" />
                             </div>
                             <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                                <flux:input wire:model.number="purchasePrice" label="Purchase Price" type="number" min="0" />
+                                @costs
+                                    <flux:input wire:model.number="purchasePrice" label="Purchase Price" type="number" min="0" />
+                                @endcosts
                                 <flux:input wire:model="bufferPercent" label="Buffer %" type="number" step="any" min="0" max="100" />
                             </div>
                             <flux:input wire:model.number="postRentUnavailability" label="Post-Rent Unavailability (days)" type="number" min="0" />
@@ -465,6 +481,22 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     <option value="">None</option>
                                     @foreach($taxClasses as $taxClass)
                                         <option value="{{ $taxClass->id }}">{{ $taxClass->name }}</option>
+                                    @endforeach
+                                </flux:select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                                <flux:select wire:model="saleTaxCategoryId" label="Sale Tax Category">
+                                    <option value="">None</option>
+                                    @foreach($taxCategories as $taxCategory)
+                                        <option value="{{ $taxCategory->id }}">{{ $taxCategory->name }}</option>
+                                    @endforeach
+                                </flux:select>
+
+                                <flux:select wire:model="purchaseTaxCategoryId" label="Purchase Tax Category">
+                                    <option value="">None</option>
+                                    @foreach($taxCategories as $taxCategory)
+                                        <option value="{{ $taxCategory->id }}">{{ $taxCategory->name }}</option>
                                     @endforeach
                                 </flux:select>
                             </div>

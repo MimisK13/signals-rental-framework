@@ -18,6 +18,8 @@ class ProductRateData extends Data
         public int $product_id,
         public int $rate_definition_id,
         public ?int $store_id,
+        public ?int $price_category_id,
+        public ?string $price_category_name,
         public string $transaction_type,
         public string $transaction_type_name,
         public string $price,
@@ -46,6 +48,10 @@ class ProductRateData extends Data
             product_id: $rate->product_id,
             rate_definition_id: $rate->rate_definition_id,
             store_id: $rate->store_id,
+            price_category_id: $rate->price_category_id,
+            price_category_name: $rate->relationLoaded('priceCategory') && $rate->priceCategory
+                ? $rate->priceCategory->name
+                : null,
             transaction_type: $type->value,
             transaction_type_name: $type->label(),
             price: $rate->formatMoneyCost('price'),

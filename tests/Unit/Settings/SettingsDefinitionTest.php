@@ -9,6 +9,7 @@ use App\Settings\EmailSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
 use App\Settings\OpportunitySettings;
+use App\Settings\PricingSettings;
 use App\Settings\SchedulingSettings;
 use App\Settings\SecuritySettings;
 use App\Settings\SettingsDefinition;
@@ -484,6 +485,38 @@ describe('OpportunitySettings', function () {
         $rules = (new OpportunitySettings)->rules();
 
         expect($rules['number_pad'])->toContain('integer')->toContain('min:0')->toContain('max:20');
+    });
+});
+
+describe('PricingSettings', function () {
+    it('returns pricing as the group name', function () {
+        $definition = new PricingSettings;
+
+        expect($definition->group())->toBe('pricing');
+    });
+
+    it('defaults rounding_direction to half_up', function () {
+        expect((new PricingSettings)->defaults())
+            ->toHaveKey('rounding_direction', 'half_up');
+    });
+
+    it('declares string type for rounding_direction', function () {
+        expect((new PricingSettings)->types())
+            ->toHaveKey('rounding_direction', 'string');
+    });
+
+    it('provides validation rules for rounding_direction', function () {
+        $rules = (new PricingSettings)->rules();
+
+        expect($rules)->toHaveKey('rounding_direction');
+        expect($rules['rounding_direction'])->toContain('required');
+    });
+
+    it('constrains rounding_direction to half_up or bankers', function () {
+        $stringified = stringifyRules((new PricingSettings)->rules()['rounding_direction']);
+
+        expect($stringified)->toContain('half_up');
+        expect($stringified)->toContain('bankers');
     });
 });
 

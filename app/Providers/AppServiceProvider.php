@@ -5,14 +5,26 @@ namespace App\Providers;
 use App\Contracts\Availability\AvailabilityDataPresence;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\Availability\AvailabilityStrategyContract;
+use App\Contracts\Documents\DocumentRenderer;
+use App\Contracts\Documents\PdfDriver;
+use App\Contracts\Tax\TaxResolver;
+use App\Contracts\Tax\VatNumberValidator;
 use App\Guards\Opportunities\Contracts\ApprovalGate;
 use App\Guards\Opportunities\PluginValidatorRegistry;
 use App\Guards\Opportunities\Rules\DispatchShortageRule;
 use App\Guards\Opportunities\Rules\FxTaxLockRule;
 use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\Stages\AutoApprovalGate;
+use App\Listeners\RecordCustomerCommunicationDelivery;
 use App\Models\User;
+use App\Policies\NumberingPolicy;
 use App\Services\Activities\ActivityTypeList;
+use App\Services\Api\AbilityRegistry;
+use App\Services\Api\ApiEndpointCatalogue;
+use App\Services\Api\CoreAbilityDefinitions;
+use App\Services\Api\PriceWeightResolver;
+use App\Services\Api\UsageRecorder;
+use App\Services\Api\WebhookEventRegistry;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\Availability\DatabaseAvailabilityDataPresence;
 use App\Services\Availability\KitAvailabilityCalculator;
@@ -21,17 +33,74 @@ use App\Services\Availability\PassThroughAvailabilityStrategy;
 use App\Services\Availability\RecalculationPipeline;
 use App\Services\Availability\SettingsAvailabilityResolutionProvider;
 use App\Services\Availability\SlotCalculator;
+use App\Services\Availability\VirtualStockDemandResolver;
 use App\Services\AvailabilityService;
 use App\Services\ColumnRegistryResolver;
 use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
+use App\Services\Documents\CreditNoteDataResolver;
+use App\Services\Documents\DocumentBrandingResolver;
+use App\Services\Documents\DocumentEventDispatcher;
+use App\Services\Documents\DocumentRenderContext;
+use App\Services\Documents\DocumentRenderPipeline;
+use App\Services\Documents\DocumentResolverRegistry;
+use App\Services\Documents\DocumentTypeRegistry;
+use App\Services\Documents\InvoiceDataResolver;
+use App\Services\Documents\OpportunityDataResolver;
+use App\Services\Documents\PdfDriverManager;
+use App\Services\Documents\PurchaseOrderDataResolver;
+use App\Services\Documents\ReceiptDataResolver;
+use App\Services\Documents\ReturnListDataResolver;
+use App\Services\Documents\SandboxedBladeCompiler;
+use App\Services\Documents\SandboxedBladeRenderer;
+use App\Services\Documents\StatementDataResolver;
+use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\NotificationRegistry;
+use App\Services\Notifications\ChannelProviderRegistry;
+use App\Services\Notifications\CommunicationLogStatusRegistry;
+use App\Services\Notifications\CommunicationTemplateRenderer;
+use App\Services\Notifications\CoreMergeFieldFilters;
+use App\Services\Notifications\Drivers\BroadcastDriver;
+use App\Services\Notifications\Drivers\DatabaseDriver;
+use App\Services\Notifications\Drivers\EmailDriver;
+use App\Services\Notifications\EventNotificationConditionEvaluator;
+use App\Services\Notifications\EventNotificationMapRegistry;
+use App\Services\Notifications\MergeFieldFilterRegistry;
+use App\Services\Notifications\MergeFieldRenderer;
+use App\Services\Notifications\NotificationChannelResolver;
+use App\Services\Notifications\RecipientResolverRegistry;
+use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\RoleRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\SpecificMemberRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\SubjectOwnerRecipientResolver;
+use App\Services\Notifications\RecipientResolvers\TriggerActorRecipientResolver;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
 use App\Services\Opportunities\TransitionRuleRegistry;
 use App\Services\PermissionRegistry;
+use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
+use App\Services\Plugins\PluginRegistrar;
+use App\Services\Pricing\BundlePricingApplicator;
+use App\Services\Pricing\CriteriaMatcher;
+use App\Services\Pricing\DealPriceProportionalDistributor;
+use App\Services\Pricing\DealPriceValidatorRegistry;
+use App\Services\Pricing\DiscountCategoryApplier;
+use App\Services\Pricing\DiscountCriteriaPredicateRegistry;
+use App\Services\Pricing\DiscountRuleEvaluator;
+use App\Services\Pricing\DiscountSourceRegistry;
+use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
+use App\Services\Pricing\OpportunityItemSurchargeAmountFilterRegistry;
+use App\Services\Pricing\OpportunityPricingCalculateDecorator;
+use App\Services\Pricing\OpportunityPricingRecalculator;
+use App\Services\Pricing\Predicates\ProductGroupIdsPredicate;
+use App\Services\Pricing\Predicates\ProductIdsPredicate;
+use App\Services\Pricing\Predicates\QuantityMaxPredicate;
+use App\Services\Pricing\Predicates\QuantityMinPredicate;
+use App\Services\Pricing\Predicates\TagNamesPredicate;
+use App\Services\Pricing\Predicates\TransactionTypesPredicate;
+use App\Services\Pricing\QuantityContextResolver;
 use App\Services\RateEngine\Modifiers\FactorModifier;
 use App\Services\RateEngine\Modifiers\MultiplierModifier;
 use App\Services\RateEngine\RateEngineRegistry;
@@ -45,18 +114,32 @@ use App\Services\Shortages\PipelineShortageEmitter;
 use App\Services\Shortages\Resolvers\DateShiftResolver;
 use App\Services\Shortages\Resolvers\PartialFulfilmentResolver;
 use App\Services\Shortages\Resolvers\QuoteReallocationResolver;
+use App\Services\Shortages\Resolvers\SubHireResolver;
 use App\Services\Shortages\Resolvers\SubstitutionResolver;
 use App\Services\Shortages\Resolvers\WaitlistResolver;
 use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
 use App\Services\Shortages\ShortageResolverDefinition;
 use App\Services\Shortages\ShortageResolverRegistry;
+use App\Services\Shortages\Strategies\EvenSplitCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
+use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
+use App\Services\Tax\DefaultVatNumberValidator;
+use App\Services\Tax\TaxResolutionContextHolder;
+use App\Services\Tax\TaxZoneRuleResolver;
+use App\Services\Tax\ZoneAwareTaxResolver;
 use App\Services\TaxCalculator;
 use App\Support\Formatter;
+use App\Support\NumberingAccess;
 use App\Support\Timezone;
 use Carbon\CarbonImmutable;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +162,48 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Formatter::class);
         $this->app->singleton(DocsService::class);
         $this->app->singleton(SchemaRegistry::class);
+        $this->app->singleton(DocumentResolverRegistry::class, function ($app): DocumentResolverRegistry {
+            $registry = new DocumentResolverRegistry;
+            $registry->register($app->make(OpportunityDataResolver::class));
+            $registry->register($app->make(ReturnListDataResolver::class));
+            $registry->register($app->make(StatementDataResolver::class));
+            $registry->register($app->make(ReceiptDataResolver::class));
+            $registry->register($app->make(InvoiceDataResolver::class));
+            $registry->register($app->make(CreditNoteDataResolver::class));
+            $registry->register($app->make(PurchaseOrderDataResolver::class));
+
+            return $registry;
+        });
+        $this->app->singleton(DocumentTypeRegistry::class);
+        $this->app->singleton(DocumentEventDispatcher::class);
+        $this->app->scoped(DocumentRenderContext::class);
+        $this->app->singleton(PluginDocumentTemplateSeederRegistry::class);
+        $this->app->singleton(PluginRegistrar::class);
+        $this->app->singleton(SandboxedBladeCompiler::class, function ($app): SandboxedBladeCompiler {
+            $cachePath = (string) config('documents.sandbox_cache_path');
+
+            if (! is_dir($cachePath)) {
+                mkdir($cachePath, 0755, true);
+            }
+
+            return new SandboxedBladeCompiler(
+                $app->make(Filesystem::class),
+                $cachePath,
+                base_path(),
+            );
+        });
+        $this->app->singleton(SandboxedBladeRenderer::class);
+        $this->app->singleton(DocumentBrandingResolver::class);
+        $this->app->singleton(PdfDriverManager::class);
+        $this->app->bind(PdfDriver::class, fn ($app): PdfDriver => $app->make(PdfDriverManager::class)->driver());
+        $this->app->singleton(DocumentRenderPipeline::class);
+        $this->app->bind(DocumentRenderer::class, DocumentRenderPipeline::class);
         $this->app->singleton(TaxCalculator::class);
+        $this->app->scoped(TaxResolutionContextHolder::class);
+        $this->app->singleton(TaxZoneRuleResolver::class);
+        $this->app->singleton(ZoneAwareTaxResolver::class);
+        $this->app->bind(TaxResolver::class, ZoneAwareTaxResolver::class);
+        $this->app->singleton(VatNumberValidator::class, DefaultVatNumberValidator::class);
         $this->app->singleton(ColumnRegistryResolver::class);
         $this->app->singleton(ActivityTypeList::class);
 
@@ -129,6 +253,68 @@ class AppServiceProvider extends ServiceProvider
             return $registry;
         });
 
+        $this->app->singleton(ChannelProviderRegistry::class, function ($app): ChannelProviderRegistry {
+            $registry = new ChannelProviderRegistry($app);
+
+            $registry->register('email', EmailDriver::class);
+            $registry->register('database', DatabaseDriver::class);
+            $registry->register('broadcast', BroadcastDriver::class);
+
+            return $registry;
+        });
+
+        $this->app->singleton(CommunicationLogStatusRegistry::class);
+        $this->app->singleton(InvoiceStatusRegistry::class);
+
+        $this->app->singleton(EventNotificationMapRegistry::class);
+
+        $this->app->singleton(EventNotificationConditionEvaluator::class);
+
+        $this->app->singleton(NotificationChannelResolver::class);
+
+        $this->app->singleton(RecipientResolverRegistry::class, function (): RecipientResolverRegistry {
+            $registry = new RecipientResolverRegistry;
+
+            $registry->register(new SubjectOwnerRecipientResolver);
+            $registry->register(new RoleRecipientResolver);
+            $registry->register(new SpecificMemberRecipientResolver);
+            $registry->register(new TriggerActorRecipientResolver);
+            $registry->register(new ContactRecipientResolver);
+
+            return $registry;
+        });
+
+        $this->app->singleton(MergeFieldFilterRegistry::class, function (): MergeFieldFilterRegistry {
+            $registry = new MergeFieldFilterRegistry;
+            CoreMergeFieldFilters::register($registry);
+
+            return $registry;
+        });
+
+        $this->app->singleton(MergeFieldRenderer::class);
+        $this->app->singleton(CommunicationTemplateRenderer::class);
+
+        $this->app->singleton(AbilityRegistry::class, function (): AbilityRegistry {
+            $registry = new AbilityRegistry;
+            $registry->registerMany(CoreAbilityDefinitions::all());
+
+            return $registry;
+        });
+
+        $this->app->singleton(WebhookEventRegistry::class, function (): WebhookEventRegistry {
+            $registry = new WebhookEventRegistry;
+
+            foreach (WebhookEventRegistry::CORE_EVENT_NAMES as $name) {
+                $registry->register($name);
+            }
+
+            return $registry;
+        });
+
+        $this->app->singleton(PriceWeightResolver::class);
+        $this->app->singleton(ApiEndpointCatalogue::class);
+        $this->app->singleton(UsageRecorder::class);
+
         $this->app->singleton(DemandSourceRegistry::class, function (): DemandSourceRegistry {
             $registry = new DemandSourceRegistry;
 
@@ -152,8 +338,43 @@ class AppServiceProvider extends ServiceProvider
                 icon: 'cube',
             ));
 
+            $registry->register(new DemandSourceDefinition(
+                type: 'virtual_stock_intake',
+                displayName: 'Virtual Stock',
+                resolverClass: VirtualStockDemandResolver::class,
+                colour: '#8B5CF6',
+                icon: 'arrow-down-circle',
+            ));
+
             return $registry;
         });
+
+        $this->app->singleton(DiscountCriteriaPredicateRegistry::class, function (): DiscountCriteriaPredicateRegistry {
+            $registry = new DiscountCriteriaPredicateRegistry;
+
+            $registry->register(new ProductGroupIdsPredicate);
+            $registry->register(new QuantityMinPredicate);
+            $registry->register(new QuantityMaxPredicate);
+            $registry->register(new ProductIdsPredicate);
+            $registry->register(new TagNamesPredicate);
+            $registry->register(new TransactionTypesPredicate);
+
+            return $registry;
+        });
+
+        $this->app->singleton(CriteriaMatcher::class);
+        $this->app->singleton(BundlePricingApplicator::class);
+        $this->app->singleton(QuantityContextResolver::class);
+        $this->app->singleton(DiscountRuleEvaluator::class);
+        $this->app->singleton(DiscountCategoryApplier::class);
+
+        $this->app->singleton(DealPriceValidatorRegistry::class);
+        $this->app->singleton(DiscountSourceRegistry::class);
+        $this->app->singleton(OpportunityItemDiscountPercentFilterRegistry::class);
+        $this->app->singleton(OpportunityItemSurchargeAmountFilterRegistry::class);
+        $this->app->singleton(OpportunityPricingCalculateDecorator::class);
+        $this->app->singleton(DealPriceProportionalDistributor::class);
+        $this->app->singleton(OpportunityPricingRecalculator::class);
 
         $this->app->singleton(RateEngineRegistry::class, function (): RateEngineRegistry {
             $registry = new RateEngineRegistry;
@@ -185,16 +406,21 @@ class AppServiceProvider extends ServiceProvider
             $registry->register(new ShortageResolverDefinition('date_shift', DateShiftResolver::class));
             $registry->register(new ShortageResolverDefinition('partial', PartialFulfilmentResolver::class));
             $registry->register(new ShortageResolverDefinition('waitlist', WaitlistResolver::class));
+            $registry->register(new ShortageResolverDefinition('subhire', SubHireResolver::class));
 
             return $registry;
         });
 
-        // Cost apportionment — STUB for later sub-hire (Phase 4). Ships the no-op
-        // strategy only; virtual stock and plugins register the real strategies.
+        // Cost apportionment strategies for virtual stock / sub-hire intakes.
         $this->app->singleton(CostApportionmentRegistry::class, function (): CostApportionmentRegistry {
             $registry = new CostApportionmentRegistry;
 
             $registry->register(new NullCostApportionmentStrategy);
+            $registry->register(app(PrimaryJobCostApportionmentStrategy::class));
+            $registry->register(app(EvenSplitCostApportionmentStrategy::class));
+            $registry->register(app(ProportionalQuantityCostApportionmentStrategy::class));
+            $registry->register(app(ProportionalQuantityDurationCostApportionmentStrategy::class));
+            $registry->register(app(ManualCostApportionmentStrategy::class));
 
             return $registry;
         });
@@ -259,6 +485,10 @@ class AppServiceProvider extends ServiceProvider
         $this->registerBladeDirectives();
         $this->registerSocialiteProviders();
         $this->registerVerbsMetadata();
+        $this->registerApiCatalogueCacheInvalidation();
+        $this->registerPricingWorkflowTriggers();
+        $this->registerDocumentWorkflowTriggers();
+        $this->registerCustomerCommunicationListeners();
 
         // LogAction is auto-discovered by Laravel via its handle(AuditableEvent) type-hint.
         // Manual registration removed to prevent duplicate listener execution.
@@ -288,6 +518,25 @@ class AppServiceProvider extends ServiceProvider
                 'ip_address' => $request?->ip(),
                 'user_agent' => $request?->userAgent(),
             ];
+        });
+    }
+
+    protected function registerCustomerCommunicationListeners(): void
+    {
+        Event::listen(
+            NotificationSent::class,
+            [RecordCustomerCommunicationDelivery::class, 'handle'],
+        );
+    }
+
+    protected function registerApiCatalogueCacheInvalidation(): void
+    {
+        Event::listen(CommandFinished::class, function (CommandFinished $event): void {
+            if ($event->command !== 'route:clear') {
+                return;
+            }
+
+            app(ApiEndpointCatalogue::class)->invalidateAll();
         });
     }
 
@@ -336,12 +585,20 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Owner users bypass all permission checks.
+     * Owner users bypass Spatie permission checks (empty Gate arguments) but not
+     * model-policy rules that depend on entity state — those still run so owners
+     * cannot issue/edit/delete invoices (etc.) in invalid statuses.
      */
     protected function configureAuthorization(): void
     {
-        Gate::before(function (User $user): ?bool {
-            return $user->isOwner() ? true : null;
+        Gate::policy(NumberingAccess::class, NumberingPolicy::class);
+
+        Gate::before(function (User $user, string $ability, array $arguments): ?bool {
+            if (! $user->isOwner()) {
+                return null;
+            }
+
+            return $arguments === [] ? true : null;
         });
 
         Gate::define('owner', function (User $user): bool {
@@ -414,5 +671,47 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute($limit)->by($request->user()->id);
         });
+
+        RateLimiter::for('vies-validation', function () {
+            return Limit::perMinute(30);
+        });
+    }
+
+    protected function registerDocumentWorkflowTriggers(): void
+    {
+        $registry = app(WorkflowTriggerRegistry::class);
+
+        foreach ([
+            'document.created',
+            'document.finalised',
+            'document.voided',
+            'document.emailed',
+            'document.public_link_created',
+            'document.public_link_accessed',
+            'document.public_link_revoked',
+            'document_template.created',
+            'document_template.updated',
+            'document_template.deleted',
+            'document_template.set_as_default',
+            'document_sequence.reset',
+        ] as $transition) {
+            $registry->register($transition, 'core-document-engine-seam');
+        }
+    }
+
+    protected function registerPricingWorkflowTriggers(): void
+    {
+        $registry = app(WorkflowTriggerRegistry::class);
+
+        foreach ([
+            'opportunity.deal_price_set',
+            'opportunity.deal_price_cleared',
+            'opportunity.group_deal_price_set',
+            'opportunity.group_deal_price_cleared',
+            'opportunity.pricing_recalculated',
+            'opportunity.discount_reset',
+        ] as $transition) {
+            $registry->register($transition, 'core-pricing-seam');
+        }
     }
 }

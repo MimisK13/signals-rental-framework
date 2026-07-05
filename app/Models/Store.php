@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property ShortagePolicy $shortage_policy
@@ -36,6 +37,7 @@ class Store extends Model implements HasSchema
         'postcode',
         'country_code',
         'country_id',
+        'tax_zone_id',
         'phone',
         'email',
         'timezone',
@@ -48,6 +50,10 @@ class Store extends Model implements HasSchema
         'shortage_auto_resolve_enabled',
         'shortage_preferred_resolvers',
         'tag_list',
+        'brand_logo_path',
+        'brand_primary_colour',
+        'brand_secondary_colour',
+        'brand_font_family',
     ];
 
     /**
@@ -123,6 +129,10 @@ class Store extends Model implements HasSchema
         $builder->relation('country_id')->label('Country')
             ->relation('country', 'belongsTo', Country::class, 'name')
             ->filterable();
+        $builder->relation('tax_zone_id')->label('Tax Zone')
+            ->relation('taxZone', 'belongsTo', TaxZone::class, 'name')
+            ->group('Tax')
+            ->filterable();
         $builder->string('phone')->label('Phone');
         $builder->string('email')->label('Email');
         $builder->string('timezone')->label('Timezone')->filterable();
@@ -137,6 +147,38 @@ class Store extends Model implements HasSchema
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * @return BelongsTo<TaxZone, $this>
+     */
+    public function taxZone(): BelongsTo
+    {
+        return $this->belongsTo(TaxZone::class);
+    }
+
+    /**
+     * @return HasMany<DocumentTemplate, $this>
+     */
+    public function documentTemplates(): HasMany
+    {
+        return $this->hasMany(DocumentTemplate::class);
+    }
+
+    /**
+     * @return HasMany<DocumentSequence, $this>
+     */
+    public function documentSequences(): HasMany
+    {
+        return $this->hasMany(DocumentSequence::class);
+    }
+
+    /**
+     * @return HasMany<Document, $this>
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
     }
 
     /**

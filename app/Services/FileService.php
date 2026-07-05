@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Models\Attachment;
+use App\Models\Document;
+use App\Services\Documents\DocumentTypeRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -117,6 +120,35 @@ class FileService
     }
 
     /**
+     * Store binary content using UUID-based paths.
+     */
+    public function storeBinary(
+        string $content,
+        string $directory,
+        string $extension,
+        ?Model $entity = null,
+    ): string {
+        $uuid = (string) Str::uuid();
+        $disk = $this->disk();
+
+        if ($entity !== null) {
+            $entityType = strtolower(class_basename($entity));
+            $entityId = $entity->getKey();
+            $path = "{$directory}/{$entityType}/{$entityId}/{$uuid}.{$extension}";
+        } else {
+            $path = "{$directory}/{$uuid}.{$extension}";
+        }
+
+        $stored = Storage::disk($disk)->put($path, $content);
+
+        if (! $stored) {
+            throw new \RuntimeException("Failed to store file at path [{$path}] on disk [{$disk}].");
+        }
+
+        return $path;
+    }
+
+    /**
      * Generate a signed temporary URL for a file path.
      */
     public function signedUrl(string $path, int $expiry = 60): string
@@ -148,6 +180,122 @@ class FileService
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Read stored file contents from the configured disk.
+     */
+    public function getContents(string $path): string
+    {
+        $contents = Storage::disk($this->disk())->get($path);
+
+        if ($contents === null) {
+            throw new \RuntimeException("File not found at path [{$path}].");
+        }
+
+        return $contents;
+    }
+
+    /**
+     * Infer a MIME type from a stored file path.
+     */
+    public function mimeTypeForPath(string $path): string
+    {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'pdf' => 'application/pdf',
+            'html', 'htm' => 'text/html; charset=utf-8',
+            default => 'application/octet-stream',
+        };
+    }
+
+    /**
+     * Build a human-readable filename for a stored document.
+     */
+    public function documentFilename(Document $document, string $path): string
+    {
+        $number = trim($document->document_number);
+
+        if ($number !== '') {
+            $registry = app(DocumentTypeRegistry::class);
+            $typeSlug = $registry->has($document->document_type)
+                ? $registry->filenameSlug($document->document_type)
+                : Str::slug(str_replace('_', '-', $document->document_type), '-');
+
+            return $this->inlineFilename($number, $typeSlug, $path);
+        }
+
+        return $this->fallbackDocumentFilename($document->document_type, $document->id, $path);
+    }
+
+    /**
+     * Build a safe inline filename for Content-Disposition headers.
+     */
+    public function inlineFilename(string $number, string $documentTypeLabel, string $path): string
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $sanitizedNumber = preg_replace('/[^A-Za-z0-9._-]+/', '-', $number);
+        $sanitizedLabel = preg_replace('/[^a-z0-9-]+/', '-', strtolower($documentTypeLabel));
+        $sanitizedLabel = trim($sanitizedLabel, '-');
+
+        return $sanitizedNumber.'-'.$sanitizedLabel.'.'.$extension;
+    }
+
+    /**
+     * Build a fallback filename when a document has no assigned number.
+     */
+    public function fallbackDocumentFilename(string $documentType, int $documentId, string $path): string
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $sanitizedType = preg_replace('/[^A-Za-z0-9._-]+/', '-', $documentType);
+
+        return $sanitizedType.'-'.$documentId.'.'.$extension;
+    }
+
+    /**
+     * Generate a signed temporary URL for a document download with a friendly filename.
+     */
+    public function signedDocumentUrlOrNull(?Document $document, int $expiry = 60): ?string
+    {
+        if ($document === null) {
+            return null;
+        }
+
+        $path = $document->pdf_path ?? $document->html_snapshot_path;
+
+        if ($path === null || $path === '') {
+            return null;
+        }
+
+        try {
+            return $this->signedDocumentUrl($document, $path, $expiry);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Generate a signed temporary URL for a document path with Content-Disposition metadata.
+     */
+    public function signedDocumentUrl(Document $document, string $path, int $expiry = 60): string
+    {
+        $filename = $this->documentFilename($document, $path);
+        $disk = $this->disk();
+
+        if ($disk === 'local' || $disk === 'public') {
+            return URL::temporarySignedRoute(
+                'documents.signed-download',
+                now()->addMinutes($expiry),
+                ['documentId' => $document->id],
+            );
+        }
+
+        return Storage::disk($disk)->temporaryUrl(
+            $path,
+            now()->addMinutes($expiry),
+            [
+                'ResponseContentDisposition' => 'inline; filename="'.$filename.'"',
+            ],
+        );
     }
 
     /**

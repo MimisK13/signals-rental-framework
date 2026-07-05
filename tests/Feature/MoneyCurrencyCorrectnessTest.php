@@ -9,6 +9,7 @@ use App\Data\Opportunities\OpportunityVersionData;
 use App\Models\ExchangeRate;
 use App\Models\Opportunity;
 use App\Models\OpportunityVersion;
+use App\Models\Store;
 use App\Models\User;
 use App\ValueObjects\TaxResult;
 use Database\Seeders\CurrencySeeder;
@@ -21,6 +22,7 @@ beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     $this->seed(CurrencySeeder::class);
+    Store::factory()->create(['is_default' => true]);
     $this->actingAs(User::factory()->owner()->create());
 });
 

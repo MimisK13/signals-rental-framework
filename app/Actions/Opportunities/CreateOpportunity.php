@@ -7,6 +7,7 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\OpportunityData;
 use App\Models\Opportunity;
+use App\Models\Store;
 use App\Services\CurrencyService;
 use App\Services\Opportunities\OpportunityNumberGenerator;
 use App\Services\SequenceAllocator;
@@ -46,10 +47,12 @@ class CreateOpportunity
             // its baked-in opportunity_id and never calls this action.
             $opportunityId = app(SequenceAllocator::class)->next('opportunities');
 
+            $storeId = $this->resolveStoreId($data->store_id);
+
             // Allocate the zero-padded RMS number at fire-time and bake it into
             // the event so replay reproduces the identical number (same
             // replay-stability principle as the projection id).
-            $number = app(OpportunityNumberGenerator::class)->next($data->store_id);
+            $number = app(OpportunityNumberGenerator::class)->next($storeId);
 
             // Resolve the currency and its base-currency exchange rate HERE and bake
             // both into the event, so the genesis apply() stays a pure,
@@ -62,7 +65,7 @@ class CreateOpportunity
                 number: $number,
                 subject: $data->subject,
                 member_id: $data->member_id,
-                store_id: $data->store_id,
+                store_id: $storeId,
                 owned_by: $data->owned_by,
                 venue_id: $data->venue_id,
                 reference: $data->reference,
@@ -105,7 +108,7 @@ class CreateOpportunity
                 charge_total: $data->charge_total,
                 currency_code: $currency,
                 exchange_rate: $this->resolveExchangeRate($currency),
-                prices_include_tax: $data->prices_include_tax,
+                prices_include_tax: $data->prices_include_tax ?? (bool) settings('finance.prices_include_tax_default', false),
                 tag_list: array_values($data->tag_list ?? []),
             );
 
@@ -135,6 +138,34 @@ class CreateOpportunity
         foreach ($addressIds as $field => $addressId) {
             $this->assertAddressBelongsToMember($field, $addressId, $memberId);
         }
+    }
+
+    /**
+     * Resolve the store for numbering and projection. Numbering is per-store;
+     * when the payload omits store_id, fall back to the default store (matching
+     * the opportunity form).
+     */
+    private function resolveStoreId(?int $storeId): int
+    {
+        if ($storeId !== null) {
+            return $storeId;
+        }
+
+        $defaultStoreId = Store::query()->where('is_default', true)->value('id');
+
+        if (is_int($defaultStoreId)) {
+            return $defaultStoreId;
+        }
+
+        $firstStoreId = Store::query()->orderBy('id')->value('id');
+
+        if (is_int($firstStoreId)) {
+            return $firstStoreId;
+        }
+
+        throw ValidationException::withMessages([
+            'store_id' => [__('No store is configured. Create a store before creating opportunities.')],
+        ]);
     }
 
     /**

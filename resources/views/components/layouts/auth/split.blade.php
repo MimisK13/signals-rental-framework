@@ -28,7 +28,7 @@
 
                 <footer class="s-auth-footer s-auth-split-footer">
                     <div class="s-auth-footer-text mb-2.5">
-                        Signals Rental Framework &mdash; Free &amp; Open Source &mdash; MIT License
+                        Signals Rental Framework &mdash; Free &amp; Open Source &mdash; AGPL-3.0 License
                     </div>
                     <div class="flex gap-6">
                         <a href="{{ route('docs.index') }}" target="_blank">Documentation</a>

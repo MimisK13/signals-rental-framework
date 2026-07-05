@@ -1,12 +1,17 @@
 <?php
 
 use App\Models\Activity;
+use App\Models\CreditNote;
+use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\PurchaseOrder;
 use App\Models\StockLevel;
 use App\Models\User;
+use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Storage;
@@ -240,9 +245,94 @@ describe('GET /search (PostgreSQL ilike)', function () {
         expect($response->json('opportunities.0.id'))->toBe($live->id);
     });
 
+    it('returns matching members by number', function () {
+        Member::factory()->organisation()->create([
+            'name' => 'Unrelated Org',
+            'number' => 'MEM-4242',
+        ]);
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'MEM-4242']))
+            ->assertOk()
+            ->assertJsonCount(1, 'members')
+            ->assertJsonPath('members.0.name', 'Unrelated Org');
+    });
+
+    it('returns matching credit notes by number and member name', function () {
+        $member = Member::factory()->organisation()->create(['name' => 'Credit Customer Ltd']);
+        $invoice = Invoice::factory()->create(['member_id' => $member->id]);
+        CreditNote::factory()->create(['invoice_id' => $invoice->id, 'number' => 'CN-SEARCH-99']);
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'CN-SEARCH']))
+            ->assertOk()
+            ->assertJsonCount(1, 'credit_notes')
+            ->assertJsonPath('credit_notes.0.name', 'CN-SEARCH-99')
+            ->assertJsonPath('credit_notes.0.number', 'Credit Customer Ltd')
+            ->assertJsonPath('credit_notes.0.typeValue', 'credit_note');
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'Credit Customer']))
+            ->assertOk()
+            ->assertJsonCount(1, 'credit_notes');
+    });
+
+    it('returns matching purchase orders by number and supplier name', function () {
+        $supplier = Member::factory()->organisation()->create(['name' => 'Supplier Warehouse Co']);
+        PurchaseOrder::factory()->create(['supplier_id' => $supplier->id, 'number' => 'PO-SEARCH-88']);
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'PO-SEARCH']))
+            ->assertOk()
+            ->assertJsonCount(1, 'purchase_orders')
+            ->assertJsonPath('purchase_orders.0.name', 'PO-SEARCH-88')
+            ->assertJsonPath('purchase_orders.0.number', 'Supplier Warehouse Co')
+            ->assertJsonPath('purchase_orders.0.typeValue', 'purchase_order');
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'Supplier Warehouse']))
+            ->assertOk()
+            ->assertJsonCount(1, 'purchase_orders');
+    });
+
+    it('returns matching virtual stock intakes by number', function () {
+        VirtualStockIntake::factory()->create(['number' => 'VS-SEARCH-77']);
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'VS-SEARCH']))
+            ->assertOk()
+            ->assertJsonCount(1, 'virtual_stock_intakes')
+            ->assertJsonPath('virtual_stock_intakes.0.name', 'VS-SEARCH-77')
+            ->assertJsonPath('virtual_stock_intakes.0.typeValue', 'virtual_stock_intake');
+    });
+
+    it('returns matching invoice payments by number and reference', function () {
+        $invoice = Invoice::factory()->create(['number' => 'INV-PAY-REF']);
+        InvoicePayment::factory()->create([
+            'invoice_id' => $invoice->id,
+            'number' => 'PAY-SEARCH-66',
+            'reference' => 'BACS-12345',
+        ]);
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'PAY-SEARCH']))
+            ->assertOk()
+            ->assertJsonCount(1, 'invoice_payments')
+            ->assertJsonPath('invoice_payments.0.name', 'PAY-SEARCH-66')
+            ->assertJsonPath('invoice_payments.0.typeValue', 'invoice_payment');
+
+        $this->actingAs($this->owner)
+            ->getJson(route('search', ['q' => 'BACS-12345']))
+            ->assertOk()
+            ->assertJsonCount(1, 'invoice_payments');
+    });
+
     it('scopes results to the actor permissions', function () {
         Opportunity::factory()->create(['subject' => 'Hidden Festival Deal']);
         Member::factory()->contact()->create(['name' => 'Festival Contact']);
+        PurchaseOrder::factory()->create(['number' => 'PO-HIDDEN-55']);
+        VirtualStockIntake::factory()->create(['number' => 'VS-HIDDEN-44']);
+        CreditNote::factory()->create(['number' => 'CN-HIDDEN-33']);
 
         $viewer = User::factory()->create();
         $viewer->givePermissionTo('members.access', 'members.view');
@@ -251,8 +341,18 @@ describe('GET /search (PostgreSQL ilike)', function () {
             ->getJson(route('search', ['q' => 'Festival']))
             ->assertOk()
             ->assertJsonCount(0, 'opportunities')
+            ->assertJsonCount(0, 'purchase_orders')
+            ->assertJsonCount(0, 'virtual_stock_intakes')
+            ->assertJsonCount(0, 'credit_notes')
             ->assertJsonCount(1, 'members')
             ->assertJsonPath('members.0.name', 'Festival Contact');
+
+        $this->actingAs($viewer)
+            ->getJson(route('search', ['q' => 'HIDDEN']))
+            ->assertOk()
+            ->assertJsonCount(0, 'purchase_orders')
+            ->assertJsonCount(0, 'virtual_stock_intakes')
+            ->assertJsonCount(0, 'credit_notes');
     });
 
     it('accepts a trimmed query of at least two characters', function () {

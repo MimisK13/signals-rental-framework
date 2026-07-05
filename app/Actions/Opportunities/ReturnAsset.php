@@ -7,6 +7,7 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Opportunities\ReturnAssetData;
 use App\Models\OpportunityItemAsset;
+use App\Services\Containers\KitContainerReturnCompletion;
 use App\Verbs\Events\Opportunities\AssetReturned;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -40,6 +41,12 @@ class ReturnAsset
 
         if ($fresh->item !== null) {
             $this->rebuildSnapshotsForItems([$fresh->item]);
+        }
+
+        $container = app(KitContainerReturnCompletion::class)->containerForAssignment($fresh);
+
+        if ($container !== null) {
+            app(KitContainerReturnCompletion::class)->maybeCompleteIndividualReturn($container);
         }
 
         return OpportunityItemAssetData::fromModel($fresh);

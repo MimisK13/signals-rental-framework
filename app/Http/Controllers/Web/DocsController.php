@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Services\DocsService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -16,20 +15,21 @@ class DocsController extends Controller
     ) {}
 
     /**
-     * Redirect to the first documentation page.
+     * Display the documentation landing page.
      */
-    public function index(): RedirectResponse
+    public function index(): View
     {
         $navigation = $this->docs->getNavigation();
 
-        if (empty($navigation['sections']) || empty($navigation['sections'][0]['pages'])) {
+        if (empty($navigation['sections']) || ! $this->navigationHasPages($navigation)) {
             abort(404);
         }
 
-        $firstSection = $navigation['sections'][0]['slug'];
-        $firstPage = $navigation['sections'][0]['pages'][0]['slug'];
-
-        return redirect()->route('docs.show', [$firstSection, $firstPage]);
+        return view('docs.index', [
+            'navigation' => $navigation,
+            'landingCards' => $this->docs->getLandingCards(),
+            'latestChangelogVersion' => $this->docs->getLatestChangelogVersion(),
+        ]);
     }
 
     /**
@@ -47,18 +47,7 @@ class DocsController extends Controller
      */
     public function sitemap(): Response
     {
-        $navigation = $this->docs->getNavigation();
-        $urls = [];
-
-        foreach ($navigation['sections'] as $section) {
-            foreach ($section['pages'] as $page) {
-                $urls[] = route('docs.show', [$section['slug'], $page['slug']]);
-            }
-        }
-
-        if ($this->docs->changelogExists()) {
-            $urls[] = route('docs.changelog');
-        }
+        $urls = $this->docs->getSitemapUrls();
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
@@ -101,7 +90,6 @@ class DocsController extends Controller
         return view('docs.changelog', [
             'entries' => $entries,
             'navigation' => $navigation,
-            'searchDataJson' => json_encode($this->docs->getSearchIndex(), JSON_THROW_ON_ERROR),
         ]);
     }
 
@@ -115,20 +103,20 @@ class DocsController extends Controller
         $content = $this->docs->getPage($section, $page);
         $navigation = $this->docs->getNavigation();
         $adjacent = $this->docs->getAdjacentPages($section, $page);
+        $display = $this->docs->resolveDisplayContext($section, $page);
 
-        $sectionTitle = collect($navigation['sections'])
-            ->firstWhere('slug', $section)['title'] ?? $section;
+        abort_if($display === null, 404);
 
         $viewData = [
             'title' => $content['title'],
             'description' => $content['description'],
             'navigation' => $navigation,
-            'currentSection' => $section,
+            'currentSection' => $display['sectionSlug'],
+            'currentSubSection' => $display['subSectionSlug'],
             'currentPage' => $page,
-            'sectionTitle' => $sectionTitle,
+            'sectionTitle' => $display['sectionTitle'],
             'prev' => $adjacent['prev'],
             'next' => $adjacent['next'],
-            'searchDataJson' => json_encode($this->docs->getSearchIndex(), JSON_THROW_ON_ERROR),
         ];
 
         if (($content['type'] ?? null) === 'blade') {
@@ -141,5 +129,31 @@ class DocsController extends Controller
             'html' => $content['html'],
             'toc' => $content['toc'],
         ]));
+    }
+
+    /**
+     * @param  array{sections: array<int, array{pages?: array<int, mixed>, subSections?: array<int, array{groups: array<int, array{pages?: array<int, mixed>}>}>}>}  $navigation
+     */
+    private function navigationHasPages(array $navigation): bool
+    {
+        foreach ($navigation['sections'] as $section) {
+            if (isset($section['pages']) && $section['pages'] !== []) {
+                return true;
+            }
+
+            if (! isset($section['subSections'])) {
+                continue;
+            }
+
+            foreach ($section['subSections'] as $subSection) {
+                foreach ($subSection['groups'] as $group) {
+                    if (isset($group['pages']) && $group['pages'] !== []) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }

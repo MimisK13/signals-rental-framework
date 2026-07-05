@@ -353,7 +353,7 @@
     <div class="container">
         <span class="logo-mark size-sm" style="border-color: var(--text-muted); margin-bottom: 20px;">Signals</span>
         <div style="margin-top: 20px; font-size: 0.5625rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.06em;">
-            Signals Rental Framework &mdash; Free &amp; Open Source &mdash; MIT License
+            Signals Rental Framework &mdash; Free &amp; Open Source &mdash; AGPL-3.0 License
         </div>
         <div style="margin-top: 12px; display: flex; gap: 24px; justify-content: center;">
             <a href="https://docs.signals.rent" style="font-size: 0.5625rem; text-decoration: none; text-transform: uppercase; letter-spacing: 0.06em;">Documentation</a>

@@ -8,6 +8,8 @@ use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Services\Api\WebhookService;
 use App\Services\CustomFieldValidator;
+use App\Services\Members\MemberNumberGenerator;
+use App\Services\Tax\MemberVatValidationService;
 use Illuminate\Support\Facades\Gate;
 
 class CreateMember
@@ -18,7 +20,15 @@ class CreateMember
 
         app(CustomFieldValidator::class)->validate('Member', $data->custom_fields, enforceRequired: true);
 
+        MemberPriceCategoryTierValidator::assertTierBelongsToCategory(
+            $data->price_category_tier_id,
+            $data->price_category_id,
+        );
+
+        $number = app(MemberNumberGenerator::class)->nextOrCreate();
+
         $member = Member::create([
+            'number' => $number,
             'name' => $data->name,
             'membership_type' => $data->membership_type,
             'is_active' => $data->is_active,
@@ -43,6 +53,7 @@ class CreateMember
             'rating' => $data->rating,
             'owned_by' => $data->owned_by,
             'price_category_id' => $data->price_category_id,
+            'price_category_tier_id' => $data->price_category_tier_id,
             'discount_category_id' => $data->discount_category_id,
             'invoice_term_id' => $data->invoice_term_id,
             'invoice_term_length' => $data->invoice_term_length,
@@ -54,6 +65,11 @@ class CreateMember
         ]);
 
         $member->syncCustomFields($data->custom_fields, applyDefaults: true);
+
+        if ($data->tax_number !== null && trim($data->tax_number) !== '') {
+            app(MemberVatValidationService::class)->handleTaxNumberChange($member, null);
+            $member->refresh();
+        }
 
         event(new AuditableEvent($member, 'member.created'));
 

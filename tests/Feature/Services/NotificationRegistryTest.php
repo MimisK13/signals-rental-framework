@@ -82,6 +82,8 @@ test('groups types by category', function () {
 });
 
 test('syncs types to database', function () {
+    $countBefore = NotificationType::count();
+
     $this->registry->registerMany([
         'user.invited' => [
             'category' => 'Users',
@@ -101,7 +103,7 @@ test('syncs types to database', function () {
 
     $this->registry->syncToDatabase();
 
-    expect(NotificationType::count())->toBe(2);
+    expect(NotificationType::count())->toBe($countBefore + 2);
 
     $type = NotificationType::where('key', 'user.invited')->first();
     expect($type->category)->toBe('Users');
@@ -109,6 +111,8 @@ test('syncs types to database', function () {
 });
 
 test('sync updates existing types without duplicating', function () {
+    $countBefore = NotificationType::count();
+
     $this->registry->register('user.invited', [
         'category' => 'Users',
         'name' => 'User Invited',
@@ -131,7 +135,7 @@ test('sync updates existing types without duplicating', function () {
 
     $updatedRegistry->syncToDatabase();
 
-    expect(NotificationType::count())->toBe(1);
+    expect(NotificationType::count())->toBe($countBefore + 1);
     expect(NotificationType::where('key', 'user.invited')->first())
         ->description->toBe('Updated description.');
 });

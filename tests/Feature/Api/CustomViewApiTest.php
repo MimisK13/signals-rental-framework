@@ -347,7 +347,7 @@ describe('DELETE /api/v1/custom_views/{id}', function () {
         $view = CustomView::where('visibility', 'system')->first();
 
         $this->deleteJson("/api/v1/custom_views/{$view->id}")
-            ->assertUnprocessable();
+            ->assertForbidden();
 
         expect(CustomView::find($view->id))->not->toBeNull();
     });

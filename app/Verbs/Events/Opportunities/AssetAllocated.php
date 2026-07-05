@@ -9,6 +9,9 @@ use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\StockLevel;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\AvailabilityService;
+use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\Events\Opportunities\Concerns\SyncsAssetDemands;
@@ -51,6 +54,7 @@ class AssetAllocated extends Event
         public int $opportunity_item_id = 0,
         public int $stock_level_id = 0,
         public ?string $allocated_at = null,
+        public bool $ignore_availability = false,
     ) {}
 
     public function validate(AssetAssignmentState $state): void
@@ -79,6 +83,10 @@ class AssetAllocated extends Event
             $stockLevel?->product?->stock_method === StockMethod::Serialised,
             'Only serialised stock can be allocated as a specific asset.',
         );
+
+        if ($stockLevel !== null && $stockLevel->is_virtual) {
+            $this->assertVirtualAssetAssignable($item, $stockLevel);
+        }
 
         // The same physical asset must not already be allocated to this line.
         $this->assert(
@@ -111,7 +119,7 @@ class AssetAllocated extends Event
         }
 
         // Over-allocation guard: the asset must be free for the line's window.
-        if ($item !== null && $stockLevel !== null) {
+        if ($item !== null && $stockLevel !== null && ! $this->ignore_availability) {
             $this->assertAssetAvailableForItem($item, $this->stock_level_id);
         }
     }
@@ -143,6 +151,8 @@ class AssetAllocated extends Event
 
         $this->incrementStockAllocation($state->stock_level_id, '1');
 
+        $this->syncVirtualAssetStatus($state->stock_level_id, 'allocated');
+
         $item = OpportunityItem::query()->whereKey($state->opportunity_item_id)->first();
 
         if ($item === null) {
@@ -172,5 +182,46 @@ class AssetAllocated extends Event
         return $this->allocated_at !== null
             ? CarbonImmutable::parse($this->allocated_at)
             : CarbonImmutable::now();
+    }
+
+    private function assertVirtualAssetAssignable(?OpportunityItem $item, StockLevel $stockLevel): void
+    {
+        $this->assert(
+            $stockLevel->virtual_stock_intake_id !== null,
+            'Virtual assets must be linked to a virtual stock intake.',
+        );
+
+        $this->assert(
+            $stockLevel->virtual_asset_status !== 'retired',
+            'Retired virtual assets cannot be allocated.',
+        );
+
+        if ($item !== null) {
+            $context = app(OpportunityItemDemandResolver::class)->resolveContext($item);
+
+            $available = app(AvailabilityService::class)->checkAssetAvailable(
+                (int) $stockLevel->id,
+                $context['from'],
+                $context['to'],
+            );
+
+            $this->assert($available, 'The virtual asset is not available for the line item\'s period.');
+        }
+    }
+
+    private function syncVirtualAssetStatus(int $stockLevelId, string $toStatus): void
+    {
+        $stockLevel = StockLevel::query()->whereKey($stockLevelId)->first();
+
+        if ($stockLevel === null || ! $stockLevel->is_virtual) {
+            return;
+        }
+
+        $registry = app(VirtualAssetStatusRegistry::class);
+        $current = $stockLevel->virtual_asset_status ?? $registry->defaultStatus();
+
+        if ($registry->canTransitionTo($current, $toStatus)) {
+            $stockLevel->forceFill(['virtual_asset_status' => $toStatus])->saveQuietly();
+        }
     }
 }

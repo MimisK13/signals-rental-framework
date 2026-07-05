@@ -2,8 +2,10 @@
 
 namespace App\Services\Opportunities;
 
+use App\Enums\LineItemTransactionType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
+use App\Services\Pricing\QuantityMinorArithmetic;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -43,13 +45,22 @@ final class OpportunityItemChargeBounds
         int $unitPriceMinor,
     ): int {
         // Mirror OpportunityTotalsCalculator::manualLineSubtotal exactly so the
-        // guard never permits a value the calculator then overflows: the quantity is
-        // rounded to whole units (not the raw fractional value) and the discount is
-        // applied with the same bcmath HALF_UP rounding on the minor-unit grid.
-        $quantityUnits = max(0, (int) round((float) $item->quantity));
-        $days = max(1, app(OpportunityItemChargeableDays::class)->forItem($item, $opportunity));
+        // guard never permits a value the calculator then overflows: fractional
+        // quantities use {@see QuantityMinorArithmetic} (never float round()) and
+        // hire lines multiply by the same chargeable-day count the editor displays.
+        $currency = $opportunity->currency_code ?: (string) settings('company.base_currency', 'GBP');
+        $quantity = app(QuantityMinorArithmetic::class)->normalizeQuantity((string) $item->quantity);
 
-        $gross = $unitPriceMinor * $quantityUnits * $days;
+        $gross = app(QuantityMinorArithmetic::class)->multiplyMinorByQuantity(
+            $unitPriceMinor,
+            $quantity,
+            $currency,
+        );
+
+        if ($item->transaction_type !== LineItemTransactionType::Sale) {
+            $days = max(1, app(OpportunityItemChargeableDays::class)->forItem($item, $opportunity));
+            $gross *= $days;
+        }
 
         return $this->applyDiscount($gross, $item->discount_percent);
     }

@@ -7,6 +7,10 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
+Broadcast::channel('member.{memberId}', function (User $user, int $memberId): bool {
+    return $user->member_id !== null && (int) $user->member_id === $memberId;
+});
+
 /*
 |--------------------------------------------------------------------------
 | Availability

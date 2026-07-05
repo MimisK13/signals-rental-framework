@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use App\Enums\NotificationAudience;
 use Database\Factories\NotificationTypeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property list<string> $default_channels
+ * @property list<string> $available_channels
+ * @property list<array<string, mixed>>|null $default_recipients
+ * @property NotificationAudience $audience
+ * @property array<string, mixed>|null $data_schema
+ */
 class NotificationType extends Model
 {
     /** @use HasFactory<NotificationTypeFactory> */
@@ -18,8 +26,11 @@ class NotificationType extends Model
         'category',
         'name',
         'description',
+        'audience',
         'available_channels',
         'default_channels',
+        'default_recipients',
+        'data_schema',
         'is_active',
         'is_system',
         'source',
@@ -31,8 +42,11 @@ class NotificationType extends Model
     protected function casts(): array
     {
         return [
+            'audience' => NotificationAudience::class,
             'available_channels' => 'array',
             'default_channels' => 'array',
+            'default_recipients' => 'array',
+            'data_schema' => 'array',
             'is_active' => 'boolean',
             'is_system' => 'boolean',
         ];

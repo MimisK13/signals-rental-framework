@@ -21,6 +21,10 @@ class NotificationSettingFactory extends Factory
         return [
             'notification_type_id' => NotificationType::factory(),
             'channels' => ['database', 'mail'],
+            'channel_config' => [
+                'mail' => ['provider_id' => null, 'template_id' => null],
+            ],
+            'recipient_rules' => [['type' => 'subject_owner']],
             'is_enabled' => true,
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\Verbs\Events\Opportunities;
 
 use App\Models\OpportunityItem;
+use App\Services\Shortages\VirtualStockCostApportionmentRecalculator;
 use App\Verbs\Events\Opportunities\Concerns\PricesOpportunityItems;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityItemState;
@@ -62,6 +63,8 @@ class ItemDatesChanged extends Event
 
         $this->repriceAndRollUp($item, $state->manual_unit_price);
         $this->syncDemand($item);
+
+        app(VirtualStockCostApportionmentRecalculator::class)->forItem($item);
 
         $opportunity = $item->opportunity()->first();
 

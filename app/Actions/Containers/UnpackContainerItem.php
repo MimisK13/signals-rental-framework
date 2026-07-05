@@ -8,6 +8,7 @@ use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
+use App\Services\Containers\ContainerEventRecorder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -66,6 +67,8 @@ class UnpackContainerItem
             // Release the container demand — the item returns to availability.
             $item->setRelation('container', $container);
             app(ContainerDemandResolver::class)->releaseDemands($item);
+
+            app(ContainerEventRecorder::class)->itemUnpacked($container, $item);
 
             return $item;
         });

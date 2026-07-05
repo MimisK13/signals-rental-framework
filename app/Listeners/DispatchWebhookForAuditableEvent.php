@@ -2,9 +2,11 @@
 
 namespace App\Listeners;
 
+use App\Data\Invoices\InvoiceData;
 use App\Data\Opportunities\OpportunityData;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
+use App\Models\Invoice;
 use App\Models\Opportunity;
 use App\Models\ShortageResolution;
 use App\Models\ShortageWaitlistMonitor;
@@ -57,6 +59,21 @@ class DispatchWebhookForAuditableEvent
     ];
 
     /**
+     * Audit actions whose webhook payload carries the full invoice DTO.
+     *
+     * @var list<string>
+     */
+    private const INVOICE_ENTITY_ACTIONS = [
+        'invoice.created',
+        'invoice.issued',
+        'invoice.voided',
+        'invoice.overdue',
+        'payment.recorded',
+        'payment.refunded',
+        'credit_note.issued',
+    ];
+
+    /**
      * The model classes whose webhooks this bridge owns: the Phase-3 opportunity
      * lifecycle plus the shortage resolution / waitlist records. These AuditableEvents
      * have NO other webhook dispatch path, so the bridge is their sole emitter.
@@ -70,6 +87,7 @@ class DispatchWebhookForAuditableEvent
      */
     private const OWNED_MODELS = [
         Opportunity::class,
+        Invoice::class,
         ShortageResolution::class,
         ShortageWaitlistMonitor::class,
     ];
@@ -122,6 +140,16 @@ class DispatchWebhookForAuditableEvent
             $fresh = Opportunity::query()->find($model->getKey()) ?? $model;
 
             return ['opportunity' => OpportunityData::fromModel($fresh)->toArray()];
+        }
+
+        // Invoice webhooks are emitted solely via this bridge: Verbs invoice events
+        // record audit in handle() → AuditableEvent → here. They are NOT also
+        // dispatched from actions/recorders, so there is no double-delivery path.
+        if ($model instanceof Invoice
+            && in_array($event->action, self::INVOICE_ENTITY_ACTIONS, true)) {
+            $fresh = Invoice::query()->find($model->getKey()) ?? $model;
+
+            return ['invoice' => InvoiceData::fromModel($fresh)->toArray()];
         }
 
         // Lifecycle / line-item / asset / cost / version transitions, and the

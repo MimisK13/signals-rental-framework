@@ -2,12 +2,26 @@
 
 use App\Models\Activity;
 use App\Models\Email;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberRelationship;
+use App\Models\Opportunity;
 use App\Models\Phone;
 use App\Models\Product;
+use App\Models\PurchaseOrder;
 use App\Models\Store;
+use App\Models\User;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\ProductGroupSeeder;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\TaxCategorySeeder;
+use Database\Seeders\TaxClassSeeder;
+use Database\Seeders\TaxRateSeeder;
+use Database\Seeders\TaxRuleSeeder;
+use Database\Seeders\TaxZoneRuleSeeder;
+use Database\Seeders\TaxZoneSeeder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -219,4 +233,39 @@ it('removes demo activities tagged with demo-data and leaves real activities', f
 
     expect(Activity::find($demoActivity->id))->toBeNull();
     expect(Activity::find($realActivity->id))->not->toBeNull();
+});
+
+it('removes demo opportunities, invoices, and purchase orders', function () {
+    config(['signals.installed' => true, 'signals.setup_complete' => true]);
+
+    $this->seed(PermissionSeeder::class);
+    $this->seed(RoleSeeder::class);
+    $this->seed(TaxZoneSeeder::class);
+    $this->seed(TaxClassSeeder::class);
+    $this->seed(TaxRateSeeder::class);
+    $this->seed(TaxCategorySeeder::class);
+    $this->seed(TaxRuleSeeder::class);
+    $this->seed(TaxZoneRuleSeeder::class);
+    $this->seed(ProductGroupSeeder::class);
+
+    Queue::fake();
+
+    User::factory()->owner()->create(['email' => 'test@example.com']);
+    Store::factory()->create(['is_default' => true, 'timezone' => 'UTC']);
+    Member::factory()->organisation()->count(3)->create(['tag_list' => ['demo-data']]);
+
+    require_once base_path('tests/Support/DemoSeederTestHelpers.php');
+    seedDemoProducts();
+    seedDemoOpportunities();
+    seedDemoInvoices();
+    seedDemoPurchaseOrders();
+
+    settings()->set('setup.demo_seeded_at', now()->toIso8601String());
+
+    $this->artisan('signals:clear-demo', ['--force' => true])
+        ->assertSuccessful();
+
+    expect(Opportunity::query()->whereJsonContains('tag_list', 'demo-data')->exists())->toBeFalse();
+    expect(Invoice::query()->whereJsonContains('tag_list', 'demo-data')->exists())->toBeFalse();
+    expect(PurchaseOrder::query()->where('reference', 'like', 'DEMO-PO-%')->exists())->toBeFalse();
 });

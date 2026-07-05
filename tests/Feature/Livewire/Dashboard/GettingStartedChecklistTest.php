@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Dashboard\GettingStartedChecklist;
+use App\Models\Opportunity;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Livewire\Livewire;
@@ -70,4 +72,31 @@ it('shows progress based on completed items', function () {
         ->test(GettingStartedChecklist::class);
 
     $component->assertDontSee('100% complete');
+});
+
+it('marks product and opportunity checklist items complete when records exist', function () {
+    Product::factory()->create();
+    Opportunity::factory()->create();
+
+    $items = collect((new GettingStartedChecklist)->items());
+
+    expect($items->firstWhere('label', 'Create your first product')['completed'])->toBeTrue()
+        ->and($items->firstWhere('label', 'Create your first opportunity')['completed'])->toBeTrue();
+});
+
+it('reflects seeded demo data progress for product and opportunity items', function () {
+    settings()->set('company.name', 'Acme Rentals');
+    settings()->set('branding.logo_path', '/logos/acme.png');
+    settings()->set('email.smtp_host', 'smtp.example.com');
+    Store::create(['name' => 'HQ', 'is_default' => true]);
+    User::factory()->create(['is_owner' => true]);
+    User::factory()->create();
+    Product::factory()->create();
+    Opportunity::factory()->create();
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(GettingStartedChecklist::class)
+        ->assertSee('100% complete');
 });

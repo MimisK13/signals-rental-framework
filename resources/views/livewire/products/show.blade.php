@@ -147,6 +147,33 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </div>
             </x-signals.panel>
 
+            @if($isSerialised)
+                <x-signals.panel title="Container Configuration">
+                    @if($product->isContainerable())
+                        <x-signals.data-list layout="horizontal" :items="[
+                            ['label' => 'Containerable', 'value' => 'Yes'],
+                            ['label' => 'Availability Mode', 'value' => $product->containerMode()->label()],
+                            ['label' => 'Check-in Mode', 'value' => $product->container_checkin_mode?->label() ?? 'Not set'],
+                            ['label' => 'Max Nesting Depth', 'value' => (string) $product->container_max_nesting_depth],
+                            ['label' => 'Repack on Return', 'value' => $product->container_repack_on_return ? 'Yes' : 'No'],
+                            ['label' => 'Template Slots', 'value' => (string) count($product->container_template['slots'] ?? [])],
+                        ]" />
+                        <div class="mt-3">
+                            <a href="{{ route('products.container-config', $product) }}" wire:navigate class="text-sm font-medium" style="color: var(--blue-ink);">
+                                Edit container configuration →
+                            </a>
+                        </div>
+                    @else
+                        <p class="text-sm text-[var(--text-muted)]">This product is not configured as a container housing.</p>
+                        <div class="mt-3">
+                            <a href="{{ route('products.container-config', $product) }}" wire:navigate class="text-sm font-medium" style="color: var(--blue-ink);">
+                                Configure container settings →
+                            </a>
+                        </div>
+                    @endif
+                </x-signals.panel>
+            @endif
+
             {{-- Tax & Revenue + Pricing side by side --}}
             <div class="grid grid-cols-2 gap-6 max-md:grid-cols-1">
                 {{-- Tax & Revenue --}}
@@ -169,11 +196,13 @@ new #[Layout('components.layouts.app')] class extends Component {
                             label="Sub-Rental Price"
                             :value="$product->sub_rental_price ? $formatter->money($product->sub_rental_price) : '—'"
                         />
-                        <x-signals.stat-card
-                            color="blue"
-                            label="Purchase Price"
-                            :value="$product->purchase_price ? $formatter->money($product->purchase_price) : '—'"
-                        />
+                        @costs
+                            <x-signals.stat-card
+                                color="blue"
+                                label="Purchase Price"
+                                :value="$product->purchase_price ? $formatter->money($product->purchase_price) : '—'"
+                            />
+                        @endcosts
                         <x-signals.stat-card
                             color="amber"
                             label="Replacement Charge"

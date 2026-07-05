@@ -3,6 +3,10 @@
 namespace App\ValueObjects;
 
 use App\Enums\ShortageDispatchPolicy;
+use App\Models\OpportunityItem;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
+use Illuminate\Validation\ValidationException;
 
 /**
  * The outcome of the dispatch shortage gate (shortage-resolution-sub-hires.md
@@ -79,5 +83,45 @@ final readonly class DispatchGateResult
             'dispatch_policy' => $this->policy->value,
             'held_items' => $heldItems,
         ];
+    }
+
+    /**
+     * Clamp a bulk-line dispatch quantity to what is actually available when the gate
+     * allows partial dispatch (WarnPartial / AllowPartial). Block policies throw
+     * before this is reached; non-short lines pass through unchanged.
+     *
+     * @throws ValidationException when nothing remains dispatchable on a short line
+     */
+    public function clampBulkDispatchQuantity(OpportunityItem $item, string $requestedQuantity): string
+    {
+        if (! $this->isShort() || $this->policy->blocksDispatch()) {
+            return $requestedQuantity;
+        }
+
+        $shortage = $this->shortages->first(
+            static fn ($candidate) => $candidate->opportunityItemId === $item->id,
+        );
+
+        if ($shortage === null) {
+            return $requestedQuantity;
+        }
+
+        $alreadyDispatched = BigDecimal::of($item->dispatched_quantity);
+        $available = BigDecimal::of($shortage->availableQuantity);
+        $maxAdditional = $available->minus($alreadyDispatched);
+
+        if ($maxAdditional->isLessThanOrEqualTo(0)) {
+            throw ValidationException::withMessages([
+                'quantity' => ['Nothing remains available to dispatch on this short line.'],
+            ]);
+        }
+
+        $requested = BigDecimal::of($requestedQuantity);
+
+        if ($requested->isLessThanOrEqualTo($maxAdditional)) {
+            return $requestedQuantity;
+        }
+
+        return $maxAdditional->toScale(2, RoundingMode::DOWN)->__toString();
     }
 }

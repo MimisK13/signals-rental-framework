@@ -30,6 +30,7 @@ class UpdateOpportunityCost
         $this->commitVerbs(function () use ($cost, $data): void {
             CostUpdated::fire(
                 opportunity_cost_id: $cost->state_id,
+                virtual_stock_intake_id: $cost->virtual_stock_intake_id,
                 description: $this->resolve($data->description, $cost->description),
                 cost_type: $this->resolve($data->cost_type, $cost->cost_type->value),
                 transaction_type: $this->resolve($data->transaction_type, $cost->transaction_type->value),

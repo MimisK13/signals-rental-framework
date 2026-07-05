@@ -1,5 +1,6 @@
-@props(['pageTitle' => '', 'pageDescription' => '', 'canonicalUrl' => '', 'currentSection' => ''])
+@props(['pageTitle' => '', 'pageDescription' => '', 'canonicalUrl' => '', 'currentSection' => '', 'landing' => false])
 
+@inject('docsService', \App\Services\DocsService::class)
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -57,7 +58,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
         <script src="https://cdn.jsdelivr.net/npm/turndown@7.2.0/dist/turndown.min.js" defer></script>
     </head>
-    <body class="min-h-screen bg-[var(--content-bg)] text-[13px] leading-normal text-[var(--text-primary)] antialiased">
+    <body class="min-h-screen bg-[var(--content-bg)] text-[13px] leading-normal text-[var(--text-primary)] antialiased" x-data>
 
         {{-- Docs header --}}
         <header class="docs-header">
@@ -67,7 +68,11 @@
                 </span>
             </a>
             <a href="{{ route('docs.index') }}" class="docs-header-title">Documentation</a>
-            {{ $search ?? '' }}
+            <button type="button" class="docs-search-trigger" @click="$dispatch('open-docs-search')" aria-label="Search documentation">
+                <svg class="docs-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                <span>Search docs...</span>
+                <kbd class="docs-search-kbd">⌘K</kbd>
+            </button>
             <div class="docs-header-actions">
                 <a href="/docs/api" target="_blank" rel="noopener noreferrer" class="docs-header-api-link">API Reference</a>
                 <a href="https://github.com/signals-rental/framework" target="_blank" rel="noopener noreferrer" class="header-icon-btn" aria-label="GitHub" title="GitHub">
@@ -81,16 +86,16 @@
         </header>
 
         {{-- Mobile bar: nav toggle + actions --}}
-        <div class="docs-mobile-bar" x-data="{ navOpen: false, searchOpen: false }">
+        <div class="docs-mobile-bar" x-data="{ navOpen: false }">
             <div class="docs-mobile-bar-row">
-                <button @click="navOpen = !navOpen; searchOpen = false" class="docs-mobile-toggle">
+                <button @click="navOpen = !navOpen" class="docs-mobile-toggle">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                     Navigation
                 </button>
                 <div class="docs-mobile-actions">
-                    <button @click="searchOpen = !searchOpen; navOpen = false" class="header-icon-btn" aria-label="Search">
+                    <button @click="$dispatch('open-docs-search')" class="header-icon-btn" aria-label="Search documentation">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                     </button>
                     <a href="https://github.com/signals-rental/framework" target="_blank" rel="noopener noreferrer" class="header-icon-btn" aria-label="GitHub" title="GitHub">
@@ -102,44 +107,13 @@
                     </button>
                 </div>
             </div>
-            <div class="docs-mobile-search" x-show="searchOpen" x-cloak x-transition>
-                <div x-data="docsSearch()" @keydown.escape.window="close()">
-                    <div class="docs-mobile-search-input-wrap">
-                        <svg class="docs-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-                        <input type="text"
-                               class="docs-search-input"
-                               placeholder="Search docs..."
-                               x-model="query"
-                               @focus="open = query.length > 0"
-                               @input="open = query.length > 0"
-                               @keydown.arrow-down.prevent="moveDown()"
-                               @keydown.arrow-up.prevent="moveUp()"
-                               @keydown.enter.prevent="go()">
-                    </div>
-                    <div class="docs-search-results docs-mobile-search-results" x-show="open && results.length > 0" x-cloak x-transition.opacity>
-                        <template x-for="(result, index) in results" :key="result.url">
-                            <a :href="result.url"
-                               class="docs-search-result"
-                               :class="{ 'active': index === selected }"
-                               @mouseenter="selected = index">
-                                <span class="docs-search-result-title" x-text="result.title"></span>
-                                <span class="docs-search-result-section" x-text="result.section"></span>
-                                <span class="docs-search-result-snippet" x-show="result.snippet" x-text="result.snippet"></span>
-                            </a>
-                        </template>
-                    </div>
-                    <div class="docs-search-results docs-mobile-search-results" x-show="open && query.length > 0 && results.length === 0" x-cloak x-transition.opacity>
-                        <div class="docs-search-empty">No results found</div>
-                    </div>
-                </div>
-            </div>
             <nav class="docs-mobile-nav" x-show="navOpen" x-cloak @click.outside="navOpen = false" x-transition>
                 {{ $sidebar }}
             </nav>
         </div>
 
         {{-- Three-column layout --}}
-        <div class="docs-layout">
+        <div @class(['docs-layout', 'docs-layout-landing' => $landing])>
             {{-- Left sidebar --}}
             <aside class="docs-sidebar">
                 <nav class="docs-nav">
@@ -153,6 +127,7 @@
             </main>
 
             {{-- Right sidebar: On This Page + Promo --}}
+            @unless($landing)
             <aside class="docs-toc">
                 {{ $toc ?? '' }}
 
@@ -175,19 +150,76 @@
                     <a href="https://signals.rent" class="docs-promo-cta">Learn more &rarr;</a>
                 </div>
             </aside>
+            @endunless
         </div>
 
-        {{ $searchData ?? '' }}
+        <div
+            class="docs-search-modal-root"
+            x-data="docsSearchModal()"
+            x-cloak
+            @open-docs-search.window="openModal()"
+            @keydown.escape.window="close()"
+        >
+            <div class="docs-search-modal-backdrop" x-show="open" x-transition.opacity @click.self="close()"></div>
+            <div
+                class="docs-search-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Search documentation"
+                x-show="open"
+                x-transition
+                @keydown.arrow-down.prevent="moveDown()"
+                @keydown.arrow-up.prevent="moveUp()"
+                @keydown.enter.prevent="go()"
+            >
+                <div class="docs-search-modal-input-wrap">
+                    <svg class="docs-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    <input
+                        type="search"
+                        class="docs-search-modal-input"
+                        placeholder="Search documentation..."
+                        x-model="query"
+                        x-ref="modalInput"
+                        @input="selected = 0"
+                    >
+                    <kbd class="docs-search-modal-kbd">Esc</kbd>
+                </div>
+
+                <div class="docs-search-modal-results" x-show="query.trim().length > 0 && groupedResults.length > 0">
+                    <template x-for="group in groupedResults" :key="group.section">
+                        <div class="docs-search-modal-group">
+                            <div class="docs-search-modal-group-label" x-text="group.section"></div>
+                            <template x-for="item in group.items" :key="item.url">
+                                <a
+                                    :href="item.url"
+                                    class="docs-search-modal-result"
+                                    :class="{ 'active': item.index === selected }"
+                                    @mouseenter="selected = item.index"
+                                >
+                                    <span class="docs-search-modal-result-title" x-text="item.title"></span>
+                                    <span class="docs-search-modal-result-context" x-show="item.context" x-text="item.context"></span>
+                                </a>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="docs-search-modal-empty" x-show="query.trim().length > 0 && groupedResults.length === 0">
+                    No results found.
+                </div>
+            </div>
+        </div>
+
+        <script id="docs-search-data" type="application/json">{!! json_encode($docsService->getSearchIndex(), JSON_THROW_ON_ERROR) !!}</script>
         @fluxScripts
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
         <script>
             hljs.highlightAll();
 
             document.addEventListener('keydown', (e) => {
-                if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                     e.preventDefault();
-                    const input = document.querySelector('.docs-search-input');
-                    if (input) input.focus();
+                    window.dispatchEvent(new CustomEvent('open-docs-search'));
                 }
             });
 
@@ -218,44 +250,198 @@
                     }
                 }));
 
-                Alpine.data('docsSearch', () => ({
-                    query: '',
+                Alpine.data('docsSidebar', (config = {}) => ({
+                    currentSection: config.currentSection || '',
+                    currentSubSection: config.currentSubSection || '',
+                    currentPage: config.currentPage || '',
+                    onChangelog: config.onChangelog || false,
+                    openSections: {},
+                    openSubSections: {},
+
+                    init() {
+                        this.loadOpenState();
+                    },
+
+                    loadOpenState() {
+                        try {
+                            const stored = JSON.parse(localStorage.getItem('docs-nav-open') || '{}');
+
+                            if (stored && typeof stored === 'object') {
+                                this.openSections = stored;
+                            }
+
+                            const storedSubSections = JSON.parse(localStorage.getItem('docs-nav-sub-open') || '{}');
+
+                            if (storedSubSections && typeof storedSubSections === 'object') {
+                                this.openSubSections = storedSubSections;
+                            }
+                        } catch (error) {
+                            this.openSections = {};
+                            this.openSubSections = {};
+                        }
+                    },
+
+                    persistOpenState() {
+                        localStorage.setItem('docs-nav-open', JSON.stringify(this.openSections));
+                        localStorage.setItem('docs-nav-sub-open', JSON.stringify(this.openSubSections));
+                    },
+
+                    isSectionOpen(slug) {
+                        if (Object.prototype.hasOwnProperty.call(this.openSections, slug)) {
+                            return this.openSections[slug] === true;
+                        }
+
+                        return ! this.onChangelog && slug === this.currentSection;
+                    },
+
+                    toggleSection(slug) {
+                        this.openSections[slug] = ! this.isSectionOpen(slug);
+                        this.persistOpenState();
+                    },
+
+                    isSubSectionOpen(slug) {
+                        if (Object.prototype.hasOwnProperty.call(this.openSubSections, slug)) {
+                            return this.openSubSections[slug] === true;
+                        }
+
+                        return slug === this.currentSubSection;
+                    },
+
+                    toggleSubSection(slug) {
+                        this.openSubSections[slug] = ! this.isSubSectionOpen(slug);
+                        this.persistOpenState();
+                    },
+                }));
+
+                Alpine.data('docsSearchModal', () => ({
                     open: false,
+                    query: '',
                     selected: 0,
                     pages: [],
+
                     init() {
                         this.pages = JSON.parse(document.getElementById('docs-search-data')?.textContent || '[]');
                     },
-                    get results() {
-                        if (this.query.length === 0) return [];
-                        const q = this.query.toLowerCase();
-                        const matched = [];
-                        for (const p of this.pages) {
-                            const titleMatch = p.title.toLowerCase().includes(q);
-                            const sectionMatch = p.section.toLowerCase().includes(q);
-                            const contentMatch = p.content ? p.content.toLowerCase().includes(q) : false;
-                            if (titleMatch || sectionMatch || contentMatch) {
-                                let snippet = '';
-                                if (contentMatch && !titleMatch) {
-                                    const idx = p.content.toLowerCase().indexOf(q);
-                                    const start = Math.max(0, idx - 40);
-                                    const end = Math.min(p.content.length, idx + q.length + 60);
-                                    snippet = (start > 0 ? '...' : '') + p.content.slice(start, end).trim() + (end < p.content.length ? '...' : '');
-                                }
-                                matched.push({ ...p, snippet });
-                                if (matched.length >= 8) break;
-                            }
-                        }
-                        return matched;
+
+                    openModal() {
+                        this.open = true;
+                        this.query = '';
+                        this.selected = 0;
+                        this.$nextTick(() => {
+                            this.$refs.modalInput?.focus();
+                        });
                     },
-                    close() { this.open = false; this.selected = 0; },
-                    moveDown() { if (this.selected < this.results.length - 1) this.selected++; },
-                    moveUp() { if (this.selected > 0) this.selected--; },
-                    go() {
-                        if (this.results.length > 0) {
-                            window.location.href = this.results[this.selected].url;
+
+                    close() {
+                        if (! this.open) {
+                            return;
                         }
-                    }
+
+                        this.open = false;
+                        this.query = '';
+                        this.selected = 0;
+                    },
+
+                    get groupedResults() {
+                        const query = this.query.trim().toLowerCase();
+
+                        if (! query) {
+                            return [];
+                        }
+
+                        const groups = new Map();
+                        let index = 0;
+
+                        for (const page of this.pages) {
+                            const titleMatch = page.title.toLowerCase().includes(query);
+                            const descriptionMatch = (page.description || '').toLowerCase().includes(query);
+                            const matchedHeading = (page.headings || []).find((heading) => {
+                                return heading.toLowerCase().includes(query);
+                            });
+                            const contentMatch = (page.content || '').toLowerCase().includes(query);
+
+                            if (! titleMatch && ! descriptionMatch && ! matchedHeading && ! contentMatch) {
+                                continue;
+                            }
+
+                            let context = '';
+
+                            if (matchedHeading) {
+                                context = matchedHeading;
+                            } else if (descriptionMatch && ! titleMatch) {
+                                context = page.description;
+                            } else if (contentMatch) {
+                                context = this.contentSnippet(page.content, query);
+                            }
+
+                            if (! groups.has(page.section)) {
+                                groups.set(page.section, {
+                                    section: page.section,
+                                    items: [],
+                                });
+                            }
+
+                            groups.get(page.section).items.push({
+                                ...page,
+                                context,
+                                index: index++,
+                            });
+                        }
+
+                        return Array.from(groups.values());
+                    },
+
+                    contentSnippet(content, query) {
+                        const normalized = String(content || '');
+                        const lowerContent = normalized.toLowerCase();
+                        const position = lowerContent.indexOf(query);
+
+                        if (position === -1) {
+                            return normalized.slice(0, 120);
+                        }
+
+                        const start = Math.max(0, position - 40);
+                        const end = Math.min(normalized.length, position + query.length + 80);
+                        let snippet = normalized.slice(start, end).trim();
+
+                        if (start > 0) {
+                            snippet = '…' + snippet;
+                        }
+
+                        if (end < normalized.length) {
+                            snippet += '…';
+                        }
+
+                        return snippet;
+                    },
+
+                    get selectableResults() {
+                        return this.groupedResults.flatMap((group) => group.items);
+                    },
+
+                    moveDown() {
+                        const results = this.selectableResults;
+
+                        if (results.length === 0) {
+                            return;
+                        }
+
+                        this.selected = Math.min(this.selected + 1, results.length - 1);
+                    },
+
+                    moveUp() {
+                        if (this.selected > 0) {
+                            this.selected--;
+                        }
+                    },
+
+                    go() {
+                        const result = this.selectableResults[this.selected];
+
+                        if (result) {
+                            window.location.href = result.url;
+                        }
+                    },
                 }));
 
                 Alpine.data('docsToc', () => ({

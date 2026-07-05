@@ -32,6 +32,10 @@ enum OpportunityCostType: int
 
     case Misc = 5;
 
+    case Subhire = 6;
+
+    case VirtualStock = 7;
+
     public function label(): string
     {
         return match ($this) {
@@ -41,6 +45,8 @@ enum OpportunityCostType: int
             self::Insurance => 'Insurance',
             self::LossDamage => 'Loss / Damage',
             self::Misc => 'Miscellaneous',
+            self::Subhire => 'Sub-hire',
+            self::VirtualStock => 'Virtual Stock',
         };
     }
 }

@@ -40,6 +40,8 @@ use Illuminate\Support\Carbon;
  * @property bool $tax_locked
  * @property int $charge_total
  * @property int|null $deal_total
+ * @property string $deal_price_mode
+ * @property int|null $deal_price_original_total
  * @property int $rental_charge_total
  * @property int $sale_charge_total
  * @property int $service_charge_total
@@ -164,6 +166,8 @@ class Opportunity extends Model implements HasSchema
         'tax_locked',
         'charge_total',
         'deal_total',
+        'deal_price_mode',
+        'deal_price_original_total',
         'rental_charge_total',
         'sale_charge_total',
         'service_charge_total',
@@ -458,6 +462,24 @@ class Opportunity extends Model implements HasSchema
     }
 
     /**
+     * Invoices generated against this opportunity (Phase 4 billing).
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'opportunity_id');
+    }
+
+    /**
+     * @return HasMany<OpportunitySurchargeGroup, $this>
+     */
+    public function surchargeGroups(): HasMany
+    {
+        return $this->hasMany(OpportunitySurchargeGroup::class);
+    }
+
+    /**
      * Members associated with this opportunity, each in a named role. Plain,
      * NON-event-sourced CRM associations (mirrors {@see Activity::participants()}).
      *
@@ -476,6 +498,16 @@ class Opportunity extends Model implements HasSchema
     public function activities(): MorphMany
     {
         return $this->morphMany(Activity::class, 'regarding');
+    }
+
+    /**
+     * Generated documents (quotes, invoices, delivery notes, etc.) for this opportunity.
+     *
+     * @return MorphMany<Document, $this>
+     */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
 
     /**
@@ -545,6 +577,52 @@ class Opportunity extends Model implements HasSchema
     public function scopeWithShortage(Builder $query): Builder
     {
         return $query->where('has_shortage', true);
+    }
+
+    /**
+     * Whether every priceable, non-optional line has been fully quantity-invoiced.
+     * The persisted {@see $invoiced} flag is set only when a closing invoice includes
+     * costs (see P36 partial-quantity rules); this accessor reflects live item state.
+     */
+    public function isFullyQuantityInvoiced(): bool
+    {
+        $items = $this->relationLoaded('items')
+            ? $this->items
+            : $this->items()->get();
+
+        $invoiceable = $items->filter(
+            fn (OpportunityItem $item): bool => ! $item->is_optional && $item->item_type->isPriceable(),
+        );
+
+        if ($invoiceable->isEmpty()) {
+            return false;
+        }
+
+        return $invoiceable->every(fn (OpportunityItem $item): bool => $item->isFullyInvoiced());
+    }
+
+    /**
+     * Per-line remaining invoice quantities keyed by opportunity item id.
+     *
+     * @return array<int, string>
+     */
+    public function remainingInvoiceQuantitiesByItem(): array
+    {
+        $items = $this->relationLoaded('items')
+            ? $this->items
+            : $this->items()->get();
+
+        $remaining = [];
+
+        foreach ($items as $item) {
+            if ($item->is_optional || ! $item->item_type->isPriceable()) {
+                continue;
+            }
+
+            $remaining[(int) $item->id] = $item->remainingInvoiceQuantity();
+        }
+
+        return $remaining;
     }
 
     /**

@@ -27,6 +27,7 @@ class ProductRateFactory extends Factory
             'transaction_type' => RateTransactionType::Rental,
             'price' => fake()->numberBetween(1000, 50000),
             'currency' => 'GBP',
+            'price_category_id' => null,
             'valid_from' => null,
             'valid_to' => null,
             'priority' => 0,
@@ -44,6 +45,13 @@ class ProductRateFactory extends Factory
     {
         return $this->state(fn (): array => [
             'priority' => $priority,
+        ]);
+    }
+
+    public function forPriceCategory(?int $priceCategoryId): static
+    {
+        return $this->state(fn (): array => [
+            'price_category_id' => $priceCategoryId,
         ]);
     }
 }

@@ -748,3 +748,33 @@ it('exports current results as CSV across all value types', function () {
         ->and($csv)->toContain('Standard')     // related model name
         ->and($csv)->toContain('vip');         // json-encoded array
 });
+
+it('exportCsv serialises array cell values as JSON', function () {
+    // The '[encoding error]' fallback only fires when json_encode() fails (malformed
+    // UTF-8 / INF-NAN), but the array cast rejects such values on both write and read,
+    // so no hydrated model can carry one. Exercise the reachable array-encoding branch.
+    $columns = [
+        ['key' => 'name', 'label' => 'Name'],
+        ['key' => 'tag_list', 'label' => 'Tags'],
+    ];
+
+    /** @var DataTable $instance */
+    $instance = Livewire::test(DataTable::class, [
+        'columns' => $columns,
+        'model' => Member::class,
+    ])->instance();
+
+    Member::factory()->create([
+        'name' => 'Tagged member',
+        'tag_list' => ['vip', 'priority'],
+    ]);
+
+    $response = $instance->exportCsv();
+    ob_start();
+    $response->sendContent();
+    $csv = ob_get_clean();
+
+    // The array cell is json_encoded, then fputcsv quotes the field and doubles the
+    // inner quotes: ["vip","priority"] -> "[""vip"",""priority""]".
+    expect($csv)->toContain('[""vip"",""priority""]');
+});

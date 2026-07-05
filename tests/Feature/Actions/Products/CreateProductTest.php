@@ -8,6 +8,7 @@ use App\Events\AuditableEvent;
 use App\Models\CustomField;
 use App\Models\CustomFieldValue;
 use App\Models\Product;
+use App\Models\ProductTaxClass;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -24,6 +25,9 @@ beforeEach(function () {
 it('creates a product', function () {
     Event::fake([AuditableEvent::class]);
 
+    $defaultClass = ProductTaxClass::factory()->create(['is_default' => true]);
+    settings()->set('tax.default_product_tax_class_id', $defaultClass->id);
+
     $data = CreateProductData::from([
         'name' => 'Test Product',
         'product_type' => ProductType::Rental->value,
@@ -33,9 +37,10 @@ it('creates a product', function () {
 
     expect($result)->toBeInstanceOf(ProductData::class)
         ->and($result->name)->toBe('Test Product')
-        ->and($result->is_active)->toBeTrue();
+        ->and($result->is_active)->toBeTrue()
+        ->and($result->tax_class_id)->toBe($defaultClass->id);
 
-    $this->assertDatabaseHas('products', ['name' => 'Test Product']);
+    $this->assertDatabaseHas('products', ['name' => 'Test Product', 'tax_class_id' => $defaultClass->id]);
 
     Event::assertDispatched(AuditableEvent::class);
 });

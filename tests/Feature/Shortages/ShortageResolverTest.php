@@ -62,10 +62,10 @@ function bulkShortage(int $shortfall = 2, int $available = 1): Shortage
     );
 }
 
-it('registers all six built-in resolvers in priority order', function () {
+it('registers all built-in resolvers in priority order', function () {
     $keys = array_map(fn ($r): string => $r->key(), $this->registry->all());
 
-    expect($keys)->toBe(['reallocate', 'substitute', 'transfer', 'date_shift', 'partial', 'waitlist']);
+    expect($keys)->toBe(['reallocate', 'substitute', 'transfer', 'date_shift', 'partial', 'subhire', 'waitlist']);
 });
 
 it('resolves a resolver instance from the container by key', function () {
@@ -74,11 +74,10 @@ it('resolves a resolver instance from the container by key', function () {
         ->and($this->registry->has('nope'))->toBeFalse();
 });
 
-it('marks no built-in resolver auto-executable (every option needs business judgement per spec)', function () {
+it('marks no built-in resolver auto-executable by default (subhire is config-driven off)', function () {
     // Spec §4.1/§4.4/§4.5/§4.6: reallocate, date_shift, partial and waitlist are
-    // all "Auto-executable: No"; substitute/transfer are "configurable" and
-    // default to false until a relationship/pair opts in. So the auto-resolver
-    // never silently applies any built-in resolver.
+    // all "Auto-executable: No"; substitute/transfer/subhire are configurable and
+    // default to false until opted in.
     foreach ($this->registry->all() as $resolver) {
         expect($resolver->isAutoExecutable())->toBeFalse();
     }

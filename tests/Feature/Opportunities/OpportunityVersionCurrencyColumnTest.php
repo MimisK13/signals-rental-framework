@@ -9,6 +9,7 @@ use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\CreateVersionData;
 use App\Models\Opportunity;
 use App\Models\OpportunityVersion;
+use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -73,6 +74,7 @@ it('runs the corrective currency migration idempotently (no-op when the columns 
 });
 
 it('persists the opportunity currency_code on a created version row', function () {
+    Store::factory()->create(['is_default' => true]);
     Auth::login($this->owner);
 
     try {

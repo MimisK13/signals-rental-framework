@@ -4,6 +4,7 @@ namespace App\Data\Products;
 
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
+use App\Data\Concerns\StripsCostFields;
 use App\Data\Rates\ProductRateData;
 use App\Enums\AllowedStockType;
 use App\Enums\ProductType;
@@ -18,6 +19,13 @@ use Spatie\LaravelData\Data;
 class ProductData extends Data
 {
     use FormatsTimestamps;
+    use StripsCostFields;
+
+    /** @return list<string> */
+    protected static function costFieldKeys(): array
+    {
+        return ['purchase_price'];
+    }
 
     /**
      * @param  list<string>  $tag_list
@@ -49,6 +57,8 @@ class ProductData extends Data
         public bool $discountable,
         public ?int $tax_class_id,
         public ?int $purchase_tax_class_id,
+        public ?int $sale_tax_category_id,
+        public ?int $purchase_tax_category_id,
         public ?int $rental_revenue_group_id,
         public ?int $sale_revenue_group_id,
         public ?int $sub_rental_cost_group_id,
@@ -63,6 +73,8 @@ class ProductData extends Data
         public ?EntityReferenceData $product_group = null,
         public ?EntityReferenceData $tax_class = null,
         public ?EntityReferenceData $purchase_tax_class = null,
+        public ?EntityReferenceData $sale_tax_category = null,
+        public ?EntityReferenceData $purchase_tax_category = null,
         public ?EntityReferenceData $rental_revenue_group = null,
         public ?EntityReferenceData $sale_revenue_group = null,
         public ?EntityReferenceData $sub_rental_cost_group = null,
@@ -127,6 +139,8 @@ class ProductData extends Data
             discountable: $product->discountable ?? true,
             tax_class_id: $product->tax_class_id,
             purchase_tax_class_id: $product->purchase_tax_class_id,
+            sale_tax_category_id: $product->sale_tax_category_id,
+            purchase_tax_category_id: $product->purchase_tax_category_id,
             rental_revenue_group_id: $product->rental_revenue_group_id,
             sale_revenue_group_id: $product->sale_revenue_group_id,
             sub_rental_cost_group_id: $product->sub_rental_cost_group_id,
@@ -146,6 +160,12 @@ class ProductData extends Data
                 : null,
             purchase_tax_class: $product->relationLoaded('purchaseTaxClass') && $product->purchaseTaxClass
                 ? EntityReferenceData::from(['id' => $product->purchaseTaxClass->id, 'name' => $product->purchaseTaxClass->name])
+                : null,
+            sale_tax_category: $product->relationLoaded('saleTaxCategory') && $product->saleTaxCategory
+                ? EntityReferenceData::from(['id' => $product->saleTaxCategory->id, 'name' => $product->saleTaxCategory->name])
+                : null,
+            purchase_tax_category: $product->relationLoaded('purchaseTaxCategory') && $product->purchaseTaxCategory
+                ? EntityReferenceData::from(['id' => $product->purchaseTaxCategory->id, 'name' => $product->purchaseTaxCategory->name])
                 : null,
             rental_revenue_group: $product->relationLoaded('rentalRevenueGroup') && $product->rentalRevenueGroup
                 ? EntityReferenceData::from(['id' => $product->rentalRevenueGroup->id, 'name' => $product->rentalRevenueGroup->name])

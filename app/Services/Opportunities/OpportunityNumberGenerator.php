@@ -2,54 +2,53 @@
 
 namespace App\Services\Opportunities;
 
-use App\Services\SequenceAllocator;
+use App\Models\DocumentSequence;
+use App\Services\Documents\DocumentNumberGenerator;
+use App\Services\Documents\DocumentSequenceDefaults;
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
- * Allocates the next zero-padded opportunity `number` (e.g. "0000000042").
+ * Allocates zero-padded opportunity numbers from per-store document sequences.
  *
- * The number is allocated at event-fire time (in CreateOpportunity) from a named
- * {@see SequenceAllocator} sequence and baked into the OpportunityCreated event
- * payload, so a truncate + Verbs::replay() rebuild reproduces the identical number
- * (same replay-stability principle as the projection id). Allocation therefore
- * lives ONLY in the action — replay re-applies the stored payload and never calls
- * this generator.
+ * The number is allocated at event-fire time (in CreateOpportunity) and baked
+ * into the OpportunityCreated event payload, so a truncate + Verbs::replay()
+ * rebuild reproduces the identical number (same replay-stability principle as
+ * the projection id). Allocation therefore lives ONLY in the action — replay
+ * re-applies the stored payload and never calls this generator.
  *
- * The sequence is store-scoped by default (one running number per store, matching
- * RMS behaviour where an opportunity is scoped to a single store); a null store or
- * the 'global' scope falls back to a single shared sequence. The pad width and
- * scope come from the `opportunities.number_pad` / `opportunities.number_scope`
- * system settings, read here at fire-time only (never on replay).
+ * Legacy installs allocated via SequenceAllocator with an optional global scope
+ * (`opportunities.number_scope`, migration-input only). Runtime numbering is
+ * always per-store via document_sequences. First provision seeds next_number from
+ * the global numeric max + 1 when legacy scope was `global`, otherwise from the
+ * store's own max + 1 so fresh multi-store installs keep independent counters.
  */
 class OpportunityNumberGenerator
 {
+    public const DOCUMENT_TYPE = 'opportunity';
+
     public function __construct(
-        private readonly SequenceAllocator $allocator,
+        private readonly DocumentNumberGenerator $documentNumberGenerator,
     ) {}
 
-    /**
-     * Allocate and format the next number for the given store.
-     */
-    public function next(?int $storeId): string
+    public function next(int $storeId, ?DateTimeInterface $at = null): string
     {
-        $value = $this->allocator->next($this->sequenceKey($storeId));
-
-        $pad = (int) settings('opportunities.number_pad', 10);
-
-        return str_pad((string) $value, $pad, '0', STR_PAD_LEFT);
+        return $this->documentNumberGenerator->next($storeId, self::DOCUMENT_TYPE, $at);
     }
 
-    /**
-     * Resolve the sequence key. Store-scoped installs key the running number to
-     * the store; a global scope (or a null store) shares one sequence.
-     */
-    private function sequenceKey(?int $storeId): string
+    public function ensureSequence(int $storeId): DocumentSequence
     {
-        $scope = settings('opportunities.number_scope', 'store');
+        return DocumentSequenceDefaults::ensureExists($storeId, self::DOCUMENT_TYPE);
+    }
 
-        if ($scope === 'store' && $storeId !== null) {
-            return "opportunity_number:store:{$storeId}";
+    public function nextOrCreate(int $storeId, ?DateTimeInterface $at = null): string
+    {
+        try {
+            return $this->next($storeId, $at);
+        } catch (ModelNotFoundException) {
+            $this->ensureSequence($storeId);
+
+            return $this->next($storeId, $at);
         }
-
-        return 'opportunity_number:global';
     }
 }

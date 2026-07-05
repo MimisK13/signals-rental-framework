@@ -8,6 +8,7 @@
         ['name' => 'invoices', 'label' => 'Invoices', 'route' => route('members.invoices', $member), 'count' => 0],
         ['name' => 'custom-fields', 'label' => 'Custom Fields', 'route' => route('members.custom-fields', $member)],
         ['name' => 'files', 'label' => 'Files', 'route' => route('members.files', $member), 'count' => $member->attachments_count ?? 0],
+        ['name' => 'communications', 'label' => 'Communications', 'route' => route('members.communications', $member)],
     ]"
     :active="$activeTab"
 />

@@ -6,6 +6,7 @@ use App\Contracts\HasSchema;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
 use App\Models\Traits\FormatsMoney;
+use App\Models\Traits\HasCostVisibility;
 use App\Services\SchemaBuilder;
 use Database\Factories\OpportunityCostFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $state_id
  * @property int $opportunity_id
+ * @property int|null $virtual_stock_intake_id
  * @property string $description
  * @property OpportunityCostType $cost_type
  * @property LineItemTransactionType $transaction_type
@@ -45,7 +47,10 @@ use Illuminate\Support\Carbon;
 class OpportunityCost extends Model implements HasSchema
 {
     /** @use HasFactory<OpportunityCostFactory> */
-    use FormatsMoney, HasFactory;
+    use FormatsMoney, HasCostVisibility, HasFactory;
+
+    /** @var list<string> */
+    protected array $costColumns = ['amount'];
 
     /**
      * The PK is application-assigned (allocated at event-fire time and baked into
@@ -61,6 +66,7 @@ class OpportunityCost extends Model implements HasSchema
         'id',
         'state_id',
         'opportunity_id',
+        'virtual_stock_intake_id',
         'description',
         'cost_type',
         'transaction_type',
@@ -110,6 +116,14 @@ class OpportunityCost extends Model implements HasSchema
     public function opportunity(): BelongsTo
     {
         return $this->belongsTo(Opportunity::class, 'opportunity_id');
+    }
+
+    /**
+     * @return BelongsTo<VirtualStockIntake, $this>
+     */
+    public function virtualStockIntake(): BelongsTo
+    {
+        return $this->belongsTo(VirtualStockIntake::class, 'virtual_stock_intake_id');
     }
 
     /**

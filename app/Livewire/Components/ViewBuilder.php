@@ -159,7 +159,7 @@ class ViewBuilder extends Component
     public function getAvailableColumnsProperty(): array
     {
         $registry = $this->getRegistry();
-        $all = $registry->allColumns();
+        $all = $registry->visibleColumns(auth()->user());
 
         return array_filter($all, fn ($col): bool => ! in_array($col->key, $this->selectedColumns, true));
     }
@@ -192,7 +192,7 @@ class ViewBuilder extends Component
         $registry = $this->getRegistry();
         $fields = [];
 
-        foreach ($registry->allColumns() as $col) {
+        foreach ($registry->visibleColumns(auth()->user()) as $col) {
             if ($col->filterable) {
                 $fields[] = ['key' => $col->key, 'label' => $col->label];
             }
@@ -211,7 +211,7 @@ class ViewBuilder extends Component
         $registry = $this->getRegistry();
         $fields = [];
 
-        foreach ($registry->allColumns() as $col) {
+        foreach ($registry->visibleColumns(auth()->user()) as $col) {
             if ($col->sortable) {
                 $fields[] = ['key' => $col->key, 'label' => $col->label];
             }
@@ -238,7 +238,7 @@ class ViewBuilder extends Component
 
         $this->name = '';
         $this->visibility = 'personal';
-        $this->selectedColumns = $registry->defaultColumns();
+        $this->selectedColumns = $registry->defaultColumnsForUser(auth()->user());
         $this->filters = [];
         $this->sortColumn = $this->defaultSortColumn($registry);
         $this->sortDirection = 'asc';
@@ -263,7 +263,7 @@ class ViewBuilder extends Component
             }
         }
 
-        foreach ($registry->allColumns() as $column) {
+        foreach ($registry->visibleColumns(auth()->user()) as $column) {
             if ($column->sortable) {
                 return $column->key;
             }

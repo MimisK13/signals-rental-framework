@@ -8,6 +8,7 @@ use App\Models\AvailabilityEvent;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Services\Availability\RecalculationPipeline;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Keeps availability snapshots consistent when on-hand stock changes.
@@ -103,6 +104,16 @@ class StockLevelObserver
      * track availability, so the only guards needed here are the bulk-seed
      * suppression flag and a cheap "is this product tracked?" pre-check that
      * avoids enqueuing obviously pointless work.
+     *
+     * The dispatch is deferred until the surrounding transaction commits, for the
+     * same reason as {@see DemandObserver::dispatchRecalculation()}: the job is
+     * `ShouldBeUnique`, and acquiring its lock INSERTs into `cache_locks`, which
+     * on PostgreSQL (with the `database` cache store) fails on conflict and
+     * poisons any open transaction (`25P02 current transaction is aborted`) —
+     * e.g. when several stock rows for the same product/store are created in one
+     * transaction (bulk serialised entry, seeding). `DB::afterCommit` runs the
+     * dispatch outside the transaction; with no transaction open it fires
+     * immediately, preserving the normal synchronous flow.
      */
     private function dispatchRecalculation(int $productId, int $storeId): void
     {
@@ -114,7 +125,9 @@ class StockLevelObserver
             return;
         }
 
-        RecalculateAvailabilityJob::dispatch($productId, $storeId);
+        DB::afterCommit(static function () use ($productId, $storeId): void {
+            RecalculateAvailabilityJob::dispatch($productId, $storeId);
+        });
     }
 
     /**

@@ -21,6 +21,13 @@ if ($argc < 2) {
 $ini = ['-d', 'memory_limit=-1'];
 $env = array_merge($_ENV, [
     'COVERAGE_COLLECTING' => '1',
+    // The -d flags above only reach the process we spawn directly; artisan
+    // re-execs paratest (and paratest its workers) as fresh php processes that
+    // fall back to php.ini's memory_limit. A scan-dir ini appended after the
+    // defaults (leading path separator = keep defaults first) lifts the limit
+    // for every php process in the coverage tree — the aggregation step is
+    // what outgrows the stock limit as the suite grows.
+    'PHP_INI_SCAN_DIR' => PATH_SEPARATOR.coverageIniScanDir(),
 ]);
 
 $pcovExtension = resolvePcovExtensionPath();
@@ -49,6 +56,14 @@ if ($pcovExtension !== null) {
     $env['XDEBUG_MODE'] = 'coverage';
 }
 
+// When the wrapped command is paratest itself (invoked directly so the
+// coverage-merging main process inherits our unlimited memory_limit — Herd's
+// php ignores PHP_INI_SCAN_DIR and `artisan test --parallel` would re-exec
+// paratest at the stock limit), replicate the env artisan test would set.
+if (str_contains(implode(' ', $argv), 'paratest')) {
+    $env['LARAVEL_PARALLEL_TESTING'] = '1';
+}
+
 $command = array_merge([PHP_BINARY], $ini, array_slice($argv, 1));
 
 $process = proc_open(
@@ -69,6 +84,19 @@ if (! is_resource($process)) {
 }
 
 exit(proc_close($process));
+
+function coverageIniScanDir(): string
+{
+    $dir = sys_get_temp_dir().'/signals-coverage-ini';
+
+    if (! is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    file_put_contents($dir.'/zz-signals-coverage.ini', "memory_limit=-1\n");
+
+    return $dir;
+}
 
 function resolvePcovExtensionPath(): ?string
 {

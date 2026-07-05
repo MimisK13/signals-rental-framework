@@ -56,14 +56,13 @@ it('rounds a fractional quantity to whole units, matching the calculator', funct
 
     $bounds = app(OpportunityItemChargeBounds::class);
 
-    // 1.5 rounds to 2 units (the calculator's manualLineSubtotal uses round()):
-    // 7500 × 2 × 4 days = 60000 — NOT 1.5 × 7500 × 4 = 45000.
-    expect($bounds->projectedChargeTotalMinor($item, $opportunity, 7500))->toBe(60000);
+    // Fractional quantities bill via QuantityMinorArithmetic (7500 × 1.5 × 4 days = 45000).
+    expect($bounds->projectedChargeTotalMinor($item, $opportunity, 7500))->toBe(45000);
 
     // And the calculator agrees once the override is applied.
     (new OverrideItemPrice)($item->refresh(), OverrideItemPriceData::from(['unit_price' => 7500]));
 
-    expect((int) $item->refresh()->total)->toBe(60000);
+    expect((int) $item->refresh()->total)->toBe(45000);
 });
 
 it('applies the percentage discount with the same minor-unit rounding as the calculator', function () {

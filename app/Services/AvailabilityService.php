@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\Availability\AvailabilityData;
 use App\Data\Availability\AvailabilityRangeData;
 use App\Data\Availability\AvailabilitySlotData;
+use App\Data\Availability\CalendarDayData;
 use App\Data\Availability\CalendarProductData;
 use App\Data\Availability\GanttData;
 use App\Data\Availability\GanttDemandBarData;
@@ -343,12 +344,32 @@ class AvailabilityService
         $conflicting = Demand::query()
             ->whereColumn('demands.asset_id', 'stock_levels.id')
             ->active()
-            ->overlapping($from, $to);
+            ->overlapping($from, $to)
+            ->where('quantity', '>', 0);
 
         return StockLevel::query()
             ->forProduct($productId)
             ->forStore($storeId)
             ->serialized()
+            ->where(function (EloquentBuilder $query) use ($from, $to): void {
+                $query->where('is_virtual', false)
+                    ->orWhere(function (EloquentBuilder $virtual) use ($from, $to): void {
+                        $virtual->where('is_virtual', true)
+                            ->where(function (EloquentBuilder $status): void {
+                                $status->whereNull('virtual_asset_status')
+                                    ->orWhere('virtual_asset_status', '!=', 'retired');
+                            })
+                            ->where(function (EloquentBuilder $window) use ($from, $to): void {
+                                $window->where(function (EloquentBuilder $starts) use ($to): void {
+                                    $starts->whereNull('starts_at')
+                                        ->orWhere('starts_at', '<=', $to);
+                                })->where(function (EloquentBuilder $ends) use ($from): void {
+                                    $ends->whereNull('ends_at')
+                                        ->orWhere('ends_at', '>', $from);
+                                });
+                            });
+                    });
+            })
             ->whereNotExists($conflicting->getQuery())
             ->orderBy('id');
     }
@@ -410,7 +431,13 @@ class AvailabilityService
      */
     public function checkAssetAvailable(int $stockLevelId, Carbon $from, Carbon $to): bool
     {
-        if (! StockLevel::query()->whereKey($stockLevelId)->exists()) {
+        $stockLevel = StockLevel::query()->whereKey($stockLevelId)->first();
+
+        if ($stockLevel === null) {
+            return false;
+        }
+
+        if ($stockLevel->is_virtual && ! $this->virtualAssetAvailableForWindow($stockLevel, $from, $to)) {
             return false;
         }
 
@@ -418,7 +445,28 @@ class AvailabilityService
             ->where('asset_id', $stockLevelId)
             ->active()
             ->overlapping($from, $to)
+            ->where('quantity', '>', 0)
             ->exists();
+    }
+
+    /**
+     * Whether a virtual serialised asset's intake window covers the request.
+     */
+    private function virtualAssetAvailableForWindow(StockLevel $stockLevel, Carbon $from, Carbon $to): bool
+    {
+        if ($stockLevel->virtual_asset_status === 'retired') {
+            return false;
+        }
+
+        if ($stockLevel->starts_at !== null && $stockLevel->starts_at->gt($to)) {
+            return false;
+        }
+
+        if ($stockLevel->ends_at !== null && $stockLevel->ends_at->lte($from)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -479,16 +527,17 @@ class AvailabilityService
             })
             ->get();
 
-        $worst = $totalStock;
+        $worst = null;
 
         foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
             $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
             [$demanded] = $this->sumDemandIn($demands, $slotStart, $slotEnd);
 
-            $worst = min($worst, $totalStock - $demanded);
+            $available = $totalStock - $demanded;
+            $worst = $worst === null ? $available : min($worst, $available);
         }
 
-        return $worst;
+        return $worst ?? $totalStock;
     }
 
     /**
@@ -586,6 +635,123 @@ class AvailabilityService
             ->values();
 
         return $calendar;
+    }
+
+    /**
+     * Calendar grid for several stores with per-day availability summed company-wide.
+     *
+     * When `$storeIds` is empty, {@see Store::scopeInDefaultQueries()} stores are
+     * used. Availability, shortage flags, and pending check-in counts are aggregated
+     * per product per day across the resolved stores.
+     *
+     * @param  list<int>  $storeIds
+     * @param  list<int>  $productIds
+     * @return SupportCollection<int, CalendarProductData>
+     */
+    public function getCalendarForStores(array $storeIds, Carbon $from, Carbon $to, array $productIds = []): SupportCollection
+    {
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+
+        if ($resolvedStoreIds === []) {
+            return collect();
+        }
+
+        /** @var array<int, array<string, array{available: int, has_shortage: bool, pending_checkin: int}>> $byProductDay */
+        $byProductDay = [];
+        $productNames = [];
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $calendar = $this->getCalendar($storeId, $from, $to, $productIds);
+
+            foreach ($calendar as $productRow) {
+                $productId = $productRow->product_id;
+                $productNames[$productId] = $productRow->product_name;
+
+                foreach ($productRow->days as $day) {
+                    if (! isset($byProductDay[$productId][$day->date])) {
+                        $byProductDay[$productId][$day->date] = [
+                            'available' => 0,
+                            'has_shortage' => false,
+                            'pending_checkin' => 0,
+                        ];
+                    }
+
+                    $byProductDay[$productId][$day->date]['available'] += $day->available;
+                    $byProductDay[$productId][$day->date]['has_shortage'] = $byProductDay[$productId][$day->date]['has_shortage'] || $day->has_shortage;
+                    $byProductDay[$productId][$day->date]['pending_checkin'] += $day->pending_checkin;
+                }
+            }
+        }
+
+        /** @var SupportCollection<int, CalendarProductData> $result */
+        $result = collect($byProductDay)
+            ->map(function (array $days, int $productId) use ($productNames): CalendarProductData {
+                ksort($days);
+
+                $dayRows = [];
+                foreach ($days as $date => $aggregated) {
+                    $dayRows[] = new CalendarDayData(
+                        date: $date,
+                        available: $aggregated['available'],
+                        has_shortage: $aggregated['has_shortage'] || $aggregated['available'] < 0,
+                        pending_checkin: $aggregated['pending_checkin'],
+                    );
+                }
+
+                return new CalendarProductData(
+                    product_id: $productId,
+                    product_name: $productNames[$productId] ?? null,
+                    days: $dayRows,
+                );
+            })
+            ->values();
+
+        return $result;
+    }
+
+    /**
+     * Total sellable stock summed across several stores, keyed by product id.
+     *
+     * @param  list<int>  $productIds
+     * @param  list<int>  $storeIds  explicit stores; empty = default-query stores
+     * @return array<int, int>
+     */
+    public function productTotalStockForStores(array $productIds, array $storeIds): array
+    {
+        $normalised = array_values(array_unique(array_map(intval(...), $productIds)));
+
+        if ($normalised === []) {
+            return [];
+        }
+
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+        $totals = array_fill_keys($normalised, 0);
+
+        foreach ($resolvedStoreIds as $storeId) {
+            foreach ($this->productTotalStock($normalised, $storeId) as $productId => $stock) {
+                $totals[$productId] = ($totals[$productId] ?? 0) + $stock;
+            }
+        }
+
+        return $totals;
+    }
+
+    /**
+     * @param  list<int>  $storeIds
+     * @return list<int>
+     */
+    private function resolveDefaultQueryStoreIds(array $storeIds): array
+    {
+        if ($storeIds !== []) {
+            return array_values(array_unique(array_map(intval(...), $storeIds)));
+        }
+
+        return Store::query()
+            ->inDefaultQueries()
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
     }
 
     /**
@@ -709,6 +875,63 @@ class AvailabilityService
             ->all();
 
         return GanttData::make($productId, $storeId, $from, $to, $totalStock, $bars, $shortages);
+    }
+
+    /**
+     * Gantt read model aggregated across several stores for one product.
+     *
+     * When `$storeIds` is empty, {@see Store::scopeInDefaultQueries()} stores are
+     * used. Demand bars are merged; shortages per day take the worst severity.
+     *
+     * @param  list<int>  $storeIds
+     * @param  list<int>  $assetIds
+     */
+    public function getGanttForStores(int $productId, array $storeIds, Carbon $from, Carbon $to, array $assetIds = []): GanttData
+    {
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+
+        if ($resolvedStoreIds === []) {
+            return GanttData::make($productId, 0, $from, $to, 0, [], []);
+        }
+
+        $allBars = [];
+        $totalStock = 0;
+        /** @var array<string, array{severity: int, in_buffer_zone: bool}> $shortagesByDay */
+        $shortagesByDay = [];
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $gantt = $this->getGantt($productId, $storeId, $from, $to, $assetIds);
+            $totalStock += $gantt->total_stock;
+            $allBars = array_merge($allBars, $gantt->demands);
+
+            foreach ($gantt->shortages as $shortage) {
+                $day = $shortage->from;
+
+                if (! isset($shortagesByDay[$day])) {
+                    $shortagesByDay[$day] = ['severity' => 0, 'in_buffer_zone' => true];
+                }
+
+                $shortagesByDay[$day]['severity'] = max($shortagesByDay[$day]['severity'], $shortage->severity);
+                $shortagesByDay[$day]['in_buffer_zone'] = $shortagesByDay[$day]['in_buffer_zone'] && $shortage->in_buffer_zone;
+            }
+        }
+
+        ksort($shortagesByDay);
+
+        $shortages = [];
+        foreach ($shortagesByDay as $day => $data) {
+            if ($data['severity'] === 0) {
+                continue;
+            }
+
+            $shortages[] = GanttShortageData::make(
+                Carbon::parse($day),
+                -$data['severity'],
+                $data['in_buffer_zone'],
+            );
+        }
+
+        return GanttData::make($productId, $resolvedStoreIds[0], $from, $to, $totalStock, $allBars, $shortages);
     }
 
     /**

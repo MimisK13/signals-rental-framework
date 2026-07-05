@@ -6,6 +6,7 @@ use App\Enums\MembershipType;
 use App\Models\Member;
 use App\Models\Membership;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<Member>
@@ -61,6 +62,15 @@ class MemberFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn () => ['is_active' => false]);
+    }
+
+    public function configure(): static
+    {
+        return $this->afterMaking(function (Member $member): void {
+            if ($member->tax_number_validated === true && $member->tax_number_validated_at === null) {
+                $member->tax_number_validated_at = Carbon::now()->subDays(5);
+            }
+        });
     }
 
     public function withMembership(): static
