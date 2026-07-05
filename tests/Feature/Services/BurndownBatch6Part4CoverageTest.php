@@ -90,8 +90,6 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use LogicException;
-use RuntimeException;
 use Thunk\Verbs\Facades\Verbs;
 
 uses(RefreshDatabase::class);

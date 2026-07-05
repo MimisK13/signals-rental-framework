@@ -54,7 +54,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use InvalidArgumentException;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Volt\Volt;
 
