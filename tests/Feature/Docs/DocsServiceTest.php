@@ -319,16 +319,16 @@ test('getChangelog returns entries sorted newest first', function () {
     expect($entries)->toBeArray()
         ->and(count($entries))->toBeGreaterThan(0)
         ->and($entries[0])->toHaveKeys(['version', 'date', 'title', 'html'])
-        ->and($entries[0]['version'])->toBe('0.5.1');
+        ->and($entries[0]['version'])->toBe('0.6.0');
 });
 
 test('getChangelog extracts frontmatter correctly', function () {
     $service = app(DocsService::class);
     $entries = $service->getChangelog();
 
-    expect($entries[0]['version'])->toBe('0.5.1')
-        ->and($entries[0]['date'])->toBe('2026-06-28')
-        ->and($entries[0]['title'])->toBe('Planning Interface Polish — Overlap Planner, Multi-Store Availability & Product Bookings');
+    expect($entries[0]['version'])->toBe('0.6.0')
+        ->and($entries[0]['date'])->toBe('2026-07-05')
+        ->and($entries[0]['title'])->toBe('Billing & Financial — Quote-to-Cash, Tax, Documents, Notifications, Sub-Hire & Containers');
 });
 
 test('getChangelog renders markdown to html', function () {
@@ -397,7 +397,7 @@ test('getLandingCards returns flat sections and grouped subsections', function (
 test('getLatestChangelogVersion returns the newest changelog filename', function () {
     $service = app(DocsService::class);
 
-    expect($service->getLatestChangelogVersion())->toBe('0.5.1');
+    expect($service->getLatestChangelogVersion())->toBe('0.6.0');
 });
 
 test('getSitemapUrls excludes retired auth pages', function () {

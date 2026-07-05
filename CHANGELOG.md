@@ -5,6 +5,35 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-07-05
+
+Phase 4 release: quote-to-cash billing, EU/UK tax engine, document template engine, notification & communication engine, sub-hire procurement loop, and serialised container lifecycle.
+
+### Added
+
+- **Licensing** — Signals relicensed under **AGPL-3.0-only** (v0.5.2+); `NOTICE` and `CLA.md` shipped; [Licensing docs page](/docs/getting-started/licensing)
+- **Event-sourced financial aggregates** — invoices, payments, credit notes, purchase orders, and virtual stock intakes as Verbs event streams with projected read models
+- **Quote-to-cash** — checkout with frozen tax snapshot; invoice issue & lifecycle; payments, refunds, and balance; deposit/pro-forma and partial-quantity invoicing; credit notes; invoice/credit-note PDFs; billing emails; Finance UI (Invoices, Credit Notes, Payments); `Idempotency-Key` on financial POSTs
+- **Four-stage pricing pipeline** — price categories + tiers, discount rules with criteria engine, surcharges with per-surcharge tax classes, quantity-break/volume + bundle pricing, deal price with Recalculate; half-up and banker's rounding
+- **EU/UK tax engine** — tax zones, four buyer types, zone-aware resolution (reverse charge, zero-rated, exempt, outside-scope), async VIES validation with revalidation, finance settings / tax-point policy, tax audit trail
+- **Document template engine** — per-store sandboxed Blade templates; DomPDF with repeating headers/footers; field-registry browser; CodeMirror 6 editor with live preview, version diff/restore; concurrency-safe numbering; public token sharing (PIN, expiry, QR); frozen regeneration from snapshots
+- **Notification & communication engine** — channel provider registry; three-layer resolution pipeline; event→notification wiring; merge-field templates; customer comms with opt-out; real-time bell; communication log
+- **Sub-hire & procurement** — supplier costs; event-sourced POs; virtual stock intakes; sub-hire shortage resolver with batch consolidation; PO receipt → intake → shortage clear; five cost-apportionment strategies; supplier returns + P&L; serialised virtual-stock assets; field-level cost visibility
+- **Serialised container lifecycle** — config/templates; pack/unpack; seal/unseal + compliance manifest; manual dissolve; dissolve-on-dispatch; kit dispatch/return; repack-on-return; warehouse UI
+- **APIs** — REST surfaces for invoices, credit notes, payments, purchase orders, virtual stock, documents, templates, sequences, pricing, tax, and communications; extended webhook catalogue
+
+See [docs/changelog/0.6.0.md](docs/changelog/0.6.0.md) for full detail.
+
+### Changed
+
+- **Owner bypass** no longer skips state-dependent policy rules
+- **Admin sidebar** always shows all sections
+- **Flat-deal checkout** carries headline totals through to issued invoices
+
+### Fixed
+
+- Invoice overdue tab, credit-note partial editor, notification bell refresh, invoice payment PK collision, demo seeder tax/template provisioning, and UAT sweep items (bell badge, reverse-charge demo, checklist detections)
+
 ## [0.5.1] - 2026-06-28
 
 ### Added
@@ -59,5 +88,6 @@ Phase 3 release: event-sourced opportunity lifecycle, demand-based availability 
 
 See [docs/changelog/0.5.0.md](docs/changelog/0.5.0.md) and the GitHub Release for full detail.
 
+[0.6.0]: https://github.com/signals-rental/signals-framework/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/signals-rental/signals-framework/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/signals-rental/signals-framework/releases/tag/v0.5.0
