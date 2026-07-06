@@ -6,6 +6,7 @@ use App\Enums\ProductType;
 use App\Enums\StockMethod;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\ProductTaxClass;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -13,6 +14,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         $groups = ProductGroup::query()->pluck('id', 'name');
+        $standardProductTaxClassId = ProductTaxClass::query()->where('is_default', true)->value('id');
 
         $products = [
             // Audio
@@ -162,6 +164,7 @@ class ProductSeeder extends Seeder
         foreach ($products as $productData) {
             Product::create(array_merge([
                 'is_active' => true,
+                'tax_class_id' => $standardProductTaxClassId,
             ], $productData));
         }
     }

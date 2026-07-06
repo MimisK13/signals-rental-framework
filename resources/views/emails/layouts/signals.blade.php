@@ -3,9 +3,11 @@
     /** @var string|null $eyebrow */
     /** @var string|null $preheader */
     /** @var string|null $footerContext */
+    /** @var string|null $footerContext */
     $eyebrow ??= null;
     $preheader ??= null;
     $footerContext ??= null;
+    $unsubscribeUrl ??= null;
     $companyName = settings('company.name', 'Signals');
 @endphp
 <!DOCTYPE html>
@@ -107,6 +109,9 @@
             <p style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:12px; line-height:1.7; color:#64748b;">
                 @if ($footerContext)
                     {{ $footerContext }}<br>
+                @endif
+                @if ($unsubscribeUrl)
+                    <a href="{{ $unsubscribeUrl }}" style="color:#64748b; text-decoration:underline;">{{ __('Unsubscribe from these emails') }}</a><br>
                 @endif
                 &copy; {{ date('Y') }} {{ $companyName }}
             </p>

@@ -4,6 +4,7 @@ namespace App\Verbs\Events\Opportunities;
 
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
+use App\Services\Pricing\DiscountCategoryApplier;
 use App\Verbs\Events\Opportunities\Concerns\PricesOpportunityItems;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityItemState;
@@ -77,10 +78,17 @@ class ItemQuantityChanged extends Event
 
         $item->forceFill(['quantity' => $state->quantity])->saveQuietly();
 
+        $opportunity = $item->opportunity()->first();
+
+        if ($opportunity !== null) {
+            app(DiscountCategoryApplier::class)->apply(
+                $opportunity->fresh(['items.item', 'member']),
+            );
+            $item->refresh();
+        }
+
         $this->repriceAndRollUp($item, $state->manual_unit_price);
         $this->syncDemand($item);
-
-        $opportunity = $item->opportunity()->first();
 
         if ($opportunity !== null) {
             $item->refresh();

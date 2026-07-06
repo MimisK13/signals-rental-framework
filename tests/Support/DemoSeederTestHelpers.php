@@ -6,6 +6,22 @@ use Illuminate\Console\OutputStyle;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 
+function makeDemoDataSeeder(): DemoDataSeeder
+{
+    $command = new Command;
+    $command->setLaravel(app());
+    $command->setOutput(new OutputStyle(new ArrayInput([]), new NullOutput));
+
+    return (new DemoDataSeeder)->setContainer(app())->setCommand($command);
+}
+
+function invokeDemoSeederMethod(string $method, ?DemoDataSeeder $seeder = null): mixed
+{
+    $seeder ??= makeDemoDataSeeder();
+
+    return (new ReflectionMethod(DemoDataSeeder::class, $method))->invoke($seeder);
+}
+
 /**
  * Invoke DemoDataSeeder::createDemoProducts() in isolation (a private method)
  * without triggering the multi-thousand-row member seed in run(). A silent
@@ -13,13 +29,12 @@ use Symfony\Component\Console\Output\NullOutput;
  */
 function seedDemoProducts(): void
 {
-    $command = new Command;
-    $command->setLaravel(app());
-    $command->setOutput(new OutputStyle(new ArrayInput([]), new NullOutput));
+    invokeDemoSeederMethod('createDemoProducts');
+}
 
-    $seeder = (new DemoDataSeeder)->setContainer(app())->setCommand($command);
-
-    (new ReflectionMethod(DemoDataSeeder::class, 'createDemoProducts'))->invoke($seeder);
+function seedDemoStores(): void
+{
+    invokeDemoSeederMethod('createDemoStores');
 }
 
 /**
@@ -28,11 +43,40 @@ function seedDemoProducts(): void
  */
 function seedDemoOpportunities(): void
 {
-    $command = new Command;
-    $command->setLaravel(app());
-    $command->setOutput(new OutputStyle(new ArrayInput([]), new NullOutput));
+    invokeDemoSeederMethod('createDemoOpportunities');
+}
 
-    $seeder = (new DemoDataSeeder)->setContainer(app())->setCommand($command);
+function seedDemoMemberEnrichment(): void
+{
+    invokeDemoSeederMethod('enrichDemoMembers');
+}
 
-    (new ReflectionMethod(DemoDataSeeder::class, 'createDemoOpportunities'))->invoke($seeder);
+function seedDemoProductEnrichment(): void
+{
+    invokeDemoSeederMethod('enrichDemoProducts');
+}
+
+function seedDemoStockLevels(): void
+{
+    invokeDemoSeederMethod('seedDemoStockLevels');
+}
+
+function seedDemoInvoices(): void
+{
+    invokeDemoSeederMethod('createDemoInvoices');
+}
+
+function applyDeferredDemoProductTaxCategories(): void
+{
+    invokeDemoSeederMethod('applyDeferredDemoProductTaxCategories');
+}
+
+function seedDemoPurchaseOrders(): void
+{
+    invokeDemoSeederMethod('createDemoPurchaseOrders');
+}
+
+function seedDemoContainers(): void
+{
+    invokeDemoSeederMethod('createDemoContainers');
 }

@@ -48,6 +48,25 @@ it('renders the create form for a user with opportunities.create', function () {
         ->assertSee('Create Opportunity');
 });
 
+it('sets a page title on the create and edit forms (D4)', function () {
+    $this->actingAs($this->owner);
+
+    // Create form → "New Opportunity | Signals" (not the bare "Signals" fallback).
+    $this->get(route('opportunities.create'))
+        ->assertOk()
+        ->assertSee('<title>New Opportunity | Signals</title>', false);
+
+    $opportunity = Opportunity::factory()->create([
+        'subject' => 'Title Edit Subject',
+        'store_id' => $this->store->id,
+    ]);
+
+    // Edit form → "<subject> — Edit | Signals".
+    $this->get(route('opportunities.edit', $opportunity))
+        ->assertOk()
+        ->assertSee('<title>Title Edit Subject — Edit | Signals</title>', false);
+});
+
 it('forbids the create form for a user without opportunities.create', function () {
     $viewer = User::factory()->create();
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');

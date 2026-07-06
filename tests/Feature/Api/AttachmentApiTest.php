@@ -1,13 +1,16 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Models\Attachment;
 use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 
 beforeEach(function () {
     $default = config('filesystems.default', 'local');
@@ -120,6 +123,31 @@ describe('POST /api/v1/attachments', function () {
         ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['attachable_type']);
+    });
+
+    it('returns 422 when the file key is not an UploadedFile instance', function () {
+        $member = Member::factory()->create();
+        $upload = UploadedFile::fake()->create('doc.pdf', 100, 'application/pdf');
+
+        // A real upload sits in the files bag so validation passes, but file('file')
+        // yields a non-UploadedFile — the only way to reach the controller's
+        // defensive PHP-upload-failure guard (validation rejects a bare string first).
+        $request = Request::create(
+            '/api/v1/attachments',
+            'POST',
+            ['attachable_type' => 'Member', 'attachable_id' => $member->id],
+            [],
+            ['file' => $upload],
+        );
+        /** @var Request&MockInterface $request */
+        $request = Mockery::mock($request)->makePartial();
+        $request->shouldReceive('file')->with('file')->andReturn('not-an-upload');
+
+        $response = (new AttachmentController)->store($request);
+
+        expect($response->getStatusCode())->toBe(422)
+            ->and($response->getData(true)['message'])
+            ->toBe('File upload failed. The file may exceed server size limits.');
     });
 });
 

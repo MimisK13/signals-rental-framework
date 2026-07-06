@@ -76,4 +76,17 @@ class ContainerFactory extends Factory
             'sealed_at' => now(),
         ]);
     }
+
+    /**
+     * A barcode-only temporary container with no backing product or asset.
+     */
+    public function temporary(): static
+    {
+        return $this->state(fn (): array => [
+            'serialised_item_id' => null,
+            'product_id' => null,
+            'is_temporary' => true,
+            'scan_mode' => ContainerScanMode::Free->value,
+        ]);
+    }
 }

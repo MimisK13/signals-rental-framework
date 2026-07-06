@@ -1,144 +1,81 @@
 # Containers API
 
-Containers group serialised assets into a single dispatchable unit (kits, hybrid kits, transport boxes). This API exposes the **availability subset** only — listing/reading containers and packing/unpacking items. Packing a kit or hybrid-fixed container holds its contents from individual availability via a container demand; unpacking releases it.
+Containers group serialised assets into dispatchable units (kits, hybrid kits, transport boxes). The API covers the full pack/seal/dispatch/return lifecycle.
 
-> The broader container lifecycle — seal, dissolve, scan, repack, dispatch, and return — is not part of this API yet. Only `open` containers accept pack/unpack.
+Packing a kit or hybrid-fixed container holds its contents from individual availability via container demand; unpacking releases it.
 
 ## Endpoints
 
 | Method | URL | Description |
 |--------|-----|-------------|
-| GET | `/api/v1/containers` | List containers (filter, sort, paginate) |
-| GET | `/api/v1/containers/{container}` | Show a container with its packed contents |
-| POST | `/api/v1/containers/{container}/pack` | Pack a serialised item into an open container |
-| POST | `/api/v1/containers/{container}/unpack` | Unpack a serialised item from an open container |
+| GET | `/api/v1/containers` | List containers |
+| POST | `/api/v1/containers` | Create container |
+| POST | `/api/v1/containers/temporary` | Create temporary container |
+| GET | `/api/v1/containers/{container}` | Show container with packed contents |
+| PATCH | `/api/v1/containers/{container}` | Update container metadata |
+| GET | `/api/v1/containers/{container}/compliance` | Compliance manifest (sealed) |
+| POST | `/api/v1/containers/{container}/pack` | Pack serialised item |
+| POST | `/api/v1/containers/{container}/unpack` | Unpack serialised item |
+| POST | `/api/v1/containers/{container}/transfer` | Transfer packed items between containers |
+| POST | `/api/v1/containers/{container}/seal` | Seal container |
+| POST | `/api/v1/containers/{container}/unseal` | Unseal container |
+| POST | `/api/v1/containers/{container}/dissolve` | Dissolve container |
+| POST | `/api/v1/containers/{container}/dispatch` | Dispatch kit to opportunity |
+| POST | `/api/v1/containers/{container}/return` | Return kit from opportunity |
+| POST | `/api/v1/containers/repack/start` | Start repack session |
+| POST | `/api/v1/containers/{container}/repack` | Repack single item |
+| POST | `/api/v1/containers/{container}/verify-checkin` | Verify check-in scan |
+
+Product container templates: `GET/PUT /api/v1/products/{product}/container_template`.
 
 ## Authentication
 
-Requires a Sanctum bearer token with `containers:read` (GET) or `containers:write` (POST pack/unpack), and the matching `containers.view` / `containers.pack` permission.
+Requires `containers:read` (GET) or `containers:write` (POST/PATCH) with matching `containers.view`, `containers.pack`, `containers.seal`, etc. permissions.
 
-## List Containers
+## List containers
 
 ```
 GET /api/v1/containers
 ```
 
-Supports Ransack `q[...]` filters (`name`, `barcode`, `status`, `scan_mode`, `is_temporary`, `product_id`, `store_id`, `opportunity_id`, `created_at`, `updated_at`), `sort`, offset pagination (`page`, `per_page`), and `?include=product,store,active_items`.
+Ransack filters: `name`, `barcode`, `status`, `scan_mode`, `is_temporary`, `product_id`, `store_id`, `opportunity_id`, `created_at`, `updated_at`.
 
-### Response
+Includes: `?include=product,store,active_items`
 
-```json
-{
-    "containers": [
-        {
-            "id": 1,
-            "uuid": "9b1c…",
-            "name": "Lighting Kit A",
-            "barcode": "KIT-A-001",
-            "status": "open",
-            "scan_mode": "individual",
-            "is_temporary": false,
-            "serialised_item_id": 88,
-            "product_id": 12,
-            "parent_container_id": null,
-            "store_id": 1,
-            "opportunity_id": null,
-            "availability_mode": "kit",
-            "notes": null,
-            "created_at": "2026-06-19T10:00:00.000Z",
-            "updated_at": "2026-06-19T10:00:00.000Z"
-        }
-    ],
-    "meta": { "total": 1, "per_page": 20, "page": 1 }
-}
-```
+## Lifecycle notes
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | int | Container ID |
-| `uuid` | string | Public UUID |
-| `name` | string | Container name |
-| `barcode` | string\|null | Optional barcode |
-| `status` | string | `open`, `sealed`, … |
-| `scan_mode` | string | How the container's contents are scanned |
-| `is_temporary` | bool | Temporary (ad-hoc) container |
-| `serialised_item_id` | int\|null | The serialised housing asset (null for temporary) |
-| `product_id` | int\|null | Backing containerable product |
-| `parent_container_id` | int\|null | Parent container when nested |
-| `store_id` | int\|null | Holding store |
-| `opportunity_id` | int\|null | Opportunity the container is committed to |
-| `availability_mode` | string | `kit`, `hybrid`, or `transport` |
-| `notes` | string\|null | Free-text notes |
+| Action | Constraint |
+|--------|------------|
+| **Pack / unpack** | Container must be `open` |
+| **Seal** | Requires packed contents; produces compliance manifest |
+| **Dissolve** | Warn-and-resolve nested packing; may transfer items |
+| **Dispatch / return** | Kit mode — ties container to opportunity |
+| **Repack** | Post-return scan workflow |
 
-## Show Container
+Transport containers may use **dissolve-on-dispatch** (configured on product template) — see [Containers & Kits platform doc](/docs/platform/containers).
 
-```
-GET /api/v1/containers/{container}
-```
-
-Returns the container in a `container` key, always including its currently-packed contents under `items` (the active membership rows).
-
-```json
-{
-    "container": {
-        "id": 1,
-        "name": "Lighting Kit A",
-        "status": "open",
-        "availability_mode": "kit",
-        "items": [
-            {
-                "id": 5,
-                "container_id": 1,
-                "serialised_item_id": 88,
-                "product_id": 42,
-                "packed_at": "2026-06-19T10:05:00.000Z",
-                "packed_by_user_id": 3,
-                "unpacked_at": null,
-                "unpacked_reason": null,
-                "transferred_to_container_id": null,
-                "position": "Slot 1",
-                "notes": null
-            }
-        ]
-    }
-}
-```
-
-## Pack Item
+## Pack item
 
 ```
 POST /api/v1/containers/{container}/pack
 ```
 
-### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `serialised_item_id` | int | Yes | Serialised stock level to pack (must exist) |
-| `position` | string | No | Slot/position label (max 255) |
+| `serialised_item_id` | int | Yes | Serialised stock level to pack |
+| `position` | string | No | Slot/position label |
 | `notes` | string | No | Free-text note |
 
-Returns `201 Created` with the new membership row in a `container_item` key.
+Returns `201` with `container_item`. Rejected with `422` when container is not open, item is at wrong store, already packed, or committed to another opportunity.
 
-The pack is rejected with `422 Unprocessable Entity` when:
-
-- the container is not `open`;
-- the item is not serialised;
-- the item is held at a different store to the container;
-- the item is already packed in an active container;
-- **the item is already committed to an opportunity** (packing would collide with the existing booking demand);
-- nesting the item would exceed the container's maximum nesting depth.
-
-## Unpack Item
+## Unpack item
 
 ```
 POST /api/v1/containers/{container}/unpack
 ```
 
-### Request Body
+Body: `{ "serialised_item_id": 88 }`. Returns `200` with closed membership row.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `serialised_item_id` | int | Yes | Serialised stock level to unpack |
+## Webhooks
 
-Soft-closes the active membership and releases its container demand so the item returns to individual availability. Returns `200 OK` with the closed membership row in a `container_item` key. Unpacking an item not packed in this container (or from a non-open container) returns `422`.
+`container.created`, `container.item.packed`, `container.item.unpacked`, `container.sealed`, `container.unsealed`, `container.dissolved`, `container.dispatched`, `container.returned`, `container.repack.started`, `container.repack.item` — see [Webhooks](/docs/api/webhooks).

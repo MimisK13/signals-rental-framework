@@ -2,9 +2,15 @@
 
 namespace App\Services;
 
+use App\Models\User;
+use App\Support\CostVisibility;
 use App\Views\ActivityColumnRegistry;
 use App\Views\ColumnRegistry;
 use App\Views\ContainerColumnRegistry;
+use App\Views\CreditNoteColumnRegistry;
+use App\Views\DocumentTemplateColumnRegistry;
+use App\Views\InvoiceColumnRegistry;
+use App\Views\InvoicePaymentColumnRegistry;
 use App\Views\MemberColumnRegistry;
 use App\Views\OpportunityColumnRegistry;
 use App\Views\OpportunityCostColumnRegistry;
@@ -13,10 +19,12 @@ use App\Views\OpportunityVersionColumnRegistry;
 use App\Views\ProductColumnRegistry;
 use App\Views\ProductGroupColumnRegistry;
 use App\Views\ProductRateColumnRegistry;
+use App\Views\PurchaseOrderColumnRegistry;
 use App\Views\RateDefinitionColumnRegistry;
 use App\Views\SerialisedComponentColumnRegistry;
 use App\Views\ShortageResolutionColumnRegistry;
 use App\Views\StockLevelColumnRegistry;
+use App\Views\VirtualStockIntakeColumnRegistry;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -44,6 +52,12 @@ class ColumnRegistryResolver
         'containers' => ContainerColumnRegistry::class,
         'serialised_components' => SerialisedComponentColumnRegistry::class,
         'shortage_resolutions' => ShortageResolutionColumnRegistry::class,
+        'invoices' => InvoiceColumnRegistry::class,
+        'credit_notes' => CreditNoteColumnRegistry::class,
+        'invoice_payments' => InvoicePaymentColumnRegistry::class,
+        'purchase_orders' => PurchaseOrderColumnRegistry::class,
+        'virtual_stock_intakes' => VirtualStockIntakeColumnRegistry::class,
+        'document_templates' => DocumentTemplateColumnRegistry::class,
     ];
 
     /** @var array<string, ColumnRegistry> */
@@ -98,7 +112,7 @@ class ColumnRegistryResolver
      *
      * @throws ValidationException
      */
-    public function validateColumns(string $entityType, array $columns, ?string $sortColumn = null): void
+    public function validateColumns(string $entityType, array $columns, ?string $sortColumn = null, ?User $user = null): void
     {
         $registry = $this->resolve($entityType);
 
@@ -114,10 +128,56 @@ class ColumnRegistryResolver
             ]);
         }
 
+        $this->validateCostGatedColumns($registry, $columns, $sortColumn, $user);
+
         if ($sortColumn !== null && $registry->get($sortColumn) === null) {
             throw ValidationException::withMessages([
                 'sort_column' => ["Invalid sort column: {$sortColumn}"],
             ]);
         }
+    }
+
+    /**
+     * Reject cost-gated column keys when the user lacks `costs.view`.
+     *
+     * @param  list<string>  $columns
+     *
+     * @throws ValidationException
+     */
+    private function validateCostGatedColumns(
+        ColumnRegistry $registry,
+        array $columns,
+        ?string $sortColumn,
+        ?User $user,
+    ): void {
+        if (CostVisibility::canView($user)) {
+            return;
+        }
+
+        $denied = [];
+
+        foreach ($columns as $key) {
+            $column = $registry->get($key);
+
+            if ($column !== null && $column->costGated) {
+                $denied[] = $key;
+            }
+        }
+
+        if ($sortColumn !== null) {
+            $sortColumnDef = $registry->get($sortColumn);
+
+            if ($sortColumnDef !== null && $sortColumnDef->costGated) {
+                $denied[] = $sortColumn;
+            }
+        }
+
+        if ($denied === []) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'columns' => ['Cost columns require costs.view permission: '.implode(', ', array_unique($denied))],
+        ]);
     }
 }

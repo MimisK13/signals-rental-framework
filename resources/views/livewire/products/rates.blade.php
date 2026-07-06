@@ -39,13 +39,13 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function with(): array
     {
         return [
-            'rates' => $this->product->rates()->with(['rateDefinition', 'store'])->orderByDesc('priority')->orderBy('id')->get(),
+            'rates' => $this->product->rates()->with(['rateDefinition', 'store', 'priceCategory'])->orderByDesc('priority')->orderBy('id')->get(),
         ];
     }
 
     private function loadRates(): void
     {
-        $this->product->load(['rates.rateDefinition', 'rates.store'])->loadCount('rates');
+        $this->product->load(['rates.rateDefinition', 'rates.store', 'rates.priceCategory'])->loadCount('rates');
     }
 }; ?>
 
@@ -81,6 +81,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <th class="text-left">Transaction</th>
                             <th class="text-left">Unit Price</th>
                             <th class="text-left">Store</th>
+                            <th class="text-left">Price Category</th>
                             <th class="text-left">Valid</th>
                             <th class="text-left">Priority</th>
                             <th style="width: 48px;"></th>
@@ -112,6 +113,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 </td>
                                 <td class="text-left"><span class="s-badge s-badge-outline">{{ $rate->formatMoneyCost('price') }} {{ $rate->currency }}</span></td>
                                 <td>{{ $rate->store?->name ?? 'All stores' }}</td>
+                                <td>{{ $rate->priceCategory?->name ?? 'Default' }}</td>
                                 <td class="text-sm text-[var(--text-secondary)]">
                                     {{ $rate->valid_from?->toDateString() ?? '—' }} → {{ $rate->valid_to?->toDateString() ?? '—' }}
                                 </td>

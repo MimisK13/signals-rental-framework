@@ -42,6 +42,7 @@ class OpportunityItemFactory extends Factory
             'unit_price' => $unitPrice,
             'charge_period' => ChargePeriod::Day->value,
             'total' => $quantity * $unitPrice,
+            'is_discount_manual' => false,
             'transaction_type' => LineItemTransactionType::Rental->value,
             'is_optional' => false,
         ];

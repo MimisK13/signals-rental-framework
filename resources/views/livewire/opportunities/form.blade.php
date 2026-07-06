@@ -26,6 +26,7 @@ use App\Services\Api\RansackFilter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -731,6 +732,18 @@ new #[Layout('components.layouts.app')] class extends Component
     }
 
     /**
+     * Set the browser/page title so the create + edit forms read
+     * "<Name> | Signals" like the show/list/assets/versions pages, rather than
+     * the bare "Signals" fallback.
+     */
+    public function rendering(View $view): void
+    {
+        $view->title($this->opportunityId !== null
+            ? $this->subject.' — '.__('Edit')
+            : __('New Opportunity'));
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function with(): array
@@ -830,8 +843,14 @@ new #[Layout('components.layouts.app')] class extends Component
                                 </div>
                                 <div>
                                     <label class="s-field-label mb-1 block">Ends At</label>
+                                    {{-- When "Ends At" is empty, open its calendar on the chosen
+                                         "Starts At" month rather than today (anchor). The wire:key
+                                         re-inits the picker when Starts At changes so a freshly
+                                         picked start month takes effect immediately. --}}
                                     <x-signals.datetime-input
+                                        wire:key="opp-ends-at-{{ $startsAt ? \Carbon\Carbon::parse($startsAt)->format('Ymd') : 'none' }}"
                                         :value="$endsAt"
+                                        :anchor="$startsAt"
                                         placeholder="Select date & time"
                                         x-on:input="if (typeof $event.detail === 'string' || $event.detail === null) $wire.set('endsAt', $event.detail)"
                                     />

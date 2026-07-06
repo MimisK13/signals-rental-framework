@@ -94,7 +94,7 @@ export function buildIndex(catalogue = []) {
 }
 
 /**
- * Parse a quick-add term like "6 spiider" into { quantity, term }. A leading
+ * Parse a quick-add term like "6 spider" into { quantity, term }. A leading
  * integer becomes the quantity; the remainder is the search term. With no leading
  * integer the quantity defaults to 1 and the whole string is the term.
  *

@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Models\Opportunity;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -60,12 +62,12 @@ class GettingStartedChecklist extends Component
             ],
             [
                 'label' => 'Create your first product',
-                'completed' => false, // TODO: Enable when Product model exists
+                'completed' => Product::query()->exists(),
                 'description' => 'Add equipment, services, or consumables to your catalogue.',
             ],
             [
                 'label' => 'Create your first opportunity',
-                'completed' => false, // TODO: Enable when Opportunity model exists
+                'completed' => Opportunity::query()->exists(),
                 'description' => 'Start a quote or order for a customer.',
             ],
         ];

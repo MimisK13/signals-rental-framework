@@ -2,24 +2,21 @@
 
 namespace App\Settings;
 
-use App\Services\Opportunities\OpportunityNumberGenerator;
 use Illuminate\Validation\Rule;
 
 /**
  * Settings for the event-sourced opportunity lifecycle.
  *
- * The opportunity `number` is a zero-padded RMS-style reference (e.g.
- * "0000000042") allocated from a per-store sequence at create time and baked
- * into the OpportunityCreated event so replay reproduces it verbatim.
+ * Quote versioning caps (`max_versions`, `max_alternatives`) are read at
+ * version-create time only; replay re-applies the stored event and never
+ * consults these, so sourcing them from settings is replay-safe.
  *
- *  - `number_pad`   — the zero-pad width of the generated number.
- *  - `number_scope` — 'store' (one running sequence per store, matching RMS) or
- *                     'global' (one shared sequence across all stores).
- *
- * These are read at event-fire time only (in
- * {@see OpportunityNumberGenerator}); replay
- * re-applies the stored event payload and never consults the generator, so
- * sourcing them from settings does not affect replay determinism.
+ * @property int $number_pad @deprecated Migration-input only. Opportunity
+ *                           numbering padding is managed via document
+ *                           sequences after convergence (Numbering admin).
+ * @property string $number_scope @deprecated Migration-input only. Numbering is
+ *                                per-store; the legacy `global` scope is not
+ *                                supported at runtime after convergence.
  */
 class OpportunitySettings extends SettingsDefinition
 {

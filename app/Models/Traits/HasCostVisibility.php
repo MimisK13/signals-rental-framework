@@ -3,6 +3,7 @@
 namespace App\Models\Traits;
 
 use App\Models\User;
+use App\Support\CostVisibility;
 
 trait HasCostVisibility
 {
@@ -14,9 +15,7 @@ trait HasCostVisibility
      */
     public function canViewCosts(?User $user = null): bool
     {
-        $user ??= auth()->user();
-
-        return $user?->can('costs.view') ?? false;
+        return CostVisibility::canView($user);
     }
 
     /**
@@ -29,12 +28,6 @@ trait HasCostVisibility
      */
     public function costColumns(): array
     {
-        if (! property_exists($this, 'costColumns')) {
-            throw new \LogicException(
-                static::class.' uses HasCostVisibility but does not declare a $costColumns property.'
-            );
-        }
-
         return $this->costColumns;
     }
 
@@ -46,10 +39,6 @@ trait HasCostVisibility
      */
     public function withoutCostColumns(array $data, ?User $user = null): array
     {
-        if ($this->canViewCosts($user)) {
-            return $data;
-        }
-
-        return array_diff_key($data, array_flip($this->costColumns()));
+        return CostVisibility::stripFields($data, $this->costColumns(), $user);
     }
 }

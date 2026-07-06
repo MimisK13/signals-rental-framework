@@ -6,6 +6,7 @@ use App\Data\Rates\CreateProductRateData;
 use App\Data\Rates\UpdateProductRateData;
 use App\Enums\RateTransactionType;
 use App\Models\Currency;
+use App\Models\PriceCategory;
 use App\Models\Product;
 use App\Models\ProductRate;
 use App\Models\RateDefinition;
@@ -34,6 +35,8 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public ?int $storeId = null;
 
+    public ?int $priceCategoryId = null;
+
     public ?string $validFrom = null;
 
     public ?string $validTo = null;
@@ -57,6 +60,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->price = (string) Money::ofMinor($rate->price, $rate->currency)->getAmount();
             $this->currency = $rate->currency;
             $this->storeId = $rate->store_id;
+            $this->priceCategoryId = $rate->price_category_id;
             $this->validFrom = $rate->valid_from?->toDateString();
             $this->validTo = $rate->valid_to?->toDateString();
             $this->priority = $rate->priority;
@@ -76,6 +80,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'price' => ['required', 'numeric', 'min:0'],
             'currency' => ['required', 'string', 'size:3'],
             'storeId' => ['nullable', 'integer', 'exists:stores,id'],
+            'priceCategoryId' => ['nullable', 'integer', 'exists:price_categories,id'],
             'validFrom' => ['nullable', 'date'],
             'validTo' => ['nullable', 'date', 'after_or_equal:validFrom'],
             'priority' => ['integer'],
@@ -91,6 +96,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'price' => $minor,
             'currency' => $this->currency,
             'store_id' => $this->storeId,
+            'price_category_id' => $this->priceCategoryId,
             'valid_from' => $this->validFrom ?: null,
             'valid_to' => $this->validTo ?: null,
             'priority' => $this->priority,
@@ -111,6 +117,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->validFrom ?: null,
             $this->validTo ?: null,
             $result->id,
+            $this->priceCategoryId,
         );
 
         if ($overlaps->isNotEmpty()) {
@@ -129,6 +136,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'isEditing' => $this->rateId !== null,
             'rateDefinitions' => RateDefinition::query()->orderByDesc('is_preset')->orderBy('name')->get(['id', 'name']),
             'stores' => Store::query()->orderBy('name')->get(['id', 'name']),
+            'priceCategories' => PriceCategory::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'transactionTypes' => RateTransactionType::cases(),
             'currencies' => Currency::query()->enabled()->orderBy('code')->get(['code', 'name']),
         ];
@@ -170,12 +178,19 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </div>
             </x-signals.form-section>
 
-            <x-signals.form-section title="Scope" description="Optionally limit this rate to a store and a validity window.">
+            <x-signals.form-section title="Scope" description="Optionally limit this rate to a store, price category, and a validity window.">
                 <div class="space-y-4">
                     <flux:select wire:model="storeId" label="Store">
                         <flux:select.option value="">All stores</flux:select.option>
                         @foreach($stores as $store)
                             <flux:select.option value="{{ $store->id }}">{{ $store->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+
+                    <flux:select wire:model="priceCategoryId" label="Price Category">
+                        <flux:select.option value="">Default (all categories)</flux:select.option>
+                        @foreach($priceCategories as $category)
+                            <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
 

@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Collection;
+use App\Services\Api\AbilityRegistry;
 use Laravel\Sanctum\NewAccessToken;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -23,73 +23,20 @@ new #[Layout('components.layouts.app')] #[Title('API')] class extends Component 
     /** @var list<string> */
     public array $editAbilities = [];
 
-    /** @var array<string, string> */
-    public array $availableAbilities = [
-        'members:read' => 'Read members',
-        'members:write' => 'Write members',
-        'countries:read' => 'Read countries',
-        'currencies:read' => 'Read currencies',
-        'exchange_rates:read' => 'Read exchange rates',
-        'exchange_rates:write' => 'Write exchange rates',
-        'products:read' => 'Read products & product groups',
-        'products:write' => 'Write products & product groups',
-        'stock:read' => 'Read stock levels & transactions',
-        'stock:write' => 'Write stock levels & transactions',
-        'availability:read' => 'Read product availability',
-        'containers:read' => 'Read containers & contents',
-        'containers:write' => 'Pack & unpack containers',
-        'kits:read' => 'Read kit compositions',
-        'kits:write' => 'Manage kit compositions',
-        'activities:read' => 'Read activities',
-        'activities:write' => 'Write activities',
-        'opportunities:read' => 'Read opportunities',
-        'opportunities:write' => 'Write opportunities',
-        'shortages:read' => 'Read shortages & resolutions',
-        'shortages:write' => 'Write shortage resolutions',
-        'rates:read' => 'Read rate definitions & product rates',
-        'rates:write' => 'Write rate definitions & product rates',
-        'schema:read' => 'Read schema / field metadata',
-        'custom-fields:read' => 'Read custom fields',
-        'custom-fields:write' => 'Write custom fields',
-        'static-data:read' => 'Read static data (lists)',
-        'static-data:write' => 'Write static data (lists)',
-        'tax-classes:read' => 'Read tax classes',
-        'tax-classes:write' => 'Write tax classes',
-        'settings:read' => 'Read settings',
-        'settings:write' => 'Write settings',
-        'users:read' => 'Read users',
-        'users:write' => 'Write users',
-        'roles:read' => 'Read roles',
-        'roles:write' => 'Write roles',
-        'webhooks:manage' => 'Manage webhooks',
-        'system:read' => 'Read system info',
-        'action-log:read' => 'Read action logs',
-    ];
+    /**
+     * @return array<string, string>
+     */
+    public function availableAbilities(): array
+    {
+        return app(AbilityRegistry::class)->labels();
+    }
 
     public function with(): array
     {
         return [
             'tokens' => auth()->user()->tokens()->orderByDesc('created_at')->get(),
-            'abilityGroups' => $this->abilityGroups(),
+            'abilityGroups' => app(AbilityRegistry::class)->groups(),
         ];
-    }
-
-    /**
-     * Group the available abilities by their resource prefix for the picker.
-     *
-     * @return array<string, array{label: string, abilities: array<string, string>}>
-     */
-    public function abilityGroups(): array
-    {
-        $groups = [];
-
-        foreach ($this->availableAbilities as $ability => $label) {
-            $key = str($ability)->before(':')->toString();
-            $groups[$key]['label'] = (string) str($key)->headline();
-            $groups[$key]['abilities'][$ability] = $label;
-        }
-
-        return $groups;
     }
 
     /**
@@ -128,7 +75,7 @@ new #[Layout('components.layouts.app')] #[Title('API')] class extends Component 
         $this->validate([
             'tokenName' => ['required', 'string', 'max:255'],
             'selectedAbilities' => ['required', 'array', 'min:1'],
-            'selectedAbilities.*' => ['string', 'in:' . implode(',', array_keys($this->availableAbilities))],
+            'selectedAbilities.*' => ['string', 'in:' . implode(',', array_keys($this->availableAbilities()))],
         ]);
 
         /** @var NewAccessToken $token */
@@ -165,7 +112,7 @@ new #[Layout('components.layouts.app')] #[Title('API')] class extends Component 
     {
         $this->validate([
             'editAbilities' => ['required', 'array', 'min:1'],
-            'editAbilities.*' => ['string', 'in:' . implode(',', array_keys($this->availableAbilities))],
+            'editAbilities.*' => ['string', 'in:' . implode(',', array_keys($this->availableAbilities()))],
         ]);
 
         $token = auth()->user()->tokens()->find($this->editingTokenId);

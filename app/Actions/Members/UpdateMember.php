@@ -9,6 +9,7 @@ use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Services\Api\WebhookService;
 use App\Services\CustomFieldValidator;
+use App\Services\Tax\MemberVatValidationService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -19,6 +20,22 @@ class UpdateMember
         Gate::authorize('members.edit');
 
         $attributes = array_filter($data->toArray(), fn ($v) => $v !== null);
+
+        if (array_key_exists('price_category_id', $attributes) && $attributes['price_category_id'] !== $member->price_category_id) {
+            if (! array_key_exists('price_category_tier_id', $attributes)) {
+                $attributes['price_category_tier_id'] = null;
+            }
+        }
+
+        if (array_key_exists('price_category_id', $attributes)
+            || array_key_exists('price_category_tier_id', $attributes)) {
+            $effectiveCategoryId = $attributes['price_category_id'] ?? $member->price_category_id;
+            $effectiveTierId = array_key_exists('price_category_tier_id', $attributes)
+                ? $attributes['price_category_tier_id']
+                : $member->price_category_tier_id;
+
+            MemberPriceCategoryTierValidator::assertTierBelongsToCategory($effectiveTierId, $effectiveCategoryId);
+        }
 
         // A user-type member's name, active state and location type are managed
         // from the linked user's profile and are read-only here. Reject any
@@ -40,6 +57,8 @@ class UpdateMember
             }
         }
 
+        $previousTaxNumber = $member->tax_number;
+
         $member->update($attributes);
 
         if ($data->custom_fields !== null) {
@@ -48,6 +67,11 @@ class UpdateMember
         }
 
         $member->refresh();
+
+        if (array_key_exists('tax_number', $attributes)) {
+            app(MemberVatValidationService::class)->handleTaxNumberChange($member, $previousTaxNumber);
+            $member->refresh();
+        }
 
         event(new AuditableEvent($member, 'member.updated'));
 

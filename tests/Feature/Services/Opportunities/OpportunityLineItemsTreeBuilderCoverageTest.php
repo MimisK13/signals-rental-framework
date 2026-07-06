@@ -47,6 +47,26 @@ it('labels an auto-group destination with the Group prefix', function () {
     expect(collect($destinations)->pluck('label')->all())->toContain('Group · Lighting');
 });
 
+it('labels unknown group kinds without a prefix', function () {
+    $opportunity = treeBuilderCovOpportunity();
+
+    $treeService = Mockery::mock(OpportunityEditorTreeService::class);
+    $treeService->shouldReceive('buildDisplayGroups')->once()->andReturn([
+        ['key' => 'custom:1', 'label' => 'Custom node', 'kind' => 'section'],
+    ]);
+
+    $builder = new OpportunityLineItemsTreeBuilder(
+        app(\App\Support\Formatter::class),
+        app(\App\Services\AvailabilityService::class),
+        $treeService,
+    );
+
+    $labels = collect($builder->destinations($opportunity))->pluck('label');
+
+    expect($labels)->toContain('Custom node')
+        ->and($labels->contains(fn (string $label): bool => str_starts_with($label, 'Section · ')))->toBeFalse();
+});
+
 it('resolves a product id from a legacy lowercase namespaced itemable type', function () {
     $opportunity = treeBuilderCovOpportunity();
     $product = Product::factory()->create();

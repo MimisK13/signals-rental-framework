@@ -222,6 +222,10 @@ class Demand extends Model
      */
     public function effectiveQuantity(): int
     {
+        if ($this->quantity < 0) {
+            return $this->quantity;
+        }
+
         $returned = max(0, (int) ($this->metadata['returned_quantity'] ?? 0));
 
         return max(0, $this->quantity - $returned);

@@ -27,6 +27,7 @@ class ProductRateOverlapChecker
         ?string $validFrom,
         ?string $validTo,
         ?int $exceptId = null,
+        ?int $priceCategoryId = null,
     ): Collection {
         $query = ProductRate::query()
             ->where('product_id', $productId)
@@ -35,6 +36,11 @@ class ProductRateOverlapChecker
             ->where(function ($query) use ($storeId): void {
                 $storeId === null ? $query->whereNull('store_id') : $query->where('store_id', $storeId);
             })
+            ->when(
+                $priceCategoryId === null,
+                fn ($query) => $query->whereNull('price_category_id'),
+                fn ($query) => $query->where('price_category_id', $priceCategoryId),
+            )
             ->when($exceptId !== null, fn ($query) => $query->whereKeyNot($exceptId));
 
         // Two windows overlap unless one ends before the other starts. A null

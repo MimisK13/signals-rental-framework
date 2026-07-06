@@ -2,7 +2,9 @@
 
 namespace App\Views;
 
+use App\Models\User;
 use App\Services\SchemaRegistry;
+use App\Support\CostVisibility;
 
 abstract class ColumnRegistry
 {
@@ -37,6 +39,29 @@ abstract class ColumnRegistry
         $this->boot();
 
         return $this->columns;
+    }
+
+    /**
+     * Columns visible to the given user (cost-gated columns omitted without `costs.view`).
+     *
+     * @return array<string, Column>
+     */
+    public function visibleColumns(?User $user = null): array
+    {
+        return $this->filterColumnsForUser($this->allColumns(), $user);
+    }
+
+    /**
+     * Default column keys with cost-gated columns removed for the given user.
+     *
+     * @return list<string>
+     */
+    public function defaultColumnsForUser(?User $user = null): array
+    {
+        return array_values(array_filter(
+            $this->defaultColumns(),
+            fn (string $key): bool => $this->isColumnVisible($key, $user),
+        ));
     }
 
     /**
@@ -131,5 +156,32 @@ abstract class ColumnRegistry
             'enum' => 'enum',
             default => 'string',
         };
+    }
+
+    /**
+     * @param  array<string, Column>  $columns
+     * @return array<string, Column>
+     */
+    protected function filterColumnsForUser(array $columns, ?User $user = null): array
+    {
+        if (CostVisibility::canView($user)) {
+            return $columns;
+        }
+
+        return array_filter(
+            $columns,
+            fn (Column $column): bool => ! $column->costGated,
+        );
+    }
+
+    protected function isColumnVisible(string $key, ?User $user = null): bool
+    {
+        $column = $this->get($key);
+
+        if ($column === null) {
+            return false;
+        }
+
+        return ! $column->costGated || CostVisibility::canView($user);
     }
 }

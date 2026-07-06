@@ -75,6 +75,7 @@ class ShortageResolution extends Model implements HasSchema
         'cancelled_at',
         'cancellation_reason',
         'notes',
+        'virtual_stock_intake_id',
     ];
 
     /**
@@ -100,6 +101,14 @@ class ShortageResolution extends Model implements HasSchema
     public function items(): HasMany
     {
         return $this->hasMany(ShortageResolutionItem::class, 'shortage_resolution_id');
+    }
+
+    /**
+     * @return BelongsTo<VirtualStockIntake, $this>
+     */
+    public function virtualStockIntake(): BelongsTo
+    {
+        return $this->belongsTo(VirtualStockIntake::class, 'virtual_stock_intake_id');
     }
 
     /**

@@ -61,7 +61,7 @@ class CreateOpportunityData extends Data
         // Sales priority/quality rating 0–5 (C3i).
         public ?int $rating = null,
         public string $currency = 'GBP',
-        public bool $prices_include_tax = false,
+        public ?bool $prices_include_tax = null,
         /**
          * Initial charge total in minor units. Accepts an int (already minor
          * units) or a decimal string/float (major units converted against

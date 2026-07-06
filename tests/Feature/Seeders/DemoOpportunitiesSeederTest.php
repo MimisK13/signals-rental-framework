@@ -2,6 +2,7 @@
 
 use App\Enums\OpportunityItemType;
 use App\Enums\OpportunityState;
+use App\Enums\OpportunityStatus;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
@@ -41,6 +42,12 @@ beforeEach(function () {
     seedDemoProducts();
 });
 
+it('seeds twelve demo opportunities tagged demo-data via the event-sourced path', function () {
+    seedDemoOpportunities();
+
+    expect(Opportunity::query()->whereJsonContains('tag_list', 'demo-data')->count())->toBe(12);
+});
+
 it('seeds demo opportunities tagged demo-data via the event-sourced path', function () {
     seedDemoOpportunities();
 
@@ -53,6 +60,16 @@ it('seeds demo opportunities tagged demo-data via the event-sourced path', funct
         expect($opportunity->tag_list)->toContain('demo-data')
             ->and($opportunity->number)->not->toBeNull();
     });
+});
+
+it('seeds dispatched and returned order statuses', function () {
+    seedDemoOpportunities();
+
+    $dispatched = Opportunity::query()->where('reference', 'DEMO-OPP-0009')->firstOrFail();
+    $returned = Opportunity::query()->where('reference', 'DEMO-OPP-0010')->firstOrFail();
+
+    expect($dispatched->statusEnum())->toBe(OpportunityStatus::OrderDispatched)
+        ->and($returned->statusEnum())->toBe(OpportunityStatus::OrderReturned);
 });
 
 it('seeds a spread across draft, quotation and order states', function () {

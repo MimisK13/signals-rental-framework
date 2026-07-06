@@ -2,6 +2,13 @@
     'name' => null,
     'title' => null,
     'size' => 'md',
+    // Teleport the backdrop to <body> (default). Set false for modals that live
+    // inside a Livewire component whose body re-renders heavily on the same action
+    // that closes the modal: Livewire's morph can sever the teleported clone from
+    // Alpine's x-show reactivity, leaving a frozen "ghost" overlay in <body>. With
+    // teleport off the backdrop is morphed in place, so no orphan clone can form.
+    // (The backdrop is position:fixed, so it still overlays the full viewport.)
+    'teleport' => true,
 ])
 
 @php
@@ -14,7 +21,7 @@
     x-on:open-modal.window="if ($event.detail === @js($name) || $event.detail?.id === $el.id) open = true"
     x-on:close-modal.window="if ($event.detail === @js($name) || $event.detail?.id === $el.id) open = false"
 >
-    <template x-teleport="body">
+    @if($teleport)<template x-teleport="body">@endif
         <div
             class="s-modal-backdrop"
             x-show="open"
@@ -42,5 +49,5 @@
                 @endisset
             </div>
         </div>
-    </template>
+    @if($teleport)</template>@endif
 </div>

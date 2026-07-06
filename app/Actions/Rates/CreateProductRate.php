@@ -21,6 +21,7 @@ class CreateProductRate
                 'product_id' => $data->product_id,
                 'rate_definition_id' => $data->rate_definition_id,
                 'store_id' => $data->store_id,
+                'price_category_id' => $data->price_category_id,
                 'transaction_type' => $data->transaction_type,
                 'price' => $data->price,
                 'currency' => $data->currency,
@@ -28,6 +29,8 @@ class CreateProductRate
                 'valid_to' => $data->valid_to,
                 'priority' => $data->priority,
             ]);
+
+            $rate->load('priceCategory');
 
             event(new AuditableEvent($rate, 'product_rate.created'));
 

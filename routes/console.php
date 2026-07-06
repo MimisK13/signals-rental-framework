@@ -22,7 +22,19 @@ Artisan::command('inspire', function () {
 
 Schedule::call(fn () => Cache::put('scheduler:last-run', now(), 300))->everyMinute();
 Schedule::command('action-log:prune')->dailyAt('02:00');
+Schedule::command('communication-log:prune')->dailyAt('02:30');
+Schedule::command('api:flush-logs')->everyMinute()->withoutOverlapping();
+Schedule::command('api:prune-logs')->daily();
 Schedule::command('model:prune')->daily();
+Schedule::command('invoices:process-overdue')->dailyAt('06:00')->withoutOverlapping();
+
+// Re-queue VIES/HMRC checks for members whose cached validation has aged past
+// finance.vat_validation_validity_days (default 30). Does not mutate member
+// fields — the existing ValidateMemberVatNumber job persists outcomes.
+Schedule::command('members:revalidate-expired-vat')
+    ->dailyAt('04:00')
+    ->withoutOverlapping()
+    ->onOneServer();
 
 /**
  * Build a cron expression for the overdue-demand sweep from the configured
@@ -105,6 +117,18 @@ Schedule::job(new ExpirePutAsides)
 // §4.6). Idempotent; withoutOverlapping so a large backlog never stacks,
 // onOneServer in a cluster.
 Schedule::job(new ExpireWaitlistMonitors)
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Escalate unresolved shortages on confirmed orders approaching dispatch (P47).
+Schedule::command('shortages:escalate-unresolved')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Detect virtual stock intakes past available_until still on hire (P47).
+Schedule::command('virtual-stock:detect-overruns')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();

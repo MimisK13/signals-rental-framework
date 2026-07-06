@@ -5,6 +5,7 @@ use App\Enums\StockMethod;
 use App\Models\Accessory;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\TaxCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -57,6 +58,20 @@ describe('GET /api/v1/products', function () {
 
         expect($response->json('products'))->toHaveCount(1);
         expect($response->json('products.0.type'))->toBe('Sale');
+    });
+
+    it('filters by sale_tax_category_id', function () {
+        $category = TaxCategory::factory()->reduced()->create();
+        Product::factory()->create(['sale_tax_category_id' => $category->id]);
+        Product::factory()->create(['sale_tax_category_id' => null]);
+        $token = $this->owner->createToken('test', ['products:read'])->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/products?q[sale_tax_category_id_eq]='.$category->id)
+            ->assertOk();
+
+        expect($response->json('products'))->toHaveCount(1)
+            ->and($response->json('products.0.sale_tax_category_id'))->toBe($category->id);
     });
 
     it('sorts by name', function () {
@@ -167,6 +182,24 @@ describe('POST /api/v1/products', function () {
         $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson('/api/v1/products', ['name' => 'Test'])
             ->assertForbidden();
+    });
+
+    it('accepts and returns sale and purchase tax category ids', function () {
+        $saleCategory = TaxCategory::factory()->standard()->create();
+        $purchaseCategory = TaxCategory::factory()->reduced()->create();
+        $token = $this->owner->createToken('test', ['products:write', 'products:read'])->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/products', [
+                'name' => 'Categorised Product',
+                'product_type' => 'rental',
+                'sale_tax_category_id' => $saleCategory->id,
+                'purchase_tax_category_id' => $purchaseCategory->id,
+            ])
+            ->assertCreated();
+
+        expect($response->json('product.sale_tax_category_id'))->toBe($saleCategory->id)
+            ->and($response->json('product.purchase_tax_category_id'))->toBe($purchaseCategory->id);
     });
 });
 

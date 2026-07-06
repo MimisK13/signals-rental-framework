@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Members\CreateMember;
+use App\Actions\Members\RequestMemberVatValidation;
 use App\Actions\Members\UpdateMember;
 use App\Data\Members\CreateMemberData;
 use App\Data\Members\UpdateMemberData;
@@ -8,10 +9,13 @@ use App\Enums\MembershipType;
 use App\Livewire\Concerns\LoadsCustomFieldValues;
 use App\Livewire\Concerns\ReKeysCustomFieldErrors;
 use App\Models\CustomField;
+use App\Models\DiscountCategory;
 use App\Models\ListName;
 use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\OrganisationTaxClass;
+use App\Models\PriceCategory;
+use App\Models\PriceCategoryTier;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -65,6 +69,10 @@ new #[Layout('components.layouts.app')] class extends Component
 
     public ?string $taxNumber = null;
 
+    public ?bool $taxNumberValidated = null;
+
+    public ?string $taxNumberValidatedAt = null;
+
     public bool $isCash = false;
 
     public bool $isOnStop = false;
@@ -74,6 +82,8 @@ new #[Layout('components.layouts.app')] class extends Component
     public ?int $ownedBy = null;
 
     public ?int $priceCategoryId = null;
+
+    public ?int $priceCategoryTierId = null;
 
     public ?int $discountCategoryId = null;
 
@@ -122,11 +132,14 @@ new #[Layout('components.layouts.app')] class extends Component
             $this->purchaseTaxClassId = $member->purchase_tax_class_id;
             $this->accountNumber = $member->account_number;
             $this->taxNumber = $member->tax_number;
+            $this->taxNumberValidated = $member->tax_number_validated;
+            $this->taxNumberValidatedAt = $member->tax_number_validated_at?->toIso8601String();
             $this->isCash = $member->is_cash ?? false;
             $this->isOnStop = $member->is_on_stop ?? false;
             $this->ratingId = $member->rating;
             $this->ownedBy = $member->owned_by;
             $this->priceCategoryId = $member->price_category_id;
+            $this->priceCategoryTierId = $member->price_category_tier_id;
             $this->discountCategoryId = $member->discount_category_id;
             $this->invoiceTermId = $member->invoice_term_id;
             $this->invoiceTermLength = $member->invoice_term_length ?? 0;
@@ -136,6 +149,27 @@ new #[Layout('components.layouts.app')] class extends Component
             // Load existing custom field values
             $this->customFieldValues = $this->loadCustomFieldValuesFrom($member);
         }
+    }
+
+    public function recheckVatValidation(): void
+    {
+        if ($this->memberId === null) {
+            return;
+        }
+
+        $member = Member::query()->findOrFail($this->memberId);
+
+        app(RequestMemberVatValidation::class)($member);
+
+        $member->refresh();
+
+        $this->taxNumberValidated = $member->tax_number_validated;
+        $this->taxNumberValidatedAt = $member->tax_number_validated_at?->toIso8601String();
+    }
+
+    public function updatedPriceCategoryId(): void
+    {
+        $this->priceCategoryTierId = null;
     }
 
     public function save(): void
@@ -209,6 +243,7 @@ new #[Layout('components.layouts.app')] class extends Component
             'rating' => (int) ($this->ratingId ?? 0),
             'owned_by' => $this->ownedBy,
             'price_category_id' => $this->priceCategoryId,
+            'price_category_tier_id' => $this->priceCategoryTierId,
             'discount_category_id' => $this->discountCategoryId,
             'invoice_term_id' => $this->invoiceTermId,
             'invoice_term_length' => $this->invoiceTermLength,
@@ -246,10 +281,26 @@ new #[Layout('components.layouts.app')] class extends Component
     }
 
     #[Computed]
+    public function priceCategoryTierOptions(): Collection
+    {
+        if ($this->priceCategoryId === null) {
+            return collect();
+        }
+
+        return PriceCategoryTier::query()
+            ->where('price_category_id', $this->priceCategoryId)
+            ->orderBy('sort_order')
+            ->orderBy('tier_number')
+            ->get();
+    }
+
+    #[Computed]
     public function referenceData(): array
     {
         return [
             'taxClasses' => OrganisationTaxClass::query()->orderBy('name')->get(),
+            'priceCategories' => PriceCategory::query()->where('is_active', true)->orderBy('name')->get(),
+            'discountCategories' => DiscountCategory::query()->where('is_active', true)->orderBy('name')->get(),
             'ownerOptions' => Member::query()->ofType(MembershipType::User)->orderBy('name')->get(['id', 'name']),
             'lawfulBasisTypes' => $this->listValues('Lawful Basis Type'),
             'locationTypes' => $this->listValues('Location Type'),
@@ -285,6 +336,9 @@ new #[Layout('components.layouts.app')] class extends Component
             )),
             'isUserMember' => $this->membershipType === MembershipType::User->value,
             'taxClasses' => $ref['taxClasses'],
+            'priceCategories' => $ref['priceCategories'],
+            'priceCategoryTierOptions' => $this->priceCategoryTierOptions,
+            'discountCategories' => $ref['discountCategories'],
             'ownerOptions' => $ref['ownerOptions'],
             'lawfulBasisTypes' => $ref['lawfulBasisTypes'],
             'locationTypes' => $ref['locationTypes'],
@@ -391,7 +445,30 @@ new #[Layout('components.layouts.app')] class extends Component
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                                    <flux:input wire:model="taxNumber" label="Tax Number" />
+                                    <div>
+                                        <flux:input wire:model="taxNumber" label="Tax Number" />
+                                        @if($isEditing && filled($taxNumber))
+                                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                                @if($taxNumberValidated === null)
+                                                    <span class="s-badge s-badge-amber">Pending validation</span>
+                                                @elseif($taxNumberValidated)
+                                                    <span class="s-badge s-badge-green">Valid</span>
+                                                @else
+                                                    <span class="s-badge s-badge-red">Invalid</span>
+                                                @endif
+                                                <flux:button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    wire:click="recheckVatValidation"
+                                                    wire:loading.attr="disabled"
+                                                >
+                                                    <span wire:loading.remove wire:target="recheckVatValidation">Re-check VAT</span>
+                                                    <span wire:loading wire:target="recheckVatValidation">Checking…</span>
+                                                </flux:button>
+                                            </div>
+                                        @endif
+                                    </div>
                                     <flux:select wire:model="ownedBy" label="Owner">
                                         <option value="">None</option>
                                         @foreach($ownerOptions as $ownerMember)
@@ -431,6 +508,27 @@ new #[Layout('components.layouts.app')] class extends Component
                                     <option value="">None</option>
                                     @foreach($taxClasses as $taxClass)
                                         <option value="{{ $taxClass->id }}">{{ $taxClass->name }}</option>
+                                    @endforeach
+                                </flux:select>
+
+                                <flux:select wire:model.live="priceCategoryId" label="Price Category">
+                                    <option value="">None</option>
+                                    @foreach($priceCategories as $priceCategory)
+                                        <option value="{{ $priceCategory->id }}">{{ $priceCategory->name }}</option>
+                                    @endforeach
+                                </flux:select>
+
+                                <flux:select wire:model="priceCategoryTierId" label="Price Category Tier">
+                                    <option value="">Base pricing</option>
+                                    @foreach($priceCategoryTierOptions as $tier)
+                                        <option wire:key="tier-{{ $tier->id }}" value="{{ $tier->id }}">{{ $tier->label }} (×{{ $tier->multiplier }})</option>
+                                    @endforeach
+                                </flux:select>
+
+                                <flux:select wire:model="discountCategoryId" label="Discount Category">
+                                    <option value="">None</option>
+                                    @foreach($discountCategories as $discountCategory)
+                                        <option value="{{ $discountCategory->id }}">{{ $discountCategory->name }}</option>
                                     @endforeach
                                 </flux:select>
                             </div>

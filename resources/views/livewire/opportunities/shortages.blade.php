@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Shortages\AcknowledgeOpportunityShortages;
+use App\Actions\Shortages\ApplyBatchShortageResolution;
 use App\Actions\Shortages\ApplyShortageResolution;
 use App\Actions\Shortages\CancelShortageResolution;
 use App\Actions\Shortages\ConfirmShortageResolution;
@@ -8,12 +9,15 @@ use App\Actions\Shortages\FailShortageResolution;
 use App\Actions\Shortages\FulfillShortageResolution;
 use App\Actions\Shortages\StartShortageResolution;
 use App\Data\Shortages\AcknowledgeShortageData;
+use App\Data\Shortages\ApplyBatchResolutionData;
 use App\Data\Shortages\ApplyResolutionData;
 use App\Data\Shortages\TransitionShortageResolutionData;
 use App\Enums\ShortageResolutionStatus;
 use App\Models\Opportunity;
 use App\Models\ShortageResolution;
+use App\Services\Shortages\ShortageBatchGrouper;
 use App\Services\Shortages\ShortageConfirmationGate;
+use App\Services\Shortages\ShortageCrossOpportunityScanner;
 use App\Services\Shortages\ShortageDetector;
 use App\Services\Shortages\ShortageResolverRegistry;
 use App\ValueObjects\Shortage;
@@ -61,6 +65,16 @@ new #[Layout('components.layouts.app')] class extends Component
     public int $applyOptionIndex = 0;
 
     public ?string $applyNotes = null;
+
+    /** Batch resolution selection across jobs. */
+    public ?string $applyBatchResolverKey = null;
+
+    public int $applyBatchOptionIndex = 0;
+
+    /** @var list<int> */
+    public array $applyBatchItemIds = [];
+
+    public ?string $applyBatchNotes = null;
 
     /** The resolution + target status the reason modal is collecting a reason for. */
     public ?int $reasonResolutionId = null;
@@ -139,6 +153,49 @@ new #[Layout('components.layouts.app')] class extends Component
             session()->flash('error', 'You do not have permission to resolve shortages.');
         } catch (ValidationException $e) {
             session()->flash('error', collect($e->errors())->flatten()->first() ?? 'Unable to apply this resolution.');
+        }
+
+        $this->opportunity->refresh();
+    }
+
+    /**
+     * Open the batch apply modal for a cross-job sub-hire option.
+     *
+     * @param  list<int>  $itemIds
+     */
+    public function selectBatchResolution(array $itemIds, string $resolverKey, int $optionIndex): void
+    {
+        $this->applyBatchItemIds = array_values($itemIds);
+        $this->applyBatchResolverKey = $resolverKey;
+        $this->applyBatchOptionIndex = $optionIndex;
+        $this->applyBatchNotes = null;
+    }
+
+    public function applyBatchResolution(): void
+    {
+        if ($this->applyBatchItemIds === [] || $this->applyBatchResolverKey === null) {
+            return;
+        }
+
+        try {
+            (new ApplyBatchShortageResolution(
+                app(ShortageDetector::class),
+                app(ShortageResolverRegistry::class),
+                app(ShortageBatchGrouper::class),
+            ))(ApplyBatchResolutionData::from([
+                'opportunity_item_ids' => $this->applyBatchItemIds,
+                'resolver_key' => $this->applyBatchResolverKey,
+                'option_index' => $this->applyBatchOptionIndex,
+                'notes' => $this->applyBatchNotes,
+            ]));
+
+            session()->flash('shortage_status', 'Batch resolution applied.');
+            $this->resetBatchApplyState();
+            $this->dispatch('shortage-modal-close', name: 'apply-batch-resolution');
+        } catch (AuthorizationException) {
+            session()->flash('error', 'You do not have permission to resolve shortages.');
+        } catch (ValidationException $e) {
+            session()->flash('error', collect($e->errors())->flatten()->first() ?? 'Unable to apply this batch resolution.');
         }
 
         $this->opportunity->refresh();
@@ -253,12 +310,22 @@ new #[Layout('components.layouts.app')] class extends Component
         $this->applyNotes = null;
     }
 
+    protected function resetBatchApplyState(): void
+    {
+        $this->applyBatchItemIds = [];
+        $this->applyBatchResolverKey = null;
+        $this->applyBatchOptionIndex = 0;
+        $this->applyBatchNotes = null;
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function with(): array
     {
         $shortages = app(ShortageDetector::class)->forOpportunity($this->opportunity);
+        $batchShortages = app(ShortageCrossOpportunityScanner::class)->withPeerShortages($this->opportunity, $shortages);
+        $batchGroups = app(ShortageBatchGrouper::class)->groupsForOpportunity($batchShortages, $this->opportunity->id);
         $registry = app(ShortageResolverRegistry::class);
 
         /** @var list<array<string, mixed>> $rows */
@@ -282,15 +349,67 @@ new #[Layout('components.layouts.app')] class extends Component
             })
             ->all();
 
+        /** @var list<array<string, mixed>> $batchRows */
+        $batchRows = array_map(function ($group) use ($registry): array {
+            return [
+                'group' => $group,
+                'resolvers' => array_map(
+                    static fn ($resolver): array => [
+                        'key' => $resolver->key(),
+                        'name' => $resolver->name(),
+                        'options' => array_map(
+                            static fn ($option): array => $option->toArray(),
+                            $resolver->getBatchOptions($group),
+                        ),
+                    ],
+                    $registry->batchApplicableTo($group),
+                ),
+            ];
+        }, $batchGroups);
+
         return [
             ...$this->opportunityActionData(),
             'shortageRows' => $rows,
+            'batchRows' => $batchRows,
             'gate' => app(ShortageConfirmationGate::class)->evaluate($this->opportunity),
             'dispatchPolicy' => $this->opportunity->store?->dispatchPolicy()
                 ?? \App\Enums\ShortageDispatchPolicy::default(),
             'resolutions' => $this->loadResolutions(),
             'appliedOption' => $this->appliedOption($rows),
+            'appliedBatchOption' => $this->appliedBatchOption($batchRows),
         ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $batchRows
+     * @return array<string, mixed>|null
+     */
+    protected function appliedBatchOption(array $batchRows): ?array
+    {
+        if ($this->applyBatchItemIds === [] || $this->applyBatchResolverKey === null) {
+            return null;
+        }
+
+        sort($this->applyBatchItemIds);
+
+        foreach ($batchRows as $row) {
+            $groupIds = $row['group']->opportunityItemIds();
+            sort($groupIds);
+
+            if ($groupIds !== $this->applyBatchItemIds) {
+                continue;
+            }
+
+            foreach ($row['resolvers'] as $resolver) {
+                if ($resolver['key'] !== $this->applyBatchResolverKey) {
+                    continue;
+                }
+
+                return $resolver['options'][$this->applyBatchOptionIndex] ?? null;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -454,6 +573,64 @@ new #[Layout('components.layouts.app')] class extends Component
         </x-signals.panel>
 
         {{-- ============================================================ --}}
+        {{--  BATCH RESOLVE ACROSS JOBS                                    --}}
+        {{-- ============================================================ --}}
+        @if(! empty($batchRows))
+            <x-signals.panel title="{{ __('Resolve across jobs') }}">
+                <p class="mb-3 text-sm text-[var(--text-muted)]">
+                    {{ __('The same product is short on multiple jobs at this store. Consolidate into one sub-hire PO.') }}
+                </p>
+                <div class="space-y-3">
+                    @foreach($batchRows as $batchIndex => $batchRow)
+                        @php
+                            $group = $batchRow['group'];
+                        @endphp
+                        <div wire:key="batch-group-{{ $group->productId }}-{{ $batchIndex }}" class="rounded-md border border-[var(--border)] p-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <div class="font-semibold text-[var(--text)]">{{ $group->productName }}</div>
+                                    <p class="text-[11px] text-[var(--text-muted)]">
+                                        {{ __(':count jobs · :qty units total', ['count' => $group->opportunityCount(), 'qty' => $group->totalShortfall]) }}
+                                    </p>
+                                </div>
+                            </div>
+                            @if(empty($batchRow['resolvers']))
+                                <p class="mt-2 text-[11px] text-[var(--text-muted)]">{{ __('No batch resolvers are applicable.') }}</p>
+                            @else
+                                <div class="mt-3 space-y-2">
+                                    @foreach($batchRow['resolvers'] as $resolver)
+                                        @foreach($resolver['options'] as $optionIndex => $option)
+                                            <div wire:key="batch-opt-{{ $batchIndex }}-{{ $resolver['key'] }}-{{ $optionIndex }}"
+                                                 class="flex flex-wrap items-center justify-between gap-2 rounded border border-[var(--border)] px-3 py-2">
+                                                <div class="min-w-0">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-sm font-medium text-[var(--text)]">{{ $option['label'] }}</span>
+                                                        @if(! empty($option['metadata']['is_preferred']))
+                                                            <span class="s-badge s-badge-green s-badge-outline">{{ __('Preferred') }}</span>
+                                                        @endif
+                                                    </div>
+                                                    <p class="mt-0.5 text-[11px] text-[var(--text-muted)]">{{ $option['description'] }}</p>
+                                                </div>
+                                                @if($canResolve)
+                                                    <button type="button"
+                                                            wire:click="selectBatchResolution(@js($group->opportunityItemIds()), '{{ $resolver['key'] }}', {{ $optionIndex }})"
+                                                            x-on:click="$dispatch('open-modal', 'apply-batch-resolution')"
+                                                            class="s-btn s-btn-sm s-btn-outline-blue shrink-0">
+                                                        {{ __('Apply batch') }}
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </x-signals.panel>
+        @endif
+
+        {{-- ============================================================ --}}
         {{--  SHORTAGE LIST + RESOLVER UI                                  --}}
         {{-- ============================================================ --}}
         <x-signals.panel title="Detected Shortages">
@@ -540,6 +717,9 @@ new #[Layout('components.layouts.app')] class extends Component
                                                             @endif
                                                             @if($option['auto_executable'])
                                                                 <span class="s-badge s-badge-zinc s-badge-outline">{{ __('Auto') }}</span>
+                                                            @endif
+                                                            @if(! empty($option['metadata']['is_preferred']))
+                                                                <span class="s-badge s-badge-green s-badge-outline">{{ __('Preferred') }}</span>
                                                             @endif
                                                         </div>
                                                         <p class="mt-0.5 text-[11px] text-[var(--text-muted)]">{{ $option['description'] }}</p>
@@ -684,6 +864,34 @@ new #[Layout('components.layouts.app')] class extends Component
         <x-slot:footer>
             <button type="button" x-on:click="$dispatch('close-modal', 'apply-resolution')" class="s-btn s-btn-ghost">{{ __('Cancel') }}</button>
             <button type="button" wire:click="applyResolution" @disabled($appliedOption === null) class="s-btn s-btn-primary">{{ __('Apply resolution') }}</button>
+        </x-slot:footer>
+    </x-signals.modal>
+
+    {{-- ============================================================ --}}
+    {{--  APPLY-BATCH-RESOLUTION MODAL                                 --}}
+    {{-- ============================================================ --}}
+    <x-signals.modal name="apply-batch-resolution" title="{{ __('Apply batch resolution') }}"
+        x-on:shortage-modal-close.window="if ($event.detail?.name === 'apply-batch-resolution') open = false">
+        @if($appliedBatchOption !== null)
+            <div class="space-y-3">
+                <div>
+                    <div class="text-sm font-semibold text-[var(--text)]">{{ $appliedBatchOption['label'] }}</div>
+                    <p class="mt-1 text-[13px] text-[var(--text-muted)]">{{ $appliedBatchOption['description'] }}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[12px]">
+                    <div><span class="text-[var(--text-muted)]">{{ __('Covers') }}:</span> <span class="font-semibold">{{ $appliedBatchOption['quantity_resolved'] }}</span></div>
+                    @if($appliedBatchOption['estimated_cost'] !== null)
+                        <div><span class="text-[var(--text-muted)]">{{ __('Est. cost') }}:</span> <span class="font-semibold">{{ app(\App\Support\Formatter::class)->money($appliedBatchOption['estimated_cost']) }}</span></div>
+                    @endif
+                </div>
+            </div>
+        @else
+            <p class="text-sm text-[var(--text-muted)]">{{ __('This batch option is no longer available.') }}</p>
+        @endif
+
+        <x-slot:footer>
+            <button type="button" x-on:click="$dispatch('close-modal', 'apply-batch-resolution')" class="s-btn s-btn-ghost">{{ __('Cancel') }}</button>
+            <button type="button" wire:click="applyBatchResolution" @disabled($appliedBatchOption === null) class="s-btn s-btn-primary">{{ __('Apply batch resolution') }}</button>
         </x-slot:footer>
     </x-signals.modal>
 

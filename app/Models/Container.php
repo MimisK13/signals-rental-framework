@@ -49,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $dissolved_reason
  * @property Carbon|null $dispatched_at
  * @property Carbon|null $returned_at
+ * @property Carbon|null $checkin_verification_required_at
  * @property int|null $opportunity_id
  * @property string|null $notes
  * @property Carbon|null $created_at
@@ -81,6 +82,7 @@ class Container extends Model implements HasSchema
         'dissolved_reason',
         'dispatched_at',
         'returned_at',
+        'checkin_verification_required_at',
         'opportunity_id',
         'notes',
     ];
@@ -99,6 +101,7 @@ class Container extends Model implements HasSchema
             'dissolved_at' => 'datetime',
             'dispatched_at' => 'datetime',
             'returned_at' => 'datetime',
+            'checkin_verification_required_at' => 'datetime',
         ];
     }
 
@@ -128,6 +131,27 @@ class Container extends Model implements HasSchema
     public function uniqueIds(): array
     {
         return ['uuid'];
+    }
+
+    /**
+     * Public URLs use the stable UUID (serialised-containers.md §API).
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
+    /**
+     * Resolve by UUID (canonical) or integer id (backward compatibility for
+     * existing integrations that still address containers by primary key).
+     */
+    public function resolveRouteBinding($value, $field = null): ?static
+    {
+        if (is_numeric($value)) {
+            return static::query()->whereKey((int) $value)->first();
+        }
+
+        return static::query()->where('uuid', $value)->first();
     }
 
     /**

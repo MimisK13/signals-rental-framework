@@ -502,7 +502,7 @@ class DataTable extends Component
         // Use registry if available, otherwise fall back to static columns
         if ($registry !== null) {
             $result = [];
-            foreach ($registry->allColumns() as $col) {
+            foreach ($registry->visibleColumns(auth()->user()) as $col) {
                 $result[] = [
                     'key' => $col->key,
                     'label' => $col->label,

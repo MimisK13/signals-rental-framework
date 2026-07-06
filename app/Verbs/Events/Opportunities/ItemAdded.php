@@ -50,6 +50,7 @@ class ItemAdded extends Event
         public bool $is_optional = false,
         public ?int $manual_unit_price = null,
         public ?string $discount_percent = null,
+        public bool $is_discount_manual = false,
         /** @var array<string, mixed>|null */
         public ?array $custom_fields = null,
         public ?string $notes = null,
@@ -76,6 +77,7 @@ class ItemAdded extends Event
         $state->manual_unit_price = $this->manual_unit_price;
         $state->unit_price = $this->manual_unit_price ?? 0;
         $state->discount_percent = $this->discount_percent;
+        $state->is_discount_manual = $this->is_discount_manual;
         $state->custom_fields = $this->custom_fields;
         $state->notes = $this->notes;
         $state->is_removed = false;
@@ -105,6 +107,7 @@ class ItemAdded extends Event
                 'total' => 0,
                 'currency_code' => $opportunity?->currency_code,
                 'discount_percent' => $state->discount_percent,
+                'is_discount_manual' => $state->is_discount_manual,
                 'transaction_type' => $state->transaction_type,
                 'starts_at' => $state->starts_at,
                 'ends_at' => $state->ends_at,

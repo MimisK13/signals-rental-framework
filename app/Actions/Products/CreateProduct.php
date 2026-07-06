@@ -8,6 +8,7 @@ use App\Enums\StockCategory;
 use App\Enums\StockMethod;
 use App\Events\AuditableEvent;
 use App\Models\Product;
+use App\Models\ProductTaxClass;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Api\WebhookService;
@@ -41,8 +42,10 @@ class CreateProduct
                 'accessory_only' => $data->accessory_only,
                 'system' => $data->system,
                 'discountable' => $data->discountable,
-                'tax_class_id' => $data->tax_class_id,
+                'tax_class_id' => $data->tax_class_id ?? $this->defaultProductTaxClassId(),
                 'purchase_tax_class_id' => $data->purchase_tax_class_id,
+                'sale_tax_category_id' => $data->sale_tax_category_id,
+                'purchase_tax_category_id' => $data->purchase_tax_category_id,
                 'rental_revenue_group_id' => $data->rental_revenue_group_id,
                 'sale_revenue_group_id' => $data->sale_revenue_group_id,
                 'sub_rental_cost_group_id' => $data->sub_rental_cost_group_id,
@@ -81,5 +84,16 @@ class CreateProduct
 
             return ProductData::fromModel($product);
         });
+    }
+
+    private function defaultProductTaxClassId(): ?int
+    {
+        $fromSetting = settings('tax.default_product_tax_class_id');
+
+        if (is_numeric($fromSetting)) {
+            return (int) $fromSetting;
+        }
+
+        return ProductTaxClass::query()->where('is_default', true)->value('id');
     }
 }

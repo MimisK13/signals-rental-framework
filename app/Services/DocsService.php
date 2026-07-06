@@ -6,6 +6,7 @@ use DOMDocument;
 use DOMXPath;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\FrontMatter\FrontMatterExtension;
@@ -14,8 +15,35 @@ use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
 use League\CommonMark\MarkdownConverter;
 
+/**
+ * @phpstan-type DocsPage array{title: string, slug: string, description?: string, type?: string, view?: string, urlSection?: string}
+ * @phpstan-type DocsPageNormalized array{title: string, slug: string, urlSection: string, description?: string, type?: string, view?: string}
+ * @phpstan-type DocsGroup array{label: string, pages: array<int, DocsPageNormalized>}
+ * @phpstan-type DocsSubSection array{label: string, slug: string, groups: array<int, DocsGroup>}
+ * @phpstan-type DocsSection array{
+ *     title: string,
+ *     slug: string,
+ *     icon?: string,
+ *     description?: string,
+ *     pages?: array<int, DocsPageNormalized>,
+ *     groups?: array<int, DocsGroup>,
+ *     subSections?: array<int, DocsSubSection>
+ * }
+ * @phpstan-type DocsNavigation array{sections: array<int, DocsSection>}
+ * @phpstan-type DocsNavEntry array{
+ *     section: DocsSection,
+ *     sectionSlug: string,
+ *     subSectionSlug: ?string,
+ *     group: ?string,
+ *     page: DocsPageNormalized
+ * }
+ */
 class DocsService
 {
+    private const NAVIGATION_CACHE_KEY = 'docs:navigation:v2';
+
+    private const SEARCH_INDEX_CACHE_KEY = 'docs:search-index:v2';
+
     private ?MarkdownConverter $converter = null;
 
     /**
@@ -32,17 +60,19 @@ class DocsService
     }
 
     /**
-     * Load and decode the documentation navigation manifest.
+     * Load and decode the documentation navigation manifest with groups resolved.
      *
-     * @return array{sections: array<int, array{title: string, slug: string, pages: array<int, array{title: string, slug: string}>}>}
+     * Grouped sections include both `groups` and a flattened `pages` array for backwards compatibility.
+     *
+     * @return DocsNavigation
      */
     public function getNavigation(): array
     {
         if (App::environment('local')) {
-            return $this->loadManifest();
+            return $this->resolveNavigation($this->loadManifest());
         }
 
-        return Cache::remember('docs:navigation', 3600, fn (): array => $this->loadManifest());
+        return Cache::remember(self::NAVIGATION_CACHE_KEY, 3600, fn (): array => $this->resolveNavigation($this->loadManifest()));
     }
 
     /**
@@ -89,7 +119,7 @@ class DocsService
 
         return [
             'title' => $frontMatter['title'] ?? $manifestTitle ?? $page,
-            'description' => $frontMatter['description'] ?? null,
+            'description' => $frontMatter['description'] ?? $entry['description'] ?? null,
             'html' => $html,
             'toc' => $this->extractTableOfContents($html),
         ];
@@ -133,7 +163,7 @@ class DocsService
             $toc[] = [
                 'level' => (int) substr($heading->nodeName, 1),
                 'id' => $id,
-                'text' => $heading->textContent,
+                'text' => rtrim(trim($heading->textContent), '#'),
             ];
         }
 
@@ -169,19 +199,173 @@ class DocsService
     }
 
     /**
-     * Build a search index with plain text content for all documentation pages.
+     * Build a search index with metadata, heading text, and plain-text body content.
      *
-     * @return array<int, array{title: string, section: string, url: string, content: string}>
+     * @return array<int, array{title: string, section: string, sectionSlug: string, group: ?string, slug: string, url: string, description: string, headings: array<int, string>, content: string}>
      */
     public function getSearchIndex(): array
     {
-        $cacheKey = 'docs:search-index';
-
         if (App::environment('local')) {
             return $this->buildSearchIndex();
         }
 
-        return Cache::remember($cacheKey, 3600, fn (): array => $this->buildSearchIndex());
+        return Cache::remember(self::SEARCH_INDEX_CACHE_KEY, 3600, fn (): array => $this->buildSearchIndex());
+    }
+
+    /**
+     * @return array<int, array{urlSection: string, slug: string}>
+     */
+    public function getAllPageRouteKeys(): array
+    {
+        $routes = [];
+
+        foreach ($this->iterateResolvedNavigation($this->getNavigation()) as $entry) {
+            $routes[] = [
+                'urlSection' => $entry['page']['urlSection'],
+                'slug' => $entry['page']['slug'],
+            ];
+        }
+
+        return $routes;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getSitemapUrls(): array
+    {
+        $urls = [];
+
+        foreach ($this->getNavigation()['sections'] as $section) {
+            if (isset($section['pages'])) {
+                foreach ($section['pages'] as $page) {
+                    $urls[] = $this->pageUrl($page, (string) $section['slug']);
+                }
+            }
+
+            if (isset($section['subSections'])) {
+                foreach ($section['subSections'] as $subSection) {
+                    foreach ($subSection['groups'] as $group) {
+                        foreach ($group['pages'] as $page) {
+                            $urls[] = $this->pageUrl($page, (string) $section['slug']);
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($this->changelogExists()) {
+            $urls[] = route('docs.changelog');
+        }
+
+        return $urls;
+    }
+
+    /**
+     * Resolve display navigation for a route URL section and page slug.
+     *
+     * @return array{sectionSlug: string, sectionTitle: string, subSectionSlug: ?string, group: ?string}|null
+     */
+    public function resolveDisplayContext(string $urlSection, string $pageSlug): ?array
+    {
+        foreach ($this->iterateResolvedNavigation($this->getNavigation()) as $entry) {
+            if ($entry['page']['urlSection'] === $urlSection
+                && $entry['page']['slug'] === $pageSlug) {
+                return [
+                    'sectionSlug' => $entry['sectionSlug'],
+                    'sectionTitle' => (string) $entry['section']['title'],
+                    'subSectionSlug' => $entry['subSectionSlug'],
+                    'group' => $entry['group'],
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Build the public docs URL for a manifest page entry.
+     *
+     * @param  array{slug: string, urlSection?: string}  $page
+     */
+    public function pageUrl(array $page, string $displaySectionSlug): string
+    {
+        $urlSection = $page['urlSection'] ?? $displaySectionSlug;
+
+        return route('docs.show', [
+            $urlSection,
+            $page['slug'],
+        ]);
+    }
+
+    /**
+     * Build landing-page cards from display sections and API Reference groups.
+     *
+     * @return array<int, array{title: string, description: string, icon: string, sectionSlug: string, sectionTitle: string, pages: array<int, array{title: string, slug: string, url: string}>, viewAllUrl: string}>
+     */
+    public function getLandingCards(): array
+    {
+        $cards = [];
+
+        foreach ($this->getNavigation()['sections'] as $section) {
+            if (isset($section['pages']) && $section['pages'] !== []) {
+                $cards[] = $this->buildLandingCard(
+                    title: (string) $section['title'],
+                    description: (string) ($section['description'] ?? ''),
+                    icon: (string) ($section['icon'] ?? 'file'),
+                    sectionSlug: (string) $section['slug'],
+                    sectionTitle: (string) $section['title'],
+                    pages: $section['pages'],
+                );
+            }
+
+            if (isset($section['subSections'])) {
+                foreach ($section['subSections'] as $subSection) {
+                    foreach ($subSection['groups'] as $group) {
+                        $cards[] = $this->buildLandingCard(
+                            title: (string) $group['label'],
+                            description: (string) ($section['description'] ?? ''),
+                            icon: (string) ($section['icon'] ?? 'file'),
+                            sectionSlug: (string) $section['slug'],
+                            sectionTitle: (string) $section['title'],
+                            pages: $group['pages'],
+                        );
+                    }
+                }
+            }
+        }
+
+        return $cards;
+    }
+
+    /**
+     * Resolve the newest changelog version from changelog markdown filenames.
+     */
+    public function getLatestChangelogVersion(): ?string
+    {
+        $dir = $this->docsRoot().'/changelog';
+
+        if (! is_dir($dir)) {
+            return null;
+        }
+
+        $versions = [];
+
+        foreach (glob($dir.'/*.md') ?: [] as $file) {
+            $version = pathinfo($file, PATHINFO_FILENAME);
+
+            if ($version !== '') {
+                $versions[] = $version;
+            }
+        }
+
+        if ($versions === []) {
+            return null;
+        }
+
+        usort($versions, fn (string $a, string $b): int => version_compare($b, $a));
+
+        return $versions[0];
     }
 
     /**
@@ -290,7 +474,7 @@ class DocsService
     /**
      * Load and decode the documentation.json manifest file.
      *
-     * @return array{sections: array<int, array{title: string, slug: string, pages: array<int, array{title: string, slug: string}>}>}
+     * @return array{sections: array<int, array<string, mixed>>}
      */
     private function loadManifest(): array
     {
@@ -306,7 +490,7 @@ class DocsService
             return ['sections' => []];
         }
 
-        /** @var array{sections: array<int, array{title: string, slug: string, pages: array<int, array{title: string, slug: string}>}>}|null $decoded */
+        /** @var array{sections: array<int, array<string, mixed>>}|null $decoded */
         $decoded = json_decode($content, true);
 
         if (! is_array($decoded)) {
@@ -317,25 +501,81 @@ class DocsService
     }
 
     /**
+     * Resolve grouped sections into a navigation structure with flattened pages.
+     *
+     * @param  array{sections: array<int, array<string, mixed>>}  $manifest
+     * @return DocsNavigation
+     */
+    private function resolveNavigation(array $manifest): array
+    {
+        $sections = [];
+
+        foreach ($manifest['sections'] as $section) {
+            $displaySlug = (string) $section['slug'];
+
+            if (isset($section['pages']) && is_array($section['pages'])) {
+                $section['pages'] = array_map(
+                    fn (array $page): array => $this->normalizePage($page, $displaySlug),
+                    $section['pages'],
+                );
+            }
+
+            if (isset($section['groups']) && is_array($section['groups'])) {
+                $flattenedPages = [];
+
+                foreach ($section['groups'] as $groupIndex => $group) {
+                    $normalizedPages = array_map(
+                        fn (array $page): array => $this->normalizePage($page, $displaySlug),
+                        $group['pages'] ?? [],
+                    );
+
+                    $section['groups'][$groupIndex]['pages'] = $normalizedPages;
+                    array_push($flattenedPages, ...$normalizedPages);
+                }
+
+                $section['pages'] = $flattenedPages;
+            }
+
+            if (isset($section['subSections']) && is_array($section['subSections'])) {
+                foreach ($section['subSections'] as $subSectionIndex => $subSection) {
+                    $section['subSections'][$subSectionIndex]['slug'] = isset($subSection['slug'])
+                        ? (string) $subSection['slug']
+                        : Str::slug((string) ($subSection['label'] ?? 'subsection'));
+
+                    foreach ($subSection['groups'] ?? [] as $groupIndex => $group) {
+                        $section['subSections'][$subSectionIndex]['groups'][$groupIndex]['pages'] = array_map(
+                            fn (array $page): array => $this->normalizePage($page, $displaySlug),
+                            $group['pages'] ?? [],
+                        );
+                    }
+                }
+            }
+
+            $sections[] = $section;
+        }
+
+        return ['sections' => $sections];
+    }
+
+    /**
+     * @param  array{title: string, slug: string, urlSection?: string, description?: string, type?: string, view?: string}  $page
+     * @return DocsPageNormalized
+     */
+    private function normalizePage(array $page, string $displaySectionSlug): array
+    {
+        if (! isset($page['urlSection'])) {
+            $page['urlSection'] = $displaySectionSlug;
+        }
+
+        return $page;
+    }
+
+    /**
      * Check whether a section/page combination exists in the manifest.
      */
     private function isInManifest(string $section, string $page): bool
     {
-        $navigation = $this->getNavigation();
-
-        foreach ($navigation['sections'] as $s) {
-            if ($s['slug'] !== $section) {
-                continue;
-            }
-
-            foreach ($s['pages'] as $p) {
-                if ($p['slug'] === $page) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $this->getManifestPageEntry($section, $page) !== null;
     }
 
     /**
@@ -351,21 +591,15 @@ class DocsService
     /**
      * Retrieve the full page entry from the manifest, including type and view keys.
      *
-     * @return array{title: string, slug: string, type?: string, view?: string, description?: string}|null
+     * @return DocsPageNormalized|null
      */
     private function getManifestPageEntry(string $section, string $page): ?array
     {
-        $navigation = $this->getNavigation();
+        foreach ($this->iterateResolvedNavigation($this->getNavigation()) as $entry) {
+            $urlSection = $entry['page']['urlSection'];
 
-        foreach ($navigation['sections'] as $s) {
-            if ($s['slug'] !== $section) {
-                continue;
-            }
-
-            foreach ($s['pages'] as $p) {
-                if ($p['slug'] === $page) {
-                    return $p;
-                }
+            if ($urlSection === $section && $entry['page']['slug'] === $page) {
+                return $entry['page'];
             }
         }
 
@@ -373,45 +607,147 @@ class DocsService
     }
 
     /**
-     * Build the search index by rendering all pages and stripping HTML.
+     * Iterate every page declared in the navigation manifest.
      *
-     * @return array<int, array{title: string, section: string, url: string, content: string}>
+     * @return \Generator<int, DocsNavEntry>
+     */
+    private function iterateManifestPages(): \Generator
+    {
+        yield from $this->iterateResolvedNavigation($this->getNavigation());
+    }
+
+    /**
+     * Iterate pages from an already-resolved navigation structure.
+     *
+     * @param  DocsNavigation  $navigation
+     * @return \Generator<int, DocsNavEntry>
+     */
+    private function iterateResolvedNavigation(array $navigation): \Generator
+    {
+        foreach ($navigation['sections'] as $section) {
+            if (isset($section['groups'])) {
+                foreach ($section['groups'] as $group) {
+                    foreach ($group['pages'] as $page) {
+                        yield [
+                            'section' => $section,
+                            'sectionSlug' => $section['slug'],
+                            'subSectionSlug' => null,
+                            'group' => $group['label'],
+                            'page' => $page,
+                        ];
+                    }
+                }
+            } elseif (isset($section['pages'])) {
+                foreach ($section['pages'] as $page) {
+                    yield [
+                        'section' => $section,
+                        'sectionSlug' => $section['slug'],
+                        'subSectionSlug' => null,
+                        'group' => null,
+                        'page' => $page,
+                    ];
+                }
+            }
+
+            if (isset($section['subSections'])) {
+                foreach ($section['subSections'] as $subSection) {
+                    foreach ($subSection['groups'] as $group) {
+                        foreach ($group['pages'] as $page) {
+                            yield [
+                                'section' => $section,
+                                'sectionSlug' => $section['slug'],
+                                'subSectionSlug' => $subSection['slug'],
+                                'group' => $group['label'],
+                                'page' => $page,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Build the search index from manifest metadata, markdown headings, and body text.
+     *
+     * @return array<int, array{title: string, section: string, sectionSlug: string, group: ?string, slug: string, url: string, description: string, headings: array<int, string>, content: string}>
      */
     private function buildSearchIndex(): array
     {
-        $navigation = $this->getNavigation();
         $index = [];
 
-        foreach ($navigation['sections'] as $section) {
-            foreach ($section['pages'] as $page) {
-                $content = $this->getPage($section['slug'], $page['slug']);
-                if ($content === null || ($content['type'] ?? null) === 'blade') {
-                    continue;
-                }
+        foreach ($this->iterateManifestPages() as $entry) {
+            $section = $entry['section'];
+            $page = $entry['page'];
+            $description = $page['description'] ?? '';
 
-                $plainText = preg_replace('/\s+/', ' ', strip_tags($content['html'])) ?? '';
-
+            if (($page['type'] ?? null) === 'blade') {
                 $index[] = [
-                    'title' => $content['title'],
+                    'title' => $page['title'],
                     'section' => $section['title'],
-                    'url' => route('docs.show', [$section['slug'], $page['slug']]),
-                    'content' => trim($plainText),
+                    'sectionSlug' => $section['slug'],
+                    'group' => $entry['group'],
+                    'slug' => $page['slug'],
+                    'url' => route('docs.show', [$page['urlSection'], $page['slug']]),
+                    'description' => $description,
+                    'headings' => [],
+                    'content' => '',
                 ];
-            }
-        }
 
-        foreach ($this->loadChangelogEntries() as $entry) {
-            $plainText = preg_replace('/\s+/', ' ', strip_tags($entry['html'])) ?? '';
+                continue;
+            }
+
+            $urlSection = $page['urlSection'];
+            $filePath = $this->resolveFilePath($urlSection, $page['slug']);
+
+            if ($filePath === null) {
+                continue;
+            }
+
+            $pageContent = $this->getPage($urlSection, $page['slug']);
+
+            if ($pageContent === null || ! is_string($pageContent['html'])) {
+                continue;
+            }
+
+            $headings = array_column($pageContent['toc'], 'text');
 
             $index[] = [
-                'title' => $entry['version'].($entry['title'] ? ' — '.$entry['title'] : ''),
+                'title' => $pageContent['title'],
+                'section' => $section['title'],
+                'sectionSlug' => $section['slug'],
+                'group' => $entry['group'],
+                'slug' => $page['slug'],
+                'url' => route('docs.show', [$urlSection, $page['slug']]),
+                'description' => $description,
+                'headings' => $headings,
+                'content' => $this->plainTextFromHtml($pageContent['html']),
+            ];
+        }
+
+        foreach ($this->loadChangelogEntries() as $changelogEntry) {
+            $index[] = [
+                'title' => $changelogEntry['version'],
                 'section' => 'Changelog',
-                'url' => route('docs.changelog').'#v'.$entry['version'],
-                'content' => trim($plainText),
+                'sectionSlug' => 'changelog',
+                'group' => null,
+                'slug' => 'changelog-'.$changelogEntry['version'],
+                'url' => route('docs.changelog').'#v'.$changelogEntry['version'],
+                'description' => $changelogEntry['title'] ?? 'Release notes for version '.$changelogEntry['version'],
+                'headings' => array_column($this->extractTableOfContents($changelogEntry['html']), 'text'),
+                'content' => $this->plainTextFromHtml($changelogEntry['html']),
             ];
         }
 
         return $index;
+    }
+
+    /**
+     * Strip rendered HTML down to searchable plain text.
+     */
+    private function plainTextFromHtml(string $html): string
+    {
+        return trim(preg_replace('/\s+/', ' ', strip_tags($html)) ?? '');
     }
 
     /**
@@ -466,23 +802,55 @@ class DocsService
     }
 
     /**
+     * @param  array<int, array{title: string, slug: string, description?: string, type?: string, view?: string}>  $pages
+     * @return array{title: string, description: string, icon: string, sectionSlug: string, sectionTitle: string, pages: array<int, array{title: string, slug: string, url: string}>, viewAllUrl: string}
+     */
+    private function buildLandingCard(
+        string $title,
+        string $description,
+        string $icon,
+        string $sectionSlug,
+        string $sectionTitle,
+        array $pages,
+    ): array {
+        $featuredPages = array_slice($pages, 0, 4);
+        $firstPage = $pages[0] ?? null;
+
+        return [
+            'title' => $title,
+            'description' => $description,
+            'icon' => $icon,
+            'sectionSlug' => $sectionSlug,
+            'sectionTitle' => $sectionTitle,
+            'pages' => array_map(
+                fn (array $page): array => [
+                    'title' => $page['title'],
+                    'slug' => $page['slug'],
+                    'url' => $this->pageUrl($page, $sectionSlug),
+                ],
+                $featuredPages,
+            ),
+            'viewAllUrl' => $firstPage !== null
+                ? $this->pageUrl($firstPage, $sectionSlug)
+                : route('docs.index'),
+        ];
+    }
+
+    /**
      * Flatten the navigation into a sequential list of all pages.
      *
      * @return array<int, array{title: string, section: string, slug: string}>
      */
     private function flattenNavigation(): array
     {
-        $navigation = $this->getNavigation();
         $flat = [];
 
-        foreach ($navigation['sections'] as $section) {
-            foreach ($section['pages'] as $page) {
-                $flat[] = [
-                    'title' => $page['title'],
-                    'section' => $section['slug'],
-                    'slug' => $page['slug'],
-                ];
-            }
+        foreach ($this->iterateManifestPages() as $entry) {
+            $flat[] = [
+                'title' => $entry['page']['title'],
+                'section' => $entry['page']['urlSection'],
+                'slug' => $entry['page']['slug'],
+            ];
         }
 
         return $flat;

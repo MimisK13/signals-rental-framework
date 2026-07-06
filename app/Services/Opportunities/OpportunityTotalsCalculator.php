@@ -2,6 +2,9 @@
 
 namespace App\Services\Opportunities;
 
+use App\Data\Tax\DocumentTaxLineInput;
+use App\Data\Tax\DocumentTaxRequest;
+use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
 use App\Enums\RateTransactionType;
@@ -12,8 +15,19 @@ use App\Models\OpportunityVersion;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
 use App\Services\CurrencyService;
+use App\Services\Pricing\BundlePricingApplicator;
+use App\Services\Pricing\DiscountSourceRegistry;
+use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
+use App\Services\Pricing\OpportunitySurchargeApplicator;
+use App\Services\Pricing\PriceCategoryTierMultiplier;
+use App\Services\Pricing\QuantityMinorArithmetic;
+use App\Services\Pricing\RoundingStrategy;
 use App\Services\RateEngine\RateCalculator;
 use App\Services\RateEngine\RateResolver;
+use App\Services\Tax\DocumentTaxBreakdown;
+use App\Services\Tax\TaxPointDateResolver;
+use App\Services\Tax\TaxResolutionContext;
+use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\TaxCalculator;
 use App\ValueObjects\CalculationContext;
 use Illuminate\Support\Carbon;
@@ -37,10 +51,10 @@ use Illuminate\Support\Collection;
  *   2. derive the subtotal — for a rate-backed line the {@see RateCalculator}
  *      produces the duration-aware subtotal (via the rate definition's strategy,
  *      base period and modifiers); for a manual/no-rate line the subtotal is
- *      `unit_price * round(quantity) * chargeable_days` for hire-based transaction
- *      types (the same day count the editor shows), or `unit_price * round(quantity)`
- *      for sale lines.
- *   3. apply the line discount (HALF_UP at the minor-unit boundary, BEFORE tax).
+ *      `unit_price * quantity * chargeable_days` for hire-based transaction
+ *      types (the same day count the editor shows), or `unit_price * quantity`
+ *      for sale lines — quantity is a decimal string via {@see QuantityMinorArithmetic}.
+ *   3. apply the line discount (tenant rounding at the minor-unit boundary, BEFORE tax).
  *   4. NET EXTRACTION when `prices_include_tax`: an input entered tax-inclusive has
  *      its embedded tax stripped at this point ({@see TaxCalculator::calculateInclusive})
  *      so the stored `opportunity_items.total` is always NET regardless of input
@@ -50,15 +64,10 @@ use Illuminate\Support\Collection;
  * `tax_rate` is recorded for display/reporting only — it is NOT used to store a
  * taxed line total.
  *
- * GROUPED FINAL TAX: {@see rollUp()} buckets every non-optional line's and cost's
- * net by its effective tax class — the opportunity member/organisation sale tax
- * class combined with the item's product tax class (or the default product tax
- * class for costs, which have no product). Each group's net is taxed once via
- * {@see TaxCalculator::calculate()} and the results summed. This keeps a
- * mixed-tax-class basket correct (each class rounds at its own boundary, matching
- * an invoice) while remaining a SINGLE final calculation, not per-line-during-build.
- * When an item has no resolvable product tax class it falls back to the default
- * product tax class — the same fallback {@see TaxCalculator::resolveRule()} applies.
+ * GROUPED FINAL TAX: {@see rollUp()} delegates to {@see DocumentTaxBreakdown}
+ * which buckets every non-optional line's and cost's net by effective product tax
+ * class, taxes each group once at the minor-unit boundary, then reconciles
+ * per-line allocations via largest-remainder so Σ line tax ≡ Σ group tax.
  *
  * Both methods are idempotent (they overwrite), so they are safe to run inside an
  * event handle() and reproduce identical totals on replay. They write projection
@@ -88,6 +97,14 @@ class OpportunityTotalsCalculator
         private readonly RateCalculator $rateCalculator,
         private readonly TaxCalculator $taxCalculator,
         private readonly OpportunityItemChargeableDays $chargeableDays,
+        private readonly RoundingStrategy $roundingStrategy,
+        private readonly QuantityMinorArithmetic $quantityMinor,
+        private readonly DocumentTaxBreakdown $documentTaxBreakdown,
+        private readonly TaxPointDateResolver $taxPointDateResolver,
+        private readonly TaxResolutionContextHolder $taxResolutionContextHolder,
+        private readonly BundlePricingApplicator $bundlePricingApplicator,
+        private readonly OpportunitySurchargeApplicator $surchargeApplicator,
+        private readonly PriceCategoryTierMultiplier $tierMultiplier,
     ) {}
 
     /**
@@ -129,45 +146,131 @@ class OpportunityTotalsCalculator
             return;
         }
 
+        $this->repriceOpportunity($opportunity, $item, $manualUnitPrice, rollUp: false);
+    }
+
+    /**
+     * Reprice every line on the opportunity through the staged pricing pipeline:
+     *
+     *   Stage 1   — base rate resolution (per-unit price × quantity/duration)
+     *   Stage 1.5 — bundle pricing (group-level fixed / percent bundles)
+     *   Stage 2   — line discount percent (post-bundle, pre-surcharge)
+     *   Stage 3   — surcharges on the discounted net
+     *
+     * Bundle and aggregate quantity discounts require opportunity-wide context,
+     * so even a single-line mutation reprices the full opportunity item set.
+     */
+    public function repriceOpportunity(
+        Opportunity $opportunity,
+        ?OpportunityItem $focusItem = null,
+        ?int $manualUnitPrice = null,
+        bool $rollUp = true,
+    ): void {
+        $opportunity->loadMissing(['items.item', 'member.priceCategoryTier']);
+        $items = $opportunity->items;
         $currency = $this->currencyFor($opportunity);
-        $quantityUnits = max(0, (int) round((float) $item->quantity));
+        $orgTaxClassId = $opportunity->member?->sale_tax_class_id;
 
-        [$start, $end] = $this->effectiveDates($item, $opportunity);
+        /** @var array<int, int> $baseSubtotals */
+        $baseSubtotals = [];
 
-        $product = $this->resolveProduct($item);
+        /** @var array<int, array{unit_price: int, product: ?Product, tier_id: ?int, tier_multiplier: ?string}> $itemMeta */
+        $itemMeta = [];
 
-        [$unitPrice, $netSubtotal] = $this->resolveSubtotal(
-            $item,
-            $product,
-            $currency,
-            $quantityUnits,
-            $start,
-            $end,
-            $opportunity->store_id,
-            $manualUnitPrice,
+        foreach ($items as $item) {
+            if (! $item->item_type->isPriceable()) {
+                continue;
+            }
+
+            $manual = ($focusItem !== null && (int) $focusItem->id === (int) $item->id)
+                ? $manualUnitPrice
+                : null;
+
+            $quantity = $this->quantityMinor->normalizeQuantity((string) $item->quantity);
+            [$start, $end] = $this->effectiveDates($item, $opportunity);
+            $product = $this->resolveProduct($item);
+
+            $resolved = $this->resolveSubtotal(
+                $item,
+                $product,
+                $currency,
+                $quantity,
+                $start,
+                $end,
+                $opportunity->store_id,
+                $manual,
+                $opportunity,
+            );
+
+            $baseSubtotals[(int) $item->id] = $resolved['net_subtotal'];
+            $itemMeta[(int) $item->id] = [
+                'unit_price' => $resolved['unit_price'],
+                'product' => $product,
+                'tier_id' => $resolved['tier_id'],
+                'tier_multiplier' => $resolved['tier_multiplier'],
+            ];
+        }
+
+        $preDiscountByItem = $this->bundlePricingApplicator->apply(
             $opportunity,
+            $items,
+            $baseSubtotals,
+            $currency,
         );
 
-        $discounted = $this->applyDiscount($netSubtotal, $item->discount_percent);
+        foreach ($items as $item) {
+            if (! isset($itemMeta[(int) $item->id])) {
+                continue;
+            }
 
-        // When prices are entered tax-inclusive, strip the embedded tax so the
-        // STORED total is net; the final rollup tax pass re-derives tax additively.
-        $orgTaxClassId = $opportunity->member?->sale_tax_class_id;
-        $net = $opportunity->prices_include_tax
-            ? $this->taxCalculator->calculateInclusive($discounted, $currency, $orgTaxClassId, $product?->tax_class_id)->netAmount
-            : $discounted;
+            $meta = $itemMeta[(int) $item->id];
+            $preDiscount = $preDiscountByItem[(int) $item->id] ?? 0;
+            $categoryDiscounted = $this->applyDiscount(
+                $preDiscount,
+                $this->effectiveDiscountPercent($item, $opportunity),
+                $currency,
+            );
+            $discounted = $this->applyDiscount(
+                $categoryDiscounted,
+                $item->deal_price_discount_percent !== null ? (string) $item->deal_price_discount_percent : null,
+                $currency,
+            );
 
-        // The line tax_rate is recorded for display/reporting only.
-        $taxRate = $this->taxCalculator
-            ->calculate($net, $currency, $orgTaxClassId, $product?->tax_class_id)
-            ->ratePercentage;
+            $net = $opportunity->prices_include_tax
+                ? $this->taxCalculator->calculateInclusive(
+                    $discounted,
+                    $currency,
+                    $orgTaxClassId,
+                    $meta['product']?->tax_class_id,
+                )->netAmount
+                : $discounted;
 
-        $item->forceFill([
-            'unit_price' => $unitPrice,
-            'total' => $net,
-            'tax_rate' => $taxRate,
-            'currency_code' => $currency,
-        ])->saveQuietly();
+            $surchargeResult = $this->surchargeApplicator->applyToItem(
+                $item,
+                $opportunity,
+                $net,
+                $currency,
+                $meta['product'],
+            );
+
+            $taxRate = $this->taxCalculator
+                ->calculate($net, $currency, $orgTaxClassId, $meta['product']?->tax_class_id)
+                ->ratePercentage;
+
+            $item->forceFill([
+                'unit_price' => $meta['unit_price'],
+                'price_category_tier_id' => $meta['tier_id'],
+                'price_category_tier_multiplier' => $meta['tier_multiplier'],
+                'total' => $net,
+                'surcharge_total' => $surchargeResult['surcharge_total'],
+                'tax_rate' => $taxRate,
+                'currency_code' => $currency,
+            ])->saveQuietly();
+        }
+
+        if ($rollUp) {
+            $this->rollUp($opportunity->fresh(['items.itemSurcharges', 'costs', 'member']));
+        }
     }
 
     /**
@@ -222,7 +325,7 @@ class OpportunityTotalsCalculator
      */
     public function rollUp(Opportunity $opportunity): void
     {
-        $items = $opportunity->items()->get();
+        $items = $opportunity->items()->with('itemSurcharges')->get();
         $costs = $opportunity->costs()->get();
 
         // Batch-fetch every product-backed line's product once, keyed by id, so the
@@ -248,15 +351,11 @@ class OpportunityTotalsCalculator
         $excludingTax = 0;
 
         $orgTaxClassId = $opportunity->member?->sale_tax_class_id;
+        $currency = $this->currencyFor($opportunity);
+        $defaultProductTaxClassId = $this->defaultProductTaxClassId();
 
-        /**
-         * Net amounts bucketed by effective tax class, keyed by product tax class
-         * id (org class is constant for the opportunity). `0` = no resolvable
-         * product class (taxes via the default class fallback).
-         *
-         * @var array<int, int> $netByProductTaxClass
-         */
-        $netByProductTaxClass = [];
+        /** @var list<DocumentTaxLineInput> $taxLines */
+        $taxLines = [];
 
         foreach ($items as $item) {
             if ($item->is_optional) {
@@ -267,23 +366,41 @@ class OpportunityTotalsCalculator
                 ? $productsById->get((int) $item->itemable_id)
                 : null;
             $lineNet = (int) $item->total;
+            $surchargeNet = (int) $item->surcharge_total;
+            $lineChargeNet = $lineNet + $surchargeNet;
 
-            $excludingTax += $lineNet;
-            $taxClassKey = $product !== null ? (int) $product->tax_class_id : 0;
-            $netByProductTaxClass[$taxClassKey] = ($netByProductTaxClass[$taxClassKey] ?? 0) + $lineNet;
+            $excludingTax += $lineChargeNet;
+            $taxLines[] = new DocumentTaxLineInput(
+                lineKey: 'item:'.$item->id,
+                netMinor: $lineNet,
+                productTaxClassId: $product?->tax_class_id,
+                productTaxCategoryId: $product?->sale_tax_category_id,
+                quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
+            );
+
+            foreach ($item->itemSurcharges as $itemSurcharge) {
+                if ($itemSurcharge->is_disabled) {
+                    continue;
+                }
+
+                $taxLines[] = new DocumentTaxLineInput(
+                    lineKey: 'item:'.$item->id.':surcharge:'.$itemSurcharge->surcharge_id,
+                    netMinor: (int) $itemSurcharge->amount,
+                    productTaxClassId: $itemSurcharge->product_tax_class_id,
+                    quantity: bccomp((string) $item->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $item->quantity, '0', 2),
+                );
+            }
 
             match ($item->transaction_type) {
-                LineItemTransactionType::Sale => $sale += $lineNet,
-                LineItemTransactionType::Service => $service += $lineNet,
+                LineItemTransactionType::Sale => $sale += $lineChargeNet,
+                LineItemTransactionType::Service => $service += $lineChargeNet,
                 // Rental only — SubRental is rejected at the input boundary
                 // ({@see AddOpportunityItemData}), so no line ever reaches this
                 // branch as SubRental, keeping the `sub_rental_charge_total => 0`
                 // stub below correct until the Phase 4 sub-hire path exists.
-                default => $rental += $lineNet,
+                default => $rental += $lineChargeNet,
             };
         }
-
-        $defaultProductTaxClassId = $this->defaultProductTaxClassId();
 
         foreach ($costs as $cost) {
             if ($cost->is_optional) {
@@ -293,8 +410,12 @@ class OpportunityTotalsCalculator
             $costNet = $this->costNet($cost, $opportunity, $defaultProductTaxClassId);
 
             $excludingTax += $costNet;
-            $netByProductTaxClass[$defaultProductTaxClassId ?? 0]
-                = ($netByProductTaxClass[$defaultProductTaxClassId ?? 0] ?? 0) + $costNet;
+            $taxLines[] = new DocumentTaxLineInput(
+                lineKey: 'cost:'.$cost->id,
+                netMinor: $costNet,
+                productTaxClassId: $defaultProductTaxClassId,
+                quantity: bccomp((string) $cost->quantity, '0', 2) <= 0 ? '0' : bcadd((string) $cost->quantity, '0', 2),
+            );
 
             // Route the cost net into the RMS category bucket; delivery feeds the
             // transit total, loss/damage feeds its own total, everything else the
@@ -307,13 +428,15 @@ class OpportunityTotalsCalculator
         }
 
         // A deal-total override is a NET override of the headline (Ben: the deal
-        // price is net of tax). The per-type component totals keep reflecting the
-        // real lines, but the net headline + final tax are computed on the deal
-        // using the opportunity's blended tax context (org class + default product
-        // class).
-        $netHeadline = $opportunity->deal_total !== null
-            ? (int) $opportunity->deal_total
-            : $excludingTax;
+        // price is net of tax). Flat headline mode replaces the headline while
+        // leaving per-line nets untouched; proportional mode sums adjusted lines.
+        $dealMode = DealPriceMode::tryFrom((string) ($opportunity->deal_price_mode ?? ''))
+            ?? DealPriceMode::FlatHeadline;
+
+        $netHeadline = match (true) {
+            $opportunity->deal_total !== null && $dealMode === DealPriceMode::FlatHeadline => (int) $opportunity->deal_total,
+            default => $excludingTax,
+        };
 
         if ($opportunity->tax_locked) {
             // TAX LOCK (MC §7.2): the opportunity is confirmed — preserve the tax
@@ -321,19 +444,44 @@ class OpportunityTotalsCalculator
             // reflect the current lines, but the final tax pass is skipped so a
             // later tax-rule/rate change cannot move a confirmed order's tax.
             $taxTotal = (int) $opportunity->tax_total;
-        } elseif ($opportunity->deal_total !== null) {
-            $taxTotal = $this->taxCalculator->calculate(
-                $netHeadline,
-                $this->currencyFor($opportunity),
-                $orgTaxClassId,
-                $defaultProductTaxClassId,
-            )->taxAmount;
         } else {
-            $taxTotal = $this->groupedTaxTotal(
-                $netByProductTaxClass,
-                $this->currencyFor($opportunity),
+            $taxContext = TaxResolutionContext::fromOpportunity($opportunity);
+            $taxPointDate = $this->taxPointDateResolver->resolveForOpportunity($opportunity);
+
+            $taxTotal = $this->taxResolutionContextHolder->using($taxContext, function () use (
+                $opportunity,
+                $taxLines,
+                $currency,
                 $orgTaxClassId,
-            );
+                $netHeadline,
+                $defaultProductTaxClassId,
+                $dealMode,
+                $taxPointDate,
+            ): int {
+                if ($opportunity->deal_total !== null && $dealMode === DealPriceMode::FlatHeadline) {
+                    return $this->documentTaxBreakdown->summarize(new DocumentTaxRequest(
+                        lines: [
+                            new DocumentTaxLineInput(
+                                lineKey: 'deal-headline',
+                                netMinor: $netHeadline,
+                                productTaxClassId: $defaultProductTaxClassId,
+                            ),
+                        ],
+                        currencyCode: $currency,
+                        organisationTaxClassId: $orgTaxClassId,
+                        effectiveAt: $taxPointDate,
+                        pricesIncludeTax: $opportunity->prices_include_tax,
+                    ))->totalTax;
+                }
+
+                return $this->documentTaxBreakdown->summarize(new DocumentTaxRequest(
+                    lines: $taxLines,
+                    currencyCode: $currency,
+                    organisationTaxClassId: $orgTaxClassId,
+                    effectiveAt: $taxPointDate,
+                    pricesIncludeTax: false,
+                ))->totalTax;
+            });
         }
 
         $opportunity->forceFill([
@@ -380,39 +528,18 @@ class OpportunityTotalsCalculator
     }
 
     /**
-     * Compute the total tax across all tax-class groups in a single final pass.
-     *
-     * Each group's net is taxed once via {@see TaxCalculator::calculate()} (which
-     * rounds at the currency minor-unit boundary per group, matching invoice
-     * line-level rounding for mixed-class baskets) and the per-group tax summed.
-     *
-     * @param  array<int, int>  $netByProductTaxClass  net minor units keyed by product tax class id (0 = default fallback)
-     */
-    private function groupedTaxTotal(array $netByProductTaxClass, string $currency, ?int $orgTaxClassId): int
-    {
-        $taxTotal = 0;
-
-        foreach ($netByProductTaxClass as $productTaxClassId => $groupNet) {
-            $taxTotal += $this->taxCalculator->calculate(
-                $groupNet,
-                $currency,
-                $orgTaxClassId,
-                $productTaxClassId === 0 ? null : $productTaxClassId,
-            )->taxAmount;
-        }
-
-        return $taxTotal;
-    }
-
-    /**
-     * The cost's NET line value in minor units: amount * round(quantity), with the
+     * The cost's NET line value in minor units: amount × quantity (decimal-safe),
      * embedded tax stripped when prices are entered tax-inclusive so the bucket
      * stays net.
      */
     private function costNet(OpportunityCost $cost, Opportunity $opportunity, ?int $defaultProductTaxClassId): int
     {
-        $quantityUnits = max(0, (int) round((float) $cost->quantity));
-        $lineTotal = $cost->amount * $quantityUnits;
+        $currency = $this->currencyFor($opportunity);
+        $lineTotal = $this->quantityMinor->multiplyMinorByQuantity(
+            (int) $cost->amount,
+            (string) $cost->quantity,
+            $currency,
+        );
 
         if (! $opportunity->prices_include_tax) {
             return $lineTotal;
@@ -439,13 +566,13 @@ class OpportunityTotalsCalculator
     /**
      * Resolve the per-unit price and the NET subtotal (pre-discount) for a line.
      *
-     * @return array{0: int, 1: int} [unitPrice, netSubtotal] in minor units
+     * @return array{unit_price: int, net_subtotal: int, tier_id: ?int, tier_multiplier: ?string}
      */
     private function resolveSubtotal(
         OpportunityItem $item,
         ?Product $product,
         string $currency,
-        int $quantityUnits,
+        string $quantity,
         Carbon $start,
         Carbon $end,
         ?int $storeId,
@@ -454,14 +581,22 @@ class OpportunityTotalsCalculator
     ): array {
         // A manual override always wins over the rate engine.
         if ($manualUnitPrice !== null) {
-            return [
+            return $this->resolvedSubtotal(
                 $manualUnitPrice,
-                $this->manualLineSubtotal($manualUnitPrice, $quantityUnits, $item, $opportunity),
-            ];
+                $this->manualLineSubtotal($manualUnitPrice, $quantity, $item, $opportunity, $currency),
+            );
         }
 
+        $priceCategoryId = $opportunity->member?->price_category_id;
+
         $rate = $product !== null
-            ? $this->rateResolver->resolve($product, $this->mapTransactionType($item->transaction_type), $storeId, $start)
+            ? $this->rateResolver->resolve(
+                $product,
+                $this->mapTransactionType($item->transaction_type),
+                $storeId,
+                $start,
+                $priceCategoryId,
+            )
             : null;
 
         if ($rate === null || $rate->rateDefinition === null) {
@@ -469,20 +604,38 @@ class OpportunityTotalsCalculator
             // (0 for a fresh ad-hoc line) times quantity and chargeable days.
             $unitPrice = $item->unit_price;
 
-            return [
+            return $this->resolvedSubtotal(
                 $unitPrice,
-                $this->manualLineSubtotal($unitPrice, $quantityUnits, $item, $opportunity),
-            ];
+                $this->manualLineSubtotal($unitPrice, $quantity, $item, $opportunity, $currency),
+            );
+        }
+
+        $tiered = $this->tierMultiplier->apply(
+            $rate->price,
+            $currency,
+            $priceCategoryId,
+            $opportunity->member?->priceCategoryTier,
+            $rate->price_category_id,
+        );
+
+        if ($this->quantityMinor->quantityHasFraction($quantity)) {
+            return $this->resolvedSubtotal(
+                $tiered['unit_price'],
+                $this->manualLineSubtotal($tiered['unit_price'], $quantity, $item, $opportunity, $currency),
+                $tiered['tier_id'],
+                $tiered['tier_multiplier'],
+            );
         }
 
         $definition = $rate->rateDefinition;
+        $wholeUnits = $this->quantityMinor->wholeUnitCountForRateEngine($quantity);
 
         $context = new CalculationContext(
-            unitPriceMinor: $rate->price,
+            unitPriceMinor: $tiered['unit_price'],
             currency: $currency,
             start: $start,
             end: $end,
-            quantity: max(1, $quantityUnits),
+            quantity: max(1, $wholeUnits),
             basePeriod: $definition->base_period,
             strategyConfig: $definition->strategy_config,
             transactionType: $this->mapTransactionType($item->transaction_type),
@@ -496,7 +649,29 @@ class OpportunityTotalsCalculator
             $definition->modifier_configs,
         );
 
-        return [$rate->price, $breakdown->totalMinor()];
+        return $this->resolvedSubtotal(
+            $tiered['unit_price'],
+            $breakdown->totalMinor(),
+            $tiered['tier_id'],
+            $tiered['tier_multiplier'],
+        );
+    }
+
+    /**
+     * @return array{unit_price: int, net_subtotal: int, tier_id: ?int, tier_multiplier: ?string}
+     */
+    private function resolvedSubtotal(
+        int $unitPrice,
+        int $netSubtotal,
+        ?int $tierId = null,
+        ?string $tierMultiplier = null,
+    ): array {
+        return [
+            'unit_price' => $unitPrice,
+            'net_subtotal' => $netSubtotal,
+            'tier_id' => $tierId,
+            'tier_multiplier' => $tierMultiplier,
+        ];
     }
 
     /**
@@ -505,11 +680,12 @@ class OpportunityTotalsCalculator
      */
     private function manualLineSubtotal(
         int $unitPriceMinor,
-        int $quantityUnits,
+        string $quantity,
         OpportunityItem $item,
         Opportunity $opportunity,
+        string $currencyCode,
     ): int {
-        $base = $unitPriceMinor * $quantityUnits;
+        $base = $this->quantityMinor->multiplyMinorByQuantity($unitPriceMinor, $quantity, $currencyCode);
 
         if ($item->transaction_type === LineItemTransactionType::Sale) {
             return $base;
@@ -521,18 +697,114 @@ class OpportunityTotalsCalculator
     }
 
     /**
-     * Apply a percentage discount to a net amount, rounding HALF_UP at the
-     * minor-unit boundary. A null/zero discount returns the amount unchanged.
+     * Post-category, pre-deal line nets for the scoped items (used by deal-price
+     * proportional distribution). Runs stages 1–2 without deal discounts.
+     *
+     * @param  Collection<int, OpportunityItem>  $scopedItems
+     * @return array<int, int>
      */
-    private function applyDiscount(int $netMinor, ?string $discountPercent): int
+    public function baselinePostCategoryNets(Opportunity $opportunity, Collection $scopedItems): array
+    {
+        $opportunity->loadMissing(['items.item', 'member.priceCategoryTier']);
+        $items = $opportunity->items;
+        $currency = $this->currencyFor($opportunity);
+
+        /** @var array<int, int> $baseSubtotals */
+        $baseSubtotals = [];
+
+        foreach ($items as $item) {
+            if (! $item->item_type->isPriceable()) {
+                continue;
+            }
+
+            $quantity = $this->quantityMinor->normalizeQuantity((string) $item->quantity);
+            [$start, $end] = $this->effectiveDates($item, $opportunity);
+            $product = $this->resolveProduct($item);
+
+            $resolved = $this->resolveSubtotal(
+                $item,
+                $product,
+                $currency,
+                $quantity,
+                $start,
+                $end,
+                $opportunity->store_id,
+                null,
+                $opportunity,
+            );
+
+            $baseSubtotals[(int) $item->id] = $resolved['net_subtotal'];
+        }
+
+        $preDiscountByItem = $this->bundlePricingApplicator->apply(
+            $opportunity,
+            $items,
+            $baseSubtotals,
+            $currency,
+        );
+
+        $scopedIds = $scopedItems->pluck('id')->flip();
+        $baselines = [];
+
+        foreach ($items as $item) {
+            if (! isset($scopedIds[$item->id])) {
+                continue;
+            }
+
+            $preDiscount = $preDiscountByItem[(int) $item->id] ?? 0;
+            $baselines[(int) $item->id] = $this->applyDiscount(
+                $preDiscount,
+                $this->effectiveDiscountPercent($item, $opportunity),
+                $currency,
+            );
+        }
+
+        return $baselines;
+    }
+
+    private function effectiveDiscountPercent(OpportunityItem $item, Opportunity $opportunity): ?string
+    {
+        /** @var list<string> $candidates */
+        $candidates = [];
+
+        if ($item->discount_percent !== null) {
+            $candidates[] = (string) $item->discount_percent;
+        }
+
+        $at = $item->starts_at ?? $opportunity->starts_at ?? Carbon::now();
+
+        foreach (app(DiscountSourceRegistry::class)->all() as $source) {
+            $percent = $source->discountPercentForItem($item, $opportunity, Carbon::parse($at));
+
+            if ($percent !== null) {
+                $candidates[] = $percent;
+            }
+        }
+
+        $best = null;
+
+        foreach ($candidates as $candidate) {
+            if ($best === null || bccomp($candidate, $best, 2) > 0) {
+                $best = $candidate;
+            }
+        }
+
+        return app(OpportunityItemDiscountPercentFilterRegistry::class)->apply($item, $best);
+    }
+
+    /**
+     * Apply a percentage discount to a net amount, rounding at the minor-unit
+     * boundary using the tenant {@see settings('pricing.rounding_direction')} setting.
+     * A null/zero discount returns the amount unchanged.
+     */
+    private function applyDiscount(int $netMinor, ?string $discountPercent, string $currencyCode): int
     {
         if ($discountPercent === null || bccomp($discountPercent, '0', 10) === 0) {
             return $netMinor;
         }
 
-        // discount = round(net * percent / 100), HALF_UP, on the minor-unit grid.
         $rawDiscount = bcdiv(bcmul((string) $netMinor, $discountPercent, 10), '100', 10);
-        $discount = (int) bcadd($rawDiscount, str_starts_with($rawDiscount, '-') ? '-0.5' : '0.5', 0);
+        $discount = $this->roundingStrategy->roundMinorAmount($rawDiscount, $currencyCode);
 
         return $netMinor - $discount;
     }

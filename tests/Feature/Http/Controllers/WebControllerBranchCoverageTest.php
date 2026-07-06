@@ -17,10 +17,24 @@ beforeEach(function () {
 
 describe('DocsController::index with empty navigation', function () {
     it('aborts 404 when there are no documentation sections', function () {
-        // DocsService returns navigation with no sections — the index redirect has
-        // nothing to point at, so it must 404 (line 26).
+        // DocsService returns navigation with no sections — the landing page has
+        // nothing to render, so it must 404.
         $this->mock(DocsService::class, function ($mock): void {
             $mock->shouldReceive('getNavigation')->andReturn(['sections' => []]);
+        });
+
+        get(route('docs.index'))->assertNotFound();
+    });
+
+    it('aborts 404 when sections exist but contain no pages', function () {
+        $this->mock(DocsService::class, function ($mock): void {
+            $mock->shouldReceive('getNavigation')->andReturn([
+                'sections' => [[
+                    'title' => 'Empty',
+                    'slug' => 'empty',
+                    'pages' => [],
+                ]],
+            ]);
         });
 
         get(route('docs.index'))->assertNotFound();

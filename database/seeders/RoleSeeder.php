@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
         $opsManagerPermissions = array_filter($allPermissions, fn (string $p): bool => ! str_starts_with($p, 'settings.')
             && ! str_starts_with($p, 'users.')
             && ! str_starts_with($p, 'roles.')
+            && $p !== 'numbering.edit'
         );
 
         $salesPermissions = array_filter($allPermissions, fn (string $p): bool => (str_starts_with($p, 'opportunities.')
@@ -34,6 +35,9 @@ class RoleSeeder extends Seeder
             && $p !== 'opportunities.unlock_rates')
             || str_starts_with($p, 'activities.')
             || str_starts_with($p, 'invoices.')
+            || str_starts_with($p, 'purchase_orders.')
+            || str_starts_with($p, 'virtual_stock.')
+            || str_starts_with($p, 'payments.')
             || str_starts_with($p, 'members.')
             // Sales see and resolve shortages, but the hard-block override
             // (shortages.ignore) is reserved for management-tier roles.

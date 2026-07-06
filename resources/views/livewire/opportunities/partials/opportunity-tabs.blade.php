@@ -2,7 +2,7 @@
     // Centralise tab-count loading so every opportunity tab shows correct, consistent
     // counts regardless of which relations the individual page component loaded.
     // `items()` is already active-version-scoped (opportunity-lifecycle.md §8.7).
-    $opportunity->loadCount(['items', 'costs', 'attachments', 'participants', 'activities']);
+    $opportunity->loadCount(['items', 'costs', 'attachments', 'participants', 'activities', 'documents', 'invoices']);
 
     // B3: allocation/dispatch (Assets) and shortage resolution (Shortages) only
     // apply once demand is committed — i.e. for an ORDER, or a QUOTATION that has
@@ -52,9 +52,16 @@
             ? ['name' => 'shortages', 'label' => 'Shortages', 'route' => route('opportunities.shortages', $opportunity), 'count' => $shortageTabCount]
             : null,
         ['name' => 'costs', 'label' => 'Costs', 'route' => route('opportunities.costs', $opportunity), 'count' => $opportunity->costs_count ?? 0],
+        \Illuminate\Support\Facades\Gate::allows('invoices.view')
+            ? ['name' => 'invoices', 'label' => 'Invoices', 'route' => route('opportunities.invoices', $opportunity), 'count' => $opportunity->invoices_count ?? 0]
+            : null,
         ['name' => 'participants', 'label' => 'Participants', 'route' => route('opportunities.participants', $opportunity), 'count' => $opportunity->participants_count ?? 0],
         ['name' => 'custom-fields', 'label' => 'Custom Fields', 'route' => route('opportunities.custom-fields', $opportunity)],
         ['name' => 'files', 'label' => 'Files', 'route' => route('opportunities.files', $opportunity), 'count' => $opportunity->attachments_count ?? 0],
+        \Illuminate\Support\Facades\Gate::allows('documents.view')
+            ? ['name' => 'documents', 'label' => 'Documents', 'route' => route('opportunities.documents', $opportunity), 'count' => $opportunity->documents_count ?? 0]
+            : null,
+        ['name' => 'communications', 'label' => 'Communications', 'route' => route('opportunities.communications', $opportunity)],
     ]))"
     :active="$activeTab"
 />

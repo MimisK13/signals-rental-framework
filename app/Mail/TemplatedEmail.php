@@ -18,6 +18,7 @@ class TemplatedEmail extends Mailable
      * @param  string|null  $eyebrow  Optional mono eyebrow label above the body.
      * @param  string|null  $footerContext  Optional footer context line.
      * @param  string|null  $preheader  Optional hidden preheader text.
+     * @param  string|null  $unsubscribeUrl  Optional signed unsubscribe link for customer emails.
      */
     public function __construct(
         public string $subjectLine,
@@ -25,6 +26,7 @@ class TemplatedEmail extends Mailable
         public ?string $eyebrow = null,
         public ?string $footerContext = null,
         public ?string $preheader = null,
+        public ?string $unsubscribeUrl = null,
     ) {}
 
     public function envelope(): Envelope
@@ -43,6 +45,7 @@ class TemplatedEmail extends Mailable
                 'eyebrow' => $this->eyebrow,
                 'footerContext' => $this->footerContext,
                 'preheader' => $this->preheader,
+                'unsubscribeUrl' => $this->unsubscribeUrl,
             ],
         );
     }

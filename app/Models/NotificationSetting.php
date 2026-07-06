@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property list<string>|null $channels
+ * @property array<string, mixed>|null $channel_config
+ * @property list<array<string, mixed>>|null $recipient_rules
+ */
 class NotificationSetting extends Model
 {
     /** @use HasFactory<NotificationSettingFactory> */
@@ -15,6 +20,8 @@ class NotificationSetting extends Model
     protected $fillable = [
         'notification_type_id',
         'channels',
+        'channel_config',
+        'recipient_rules',
         'is_enabled',
     ];
 
@@ -25,6 +32,8 @@ class NotificationSetting extends Model
     {
         return [
             'channels' => 'array',
+            'channel_config' => 'array',
+            'recipient_rules' => 'array',
             'is_enabled' => 'boolean',
         ];
     }

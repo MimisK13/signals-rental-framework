@@ -1,13 +1,13 @@
 ---
 title: Multi-Currency & Tax
-description: Currencies, exchange rates, and the tax resolution engine — the financial foundation Signals ships in Phase 2.
+description: Currencies, exchange rates, and the tax resolution engine used across opportunities, invoices, and purchase orders.
 ---
 
 ## Overview
 
 Signals ships a complete financial **engine** for multi-currency and tax: a catalogue of ISO 4217 currencies, dated exchange rates with lossless conversion, and a rule-based tax resolution engine. These are the building blocks the rest of the platform draws on when money is involved.
 
-> **Important — Phase 2 ships the engine, not the application.** In Phase 2 the currency and tax engines exist and are fully usable on their own (and through the API), but they are **not yet applied automatically to order or invoice line items**. Per-line currency context and tax resolution on opportunities and invoices is intentionally deferred to **Phase 3 (Opportunities)** and **Phase 4 (Invoicing)**. See [Deferred to Phase 3 / 4](#deferred-to-phase-3-4) below.
+> **Phase 4 update.** Multi-currency and tax engines are now wired end-to-end: opportunity line items carry currency context and resolved tax; checkout freezes a tax snapshot onto invoices; credit notes mirror invoice tax; purchase-order tax uses the purchase axis. This page covers the shared engine — see [Invoicing & Payments](/docs/platform/invoicing) and [Tax & Compliance](/docs/platform/tax) for application behaviour.
 
 ## Currencies
 
@@ -83,12 +83,12 @@ Given an organisation tax class and a product tax class, the engine selects the 
 
 Because inclusive mode rounds the net once and then takes the tax as the remainder, the **`net + tax == gross` guarantee holds exactly** — there is no double-rounding drift, and inclusive extraction is the lossless inverse of the exclusive addition. Both modes use the same round-half-away-from-zero strategy at the single currency minor-unit boundary, and both fall back to a zero-tax result when no taxable rule applies.
 
-## Deferred to Phase 3 / 4
+## Application wiring
 
-Phase 2 delivers the engines above as standalone, tested services (`CurrencyService`, `TaxCalculator`) and their supporting reference data, settings, and API endpoints. What Phase 2 deliberately does **not** include is the wiring of these engines into transactional line items:
+The engines above are now applied to transactional documents:
 
-- **Per-line currency context** — `currency_code`, `exchange_rate`, and `exchange_rate_locked` on opportunities, and the recalculation of line totals when the document currency changes, are part of **Phase 3 (Opportunities)**.
-- **Per-line tax application** — resolving and storing tax treatment, rate, and amount on each opportunity item (and re-resolving when a line changes) is part of **Phase 3 (Opportunities)**.
-- **Invoice tax snapshots** — invoice-line tax columns, the aggregated `tax_summary`, credit-note tax handling, and purchase-order tax are part of **Phase 4 (Invoicing)**.
+- **Opportunities** — per-line `currency_code`, `exchange_rate`, and resolved tax on each item; FX/tax locks freeze rates for quoting
+- **Invoices** — checkout copies a frozen tax snapshot; credit notes negate invoice tax
+- **Purchase orders** — purchase-axis tax for sub-hire procurement
 
-This separation is intentional: the engine is correct and reusable now, and the application layer that calls it lands with the order and invoice domains it belongs to. Until then, multi-currency and tax can be exercised directly through the services and the API, but they are not automatically applied to orders or invoices.
+Zone-aware resolution for EU/UK compliance extends the rule matrix — see [Tax & Compliance](/docs/platform/tax).

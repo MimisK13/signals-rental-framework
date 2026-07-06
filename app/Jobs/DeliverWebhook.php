@@ -2,9 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Enums\MeteringChannel;
 use App\Models\Webhook;
 use App\Models\WebhookLog;
+use App\Services\Api\UsageRecorder;
+use App\Services\Api\WebhookEventRegistry;
 use App\Services\Api\WebhookService;
+use App\Support\Api\MeteringStatusClass;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -158,10 +162,41 @@ class DeliverWebhook implements ShouldQueue
             $this->recordFailure();
 
             throw $e;
+        } finally {
+            if ($this->attempts() === 1) {
+                $this->recordOutboundMetering($log->fresh());
+            }
         }
 
         if ($shouldRetry) {
             throw new \RuntimeException($retryReason);
+        }
+    }
+
+    private function recordOutboundMetering(WebhookLog $log): void
+    {
+        try {
+            $registry = app(WebhookEventRegistry::class);
+            $eventDefinition = $registry->get($this->event);
+            $weight = $registry->weight($this->event);
+            $group = $eventDefinition['group'] ?? str($this->event)->before('.')->toString();
+            $statusClass = MeteringStatusClass::fromStatusCode($log->response_code);
+
+            $log->update([
+                'price_weight' => $weight,
+                'weighted_units' => $weight,
+            ]);
+
+            app(UsageRecorder::class)->incrementDailyUsage([
+                'channel' => MeteringChannel::WebhookSent->value,
+                'key' => $this->event,
+                'resource' => $group,
+                'status_class' => $statusClass,
+                'personal_access_token_id' => null,
+                'inbound_webhook_source_id' => null,
+            ], 1, $weight);
+        } catch (\Throwable $exception) {
+            report($exception);
         }
     }
 

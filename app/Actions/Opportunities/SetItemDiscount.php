@@ -8,6 +8,7 @@ use App\Data\Opportunities\SetItemDiscountData;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\OpportunityItem;
+use App\Verbs\Events\Opportunities\DiscountManuallyOverridden;
 use App\Verbs\Events\Opportunities\ItemDiscountSet;
 
 /**
@@ -41,9 +42,18 @@ class SetItemDiscount
                 permission: 'opportunities.edit',
             ));
 
+            $previousDiscount = $item->discount_percent !== null ? (string) $item->discount_percent : null;
+
             ItemDiscountSet::fire(
                 opportunity_item_id: $item->state_id,
                 discount_percent: $data->discount_percent,
+                is_discount_manual: true,
+            );
+
+            DiscountManuallyOverridden::fire(
+                opportunity_item_id: $item->state_id,
+                discount_percent: $data->discount_percent,
+                previous_discount_percent: $previousDiscount,
             );
         });
 

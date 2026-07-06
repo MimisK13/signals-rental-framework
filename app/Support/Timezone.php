@@ -38,6 +38,18 @@ class Timezone
     }
 
     /**
+     * Convert a UTC datetime to a specific IANA timezone.
+     */
+    public function toZone(DateTimeInterface|string $datetime, string $timezone): CarbonImmutable
+    {
+        $carbon = $datetime instanceof DateTimeInterface
+            ? CarbonImmutable::instance($datetime)
+            : CarbonImmutable::parse($datetime, 'UTC');
+
+        return $carbon->setTimezone($timezone !== '' ? $timezone : 'UTC');
+    }
+
+    /**
      * Convert a local datetime to UTC.
      */
     public function toUtc(DateTimeInterface|string $datetime): CarbonImmutable

@@ -13,11 +13,15 @@ use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Services\Opportunities\ItemTreeService;
 use App\Services\Opportunities\OpportunityAutoGroupResolver;
+use App\Services\Pricing\DiscountCategoryApplier;
 use App\Services\SequenceAllocator;
 use App\Services\Shortages\ItemShortageProbe;
 use App\Verbs\Events\Opportunities\ItemAdded;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Throwable;
+use Thunk\Verbs\Facades\Verbs;
 
 /**
  * Adds a line item to an opportunity via the ItemAdded genesis event, allocating
@@ -58,61 +62,78 @@ class AddOpportunityItem
         // by VersionCreated to target a specific brand-new version).
         $versionId = $data->version_id ?? ($opportunity->active_version_id > 0 ? $opportunity->active_version_id : null);
 
-        $this->commitVerbs(function () use ($opportunity, $data, $startsAt, $endsAt, $versionId, &$itemId): void {
-            // Allocate the replay-stable small PK and bake it into the event so a
-            // truncate + Verbs::replay() rebuild reproduces the identical id.
-            $itemId = app(SequenceAllocator::class)->next('opportunity_items');
+        $manualDiscount = $data->discount_percent !== null;
 
-            // Resolve the tree position. A line with a parent_path nests one level
-            // deeper under that group/product; otherwise it lands at the top level.
-            // The path is allocated inside the closure (after $itemId) and baked into
-            // the event, so a Verbs replay reproduces the identical position — the
-            // same replay-stability rationale the old sort_order carried.
-            $tree = app(ItemTreeService::class);
-            $path = $data->parent_path !== null
-                ? $tree->nextChildPath($opportunity->id, $versionId, $data->parent_path)
-                : $tree->nextTopLevelPath($opportunity->id, $versionId);
+        try {
+            DB::transaction(function () use ($opportunity, $data, $startsAt, $endsAt, $versionId, $manualDiscount, &$itemId): void {
+                // Allocate the replay-stable small PK and bake it into the event so a
+                // truncate + Verbs::replay() rebuild reproduces the identical id.
+                $itemId = app(SequenceAllocator::class)->next('opportunity_items');
 
-            $revenueGroupId = $data->revenue_group_id ?? $this->resolveRevenueGroupId($data);
+                // Resolve the tree position. A line with a parent_path nests one level
+                // deeper under that group/product; otherwise it lands at the top level.
+                // The path is allocated inside the closure (after $itemId) and baked into
+                // the event, so a Verbs replay reproduces the identical position — the
+                // same replay-stability rationale the old sort_order carried.
+                $tree = app(ItemTreeService::class);
+                $path = $data->parent_path !== null
+                    ? $tree->nextChildPath($opportunity->id, $versionId, $data->parent_path)
+                    : $tree->nextTopLevelPath($opportunity->id, $versionId);
 
-            ItemAdded::fire(
-                opportunity_item_id: $itemId,
-                opportunity_id: $opportunity->id,
-                version_id: $versionId,
-                itemable_id: $data->itemable_id,
-                itemable_type: $data->itemable_type,
-                item_type: $data->item_type,
-                path: $path,
-                revenue_group_id: $revenueGroupId,
-                name: $data->name,
-                description: $data->description,
-                quantity: $data->quantity,
-                transaction_type: $data->transaction_type,
-                charge_period: $data->charge_period,
-                starts_at: $startsAt,
-                ends_at: $endsAt,
-                is_optional: $data->is_optional,
-                manual_unit_price: $data->unit_price,
-                discount_percent: $data->discount_percent,
-                custom_fields: $data->custom_fields,
-                notes: $data->notes,
-            );
+                $revenueGroupId = $data->revenue_group_id ?? $this->resolveRevenueGroupId($data);
 
-            if ($this->shouldMaterializeIncludedAccessories($data)) {
-                $this->materializeIncludedAccessories(
-                    opportunity: $opportunity,
-                    versionId: $versionId,
-                    principalPath: $path,
-                    productId: (int) $data->itemable_id,
-                    productQuantity: $data->quantity,
-                    transactionType: $data->transaction_type,
-                    chargePeriod: $data->charge_period,
-                    startsAt: $startsAt,
-                    endsAt: $endsAt,
-                    isOptional: $data->is_optional,
+                ItemAdded::fire(
+                    opportunity_item_id: $itemId,
+                    opportunity_id: $opportunity->id,
+                    version_id: $versionId,
+                    itemable_id: $data->itemable_id,
+                    itemable_type: $data->itemable_type,
+                    item_type: $data->item_type,
+                    path: $path,
+                    revenue_group_id: $revenueGroupId,
+                    name: $data->name,
+                    description: $data->description,
+                    quantity: $data->quantity,
+                    transaction_type: $data->transaction_type,
+                    charge_period: $data->charge_period,
+                    starts_at: $startsAt,
+                    ends_at: $endsAt,
+                    is_optional: $data->is_optional,
+                    manual_unit_price: $data->unit_price,
+                    discount_percent: $data->discount_percent,
+                    is_discount_manual: $manualDiscount,
+                    custom_fields: $data->custom_fields,
+                    notes: $data->notes,
                 );
-            }
-        });
+
+                if ($this->shouldMaterializeIncludedAccessories($data)) {
+                    $this->materializeIncludedAccessories(
+                        opportunity: $opportunity,
+                        versionId: $versionId,
+                        principalPath: $path,
+                        productId: (int) $data->itemable_id,
+                        productQuantity: $data->quantity,
+                        transactionType: $data->transaction_type,
+                        chargePeriod: $data->charge_period,
+                        startsAt: $startsAt,
+                        endsAt: $endsAt,
+                        isOptional: $data->is_optional,
+                    );
+                }
+
+                Verbs::commit();
+
+                app(DiscountCategoryApplier::class)->apply(
+                    opportunity: $opportunity->fresh(['items.item', 'member']),
+                );
+
+                Verbs::commit();
+            });
+        } catch (Throwable $e) {
+            $this->resetVerbsState();
+
+            throw $e;
+        }
 
         $fresh = $opportunity->fresh(['items']);
 
@@ -157,6 +178,9 @@ class AddOpportunityItem
         return $revenueGroupId;
     }
 
+    /**
+     * @return list<int>
+     */
     private function materializeIncludedAccessories(
         Opportunity $opportunity,
         ?int $versionId,
@@ -168,7 +192,7 @@ class AddOpportunityItem
         string $startsAt,
         string $endsAt,
         bool $isOptional,
-    ): void {
+    ): array {
         $accessories = Accessory::query()
             ->where('product_id', $productId)
             ->where('included', true)
@@ -177,10 +201,11 @@ class AddOpportunityItem
             ->get();
 
         if ($accessories->isEmpty()) {
-            return;
+            return [];
         }
 
         $index = 0;
+        $createdIds = [];
 
         foreach ($accessories as $accessory) {
             $accessoryProduct = $accessory->accessoryProduct;
@@ -213,6 +238,10 @@ class AddOpportunityItem
                 ends_at: $endsAt,
                 is_optional: $isOptional,
             );
+
+            $createdIds[] = $accessoryId;
         }
+
+        return $createdIds;
     }
 }

@@ -2,24 +2,48 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Containers\CreateContainer;
+use App\Actions\Containers\CreateTemporaryContainer;
+use App\Actions\Containers\DispatchContainer;
+use App\Actions\Containers\DissolveContainer;
 use App\Actions\Containers\PackContainerItem;
+use App\Actions\Containers\RepackReturnItem;
+use App\Actions\Containers\ReturnKitContainer;
+use App\Actions\Containers\SealContainer;
+use App\Actions\Containers\StartRepackOnReturn;
+use App\Actions\Containers\TransferContainerItem;
 use App\Actions\Containers\UnpackContainerItem;
+use App\Actions\Containers\UnsealContainer;
+use App\Actions\Containers\UpdateContainer;
+use App\Actions\Containers\VerifyKitCheckin;
 use App\Data\Containers\ContainerData;
+use App\Data\Containers\CreateContainerData;
+use App\Data\Containers\CreateTemporaryContainerData;
+use App\Data\Containers\DispatchContainerData;
 use App\Data\Containers\PackContainerItemData;
+use App\Data\Containers\RepackReturnItemData;
+use App\Data\Containers\ReturnKitContainerData;
+use App\Data\Containers\StartRepackOnReturnData;
+use App\Data\Containers\TransferContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
+use App\Data\Containers\UnsealContainerData;
+use App\Data\Containers\UpdateContainerData;
+use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
+use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Models\Container;
+use App\Services\Containers\ContainerManifestService;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * API surface for the container availability subset (serialised-containers.md,
- * M5-3b). Only the reads (list/show) and the pack/unpack availability write
- * surface are exposed here — the broader container lifecycle (seal, dissolve,
- * scan, repack, dispatch, return) stays Phase-4 and is intentionally absent.
+ * API surface for containers (serialised-containers.md). Read, create,
+ * update, pack/unpack, seal, unseal, dissolve, dispatch (transport or kit/hybrid by
+ * product mode), return, and verify-check-in are exposed here.
  *
  * Pack/unpack delegate to the existing {@see PackContainerItem} /
  * {@see UnpackContainerItem} actions, which create/release the container demand
@@ -109,24 +133,77 @@ class ContainerController extends Controller
     }
 
     /**
+     * Create a product-backed container from a containerable serialised item.
+     */
+    #[ApiResponse(201, 'Container created')]
+    public function store(Request $request): JsonResponse
+    {
+        $this->authorizeApi('containers.create', 'containers:write');
+
+        $data = CreateContainerData::from($request->validate(CreateContainerData::rules()));
+
+        $container = (new CreateContainer)($data);
+
+        return $this->respondWith($container->toArray(), 'container', Response::HTTP_CREATED);
+    }
+
+    /**
+     * Create a barcode-only temporary container.
+     */
+    #[ApiResponse(201, 'Temporary container created')]
+    public function storeTemporary(Request $request): JsonResponse
+    {
+        $this->authorizeApi('containers.create_temporary', 'containers:write');
+
+        $data = CreateTemporaryContainerData::from($request->validate(CreateTemporaryContainerData::rules()));
+
+        $container = (new CreateTemporaryContainer)($data);
+
+        return $this->respondWith($container->toArray(), 'container', Response::HTTP_CREATED);
+    }
+
+    /**
+     * Update an open container's name, barcode, notes, or scan mode.
+     */
+    #[ApiResponse(200, 'Container updated')]
+    public function update(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.create', 'containers:write');
+
+        $data = UpdateContainerData::from($request->validate(UpdateContainerData::rules()));
+
+        $result = (new UpdateContainer)($container, $data);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
      * Pack a serialised item into an open container.
      *
      * Creates the membership row and (for kit / hybrid-fixed containers) the
      * container demand that holds the item from individual availability. Packing
-     * a non-serialised item, an item at a different store, an item already in an
-     * active container, or an item already committed to an opportunity yields a
-     * 422.
+     * a non-serialised item, an item at a different store, or nesting depth
+     * exceeded yields a 422. Conflicts (already in container, checked out, nesting
+     * confirmation) yield 409 with resolution options.
      */
     #[ApiResponse(201, 'Item packed')]
+    #[ApiResponse(409, 'Pack conflict requiring resolution')]
     public function pack(Request $request, Container $container): JsonResponse
     {
         $this->authorizeApi('containers.pack', 'containers:write');
 
         $data = PackContainerItemData::from($request->validate(PackContainerItemData::rules()));
 
-        $item = (new PackContainerItem)($container, $data);
+        try {
+            $result = (new PackContainerItem)($container, $data);
+        } catch (ContainerPackConflictException $e) {
+            return response()->json($e->payload(), Response::HTTP_CONFLICT);
+        }
 
-        return $this->respondWith($item->toArray(), 'container_item', Response::HTTP_CREATED);
+        return response()->json([
+            'container_item' => $result->container_item->toArray(),
+            'notices' => $result->notices,
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -146,5 +223,174 @@ class ContainerController extends Controller
         $item = (new UnpackContainerItem)($container, $data);
 
         return $this->respondWith($item->toArray(), 'container_item');
+    }
+
+    /**
+     * Seal an open container (QA gate — strict mode validates template match).
+     */
+    #[ApiResponse(200, 'Container sealed')]
+    public function seal(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.seal', 'containers:write');
+
+        $result = (new SealContainer)($container);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Unseal a sealed container so items can be modified. Does not cascade to
+     * nested containers.
+     */
+    #[ApiResponse(200, 'Container unsealed')]
+    public function unseal(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.seal', 'containers:write');
+
+        $data = UnsealContainerData::from($request->validate(UnsealContainerData::rules()));
+
+        $result = (new UnsealContainer)($container, $data);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Dispatch a sealed container against an opportunity. Transport-mode containers
+     * dissolve on dispatch; kit/hybrid containers persist as a unit.
+     */
+    #[ApiResponse(200, 'Container dispatched')]
+    #[ApiResponse(409, 'Dispatch requires opportunity amendments')]
+    #[ApiResponse(422, 'Dispatch validation failed')]
+    public function dispatch(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('dispatch', $container);
+
+        $data = DispatchContainerData::from($request->validate(DispatchContainerData::rules()));
+
+        try {
+            $action = new DispatchContainer;
+            $result = $action($container, $data);
+        } catch (ContainerDispatchAmendmentRequiredException $e) {
+            return response()->json($e->payload(), Response::HTTP_CONFLICT);
+        }
+
+        return response()->json([
+            'dispatch' => $result->toArray(),
+        ]);
+    }
+
+    /**
+     * Initiate repack-on-return for a transport container housing during check-in.
+     */
+    #[ApiResponse(200, 'Repack session started')]
+    #[ApiResponse(422, 'Repack validation failed')]
+    public function startRepack(Request $request): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('create', Container::class);
+
+        $data = StartRepackOnReturnData::from($request->validate(StartRepackOnReturnData::rules()));
+        $result = (new StartRepackOnReturn)($data);
+
+        return response()->json([
+            'repack' => $result->toArray(),
+        ]);
+    }
+
+    /**
+     * Return one item from an opportunity and pack it into a repack container when eligible.
+     */
+    #[ApiResponse(200, 'Item returned (and repacked when eligible)')]
+    #[ApiResponse(422, 'Repack item validation failed')]
+    public function repackItem(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('return', $container);
+
+        $data = RepackReturnItemData::from($request->validate(RepackReturnItemData::rules()));
+        $result = (new RepackReturnItem)($container, $data);
+
+        return response()->json([
+            'repack_item' => $result->toArray(),
+        ]);
+    }
+
+    /**
+     * Return a dispatched kit/hybrid container. Check-in mode is determined by the
+     * container product's `container_checkin_mode` (`parent`, `individual`, or
+     * `parent_then_verify`).
+     */
+    #[ApiResponse(200, 'Kit container returned')]
+    #[ApiResponse(422, 'Return validation failed')]
+    public function returnKit(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('return', $container);
+
+        $data = ReturnKitContainerData::from($request->validate(ReturnKitContainerData::rules()));
+        $result = (new ReturnKitContainer)($container, $data);
+
+        return response()->json([
+            'return' => $result->toArray(),
+        ]);
+    }
+
+    /**
+     * Clear the parent-then-verify check-in flag after condition assessment.
+     */
+    #[ApiResponse(200, 'Kit check-in verified')]
+    public function verifyCheckin(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+        Gate::authorize('verifyCheckin', $container);
+
+        $result = (new VerifyKitCheckin)($container);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Manually dissolve a container, releasing all packed items and cascading
+     * to nested containers.
+     */
+    #[ApiResponse(200, 'Container dissolved')]
+    public function dissolve(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.dissolve', 'containers:write');
+
+        $result = (new DissolveContainer)($container);
+
+        return $this->respondWith($result->toArray(), 'container');
+    }
+
+    /**
+     * Atomically transfer a serialised item from a source container into this one.
+     */
+    #[ApiResponse(201, 'Item transferred')]
+    public function transfer(Request $request, Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.transfer', 'containers:write');
+
+        $data = TransferContainerItemData::from($request->validate(TransferContainerItemData::rules()));
+
+        $item = (new TransferContainerItem)($container, $data);
+
+        return $this->respondWith($item->toArray(), 'container_item', Response::HTTP_CREATED);
+    }
+
+    /**
+     * Compare rolled-up contents against the product template (nested to max depth).
+     */
+    #[ApiResponse(200, 'Container compliance report')]
+    public function compliance(Container $container): JsonResponse
+    {
+        $this->authorizeApi('containers.view', 'containers:read');
+
+        $report = app(ContainerManifestService::class)->compliance($container);
+
+        return response()->json([
+            'compliance' => $report->toArray(),
+        ]);
     }
 }

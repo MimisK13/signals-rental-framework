@@ -11,6 +11,7 @@ class Column
         public bool $sortable = false,
         public bool $filterable = false,
         public string $type = 'string',
+        public bool $costGated = false,
     ) {
         if ($this->label === '') {
             $this->label = str($this->key)->replace('_', ' ')->title()->toString();
@@ -53,6 +54,16 @@ class Column
     public function type(string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Mark a column as requiring `costs.view` to appear in custom-view pickers.
+     */
+    public function costGated(bool $costGated = true): self
+    {
+        $this->costGated = $costGated;
 
         return $this;
     }

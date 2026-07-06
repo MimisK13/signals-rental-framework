@@ -7,6 +7,7 @@ use App\Events\AuditableEvent;
 use App\Listeners\DispatchWebhookForAuditableEvent;
 use App\Listeners\LogAction;
 use App\Models\AvailabilityEvent;
+use App\Models\OpportunityItem;
 use App\Models\ShortageResolution;
 use App\Models\ShortageWaitlistMonitor;
 use App\Observers\DemandObserver;
@@ -71,6 +72,11 @@ class ShortageEventRecorder
     public function cleared(Shortage $shortage, string $reason): void
     {
         $this->logAvailability(AvailabilityEventType::ShortageResolved, $shortage, ['reason' => $reason]);
+
+        OpportunityItem::query()
+            ->whereKey($shortage->opportunityItemId)
+            ->whereNotNull('shortage_escalated_at')
+            ->update(['shortage_escalated_at' => null]);
 
         Verbs::unlessReplaying(fn () => $this->webhooks->dispatch(
             'shortage.cleared',

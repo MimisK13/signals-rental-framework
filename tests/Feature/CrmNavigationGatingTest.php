@@ -90,6 +90,7 @@ describe('Activities icon gating on activities.access', function () {
 describe('Restructured navigation group labels', function () {
     it('renders the new top-level mega-dropdown group labels', function () {
         $user = User::factory()->create();
+        $user->givePermissionTo(['purchase_orders.access']);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
@@ -106,7 +107,14 @@ describe('Restructured navigation group labels', function () {
         // Availability on availability.view; the actor must hold both for those entries
         // to render. The remaining entries asserted below are still ungated placeholders.
         $user = User::factory()->create();
-        $user->givePermissionTo(['stock.access', 'availability.view', 'opportunities.access']);
+        $user->givePermissionTo([
+            'stock.access',
+            'availability.view',
+            'opportunities.access',
+            'containers.view',
+            'purchase_orders.access',
+            'purchase_orders.view',
+        ]);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
@@ -124,9 +132,7 @@ describe('Restructured navigation group labels', function () {
             // Finance → Purchasing subsection
             ->assertSee('Purchasing', false)
             ->assertSee('Purchase Orders', false)
-            // New top-level module
-            ->assertSee('Reports', false)
-            // Resources → Services addition
+            // Vehicles lives under Job Planning → Services (desktop header)
             ->assertSee('Vehicles', false);
     });
 

@@ -35,49 +35,10 @@
                 <button class="date-pill" :class="active === 'month' && 'active'" x-on:click="active = 'month'">This Month</button>
                 <button class="date-pill" :class="active === 'custom' && 'active'" x-on:click="active = 'custom'">Custom</button>
             </div>
-            <span class="font-mono text-[9px] tracking-[0.3px] text-[var(--text-muted)]">
-                Last updated 2 min ago
-            </span>
         </div>
 
         {{-- KPI Cards --}}
-        <div class="mb-8 grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
-            <div class="kpi-card">
-                <div class="kpi-label">Active Opportunities</div>
-                <div class="kpi-value-row">
-                    <span class="kpi-value">47</span>
-                    <span class="kpi-change up">+12%</span>
-                </div>
-                <div class="kpi-footer">18 quotations, 29 orders</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-label">Revenue</div>
-                <div class="kpi-value-row">
-                    <span class="kpi-value">&pound;84,250</span>
-                    <span class="kpi-change up">+8.3%</span>
-                </div>
-                <div class="kpi-footer">vs &pound;77,800 last month</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-label">On Hire</div>
-                <div class="kpi-value-row">
-                    <span class="kpi-value">312</span>
-                    <span class="kpi-change down">-3%</span>
-                </div>
-                <div class="kpi-footer">Across 23 active jobs</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-label">Overdue</div>
-                <div class="kpi-value-row">
-                    <span class="kpi-value">&pound;12,680</span>
-                    <span class="kpi-change down">+2</span>
-                </div>
-                <div class="kpi-footer">6 invoices, avg 14 days overdue</div>
-            </div>
-        </div>
+        <livewire:dashboard.kpi-cards />
 
         {{-- Opportunity pipeline widget --}}
         @can('opportunities.access')

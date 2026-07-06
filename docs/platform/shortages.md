@@ -1,6 +1,6 @@
 ---
 title: Shortages
-description: Detect inventory shortfalls on an opportunity, gate conversion with Block/Warn/Allow, and resolve shortages through six resolvers.
+description: Detect inventory shortfalls on an opportunity, gate conversion with Block/Warn/Allow, and resolve shortages through seven resolvers including sub-hire.
 ---
 
 ## Overview
@@ -45,7 +45,7 @@ Alongside the conversion gate, each store carries a **dispatch policy** governin
 
 ## The Resolvers
 
-For each short line, the panel lists the **resolvers** that apply, each offering one or more concrete options. Six built-in (non-purchase-order) resolvers ship with the platform, ordered by display priority:
+For each short line, the panel lists the **resolvers** that apply, each offering one or more concrete options. Seven built-in resolvers ship with the platform, ordered by display priority:
 
 | Resolver | When it applies / what it does |
 |----------|--------------------------------|
@@ -55,8 +55,9 @@ For each short line, the panel lists the **resolvers** that apply, each offering
 | **Date shift** | Move the line's dates to a window where the product is available. |
 | **Partial** | Fulfil the available quantity now and leave the remainder unfulfilled (for example "fulfil 4 of 6"). |
 | **Waitlist** | Record the shortfall and monitor availability, so the line can be filled if stock frees up. |
+| **Sub-hire** | Create or consolidate **purchase orders** from shortage lines — procures virtual stock from suppliers. See [Sub-Hire & Procurement](/docs/platform/sub-hire). |
 
-Some resolvers are **self-contained** and take effect immediately — Partial, Date shift, and Waitlist record a resolution straight away (`confirmed`, or `monitoring` for a waitlist). Others — Reallocate, Substitute, and Transfer — depend on a downstream action and record the resolution **intent** as pending, flagging that follow-up is required.
+Some resolvers are **self-contained** and take effect immediately — Partial, Date shift, and Waitlist record a resolution straight away (`confirmed`, or `monitoring` for a waitlist). Others — Reallocate, Substitute, Transfer, and **Sub-hire** — depend on a downstream action and record the resolution **intent** as pending, flagging that follow-up is required.
 
 To resolve a line, pick a resolver option, optionally add a note, and apply it. The shortage is recomputed fresh as the resolution is applied, and the line's remaining shortfall drops accordingly.
 

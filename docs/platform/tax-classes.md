@@ -7,6 +7,8 @@ description: Manage product and organisation tax classifications.
 
 Tax classes categorise products and organisations for tax calculation. Signals uses two types of tax classes that work together to determine the applicable tax rate.
 
+For **zone-aware EU/UK resolution** (reverse charge, VIES, buyer types), see [Tax & Compliance](/docs/platform/tax). Product tax classes also apply as a dimension on **surcharge** line items end-to-end.
+
 ## Product Tax Classes
 
 **Route:** `/admin/settings/tax/product-tax-classes`

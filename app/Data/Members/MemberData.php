@@ -31,6 +31,7 @@ class MemberData extends Data
     public function __construct(
         public int $id,
         public string $name,
+        public ?string $number,
         public string $membership_type,
         #[MapOutputName('active')]
         public bool $is_active,
@@ -140,6 +141,7 @@ class MemberData extends Data
         return new self(
             id: $member->id,
             name: $member->name,
+            number: $member->number,
             membership_type: $memberType->label(),
             is_active: $member->is_active,
             description: $member->description ?? '',
@@ -213,8 +215,12 @@ class MemberData extends Data
                 'rating' => $member->rating,
                 'owned_by' => $member->owned_by,
                 'price_category_id' => $member->price_category_id,
+                'price_category_tier_id' => $member->price_category_tier_id,
                 'discount_category_id' => $member->discount_category_id,
                 'tax_number' => $member->tax_number ?? '',
+                'tax_number_validated' => $member->tax_number_validated,
+                'tax_number_validated_at' => $member->tax_number_validated_at?->toIso8601String(),
+                'tax_number_validation' => $member->tax_number_validation,
                 'peppol_id' => $member->peppol_id ?? '',
                 'chamber_of_commerce_number' => $member->chamber_of_commerce_number,
                 'global_location_number' => $member->global_location_number ?? '',

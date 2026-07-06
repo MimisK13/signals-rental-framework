@@ -24,6 +24,7 @@ Webhooks can be managed via the API (`/api/v1/webhooks`) or from the admin panel
 | `member.deleted` | A member is permanently deleted |
 | `member.merged` | Two members are merged (secondary archived into primary) |
 | `member.anonymised` | A member's personally identifiable information is erased |
+| `member.vat_validated` | A member's VAT number is validated (VIES or manual confirmation) |
 
 ### Products
 
@@ -48,6 +49,23 @@ Webhooks can be managed via the API (`/api/v1/webhooks`) or from the admin panel
 | `stock_level.deleted` | A stock level is deleted |
 | `stock_transaction.created` | A stock transaction is recorded |
 | `stock_transaction.deleted` | A stock transaction is deleted |
+
+### Containers
+
+| Event | Trigger |
+|-------|---------|
+| `container.created` | A container is created (product-backed or temporary) |
+| `container.item.packed` | An item is packed into a container |
+| `container.item.unpacked` | An item is unpacked from a container |
+| `container.item.transferred` | An item is moved between containers in one step |
+| `container.nested` | A container is packed inside another container |
+| `container.sealed` | A container passes the seal gate and is sealed |
+| `container.unsealed` | A sealed container is reopened (manual or transfer-triggered) |
+| `container.dissolved` | A container is manually or dispatch-dissolved |
+| `container.dispatched` | A kit/hybrid container is dispatched as a persistent unit |
+| `container.returned` | A kit/hybrid container is returned from an opportunity |
+| `container.repack.started` | Repack-on-return initiated for a transport container housing |
+| `container.repack.item` | An item is returned and repacked during a repack session |
 
 ### Activities
 
@@ -128,6 +146,12 @@ when the event store is rebuilt.
 | `opportunity.restored` | A soft-deleted opportunity is restored |
 | `opportunity.deal_price_set` | A negotiated deal total is set |
 | `opportunity.deal_price_cleared` | A negotiated deal total is cleared |
+| `opportunity.group_deal_price_set` | A negotiated deal total is set on a line-item group |
+| `opportunity.group_deal_price_cleared` | A negotiated deal total is cleared from a line-item group |
+| `opportunity.pricing_recalculated` | Opportunity pricing is recalculated (rates, tax, surcharges) |
+| `opportunity.discount_reset` | Applied discounts are cleared from an opportunity |
+| `opportunity.discount_category_applied` | A discount category is applied to an opportunity |
+| `opportunity.discount_manually_overridden` | A discount category percentage is manually overridden |
 | `opportunity.item_added` | A line item is added |
 | `opportunity.item_details_updated` | A line item's details (description, notes, etc.) are updated |
 | `opportunity.item_renamed` | A line item is renamed |
@@ -138,8 +162,10 @@ when the event store is rebuilt.
 | `opportunity.item_optional_toggled` | A line item is toggled optional/required |
 | `opportunity.item_price_overridden` | A line item unit price is overridden |
 | `opportunity.item_substituted` | A line item product is substituted |
+| `opportunity.item_surcharge_overridden` | A line item surcharge amount is manually overridden |
 | `opportunity.items_restructured` | An opportunity's line-item tree is restructured |
 | `opportunity.items_reordered` | An opportunity's line items are reordered |
+| `opportunity.surcharge_group_toggled` | A surcharge group is enabled or disabled on an opportunity |
 | `opportunity.cost_added` | An additional cost is added |
 | `opportunity.cost_updated` | An additional cost is updated |
 | `opportunity.cost_removed` | An additional cost is removed |
@@ -167,6 +193,38 @@ when the event store is rebuilt.
 | `opportunity.bulk_returned` | A bulk quantity is returned |
 | `opportunity.bulk_quantity_adjusted` | A bulk dispatched/returned quantity is adjusted |
 
+### Documents
+
+| Event | Trigger |
+|-------|---------|
+| `document.created` | A document is generated from a template |
+| `document.pdf_generated` | A PDF is generated and stored for a document |
+| `document.finalised` | A document is finalised (locked for sharing) |
+| `document.voided` | A finalised document is voided |
+| `document.emailed` | A document is emailed to a recipient (Notification Engine, P38) |
+| `document.public_link_created` | A public sharing link is created for a document |
+| `document.public_link_accessed` | A public sharing link is accessed for the first time |
+| `document.public_link_revoked` | A public sharing link is revoked |
+| `document.public_link_configured` | A public link's expiry or PIN settings are changed |
+| `document_template.created` | A document template is created or duplicated |
+| `document_template.updated` | A document template is saved |
+| `document_template.deleted` | A custom document template is deleted |
+| `document_template.restored` | A system template is restored to its shipped default |
+| `document_template.set_as_default` | A template is marked as the default for its type |
+| `document_sequence.reset` | A document numbering sequence rolls over to a new period |
+
+### Invoices
+
+| Event | Trigger |
+|-------|---------|
+| `invoice.created` | A draft invoice is generated |
+| `invoice.issued` | A draft invoice is issued to the customer |
+| `invoice.voided` | An invoice is voided |
+| `invoice.overdue` | An issued invoice passes its due date with an outstanding balance |
+| `payment.recorded` | A payment is recorded against an invoice — payload embeds payment fields (see [Invoices API](/docs/api/invoices)) |
+| `payment.refunded` | A refund is recorded against an invoice — payload embeds payment/refund fields (see [Invoices API](/docs/api/invoices)) |
+| `credit_note.issued` | A credit note is issued against an invoice |
+
 ### Availability
 
 | Event | Trigger |
@@ -189,6 +247,30 @@ when the event store is rebuilt.
 | `shortage.waitlist.created` | A waitlist monitor is placed on a shortage |
 | `shortage.waitlist.matched` | Monitored stock becomes available |
 | `shortage.waitlist.expired` | A waitlist monitor expires without matching |
+| `shortage.escalated` | An unresolved shortage passes the configured escalation threshold |
+
+### Purchase Orders
+
+| Event | Trigger |
+|-------|---------|
+| `purchase_order.created` | A draft purchase order is created |
+| `purchase_order.updated` | A draft purchase order is updated |
+| `purchase_order.sent` | A purchase order is sent to the supplier |
+| `purchase_order.received` | Goods are received against a purchase order |
+| `purchase_order.cancelled` | A purchase order is cancelled |
+| `purchase_order.deleted` | A draft purchase order is deleted |
+
+### Virtual Stock
+
+| Event | Trigger |
+|-------|---------|
+| `virtual_stock_intake.created` | A draft virtual stock intake is created |
+| `virtual_stock_intake.updated` | A draft virtual stock intake is updated |
+| `virtual_stock_intake.confirmed` | A virtual stock intake is confirmed |
+| `virtual_stock_intake.received` | Virtual stock is received into availability |
+| `virtual_stock_intake.returned` | Virtual stock is returned after the hire window |
+| `virtual_stock_intake.cancelled` | A virtual stock intake is cancelled |
+| `virtual_stock_intake.deleted` | A draft virtual stock intake is deleted |
 
 ## Payload Format
 
@@ -332,4 +414,51 @@ Re-enable a disabled webhook from the admin panel or by updating it via the API 
 
 ## Delivery Logs
 
-Every delivery attempt is logged. View logs via the API at `GET /api/v1/webhooks/{id}/logs` or from the admin panel by clicking the logs icon on a webhook row.
+Every delivery attempt is logged. View logs via the API at `GET /api/v1/webhooks/{id}/logs` or from the API Console **Webhooks** page by clicking the logs icon on a webhook row. Deliveries also appear in the unified **Request Log** on the `webhook_sent` channel.
+
+## Outbound metering weights
+
+Each outbound event carries a **price weight** (0–4) declared in `WebhookEventRegistry`. Weights default to **1** unless overridden at registration time. On the first delivery attempt of each job run, `DeliverWebhook` records the weight on the `webhook_logs` row and increments the `webhook_sent` daily rollup by the event's weight.
+
+Weight **0** events are still logged but contribute zero **weighted units** toward usage totals.
+
+## Inbound webhook receiver
+
+Signals can accept webhook POSTs from external systems via registered **inbound sources**. Manage sources from the API Console at `/api/webhooks` (Inbound tab) or programmatically when that surface is exposed.
+
+### Receive URL
+
+```
+POST {your-app-url}/webhooks/receive/{slug}
+```
+
+Replace `{slug}` with the source's URL slug. The route is public (no Sanctum token) — authentication is HMAC signature verification only.
+
+### Signature verification
+
+Each source stores a secret, signature algorithm (default `sha256`), and header name (default `X-Signature`). The middleware computes:
+
+```php
+$expected = hash_hmac($source->signature_algo, $requestBody, $source->secret);
+$provided = $request->header($source->signature_header);
+
+$valid = is_string($provided) && hash_equals($expected, $provided);
+```
+
+Send the HMAC digest as a plain string in the configured header (not prefixed with `sha256=`).
+
+### Responses
+
+| Status | Condition | Body |
+|--------|-----------|------|
+| `200` | Valid signature | `{"status":"received"}` — fires `InboundWebhookReceived` |
+| `401` | Missing or invalid signature | `{"message":"Invalid signature"}` — logged with weight 0 |
+| `404` | Unknown slug or inactive source | Laravel 404 page |
+
+### Inbound metering weights
+
+Unlike outbound events (code-defined in `WebhookEventRegistry`), inbound weights are stored per source in `inbound_webhook_sources.price_weight` (0–4, editable in the console). Valid requests meter on the `webhook_received` channel; invalid signatures log detail rows but do not increment weighted units.
+
+### Inbound logs
+
+Receipts are stored in `inbound_webhook_logs` and surfaced in the Request Log (`webhook_received` channel) and the source's logs modal in the API Console.

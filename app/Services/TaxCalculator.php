@@ -2,10 +2,15 @@
 
 namespace App\Services;
 
+use App\Contracts\Tax\TaxResolver;
 use App\Models\OrganisationTaxClass;
 use App\Models\ProductTaxClass;
+use App\Models\TaxRate;
 use App\Models\TaxRule;
+use App\Services\Pricing\RoundingStrategy;
 use App\ValueObjects\TaxResult;
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Calculates tax for a given amount using the tax rule matrix.
@@ -16,14 +21,21 @@ use App\ValueObjects\TaxResult;
  * Two calculation modes are supported, both sharing the same rule/rate resolution and
  * minor-unit rounding machinery:
  *
- *   - {@see calculate()} — exclusive (tax-additive): given a NET amount, adds tax on top.
+ *   - {@see calculate()} / {@see calculateExclusive()} — exclusive (tax-additive): given a NET amount, adds tax on top.
  *   - {@see calculateInclusive()} — inclusive (tax-from-gross): given a GROSS amount,
  *     extracts the embedded tax component. This is the exact inverse of the exclusive
  *     path: net + tax always equals the supplied gross, with rounding applied only once
  *     at the currency minor-unit boundary.
+ *
+ * Implements {@see TaxResolver} as the default matrix-backed resolver. Zone-aware
+ * implementations can replace the binding without changing document tax code.
  */
-class TaxCalculator
+class TaxCalculator implements TaxResolver
 {
+    public function __construct(
+        private readonly RoundingStrategy $roundingStrategy,
+    ) {}
+
     /**
      * Calculate tax for a given NET amount in minor units (exclusive / tax-additive mode).
      *
@@ -36,7 +48,23 @@ class TaxCalculator
         ?int $orgTaxClassId = null,
         ?int $productTaxClassId = null,
     ): TaxResult {
-        $rule = $this->resolveTaxableRule($orgTaxClassId, $productTaxClassId);
+        return $this->calculateExclusive(
+            $netMinorUnits,
+            $currencyCode,
+            $orgTaxClassId,
+            $productTaxClassId,
+        );
+    }
+
+    public function calculateExclusive(
+        int $netMinorUnits,
+        string $currencyCode,
+        ?int $organisationTaxClassId = null,
+        ?int $productTaxClassId = null,
+        ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
+    ): TaxResult {
+        $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId, $effectiveAt);
 
         if (! $rule) {
             return $this->zeroTax($netMinorUnits, $currencyCode);
@@ -47,7 +75,7 @@ class TaxCalculator
 
         // Lossless intermediate (10 dp), rounded to the minor-unit boundary at the final step.
         $rawTax = bcmul((string) $netMinorUnits, bcdiv($rate, '100', 10), 10);
-        $taxAmount = $this->roundMinorUnits($rawTax);
+        $taxAmount = $this->roundMinorUnits($rawTax, $currencyCode);
 
         return new TaxResult(
             taxRateName: $taxRate->name,
@@ -73,10 +101,12 @@ class TaxCalculator
     public function calculateInclusive(
         int $grossMinorUnits,
         string $currencyCode,
-        ?int $orgTaxClassId = null,
+        ?int $organisationTaxClassId = null,
         ?int $productTaxClassId = null,
+        ?DateTimeInterface $effectiveAt = null,
+        ?int $productTaxCategoryId = null,
     ): TaxResult {
-        $rule = $this->resolveTaxableRule($orgTaxClassId, $productTaxClassId);
+        $rule = $this->resolveTaxableRule($organisationTaxClassId, $productTaxClassId, $effectiveAt);
 
         if (! $rule) {
             return $this->zeroTax($grossMinorUnits, $currencyCode);
@@ -88,7 +118,7 @@ class TaxCalculator
         // net = gross / (1 + rate/100), lossless intermediate (10 dp), rounded once at the boundary.
         $divisor = bcadd('1', bcdiv($rate, '100', 10), 10);
         $rawNet = bcdiv((string) $grossMinorUnits, $divisor, 10);
-        $netAmount = $this->roundMinorUnits($rawNet);
+        $netAmount = $this->roundMinorUnits($rawNet, $currencyCode);
 
         // Tax is the remainder so net + tax == gross by construction (no double rounding).
         $taxAmount = $grossMinorUnits - $netAmount;
@@ -114,13 +144,65 @@ class TaxCalculator
      * rule's rate is missing or inactive. When a rule is returned, its `taxRate` relation is
      * guaranteed loaded, present, and active.
      */
-    private function resolveTaxableRule(?int $orgTaxClassId, ?int $productTaxClassId): ?TaxRule
-    {
+    public function calculateExclusiveWithTaxRate(
+        int $netMinorUnits,
+        string $currencyCode,
+        TaxRate $taxRate,
+        ?int $taxRuleId = null,
+    ): TaxResult {
+        $rate = (string) $taxRate->rate;
+        $rawTax = bcmul((string) $netMinorUnits, bcdiv($rate, '100', 10), 10);
+        $taxAmount = $this->roundMinorUnits($rawTax, $currencyCode);
+
+        return new TaxResult(
+            taxRateName: $taxRate->name,
+            ratePercentage: $rate,
+            netAmount: $netMinorUnits,
+            taxAmount: $taxAmount,
+            grossAmount: $netMinorUnits + $taxAmount,
+            currencyCode: $currencyCode,
+            taxRateId: $taxRate->id,
+            taxRuleId: $taxRuleId,
+        );
+    }
+
+    public function calculateInclusiveWithTaxRate(
+        int $grossMinorUnits,
+        string $currencyCode,
+        TaxRate $taxRate,
+        ?int $taxRuleId = null,
+    ): TaxResult {
+        $rate = (string) $taxRate->rate;
+        $divisor = bcadd('1', bcdiv($rate, '100', 10), 10);
+        $rawNet = bcdiv((string) $grossMinorUnits, $divisor, 10);
+        $netAmount = $this->roundMinorUnits($rawNet, $currencyCode);
+        $taxAmount = $grossMinorUnits - $netAmount;
+
+        return new TaxResult(
+            taxRateName: $taxRate->name,
+            ratePercentage: $rate,
+            netAmount: $netAmount,
+            taxAmount: $taxAmount,
+            grossAmount: $grossMinorUnits,
+            currencyCode: $currencyCode,
+            taxRateId: $taxRate->id,
+            taxRuleId: $taxRuleId,
+        );
+    }
+
+    private function resolveTaxableRule(
+        ?int $orgTaxClassId,
+        ?int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt = null,
+    ): ?TaxRule {
+        $orgTaxClassId = $this->resolveEffectiveOrganisationTaxClassId($orgTaxClassId);
+        $productTaxClassId = $this->resolveEffectiveProductTaxClassId($productTaxClassId);
+
         if ($orgTaxClassId === null || $productTaxClassId === null) {
             return null;
         }
 
-        $rule = $this->resolveRule($orgTaxClassId, $productTaxClassId);
+        $rule = $this->resolveRule($orgTaxClassId, $productTaxClassId, $effectiveAt);
 
         if (! $rule) {
             return null;
@@ -141,22 +223,27 @@ class TaxCalculator
      * This is the single minor-unit rounding boundary shared by both calculation modes and
      * matches the tenant default "round half up" behaviour.
      */
-    private function roundMinorUnits(string $rawMinorUnits): int
+    private function roundMinorUnits(string $rawMinorUnits, string $currencyCode): int
     {
-        return (int) bcadd($rawMinorUnits, str_starts_with($rawMinorUnits, '-') ? '-0.5' : '0.5', 0);
+        return $this->roundingStrategy->roundMinorAmount($rawMinorUnits, $currencyCode);
     }
 
     /**
      * Resolve the applicable tax rule by org + product class, with fallback to defaults.
      */
-    public function resolveRule(?int $orgTaxClassId, ?int $productTaxClassId): ?TaxRule
-    {
-        $rule = TaxRule::query()
-            ->where('organisation_tax_class_id', $orgTaxClassId)
-            ->where('product_tax_class_id', $productTaxClassId)
-            ->where('is_active', true)
-            ->orderByDesc('priority')
-            ->with('taxRate')
+    public function resolveRule(
+        ?int $orgTaxClassId,
+        ?int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt = null,
+    ): ?TaxRule {
+        $orgTaxClassId = $this->resolveEffectiveOrganisationTaxClassId($orgTaxClassId);
+        $productTaxClassId = $this->resolveEffectiveProductTaxClassId($productTaxClassId);
+
+        if ($orgTaxClassId === null || $productTaxClassId === null) {
+            return null;
+        }
+
+        $rule = $this->classMapRuleQuery($orgTaxClassId, $productTaxClassId, $effectiveAt)
             ->first();
 
         if ($rule) {
@@ -174,13 +261,75 @@ class TaxCalculator
             return null;
         }
 
-        return TaxRule::query()
-            ->where('organisation_tax_class_id', $defaultOrgClass->id)
-            ->where('product_tax_class_id', $defaultProductClass->id)
-            ->where('is_active', true)
-            ->orderByDesc('priority')
-            ->with('taxRate')
+        return $this->classMapRuleQuery($defaultOrgClass->id, $defaultProductClass->id, $effectiveAt)
             ->first();
+    }
+
+    /**
+     * @return Builder<TaxRule>
+     */
+    private function classMapRuleQuery(
+        int $orgTaxClassId,
+        int $productTaxClassId,
+        ?DateTimeInterface $effectiveAt,
+    ): Builder {
+        $query = TaxRule::query()
+            ->where('organisation_tax_class_id', $orgTaxClassId)
+            ->where('product_tax_class_id', $productTaxClassId)
+            ->where('is_active', true)
+            ->whereNotNull('tax_rate_id')
+            ->orderByDesc('priority')
+            ->with('taxRate');
+
+        $this->applyEffectiveDateScope($query, $effectiveAt);
+
+        return $query;
+    }
+
+    /**
+     * @param  Builder<TaxRule>  $query
+     */
+    private function applyEffectiveDateScope(Builder $query, ?DateTimeInterface $effectiveAt): void
+    {
+        if ($effectiveAt === null) {
+            return;
+        }
+
+        $date = $effectiveAt->format('Y-m-d');
+
+        $query
+            ->where(function (Builder $builder) use ($date): void {
+                $builder->whereNull('effective_from')
+                    ->orWhereDate('effective_from', '<=', $date);
+            })
+            ->where(function (Builder $builder) use ($date): void {
+                $builder->whereNull('effective_to')
+                    ->orWhereDate('effective_to', '>=', $date);
+            });
+    }
+
+    private function resolveEffectiveOrganisationTaxClassId(?int $orgTaxClassId): ?int
+    {
+        if ($orgTaxClassId !== null) {
+            return $orgTaxClassId;
+        }
+
+        return OrganisationTaxClass::query()->where('is_default', true)->value('id');
+    }
+
+    private function resolveEffectiveProductTaxClassId(?int $productTaxClassId): ?int
+    {
+        if ($productTaxClassId !== null) {
+            return $productTaxClassId;
+        }
+
+        $fromSetting = settings('tax.default_product_tax_class_id');
+
+        if (is_numeric($fromSetting)) {
+            return (int) $fromSetting;
+        }
+
+        return ProductTaxClass::query()->where('is_default', true)->value('id');
     }
 
     /**

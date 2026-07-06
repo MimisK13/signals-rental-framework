@@ -278,9 +278,9 @@ it('renders the Phase-4 sub-hire / transfer Action options disabled', function (
     $this->actingAs($this->owner);
 
     Volt::test('opportunities.assets', ['opportunity' => $opportunity])
-        ->assertSee('Set sub-rent supplier — coming in Phase 4')
-        ->assertSee('Transfer in — coming in Phase 4')
-        ->assertSee('Clear transfer — coming in Phase 4');
+        ->assertSee('Set sub-rent supplier — coming in Phase 5.5')
+        ->assertSee('Transfer in — coming in Phase 5.5')
+        ->assertSee('Clear transfer — coming in Phase 5.5');
 });
 
 it('does not offer book out on a quotation (assets allocated but not an order)', function () {

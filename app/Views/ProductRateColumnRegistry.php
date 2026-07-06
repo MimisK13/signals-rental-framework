@@ -25,6 +25,7 @@ class ProductRateColumnRegistry extends ColumnRegistry
             Column::make('product_id')->label('Product')->sortable()->filterable(),
             Column::make('rate_definition_id')->label('Rate Definition')->sortable()->filterable(),
             Column::make('store_id')->label('Store')->sortable()->filterable(),
+            Column::make('price_category_id')->label('Price Category')->sortable()->filterable(),
             Column::make('transaction_type')->label('Transaction Type')->sortable()->filterable()->type('enum'),
             Column::make('price')->label('Price')->sortable()->type('money'),
             Column::make('currency')->label('Currency')->filterable(),
@@ -41,6 +42,6 @@ class ProductRateColumnRegistry extends ColumnRegistry
      */
     public function defaultColumns(): array
     {
-        return ['rate_definition_id', 'transaction_type', 'price', 'currency', 'priority', 'created_at'];
+        return ['rate_definition_id', 'transaction_type', 'price_category_id', 'price', 'currency', 'priority', 'created_at'];
     }
 }

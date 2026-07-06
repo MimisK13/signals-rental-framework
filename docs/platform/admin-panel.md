@@ -208,7 +208,13 @@ Templates support merge fields using `{{ field.path }}` syntax with optional fil
 
 Configure system-wide notification channels for each registered notification type. Types are grouped by category with per-type channel toggles (database, email, broadcast) and a master enable/disable switch.
 
-Each notification type defines which channels are available and which are enabled by default. System-level overrides apply to all users unless individual users set their own preferences.
+Each notification type defines which channels are available and which are enabled by default. System-level overrides apply to all users unless individual users set their own preferences via profile settings or the [Notification Preferences API](/docs/api/notification-preferences).
+
+| Setting | Key | Description |
+|---------|-----|-------------|
+| Unsubscribe URL TTL | `notifications.unsubscribe_url_ttl_days` | Days until signed unsubscribe links expire (default 90) |
+
+The **communication log** (admin visibility and API) records dispatched customer emails. Member-level notification preferences can be managed per member via API.
 
 > **Note:** Requires the `notifications.manage` permission.
 
@@ -407,6 +413,36 @@ Map organisation and product tax class combinations to a tax rate. See the [Tax 
 | Edit | Update the class pair, rate, or priority |
 | Activate / Deactivate | Toggle whether the rule participates in resolution |
 | Delete | Remove a rule |
+
+### Tax Zones
+
+**Routes:** `/admin/settings/tax/zones`, `/admin/settings/tax/zones/create`, `/admin/settings/tax/zones/{taxZone}/edit`
+
+Manage **zone-aware tax** for EU/UK compliance — buyer types, country scope, and zone rules that produce reverse charge, zero-rated, exempt, and outside-scope treatments. See [Tax & Compliance](/docs/platform/tax) and [Tax Zones API](/docs/api/tax-zones).
+
+### Finance
+
+**Route:** `/admin/settings/finance`
+
+Configure billing behaviour: **tax-point policy** (when tax is determined), **reverse-charge display label**, and related finance toggles consumed by checkout and document rendering.
+
+### Document Numbering
+
+**Route:** `/admin/settings/numbering`
+
+Manage per-entity numbering schemes (opportunities, invoices, credit notes, members, payments, purchase orders, etc.) backed by `document_sequences`. Live preview shows the next number for each scheme and store.
+
+### Document Templates
+
+**Routes:** `/admin/document-templates`, `/admin/document-templates/{template}/edit`
+
+CRUD for per-store Blade document templates (invoice, credit note, quote, PO, etc.). The three-panel editor includes a field browser, CodeMirror 6 source editor, live preview, version history with diff/restore, export/import, and set-default/restore-default actions for system templates.
+
+### Communication Templates
+
+**Route:** `/admin/settings/communication-templates/{template}/edit`
+
+Edit merge-field communication templates used by the Notification Engine for billing and customer emails. Supports version snapshots and restore, parallel to document templates.
 
 ## Access Control
 

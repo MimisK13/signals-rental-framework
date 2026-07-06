@@ -159,8 +159,34 @@ Once an opportunity is an **order**, its line items are allocated, dispatched, a
 
 These movements drive the order's statuses (Active → Dispatched → On Hire → Returned → Checked → Complete) and feed the availability and shortage engines in real time.
 
+## Pricing pipeline
+
+Opportunity totals run through the [four-stage pricing pipeline](/docs/platform/pricing):
+
+- **Price category** tier from the rate engine
+- **Discount rules** — apply a category manually or rely on auto-apply rules
+- **Surcharge groups** — toggle optional surcharges; override per line
+- **Deal price** — flat headline or proportional override; mutually exclusive with price lock
+
+Use **Recalculate** to refresh lines from the pipeline. **Deal price** and **price lock** cannot both be active — checkout requires a consistent snapshot.
+
+API: `apply_discount_category`, `toggle_surcharge_group`, `override_item_surcharge`, `deal_price` — see [Opportunities API](/docs/api/opportunities).
+
+## Invoicing and checkout
+
+The **Invoices** tab (`/opportunities/{id}/invoices`) generates draft invoices from the active quote version. Checkout freezes lines, costs, surcharges, and tax — later opportunity edits do not alter issued documents.
+
+Standard, deposit, and pro-forma checkout types are supported. Partial-quantity invoicing bills only part of a line. See [Invoicing & Payments](/docs/platform/invoicing) and `POST /api/v1/opportunities/{id}/invoices`.
+
+## Documents tab
+
+The **Documents** tab (`/opportunities/{id}/documents`) attaches generated PDFs, previews documents, and manages public share links. Templates render through the [Document Engine](/docs/platform/documents).
+
 ## Related
 
 - [Opportunities API](/docs/api/opportunities) — the REST endpoints behind this UI.
+- [Invoicing & Payments](/docs/platform/invoicing) — checkout and billing lifecycle.
+- [Documents & Templates](/docs/platform/documents) — PDF generation on opportunities.
+- [Pricing & Discounts](/docs/platform/pricing) — pipeline stages and admin configuration.
 - [Equipment Availability](/docs/platform/availability) — the availability calendar and demand timeline.
 - [Shortages](/docs/platform/shortages) — detecting and resolving inventory shortfalls.

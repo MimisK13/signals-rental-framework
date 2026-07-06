@@ -240,6 +240,10 @@ class RansackFilter
      */
     private function resolveEnumValue(string $enumClass, mixed $value): mixed
     {
+        if (method_exists($enumClass, 'coerce')) {
+            return $enumClass::coerce($value);
+        }
+
         $isIntBacked = (string) (new \ReflectionEnum($enumClass))->getBackingType() === 'int';
 
         return BackedEnumHelper::coerce(

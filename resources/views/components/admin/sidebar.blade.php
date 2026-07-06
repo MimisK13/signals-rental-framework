@@ -12,7 +12,6 @@
         Overview
     </a>
 
-    {{-- Setup --}}
     @if($group === 'setup')
         <div class="s-admin-sidebar-title">Setup</div>
         <a href="{{ route('admin.settings.company') }}" wire:navigate
@@ -32,7 +31,6 @@
         </a>
     @endif
 
-    {{-- Users & Security --}}
     @if($group === 'users')
         <div class="s-admin-sidebar-title">Users & Security</div>
         <a href="{{ route('admin.settings.users') }}" wire:navigate
@@ -64,7 +62,6 @@
         </a>
     @endif
 
-    {{-- Preferences --}}
     @if($group === 'preferences')
         <div class="s-admin-sidebar-title">Preferences</div>
         <a href="{{ route('admin.settings.preferences') }}" wire:navigate
@@ -99,7 +96,6 @@
         </a>
     @endif
 
-    {{-- Data --}}
     @if($group === 'data')
         <div class="s-admin-sidebar-title">Data</div>
         @can('custom-fields.manage')
@@ -126,9 +122,23 @@
         </a>
     @endif
 
-    {{-- Tax --}}
     @if($group === 'tax')
         <div class="s-admin-sidebar-title">Tax</div>
+        <a href="{{ route('admin.settings.finance') }}" wire:navigate
+           class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.finance') ? 'active' : '' }}">
+            <flux:icon.banknotes class="s-admin-nav-icon" />
+            Finance
+        </a>
+        <a href="{{ route('admin.settings.tax.zones') }}" wire:navigate
+           class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.zones*') ? 'active' : '' }}">
+            <flux:icon.globe-alt class="s-admin-nav-icon" />
+            Tax Zones
+        </a>
+        <a href="{{ route('admin.settings.tax.categories') }}" wire:navigate
+           class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.categories*') ? 'active' : '' }}">
+            <flux:icon.tag class="s-admin-nav-icon" />
+            Tax Categories
+        </a>
         <a href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate
            class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.tax.product-tax-classes*') ? 'active' : '' }}">
             <flux:icon.receipt-percent class="s-admin-nav-icon" />
@@ -151,7 +161,24 @@
         </a>
     @endif
 
-    {{-- Pricing --}}
+    @if($group === 'documents')
+        <div class="s-admin-sidebar-title">Documents</div>
+        @can('numbering.view')
+            <a href="{{ route('admin.settings.numbering') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.numbering') ? 'active' : '' }}">
+                <flux:icon.hashtag class="s-admin-nav-icon" />
+                Numbering
+            </a>
+        @endcan
+        @can('document_templates.view')
+            <a href="{{ route('admin.document-templates.index') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.document-templates*') ? 'active' : '' }}">
+                <flux:icon.document-text class="s-admin-nav-icon" />
+                Document Templates
+            </a>
+        @endcan
+    @endif
+
     @if($group === 'pricing')
         <div class="s-admin-sidebar-title">Pricing</div>
         @can('rates.view')
@@ -161,9 +188,30 @@
                 Rate Definitions
             </a>
         @endcan
+        @can('pricing.view')
+            <a href="{{ route('admin.settings.pricing.discount-categories') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.discount-categories*') ? 'active' : '' }}">
+                <flux:icon.receipt-percent class="s-admin-nav-icon" />
+                Discount Categories
+            </a>
+            <a href="{{ route('admin.settings.pricing.price-categories') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.price-categories*') ? 'active' : '' }}">
+                <flux:icon.currency-pound class="s-admin-nav-icon" />
+                Price Categories
+            </a>
+            <a href="{{ route('admin.settings.pricing.bundle-rules') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.bundle-rules*') ? 'active' : '' }}">
+                <flux:icon.squares-2x2 class="s-admin-nav-icon" />
+                Bundle Rules
+            </a>
+            <a href="{{ route('admin.settings.pricing.surcharge-groups') }}" wire:navigate
+               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.pricing.surcharge-groups*') ? 'active' : '' }}">
+                <flux:icon.plus-circle class="s-admin-nav-icon" />
+                Surcharge Groups
+            </a>
+        @endcan
     @endif
 
-    {{-- System --}}
     @if($group === 'system')
         <div class="s-admin-sidebar-title">System</div>
         @can('action-log.view')
@@ -190,12 +238,5 @@
             <flux:icon.circle-stack class="s-admin-nav-icon" />
             Database Seeders
         </a>
-        @can('webhooks.manage')
-            <a href="{{ route('admin.settings.webhooks') }}" wire:navigate
-               class="s-admin-nav-item {{ ActiveRoute::is('admin.settings.webhooks') ? 'active' : '' }}">
-                <flux:icon.signal class="s-admin-nav-icon" />
-                Webhooks
-            </a>
-        @endcan
     @endif
 </nav>

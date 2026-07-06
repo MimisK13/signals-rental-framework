@@ -53,4 +53,17 @@ class StockLevelFactory extends Factory
             'quantity_allocated' => fake()->numberBetween(1, 5),
         ]);
     }
+
+    public function virtual(): static
+    {
+        return $this->state(fn () => [
+            'stock_category' => 50,
+            'quantity_held' => 1,
+            'is_virtual' => true,
+            'virtual_asset_status' => 'available',
+            'serial_number' => fake()->unique()->numerify('VS-SN-######'),
+            'asset_number' => fake()->unique()->numerify('VS-TEST-##'),
+            'item_name' => fake()->words(2, true),
+        ]);
+    }
 }

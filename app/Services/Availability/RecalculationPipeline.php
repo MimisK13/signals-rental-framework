@@ -358,6 +358,7 @@ class RecalculationPipeline
         $rows = StockLevel::query()
             ->where('product_id', $product->id)
             ->where('store_id', $storeId)
+            ->where('is_virtual', false)
             ->selectRaw('stock_category as category, COUNT(*) as cnt, COALESCE(SUM(quantity_held), 0) as held')
             ->groupBy('stock_category')
             ->get();
@@ -433,7 +434,7 @@ class RecalculationPipeline
 
             $quantity = $demand->effectiveQuantity();
 
-            if ($quantity <= 0) {
+            if ($quantity === 0) {
                 continue;
             }
 

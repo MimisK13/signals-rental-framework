@@ -27,6 +27,7 @@ class ProductRateController extends Controller
     protected array $allowedFilters = [
         'rate_definition_id',
         'store_id',
+        'price_category_id',
         'transaction_type',
         'currency',
         'priority',
@@ -51,6 +52,7 @@ class ProductRateController extends Controller
     protected array $allowedIncludes = [
         'rateDefinition',
         'store',
+        'priceCategory',
     ];
 
     /** @var list<string> */
@@ -216,6 +218,7 @@ class ProductRateController extends Controller
                 $rate->valid_from,
                 $rate->valid_to,
                 $rate->id,
+                $rate->price_category_id,
             )
             ->pluck('id')
             ->all();

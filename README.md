@@ -2,7 +2,7 @@
 
 An open-source rental management framework for equipment rental and event hire companies. Covers the full rental lifecycle — quoting, ordering, invoicing, asset management, availability, scheduling, maintenance, and CRM.
 
-MIT licensed. Self-hostable. Plugin-extensible.
+AGPL-3.0 licensed. Self-hostable. Plugin-extensible. Commercial licences available.
 
 [Documentation](https://docs.signals.rent) | [API Reference](https://docs.signals.rent/docs/api)
 
@@ -93,4 +93,6 @@ php artisan signals:install --no-interaction \
 
 ## License
 
-Signals Rental Framework is open-source software licensed under the [MIT license](LICENSE).
+Signals Rental Framework v0.5.2 and later is open-source software licensed under the [GNU Affero General Public License v3.0 only](LICENSE) (AGPL-3.0-only). Versions prior to v0.5.2 remain available under the MIT License. See [NOTICE](NOTICE) for full licensing details, including commercial licence availability for organisations that cannot, or prefer not to, comply with AGPL obligations (info@signals.rent).
+
+Contributions are accepted under the [Contributor License Agreement](CLA.md).

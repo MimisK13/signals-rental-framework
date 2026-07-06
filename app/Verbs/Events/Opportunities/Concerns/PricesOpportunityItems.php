@@ -64,13 +64,13 @@ trait PricesOpportunityItems
     protected function repriceAndRollUp(OpportunityItem $item, ?int $manualUnitPrice = null): void
     {
         $calculator = app(OpportunityTotalsCalculator::class);
-        $calculator->recalculateItem($item, $manualUnitPrice);
-
         $opportunity = $item->opportunity()->first();
 
-        if ($opportunity !== null) {
-            $calculator->rollUp($opportunity);
+        if ($opportunity === null) {
+            return;
         }
+
+        $calculator->repriceOpportunity($opportunity, $item, $manualUnitPrice);
     }
 
     /**

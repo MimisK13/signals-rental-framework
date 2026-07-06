@@ -20,7 +20,7 @@
 {{--  event guard rejects surfaces as a flashed 422.               --}}
 {{-- ============================================================ --}}
 @if($canChangeStatus ?? false)
-    <x-signals.modal name="change-status" title="{{ __('Change status') }}">
+    <x-signals.modal wire:key="opportunity-modal-change-status" :teleport="false" name="change-status" title="{{ __('Change status') }}">
         @if(empty($statusOptions))
             <p class="text-sm text-[var(--text-muted)]">{{ __('There are no other statuses available for the current state.') }}</p>
         @else
@@ -55,7 +55,7 @@
 @php
     $activeConvert = ($pendingConvertKey ?? null) ? (($convertModalCopy ?? [])[$pendingConvertKey] ?? null) : null;
 @endphp
-<x-signals.modal name="convert-opportunity" title="{{ $activeConvert['title'] ?? __('Convert opportunity') }}" size="sm">
+<x-signals.modal wire:key="opportunity-modal-convert" :teleport="false" name="convert-opportunity" title="{{ $activeConvert['title'] ?? __('Convert opportunity') }}" size="sm">
     <p class="text-sm text-[var(--text-muted)]">{{ $activeConvert['message'] ?? __('Are you sure?') }}</p>
 
     <x-slot:footer>
@@ -63,6 +63,7 @@
                 wire:loading.attr="disabled" wire:target="confirmConvert"
                 class="s-btn s-btn-sm">{{ __('Cancel') }}</button>
         <button type="button"
+                x-on:click="$dispatch('close-modal', 'convert-opportunity')"
                 wire:click="confirmConvert"
                 wire:loading.attr="disabled" wire:target="confirmConvert"
                 class="s-btn s-btn-sm s-btn-primary">
@@ -80,7 +81,7 @@
 @php
     $activeConfirm = ($pendingConfirmKey ?? null) ? (($confirmModalCopy ?? [])[$pendingConfirmKey] ?? null) : null;
 @endphp
-<x-signals.modal name="confirm-opportunity-action" title="{{ $activeConfirm['title'] ?? __('Confirm action') }}" size="sm">
+<x-signals.modal wire:key="opportunity-modal-confirm-action" :teleport="false" name="confirm-opportunity-action" title="{{ $activeConfirm['title'] ?? __('Confirm action') }}" size="sm">
     <p class="text-sm text-[var(--text-muted)]">{{ $activeConfirm['message'] ?? __('Are you sure?') }}</p>
 
     <x-slot:footer>
@@ -88,6 +89,7 @@
                 wire:loading.attr="disabled" wire:target="confirmTransition"
                 class="s-btn s-btn-sm">{{ __('Cancel') }}</button>
         <button type="button"
+                x-on:click="$dispatch('close-modal', 'confirm-opportunity-action')"
                 wire:click="confirmTransition"
                 wire:loading.attr="disabled" wire:target="confirmTransition"
                 @class([

@@ -8,7 +8,9 @@ use App\Models\Member;
 use App\Models\Membership;
 use App\Models\Store;
 use App\Models\User;
+use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\CountrySeeder;
+use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\ListOfValuesSeeder;
 use Database\Seeders\NotificationTypeSeeder;
@@ -91,17 +93,20 @@ class CompleteSetup
     private function createStores(CompleteSetupData $data): void
     {
         if (empty($data->stores)) {
-            Store::create([
+            $store = Store::create([
                 'name' => $data->companyName,
                 'country_code' => $data->countryCode,
                 'is_default' => true,
             ]);
 
+            app(DocumentTemplateSeeder::class)->seedForStore($store);
+            app(CommunicationTemplateSeeder::class)->seedForStore($store);
+
             return;
         }
 
         foreach ($data->stores as $index => $storeData) {
-            Store::create([
+            $store = Store::create([
                 'name' => $storeData['name'],
                 'street' => $storeData['street'] ?? null,
                 'city' => $storeData['city'] ?? null,
@@ -110,6 +115,9 @@ class CompleteSetup
                 'country_code' => $storeData['country_code'] ?? $data->countryCode,
                 'is_default' => $storeData['is_default'] ?? ($index === 0),
             ]);
+
+            app(DocumentTemplateSeeder::class)->seedForStore($store);
+            app(CommunicationTemplateSeeder::class)->seedForStore($store);
         }
     }
 

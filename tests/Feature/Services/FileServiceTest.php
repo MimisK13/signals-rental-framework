@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Attachment;
+use App\Models\Document;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\FileService;
@@ -227,4 +228,79 @@ it('builds a flat storage path when no entity is provided', function () {
     $path = $method->invoke($service, 'abc-uuid', 'pdf', null);
 
     expect($path)->toBe('attachments/abc-uuid.pdf');
+});
+
+describe('document filenames', function () {
+    it('builds inline filenames from document number and type label', function () {
+        expect($this->service->inlineFilename('INV-2026-0003', 'invoice', 'path/to/file.pdf'))
+            ->toBe('INV-2026-0003-invoice.pdf');
+    });
+
+    it('sanitizes weird characters in inline filenames', function () {
+        expect($this->service->inlineFilename('INV 2026/0003', 'Credit Note', 'file.pdf'))
+            ->toBe('INV-2026-0003-credit-note.pdf');
+    });
+
+    it('builds document filenames from numbered documents using registry labels', function () {
+        $document = Document::factory()->make([
+            'id' => 7,
+            'document_type' => 'invoice',
+            'document_number' => 'INV-2026-0003',
+        ]);
+
+        expect($this->service->documentFilename($document, 'documents/invoice/7/file.pdf'))
+            ->toBe('INV-2026-0003-invoice.pdf');
+    });
+
+    it('uses fallback filename when document has no number', function () {
+        $document = Document::factory()->make([
+            'id' => 42,
+            'document_type' => 'statement',
+            'document_number' => '',
+        ]);
+
+        expect($this->service->documentFilename($document, 'documents/statement/42/file.pdf'))
+            ->toBe('statement-42.pdf');
+    });
+
+    it('generates a temporary signed route for local document downloads', function () {
+        $path = 'documents/quotes/1/test.pdf';
+        Storage::disk($this->disk)->put($path, 'pdf-content');
+
+        $document = Document::factory()->create([
+            'document_type' => 'quote',
+            'document_number' => 'QUO-0001',
+            'pdf_path' => $path,
+        ]);
+
+        $url = $this->service->signedDocumentUrl($document, $path);
+
+        expect($url)->toContain('documents/'.$document->id.'/file')
+            ->and($url)->toContain('signature=');
+
+        $this->get($url)
+            ->assertOk()
+            ->assertHeader('Content-Disposition', 'inline; filename="QUO-0001-quote.pdf"');
+    });
+
+    it('includes content disposition when generating signed document urls for s3', function () {
+        config(['filesystems.default' => 's3']);
+
+        $document = Document::factory()->make([
+            'id' => 9,
+            'document_type' => 'invoice',
+            'document_number' => 'INV-2026-0003',
+            'pdf_path' => 'documents/invoice/9/test.pdf',
+        ]);
+
+        Storage::shouldReceive('disk')->with('s3')->andReturnSelf();
+        Storage::shouldReceive('temporaryUrl')->once()->withArgs(function (string $path, $expiry, array $options): bool {
+            return $path === 'documents/invoice/9/test.pdf'
+                && ($options['ResponseContentDisposition'] ?? '') === 'inline; filename="INV-2026-0003-invoice.pdf"';
+        })->andReturn('https://s3.example.com/signed-file');
+
+        $url = (new FileService)->signedDocumentUrl($document, 'documents/invoice/9/test.pdf');
+
+        expect($url)->toBe('https://s3.example.com/signed-file');
+    });
 });

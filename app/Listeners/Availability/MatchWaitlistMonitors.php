@@ -20,12 +20,9 @@ use Thunk\Verbs\Facades\Verbs;
  * `quantity_needed`, the monitor flips to Matched and `shortage.waitlist.matched`
  * fires.
  *
- * Notification on match: M7-B registers the `shortage.waitlist.matched`
- * NotificationType in the {@see App\Services\NotificationRegistry} as the
- * placeholder hook the (unbuilt) notifications consumer attaches to with no
- * retrofit. Actual push delivery stays DEFERRED — the monitor carries no recipient
- * column yet (see the stub note in handle()), so the durable event is emitted but
- * no Notification is dispatched.
+ * Notification on match: `shortage.waitlist.matched` is mapped in
+ * {@see config/notifications.php} and dispatched by
+ * {@see App\Listeners\NotificationDispatchListener} through the P24 pipeline.
  *
  * Replay-safe: {@see AvailabilityChanged} is never dispatched during replay, and
  * this listener short-circuits on replay as a guard.
@@ -81,20 +78,6 @@ class MatchWaitlistMonitors implements ShouldQueue
                 $this->events->waitlistMatched($monitor, [
                     'quantity_needed' => $monitor->quantity_needed,
                 ]);
-
-                // Recorded stub (assessed in M6, deferred): a user-facing
-                // "stock is now free" notification on match needs consumer infra
-                // that is not yet built — the monitor carries no recipient
-                // (no user/member column on shortage_waitlist_monitors, and the
-                // backing ShortageResolution holds no notifiable owner), so there
-                // is no notifiable to resolve, and no `shortage.waitlist.matched`
-                // NotificationType / Notification class exists to apply per-user
-                // channel preferences against. The `shortage.waitlist.matched`
-                // audit/event is emitted above (the durable signal); the user
-                // alert lands when the monitor gains a recipient and the
-                // notification engine grows a waitlist consumer. The pull-based
-                // surfacing — `matched_at` flips and the resolution shows Matched —
-                // is fully wired today.
             });
     }
 }

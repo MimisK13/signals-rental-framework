@@ -1,17 +1,5 @@
 {{--
-    Planner grid: a date axis across the window plus one positioned bar per
-    opportunity (job). Each bar carries Delivery / In-Use / Collection sub-bands
-    (positioned relative to the bar) and Customer Collecting / Customer Returning
-    badges, coloured by workflow status.
-
-    In `gantt` mode every job gets its own full-height row. In `overlap` mode the
-    EventLaneAllocator has packed concurrent jobs into lanes (the `lane` / `lanes`
-    keys on each row), so each cluster of overlapping jobs renders its bars in
-    side-by-side horizontal lanes within a shared row band.
-
-    All positioning is plain percentage offsets across the window — no charting
-    library. Day columns are evenly spaced; the bar left/width come pre-computed
-    from the component.
+    Planner overlap grid: lane-packed job cards (headers live in grid-header partial).
 --}}
 @php
     /** @var list<array<string, mixed>> $rows */
@@ -20,9 +8,16 @@
     $days = $this->dayColumns();
     $dayCount = max(1, count($days));
     $colWidth = 100 / $dayCount;
-
-    // Lane height (px) used for overlap-mode bar stacking.
-    $laneHeight = 26;
+    $phaseColours = $this->phaseColours();
+    $customerBadgeColours = $this->customerBadgeColours();
+    $statusRowHeight = 16;
+    $lineBodyBottomPad = 4;
+    $lineHeight = 13;
+    $lineBodyHeight = 4 + ($lineHeight * 4) + $lineBodyBottomPad;
+    $laneGap = $this->cardGapPx();
+    $laneHeight = $lineBodyHeight + $statusRowHeight;
+    $laneStride = $laneHeight + $laneGap;
+    $today = \Illuminate\Support\Carbon::today('UTC')->toDateString();
 @endphp
 
 @if(count($rows) === 0)
@@ -32,66 +27,45 @@
         <x-slot:icon><flux:icon.calendar-days class="!size-7" /></x-slot:icon>
     </x-signals.empty>
 @else
-    <div class="s-panel overflow-x-auto" wire:loading.class="opacity-60">
-        <div class="s-panel-body" style="min-width: 720px;">
-            {{-- Date axis --}}
-            <div class="relative mb-2 flex border-b border-[var(--card-border)] pb-1">
-                @foreach($days as $day)
-                    <div class="shrink-0 text-center text-[10px] {{ $day->isWeekend() ? 'text-[var(--text-muted)]' : 'text-[var(--text-secondary,var(--text-muted))]' }}"
-                         style="width: {{ $colWidth }}%;"
-                         wire:key="day-{{ $day->toDateString() }}">
-                        <div class="font-semibold">{{ $day->format('j') }}</div>
-                        <div class="uppercase">{{ $day->format('D') }}</div>
-                    </div>
-                @endforeach
-            </div>
-
-            @if($mode === 'gantt')
-                {{-- Gantt: one row per job --}}
-                <div class="flex flex-col gap-2">
-                    @foreach($rows as $row)
-                        <div wire:key="job-{{ $row['id'] }}" class="grid grid-cols-[200px_1fr] items-center gap-3">
-                            {{-- Row label --}}
-                            <a href="{{ route('opportunities.show', $row['id']) }}" wire:navigate
-                               class="block truncate text-[12px] hover:underline">
-                                <span class="font-semibold text-[var(--text-primary)]">{{ $row['number'] ?? ('#'.$row['id']) }}</span>
-                                <span class="block truncate text-[11px] text-[var(--text-muted)]">{{ $row['member'] ?? $row['subject'] }}</span>
-                            </a>
-
-                            {{-- Bar track --}}
-                            <div class="relative h-9 rounded-sm bg-[var(--content-bg)]">
-                                @include('livewire.planner.partials.bar', ['row' => $row, 'top' => 4, 'height' => 28])
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                {{-- Overlap: lane-packed clusters in a single track --}}
+    @php
+        $maxLanes = 1;
+        foreach ($rows as $r) {
+            $maxLanes = max($maxLanes, (int) ($r['lanes'] ?? 1));
+        }
+        $minTrackHeight = $maxLanes > 0
+            ? ($maxLanes * $laneStride - $laneGap)
+            : 0;
+    @endphp
+    <div class="s-panel relative w-full !p-0 overflow-hidden border-t-0 !rounded-t-none">
+        <div class="relative z-0 w-full" style="min-height: {{ $minTrackHeight }}px;">
+            @foreach($days as $i => $day)
                 @php
-                    $maxLanes = 1;
-                    foreach ($rows as $r) {
-                        $maxLanes = max($maxLanes, (int) ($r['lanes'] ?? 1));
-                    }
-                    $trackHeight = $maxLanes * $laneHeight + 6;
+                    $dateKey = $day->toDateString();
+                    $isToday = $dateKey === $today;
+                    $isWeekend = $day->isWeekend();
+                    $isMonthStart = $day->day === 1;
                 @endphp
-                <div class="relative" style="height: {{ $trackHeight }}px;">
-                    {{-- Faint day gridlines --}}
-                    @foreach($days as $i => $day)
-                        <div class="absolute top-0 bottom-0 border-l border-[var(--card-border)] opacity-40"
-                             style="left: {{ $i * $colWidth }}%;" wire:key="grid-{{ $day->toDateString() }}"></div>
-                    @endforeach
+                <div class="pointer-events-none absolute top-0 bottom-0 border-r border-[var(--card-border)] {{ $isWeekend ? 'bg-black/[0.04] dark:bg-white/[0.04]' : '' }} {{ $isToday ? 'bg-[#fff3cd]/25 ring-1 ring-inset ring-[#ffc107]/40' : '' }} {{ $isMonthStart ? 's-planning-month-start' : '' }}"
+                     style="left: {{ $i * $colWidth }}%; width: {{ $colWidth }}%;"
+                     wire:key="grid-{{ $dateKey }}"></div>
+            @endforeach
 
-                    @foreach($rows as $row)
-                        @php
-                            $lane = (int) ($row['lane'] ?? 0);
-                            $top = $lane * $laneHeight + 2;
-                        @endphp
-                        <div wire:key="job-{{ $row['id'] }}" class="absolute left-0 right-0">
-                            @include('livewire.planner.partials.bar', ['row' => $row, 'top' => $top, 'height' => $laneHeight - 4, 'withLabel' => true])
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+            @foreach($rows as $row)
+                @php
+                    $lane = (int) ($row['lane'] ?? 0);
+                    $top = $lane * $laneStride;
+                @endphp
+                @include('livewire.planner.partials.bar', [
+                    'row' => $row,
+                    'top' => $top,
+                    'height' => $laneHeight,
+                    'colWidth' => $colWidth,
+                    'statusRowHeight' => $statusRowHeight,
+                    'lineBodyBottomPad' => $lineBodyBottomPad,
+                    'phaseColours' => $phaseColours,
+                    'customerBadgeColours' => $customerBadgeColours,
+                ])
+            @endforeach
         </div>
     </div>
 @endif

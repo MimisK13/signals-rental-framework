@@ -4,6 +4,7 @@ use App\Contracts\Opportunities\OpportunityLineItemsEditorContract;
 use App\Actions\Opportunities\AddOpportunityAccessory;
 use App\Actions\Opportunities\AddOpportunityGroup;
 use App\Actions\Opportunities\AddOpportunityItem;
+use App\Actions\Opportunities\ApplyDiscountCategory;
 use App\Actions\Opportunities\ChangeItemDates;
 use App\Actions\Opportunities\ChangeItemQuantity;
 use App\Actions\Opportunities\ClearDealPrice;
@@ -20,13 +21,16 @@ use App\Actions\Opportunities\UpdateOpportunityItemDetails;
 use App\Data\Opportunities\AddOpportunityAccessoryData;
 use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\AddOpportunityItemData;
+use App\Data\Opportunities\ApplyDiscountCategoryData;
 use App\Data\Opportunities\ChangeItemDatesData;
 use App\Data\Opportunities\ChangeItemQuantityData;
 use App\Data\Opportunities\MergeOpportunityItemsData;
 use App\Data\Opportunities\OverrideItemPriceData;
 use App\Data\Opportunities\RenameOpportunityItemData;
 use App\Data\Opportunities\RestructureOpportunityItemsData;
-use App\Data\Opportunities\SetDealPriceData;
+use App\Actions\Opportunities\RecalculateOpportunity;
+use App\Data\Opportunities\RecalculateOpportunityData;
+use App\Enums\DealPriceMode;
 use App\Data\Opportunities\SetItemDiscountData;
 use App\Data\Opportunities\SubstituteItemData;
 use App\Data\Opportunities\ToggleItemOptionalData;
@@ -574,18 +578,34 @@ new class extends Component implements OpportunityLineItemsEditorContract
     }
 
     #[Renderless]
-    public function setDealPrice(string $dealTotal): void
+    public function setDealPrice(string $dealTotal, string $dealPriceMode = 'flat_headline'): void
     {
         $this->guardEditable();
 
-        $this->runMutation(function () use ($dealTotal): void {
+        $this->runMutation(function () use ($dealTotal, $dealPriceMode): void {
             (new SetDealPrice)($this->opportunity, SetDealPriceData::from([
                 'currency' => $this->opportunity->currency_code ?? settings('company.base_currency', 'GBP'),
                 'deal_total' => $dealTotal,
+                'deal_price_mode' => $dealPriceMode,
             ]));
 
             $this->refreshOpportunity();
         }, 'Deal price set', syncTree: true);
+    }
+
+    #[Renderless]
+    public function recalculatePricing(bool $resetPrices = false, bool $resetDiscounts = false): void
+    {
+        $this->guardEditable();
+
+        $this->runMutation(function () use ($resetPrices, $resetDiscounts): void {
+            (new RecalculateOpportunity)($this->opportunity, RecalculateOpportunityData::from([
+                'reset_prices' => $resetPrices,
+                'reset_discounts' => $resetDiscounts,
+            ]));
+
+            $this->refreshOpportunity();
+        }, 'Pricing recalculated', syncTree: true);
     }
 
     #[Renderless]
@@ -613,6 +633,24 @@ new class extends Component implements OpportunityLineItemsEditorContract
     public function setDiscount(int $itemId, ?string $discountPercent): void
     {
         $this->updateField($itemId, 'discount_percent', $discountPercent);
+    }
+
+    #[Renderless]
+    public function resetItemDiscount(int $itemId): void
+    {
+        $this->guardEditable();
+
+        $this->runMutation(function () use ($itemId): void {
+            (new ApplyDiscountCategory)(
+                $this->opportunity,
+                ApplyDiscountCategoryData::from([
+                    'opportunity_item_ids' => [$itemId],
+                    'reset_manual' => true,
+                ]),
+            );
+
+            $this->refreshOpportunity();
+        }, 'Category discount re-applied', syncTree: true);
     }
 
     public function changeDates(int $itemId, ?string $startsAt, ?string $endsAt): void
@@ -1265,6 +1303,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                     serverChargeTotalMinor: @js($chargeTotalMinor),
                     dealTotalRaw: @js($dealTotalRaw),
                     hasDealPrice: @js($opp->deal_total !== null),
+                    dealPriceMode: @js($opp->deal_price_mode ?? 'flat_headline'),
                     serverDealTotalMinor: @js($opp->deal_total !== null ? (int) $opp->deal_total : null),
                 };
             }
@@ -1281,7 +1320,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                         <input
                             type="text"
                             class="s-input w-full"
-                            placeholder="Quick add — &ldquo;6 spiider&rdquo;, or a SKU, then Enter"
+                            placeholder="Quick add — &ldquo;6 spider&rdquo;, or a SKU, then Enter"
                             autocomplete="off"
                             x-model="quickAddQuery"
                             x-ref="quickAddInput"
@@ -1323,6 +1362,15 @@ new class extends Component implements OpportunityLineItemsEditorContract
             </button>
             <button type="button" class="s-btn s-btn-ghost s-btn-icon" title="Add free text item" x-on:click="createInlineTextLine()">
                 <flux:icon.document-text class="!size-4" />
+            </button>
+            <button
+                type="button"
+                class="s-btn s-btn-ghost s-btn-sm"
+                x-show="editable"
+                x-on:click="$wire.recalculatePricing(false, false)"
+                title="Recalculate pricing"
+            >
+                Recalculate
             </button>
             <button
                 type="button"
@@ -1497,7 +1545,10 @@ new class extends Component implements OpportunityLineItemsEditorContract
                                 <span x-show="row.item_type !== 'group'" class="lf-cell lf-cell-left lf-cell-price" data-field="unit_price" @click="fieldsEditable && beginEdit(row.id, 'unit_price', $event)" x-text="row.unit_price_display"></span>
                             </td>
                             <td class="text-right tabular-nums lf-col-disc">
-                                <span x-show="row.item_type !== 'group'" class="lf-cell" data-field="discount_percent" @click="fieldsEditable && beginEdit(row.id, 'discount_percent', $event)" x-text="(row.discount_percent ? row.discount_percent : 0) + '%'"></span>
+                                <span x-show="row.item_type !== 'group'" class="lf-cell inline-flex items-center justify-end gap-1" data-field="discount_percent" @click="fieldsEditable && beginEdit(row.id, 'discount_percent', $event)">
+                                    <span x-text="(row.discount_percent ? row.discount_percent : 0) + '%'"></span>
+                                    <span x-show="row.is_discount_manual" x-cloak class="s-badge s-badge-muted text-[10px] uppercase tracking-wide">Manual</span>
+                                </span>
                             </td>
                             <td
                                 class="text-right tabular-nums font-medium lf-charge-cell lf-col-charge"
@@ -1626,6 +1677,12 @@ new class extends Component implements OpportunityLineItemsEditorContract
                             Rename free text item
                         </button>
                     </template>
+                    <template x-if="editable && menuRow.is_discount_manual">
+                        <button type="button" class="s-dropdown-item w-full text-left" @click="resetItemDiscount(menuRow.id); closeRowMenu()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            Reset to category discount
+                        </button>
+                    </template>
                     <template x-if="editable && menuRow.item_type !== 'group' && menuRow.item_type !== 'text'">
                         <button type="button" class="s-dropdown-item w-full text-left" @click="openEditLineModal(menuRow); closeRowMenu()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
@@ -1702,8 +1759,15 @@ new class extends Component implements OpportunityLineItemsEditorContract
     <x-signals.modal name="deal-price" title="Deal price" id="deal-price-modal">
         <div class="space-y-3">
             <p class="text-sm text-[var(--text-muted)]">
-                When set, the opportunity charge total becomes this fixed net amount. Existing line pricing is locked; newly added items are zero-cost.
+                Set a target net total. Flat headline mode locks line pricing; proportional mode distributes discounts across discountable lines.
             </p>
+            <div>
+                <label class="block text-sm font-medium mb-1">Mode</label>
+                <select class="s-input w-full" x-model="dealPriceMode">
+                    <option value="flat_headline">Flat headline override</option>
+                    <option value="proportional">Proportional line distribution</option>
+                </select>
+            </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Deal total (ex-tax)</label>
                 <input type="text" class="s-input w-full font-mono" x-model="dealPriceInput" placeholder="e.g. 750.00">

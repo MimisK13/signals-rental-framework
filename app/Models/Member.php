@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Enums\MembershipType;
+use App\Enums\TaxBuyerType;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasAttachments;
 use App\Models\Traits\HasCustomFields;
@@ -19,17 +20,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 /**
  * @property MembershipType $membership_type
+ * @property string|null $number
+ * @property Carbon|null $tax_number_validated_at
  */
 class Member extends Model implements HasSchema
 {
     /** @use HasFactory<MemberFactory> */
-    use FormatsMoney, HasAttachments, HasCustomFields, HasFactory, SoftDeletes;
+    use FormatsMoney, HasAttachments, HasCustomFields, HasFactory, Notifiable, SoftDeletes;
 
     /** @var list<string> */
     protected $fillable = [
+        'number',
         'name',
         'membership_type',
         'is_active',
@@ -52,6 +59,9 @@ class Member extends Model implements HasSchema
         // Organisation membership fields
         'account_number',
         'tax_number',
+        'tax_number_validated',
+        'tax_number_validated_at',
+        'tax_number_validation',
         'peppol_id',
         'chamber_of_commerce_number',
         'global_location_number',
@@ -60,12 +70,17 @@ class Member extends Model implements HasSchema
         'rating',
         'owned_by',
         'price_category_id',
+        'price_category_tier_id',
         'discount_category_id',
+        'tax_zone_id',
+        'buyer_type',
+        'tax_exempt',
         'invoice_term_id',
         'invoice_term_length',
         // Contact membership fields
         'title',
         'department',
+        'communication_preferences',
     ];
 
     /**
@@ -86,7 +101,13 @@ class Member extends Model implements HasSchema
             'is_on_stop' => 'boolean',
             'rating' => 'integer',
             'invoice_term_length' => 'integer',
+            'buyer_type' => TaxBuyerType::class,
+            'tax_exempt' => 'boolean',
+            'tax_number_validated' => 'boolean',
+            'tax_number_validated_at' => 'datetime',
+            'tax_number_validation' => 'array',
             'tag_list' => 'array',
+            'communication_preferences' => 'array',
         ];
     }
 
@@ -105,6 +126,15 @@ class Member extends Model implements HasSchema
         $builder->relation('purchase_tax_class_id')->label('Purchase Tax Class')
             ->relation('purchaseTaxClass', 'belongsTo', OrganisationTaxClass::class, 'name')
             ->filterable();
+        $builder->relation('tax_zone_id')->label('Tax Zone')
+            ->relation('taxZone', 'belongsTo', TaxZone::class, 'name')
+            ->group('Tax')
+            ->filterable();
+        $builder->enum('buyer_type')->label('Buyer Type')->group('Tax')->filterable();
+        $builder->boolean('tax_exempt')->label('Tax Exempt')->group('Tax')->filterable()->sortable();
+        $builder->boolean('tax_number_validated')->label('VAT Validated')->group('Tax')->filterable()->nullable();
+        $builder->datetime('tax_number_validated_at')->label('VAT Validated At')->group('Tax')->filterable()->sortable();
+        $builder->json('tax_number_validation')->label('VAT Validation Details')->group('Tax')->filterable(false)->sortable(false);
         $builder->json('tag_list')->label('Tags')->searchable();
         $builder->string('account_number')->label('Account Number')->searchable()->filterable();
         $builder->boolean('is_on_stop')->label('On Stop')->filterable()->sortable();
@@ -137,6 +167,75 @@ class Member extends Model implements HasSchema
     public function emails(): MorphMany
     {
         return $this->morphMany(Email::class, 'emailable');
+    }
+
+    /**
+     * Resolve the member's primary email address for outbound notifications.
+     *
+     * Prefers the email flagged `is_primary`; otherwise falls back to the first
+     * stored address, matching the member API's primary email convention.
+     */
+    public function primaryEmailAddress(): ?string
+    {
+        $emails = $this->relationLoaded('emails')
+            ? $this->emails
+            : $this->emails()->orderByDesc('is_primary')->orderBy('id')->get();
+
+        $primary = $emails->firstWhere('is_primary', true) ?? $emails->first();
+
+        return $primary?->address;
+    }
+
+    /**
+     * Route mail-channel notifications to the member's primary email address.
+     *
+     * Organisations without a direct email fall back to the primary linked contact.
+     */
+    public function routeNotificationForMail(?Notification $notification = null): ?string
+    {
+        $address = $this->primaryEmailAddress();
+
+        if ($address !== null && $address !== '') {
+            return $address;
+        }
+
+        if ($this->membership_type !== MembershipType::Organisation) {
+            return null;
+        }
+
+        return $this->primaryContactEmailAddress();
+    }
+
+    /**
+     * Resolve the primary contact's email for organisation billing notifications.
+     */
+    public function primaryContactEmailAddress(): ?string
+    {
+        $contacts = $this->relationLoaded('contacts')
+            ? $this->contacts
+            : $this->contacts()
+                ->with(['emails' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('id')])
+                ->orderByPivot('is_primary', 'desc')
+                ->orderBy('members.id')
+                ->get();
+
+        foreach ($contacts as $contact) {
+            $email = $contact->primaryEmailAddress();
+
+            if ($email !== null && $email !== '') {
+                return $email;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Route broadcast-channel notifications to the member's private Reverb channel.
+     */
+    public function routeNotificationForBroadcast(): string
+    {
+        return 'member.'.$this->id;
     }
 
     /**
@@ -193,6 +292,38 @@ class Member extends Model implements HasSchema
     public function invoiceTerm(): BelongsTo
     {
         return $this->belongsTo(ListValue::class, 'invoice_term_id');
+    }
+
+    /**
+     * @return BelongsTo<PriceCategory, $this>
+     */
+    public function priceCategory(): BelongsTo
+    {
+        return $this->belongsTo(PriceCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<PriceCategoryTier, $this>
+     */
+    public function priceCategoryTier(): BelongsTo
+    {
+        return $this->belongsTo(PriceCategoryTier::class);
+    }
+
+    /**
+     * @return BelongsTo<DiscountCategory, $this>
+     */
+    public function discountCategory(): BelongsTo
+    {
+        return $this->belongsTo(DiscountCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<TaxZone, $this>
+     */
+    public function taxZone(): BelongsTo
+    {
+        return $this->belongsTo(TaxZone::class);
     }
 
     /**

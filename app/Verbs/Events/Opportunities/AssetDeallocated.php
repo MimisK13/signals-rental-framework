@@ -4,6 +4,8 @@ namespace App\Verbs\Events\Opportunities;
 
 use App\Enums\AssetAssignmentStatus;
 use App\Models\OpportunityItemAsset;
+use App\Models\StockLevel;
+use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
@@ -64,6 +66,8 @@ class AssetDeallocated extends Event
 
         $this->decrementStockAllocation($stockLevelId, '1');
 
+        $this->releaseVirtualAssetStatus($stockLevelId);
+
         if ($item === null) {
             return;
         }
@@ -82,6 +86,27 @@ class AssetDeallocated extends Event
                     'stock_level_id' => $stockLevelId,
                 ],
             );
+        }
+    }
+
+    private function releaseVirtualAssetStatus(?int $stockLevelId): void
+    {
+        if ($stockLevelId === null) {
+            return;
+        }
+
+        $stockLevel = StockLevel::query()->whereKey($stockLevelId)->first();
+
+        if ($stockLevel === null || ! $stockLevel->is_virtual) {
+            return;
+        }
+
+        $registry = app(VirtualAssetStatusRegistry::class);
+        $current = $stockLevel->virtual_asset_status ?? $registry->defaultStatus();
+        $available = $registry->defaultStatus();
+
+        if ($registry->canTransitionTo($current, $available)) {
+            $stockLevel->forceFill(['virtual_asset_status' => $available])->saveQuietly();
         }
     }
 }

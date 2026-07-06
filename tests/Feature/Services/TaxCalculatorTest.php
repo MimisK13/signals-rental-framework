@@ -548,6 +548,9 @@ describe('TaxResult', function () {
             'currency_code' => 'GBP',
             'tax_rate_id' => 1,
             'tax_rule_id' => 2,
+            'result_type' => null,
+            'legal_text' => null,
+            'zone_tax_rule_id' => null,
         ]);
     });
 

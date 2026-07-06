@@ -34,6 +34,7 @@ class CostAdded extends Event
         #[StateId(OpportunityCostState::class)]
         public ?int $state_id = null,
         public int $opportunity_id = 0,
+        public ?int $virtual_stock_intake_id = null,
         public string $description = '',
         public int $cost_type = 0,
         public int $transaction_type = 2,
@@ -48,6 +49,7 @@ class CostAdded extends Event
     {
         $state->opportunity_cost_id = $this->opportunity_cost_id;
         $state->opportunity_id = $this->opportunity_id;
+        $state->virtual_stock_intake_id = $this->virtual_stock_intake_id;
         $state->description = $this->description;
         $state->cost_type = $this->cost_type;
         $state->transaction_type = $this->transaction_type;
@@ -69,6 +71,7 @@ class CostAdded extends Event
             [
                 'state_id' => $state->id,
                 'opportunity_id' => $state->opportunity_id,
+                'virtual_stock_intake_id' => $state->virtual_stock_intake_id,
                 'description' => $state->description,
                 'cost_type' => $state->cost_type,
                 'transaction_type' => $state->transaction_type,

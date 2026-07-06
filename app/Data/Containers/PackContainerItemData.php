@@ -2,6 +2,7 @@
 
 namespace App\Data\Containers;
 
+use App\Enums\PackContainerResolution;
 use Spatie\LaravelData\Data;
 
 /**
@@ -13,6 +14,8 @@ class PackContainerItemData extends Data
         public int $serialised_item_id,
         public ?string $position = null,
         public ?string $notes = null,
+        /** @see PackContainerResolution */
+        public ?string $resolve = null,
     ) {}
 
     /**
@@ -24,6 +27,7 @@ class PackContainerItemData extends Data
             'serialised_item_id' => ['required', 'integer', 'exists:stock_levels,id'],
             'position' => ['sometimes', 'nullable', 'string', 'max:255'],
             'notes' => ['sometimes', 'nullable', 'string'],
+            'resolve' => ['sometimes', 'nullable', 'string', 'in:transfer,auto_return_and_pack,confirm_nesting'],
         ];
     }
 }

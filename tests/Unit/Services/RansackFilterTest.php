@@ -759,3 +759,14 @@ it('keeps scalar boolean filtering for non-JSON columns alongside the JSON branc
 
     expect($query->toRawSql())->toContain('"has_shortage" = ');
 });
+
+it('ignores unknown predicates via the match default arm', function () {
+    $query = User::query();
+    $baseSql = $query->toRawSql();
+
+    $method = new ReflectionMethod(RansackFilter::class, 'applyPredicate');
+    $method->setAccessible(true);
+    $method->invoke($this->filter, $query, 'name', 'unknown_predicate', 'value');
+
+    expect($query->toRawSql())->toBe($baseSql);
+});

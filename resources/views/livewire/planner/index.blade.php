@@ -1,12 +1,13 @@
 <?php
 
 use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
-use App\Models\Store;
 use App\Services\Calendar\EventLaneAllocator;
+use App\Services\Opportunities\OpportunityPresentation;
+use App\Services\Planning\PlanningStoreFilter;
+use App\Models\Member;
+use App\Support\Formatter;
 use Illuminate\Database\Eloquent\Builder;
-use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -20,40 +21,36 @@ use Livewire\Volt\Component;
 /**
  * Job Planner (C1) — a calendar of OPPORTUNITIES (jobs) across dates.
  *
- * Rows are opportunities; each job draws a bar spanning its window, split into
- * Delivery / In-Use / Collection sub-bands derived from the lifecycle date fields
- * ({@see \App\Models\Opportunity}), badged with Customer Collecting / Customer
- * Returning and coloured by its workflow status. Two render modes:
- *
- *  - `gantt`   — one row per opportunity, full row height each.
- *  - `overlap` — overlapping jobs packed into horizontal lanes via the shared
- *                {@see EventLaneAllocator}, so concurrent jobs sit side-by-side.
- *
- * The page reads the opportunity projection directly (the same read model the API
- * and list views use) and gates on `opportunities.access`. All positioning maths
- * is plain PHP percentage offsets across the window — no charting library.
+ * Overlap timeline: concurrent jobs are packed into horizontal lanes via
+ * {@see EventLaneAllocator}. Each job draws a bar spanning its window with
+ * Delivery / In-Use / Collection sub-bands and Customer Collecting / Returning
+ * badges, coloured by opportunity status.
  */
 new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Component
 {
+    private const int JOBS_LIMIT = 200;
+
+    /** Gap between adjacent jobs (horizontal) and lanes (vertical), in px. */
+    private const int CARD_GAP_PX = 4;
+
     /** Selectable view-period lengths, in days, keyed by the URL token. */
     private const VIEW_PERIODS = [
         '1w' => 7,
         '2w' => 14,
         '1m' => 30,
-        'monthly' => 30,
     ];
 
     /** The window start (ISO date). Defaults to today on mount. */
     #[Url(as: 'date')]
     public string $date = '';
 
-    /** View period token: 1w / 2w / 1m / monthly. Sets the column count. */
+    /** View period token: 1w / 2w / 1m. Sets the column count unless a preset is active. */
     #[Url(as: 'view')]
-    public string $viewPeriod = '2w';
+    public string $viewPeriod = '1m';
 
-    /** Render mode: `gantt` (a row each) or `overlap` (lane-packed). */
-    #[Url(as: 'mode')]
-    public string $mode = 'gantt';
+    /** Active date-range preset (next_30_days, this_month, next_month) or empty for custom/zoom. */
+    #[Url(as: 'preset')]
+    public string $preset = '';
 
     /** Whether quotation-state jobs are included. */
     #[Url(as: 'quotations')]
@@ -63,13 +60,16 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     #[Url(as: 'orders')]
     public bool $includeOrders = true;
 
-    /** Store filter (0 = all stores). */
-    #[Url(as: 'store')]
-    public int $storeId = 0;
+    /** Store filter (empty = all default-query stores). */
+    #[Url(as: 'stores')]
+    public array $storeIds = [];
 
     /** Free-text search across subject / number / member name. */
     #[Url(as: 'q')]
     public string $search = '';
+
+    /** Whether the grid body has completed its deferred first paint. */
+    public bool $gridReady = false;
 
     public function mount(): void
     {
@@ -80,12 +80,14 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         }
 
         if (! array_key_exists($this->viewPeriod, self::VIEW_PERIODS)) {
-            $this->viewPeriod = '2w';
+            $this->viewPeriod = '1m';
         }
+    }
 
-        if (! in_array($this->mode, ['gantt', 'overlap'], true)) {
-            $this->mode = 'gantt';
-        }
+    /** Flip the grid-ready flag after the initial skeleton paint (wire:init). */
+    public function initializeGrid(): void
+    {
+        $this->gridReady = true;
     }
 
     public function rendering(View $view): void
@@ -93,9 +95,32 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         $view->title(__('Job Planner'));
     }
 
+    public function syncStoreIdsFromTags(array $tagNames): void
+    {
+        $this->storeIds = app(PlanningStoreFilter::class)->storeIdsFromTags($tagNames);
+    }
+
+    public function selectedStoreTags(): array
+    {
+        return app(PlanningStoreFilter::class)->selectedStoreTags($this->storeIds);
+    }
+
+    public function storeNameSuggestions(): array
+    {
+        return app(PlanningStoreFilter::class)->storeNameSuggestions();
+    }
+
     /** The inclusive number of days the window spans. */
     public function windowDays(): int
     {
+        if ($this->preset === 'next_30_days') {
+            return 30;
+        }
+
+        if ($this->preset === 'this_month' || $this->preset === 'next_month') {
+            return $this->windowStart()->daysInMonth;
+        }
+
         return self::VIEW_PERIODS[$this->viewPeriod] ?? 14;
     }
 
@@ -114,19 +139,68 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
     /** Step the window backwards by one full period. */
     public function previousPeriod(): void
     {
+        $this->preset = '';
         $this->date = $this->windowStart()->copy()->subDays($this->windowDays())->toDateString();
     }
 
     /** Step the window forwards by one full period. */
     public function nextPeriod(): void
     {
+        $this->preset = '';
         $this->date = $this->windowStart()->copy()->addDays($this->windowDays())->toDateString();
     }
 
     /** Jump the window back to today. */
     public function today(): void
     {
+        $this->preset = '';
         $this->date = Carbon::today('UTC')->toDateString();
+    }
+
+    /** Set the zoom window (1w / 2w / 1m). */
+    public function setZoom(string $period): void
+    {
+        if (! array_key_exists($period, self::VIEW_PERIODS)) {
+            return;
+        }
+
+        $this->viewPeriod = $period;
+        $this->preset = '';
+    }
+
+    /** Apply a named date-range preset. */
+    public function applyPreset(string $type): void
+    {
+        match ($type) {
+            'next_30_days' => $this->applyNext30Days(),
+            'this_month' => $this->applyThisMonth(),
+            'next_month' => $this->applyNextMonth(),
+            default => null,
+        };
+    }
+
+    public function updatedDate(): void
+    {
+        $this->preset = '';
+    }
+
+    private function applyNext30Days(): void
+    {
+        $this->date = Carbon::today('UTC')->toDateString();
+        $this->viewPeriod = '1m';
+        $this->preset = 'next_30_days';
+    }
+
+    private function applyThisMonth(): void
+    {
+        $this->date = Carbon::today('UTC')->startOfMonth()->toDateString();
+        $this->preset = 'this_month';
+    }
+
+    private function applyNextMonth(): void
+    {
+        $this->date = Carbon::today('UTC')->addMonthNoOverflow()->startOfMonth()->toDateString();
+        $this->preset = 'next_month';
     }
 
     /**
@@ -148,21 +222,10 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
         return $days;
     }
 
-    /** Stores for the filter dropdown. */
-    #[Computed]
-    public function stores(): Collection
-    {
-        return Store::query()->orderBy('name')->get(['id', 'name']);
-    }
-
     /**
-     * The opportunities overlapping the window, after applying the
-     * include / store / search filters, ordered by start.
-     *
-     * @return Collection<int, Opportunity>
+     * Base query for opportunities overlapping the window (filters applied).
      */
-    #[Computed]
-    public function jobs(): Collection
+    private function jobsQuery(): Builder
     {
         $states = [];
         if ($this->includeQuotations) {
@@ -172,58 +235,127 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             $states[] = OpportunityState::Order->value;
         }
 
-        // No included state → no rows (the document-type filter selects nothing).
-        if ($states === []) {
-            return collect();
-        }
-
         $from = $this->windowStart();
         $to = $this->windowEnd();
 
         return Opportunity::query()
-            ->with(['member:id,name', 'store:id,name', 'venue:id,name'])
+            ->with([
+                'member:id,name',
+                'member.addresses' => fn ($q) => $q->orderByDesc('is_primary'),
+                'venue:id,name',
+                'venue.addresses' => fn ($q) => $q->orderByDesc('is_primary'),
+                'store:id,name',
+            ])
             ->whereIn('state', $states)
             ->whereNotNull('starts_at')
             ->whereNotNull('ends_at')
-            // Overlap test: job starts on/before the window end AND ends on/after
-            // the window start.
             ->where('starts_at', '<=', $to)
             ->where('ends_at', '>=', $from)
-            ->when($this->storeId > 0, fn (Builder $q) => $q->where('store_id', $this->storeId))
+            ->when($this->storeIds !== [], fn (Builder $q) => $q->whereIn('store_id', $this->storeIds))
             ->when($this->search !== '', function (Builder $q): void {
-                $term = '%'.$this->search.'%';
+                $term = '%'.mb_strtolower($this->search).'%';
                 $q->where(function (Builder $inner) use ($term): void {
-                    $inner->where('subject', 'like', $term)
-                        ->orWhere('number', 'like', $term)
-                        ->orWhereHas('member', fn (Builder $m) => $m->where('name', 'like', $term));
+                    $inner->whereRaw('lower(subject) like ?', [$term])
+                        ->orWhereRaw('lower(number) like ?', [$term])
+                        ->orWhereHas('member', fn (Builder $m) => $m->whereRaw('lower(name) like ?', [$term]));
                 });
             })
             ->orderBy('starts_at')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+    }
+
+    /** Whether more than {@see JOBS_LIMIT} jobs match — the grid shows the first 200 only. */
+    #[Computed]
+    public function jobsTruncated(): bool
+    {
+        if (! $this->gridReady) {
+            return false;
+        }
+
+        if ($this->includeQuotations === false && $this->includeOrders === false) {
+            return false;
+        }
+
+        return $this->jobsQuery()->count() > self::JOBS_LIMIT;
     }
 
     /**
-     * The filtered jobs decorated with positioning + colour metadata, ready for
-     * the view. In `overlap` mode the rows additionally carry their packed lane.
+     * The opportunities overlapping the window, after applying filters.
+     *
+     * @return Collection<int, Opportunity>
+     */
+    #[Computed]
+    public function jobs(): Collection
+    {
+        if (! $this->gridReady) {
+            return collect();
+        }
+
+        $states = [];
+        if ($this->includeQuotations) {
+            $states[] = OpportunityState::Quotation->value;
+        }
+        if ($this->includeOrders) {
+            $states[] = OpportunityState::Order->value;
+        }
+
+        if ($states === []) {
+            return collect();
+        }
+
+        return $this->jobsQuery()->limit(self::JOBS_LIMIT)->get();
+    }
+
+    /**
+     * Per-day job counts (jobs active on each calendar day in the window).
+     *
+     * @return array<string, int>
+     */
+    #[Computed]
+    public function jobCountsPerDay(): array
+    {
+        if (! $this->gridReady) {
+            return [];
+        }
+
+        $counts = [];
+
+        foreach ($this->dayColumns() as $day) {
+            $dayStart = $day->copy()->startOfDay();
+            $dayEnd = $day->copy()->endOfDay();
+            $counts[$day->toDateString()] = $this->jobs->filter(function (Opportunity $job) use ($dayStart, $dayEnd): bool {
+                return $job->starts_at <= $dayEnd && $job->ends_at >= $dayStart;
+            })->count();
+        }
+
+        return $counts;
+    }
+
+    /** Maximum per-day job count in the window (for heatmap intensity scaling). */
+    #[Computed]
+    public function jobCountHeatmapMax(): int
+    {
+        return max(1, max($this->jobCountsPerDay));
+    }
+
+    /**
+     * The filtered jobs decorated with positioning metadata, lane-packed.
      *
      * @return list<array<string, mixed>>
      */
     #[Computed]
     public function rows(): array
     {
+        if (! $this->gridReady) {
+            return [];
+        }
+
+        $formatter = app(Formatter::class);
+        $presentation = app(OpportunityPresentation::class);
         $windowStart = $this->windowStart();
-        $windowSeconds = max(1, $windowStart->diffInSeconds($this->windowEnd()));
-
-        $pct = function (?CarbonInterface $at) use ($windowStart, $windowSeconds): float {
-            if ($at === null) {
-                return 0.0;
-            }
-
-            $offset = $windowStart->diffInSeconds($at, false);
-
-            return max(0.0, min(100.0, ($offset / $windowSeconds) * 100));
-        };
+        $windowEnd = $this->windowEnd();
+        $days = $this->dayColumns();
+        $dayCount = max(1, count($days));
 
         /** @var list<array<string, mixed>> $rows */
         $rows = [];
@@ -232,246 +364,322 @@ new #[Layout('components.layouts.app')] #[Title('Job Planner')] class extends Co
             $start = $job->starts_at;
             $end = $job->ends_at;
 
-            $left = $pct($start);
-            $right = $pct($end);
-            $width = max(1.5, $right - $left);
+            $position = $this->barPositionFor($job, $days, $dayCount);
 
             $status = $job->statusEnum();
-
-            // Sub-bands: Delivery (deliver_*), In-Use (show_* or the on-hire span),
-            // Collection (collect_*). Each is positioned relative to the bar itself.
-            $bands = $this->bandsFor($job, $left, $width, $pct);
+            $state = $job->state;
 
             $rows[] = [
                 'id' => $job->id,
                 'subject' => $job->subject,
                 'number' => $job->number,
                 'member' => $job->member?->name,
-                'venue' => $job->venue?->name ?? $job->store?->name,
-                'left' => $left,
-                'width' => $width,
-                'bands' => $bands,
-                'colour' => $this->colourFor($status),
-                'status_label' => $status->label(),
-                'state_label' => $status->state()->label(),
+                'location_label' => $job->venue?->name ?? $job->member?->name ?? $job->store?->name,
+                'address' => $this->locationAddressFor($job),
+                'left' => $position['left'],
+                'width' => $position['width'],
+                'day_segments' => $this->daySegmentsFor($job),
+                'colour' => $presentation->statusColour($status),
+                'status_label' => $presentation->statusLabel($status),
+                'state_label' => $state->label(),
+                'tags' => array_values($job->tag_list ?? []),
                 'customer_collecting' => (bool) $job->customer_collecting,
                 'customer_returning' => (bool) $job->customer_returning,
                 'starts_at' => $start,
                 'ends_at' => $end,
-                // Whole-window minute offsets for the lane allocator (overlap mode).
+                'datetime_range' => $formatter->dateTime($start).' – '.$formatter->dateTime($end),
+                'extends_before' => $start->lt($windowStart),
+                'extends_after' => $end->gt($windowEnd),
                 'start_min' => (int) round($windowStart->diffInSeconds($start, false) / 60),
                 'end_min' => (int) round($windowStart->diffInSeconds($end, false) / 60),
+                'gap_left_px' => 0,
+                'gap_right_px' => 0,
             ];
         }
 
-        if ($this->mode === 'overlap') {
-            $rows = app(EventLaneAllocator::class)->allocate($rows);
+        $rows = app(EventLaneAllocator::class)->allocate($rows);
+
+        return $this->applyAdjacentBarGaps($rows);
+    }
+
+    /**
+     * Add a small visual gap between consecutive jobs in the same lane that touch
+     * at a day boundary (so adjacent cards do not visually merge).
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function applyAdjacentBarGaps(array $rows): array
+    {
+        $halfGap = (int) (self::CARD_GAP_PX / 2);
+        $grouped = collect($rows)->groupBy('lane');
+
+        foreach ($grouped as $laneRows) {
+            $sorted = $laneRows->sortBy('start_min')->values()->all();
+
+            for ($i = 1; $i < count($sorted); $i++) {
+                $previous = $sorted[$i - 1];
+                $current = $sorted[$i];
+
+                if ($previous['end_min'] > $current['start_min']) {
+                    continue;
+                }
+
+                foreach ($rows as &$row) {
+                    if ($row['id'] === $previous['id']) {
+                        $row['gap_right_px'] = $halfGap;
+                    }
+                    if ($row['id'] === $current['id']) {
+                        $row['gap_left_px'] = $halfGap;
+                    }
+                }
+                unset($row);
+            }
         }
 
         return $rows;
     }
 
-    /**
-     * Derive the Delivery / In-Use / Collection sub-bands for a job, expressed as
-     * percentage offsets RELATIVE to the parent bar (0–100 within the bar).
-     *
-     * @param  callable(?CarbonInterface): float  $pct
-     * @return list<array{key: string, label: string, left: float, width: float}>
-     */
-    private function bandsFor(Opportunity $job, float $barLeft, float $barWidth, callable $pct): array
+    public function cardGapPx(): int
     {
-        $bands = [];
+        return self::CARD_GAP_PX;
+    }
 
-        $relative = function (?CarbonInterface $from, ?CarbonInterface $to) use ($barLeft, $barWidth, $pct): ?array {
-            if ($from === null || $to === null || $barWidth <= 0) {
-                return null;
+    /**
+     * Snap bar left/width to whole day columns in the window grid.
+     *
+     * @param  list<Carbon>  $days
+     * @return array{left: float, width: float}
+     */
+    private function barPositionFor(Opportunity $job, array $days, int $dayCount): array
+    {
+        $windowStartDay = $this->windowStart()->copy()->startOfDay();
+        $windowEndDay = $this->windowEnd()->copy()->startOfDay();
+        $jobStartDay = $job->starts_at->copy()->startOfDay();
+        $jobEndDay = $job->ends_at->copy()->startOfDay();
+
+        $visibleStart = $jobStartDay->greaterThan($windowStartDay) ? $jobStartDay : $windowStartDay;
+        $visibleEnd = $jobEndDay->lessThan($windowEndDay) ? $jobEndDay : $windowEndDay;
+
+        $startIndex = 0;
+        $endIndex = $dayCount - 1;
+
+        foreach ($days as $index => $day) {
+            $dayStart = $day->copy()->startOfDay();
+            if ($dayStart->equalTo($visibleStart)) {
+                $startIndex = $index;
+            }
+            if ($dayStart->equalTo($visibleEnd)) {
+                $endIndex = $index;
+            }
+        }
+
+        $span = max(1, $endIndex - $startIndex + 1);
+
+        return [
+            'left' => ($startIndex / $dayCount) * 100,
+            'width' => ($span / $dayCount) * 100,
+        ];
+    }
+
+    /**
+     * Per-day phase segments snapped to window day columns (delivery / in-use / collection).
+     *
+     * @return list<array{day_index: int, left: float, width: float, phase: string, label: string}>
+     */
+    private function daySegmentsFor(Opportunity $job): array
+    {
+        $segments = [];
+        $dayCount = max(1, count($this->dayColumns()));
+        $presentation = app(OpportunityPresentation::class);
+
+        foreach ($this->dayColumns() as $index => $day) {
+            $dayStart = $day->copy()->startOfDay();
+            $dayEnd = $day->copy()->endOfDay();
+
+            if ($job->starts_at > $dayEnd || $job->ends_at < $dayStart) {
+                continue;
             }
 
-            $left = (($pct($from) - $barLeft) / $barWidth) * 100;
-            $right = (($pct($to) - $barLeft) / $barWidth) * 100;
+            $phase = $presentation->phaseForDay($job, $dayStart, $dayEnd);
 
-            return [
-                'left' => max(0.0, min(100.0, $left)),
-                'width' => max(0.0, min(100.0, $right) - max(0.0, $left)),
+            $segments[] = [
+                'day_index' => $index,
+                'left' => ($index / $dayCount) * 100,
+                'width' => (1 / $dayCount) * 100,
+                'phase' => $phase,
+                'label' => $presentation->phaseLabel($phase),
             ];
-        };
-
-        $delivery = $relative($job->deliver_starts_at, $job->deliver_ends_at);
-        if ($delivery !== null && $delivery['width'] > 0) {
-            $bands[] = ['key' => 'delivery', 'label' => __('Delivery')] + $delivery;
         }
 
-        // In-Use prefers the show window, falling back to the on-hire span.
-        $inUse = $relative($job->show_starts_at, $job->show_ends_at)
-            ?? $relative($job->starts_at, $job->ends_at);
-        if ($inUse !== null && $inUse['width'] > 0) {
-            $bands[] = ['key' => 'in-use', 'label' => __('In Use')] + $inUse;
-        }
-
-        $collection = $relative($job->collect_starts_at, $job->collect_ends_at);
-        if ($collection !== null && $collection['width'] > 0) {
-            $bands[] = ['key' => 'collection', 'label' => __('Collection')] + $collection;
-        }
-
-        return $bands;
+        return $segments;
     }
 
-    /**
-     * Map a workflow status to an s-* colour token used for the bar + legend.
-     */
-    private function colourFor(OpportunityStatus $status): string
+    /** Venue (or member) address line, falling back to the location name. */
+    private function locationAddressFor(Opportunity $job): string
     {
-        return match ($status) {
-            OpportunityStatus::DraftOpen => 'var(--text-muted, #94a3b8)',
-            OpportunityStatus::QuotationProvisional => 'var(--amber, #f59e0b)',
-            OpportunityStatus::QuotationReserved => 'var(--violet, #8b5cf6)',
-            OpportunityStatus::QuotationPostponed => 'var(--cyan, #06b6d4)',
-            OpportunityStatus::QuotationLost,
-            OpportunityStatus::QuotationDead => 'var(--red, #ef4444)',
-            OpportunityStatus::OrderActive,
-            OpportunityStatus::OrderDispatched,
-            OpportunityStatus::OrderOnHire => 'var(--blue, #3b82f6)',
-            OpportunityStatus::OrderReturned,
-            OpportunityStatus::OrderChecked,
-            OpportunityStatus::OrderComplete => 'var(--green, #22c55e)',
-            OpportunityStatus::OrderCancelled => 'var(--red, #ef4444)',
-        };
+        $entity = $job->venue ?? $job->member;
+        $fallback = $job->venue?->name ?? $job->member?->name ?? $job->store?->name ?? '';
+
+        if ($entity instanceof Member) {
+            $address = $entity->addresses->firstWhere('is_primary', true)
+                ?? $entity->addresses->first();
+
+            if ($address !== null) {
+                $line = collect([$address->street, $address->city, $address->postcode])
+                    ->filter(fn (?string $part): bool => $part !== null && $part !== '')
+                    ->implode(', ');
+
+                if ($line !== '') {
+                    return $line;
+                }
+            }
+        }
+
+        return $fallback;
+    }
+
+    /** Phase band colours — delegated to {@see OpportunityPresentation}. */
+    public function phaseColours(): array
+    {
+        return app(OpportunityPresentation::class)->phaseColours();
+    }
+
+    /** Customer Collecting / Returning badge colours — delegated to {@see OpportunityPresentation}. */
+    public function customerBadgeColours(): array
+    {
+        return app(OpportunityPresentation::class)->customerBadgeColours();
     }
 
     /**
-     * The colour key / legend rows: status → label → s-* colour token.
+     * Static legend entries for the overlap timeline.
      *
-     * @return list<array{label: string, colour: string}>
+     * @return list<array{label: string, colour: string, icon: ?string, border?: bool, narrow?: bool}>
      */
     #[Computed]
     public function legend(): array
     {
-        $statuses = [
-            OpportunityStatus::DraftOpen,
-            OpportunityStatus::QuotationProvisional,
-            OpportunityStatus::QuotationReserved,
-            OpportunityStatus::OrderActive,
-            OpportunityStatus::OrderOnHire,
-            OpportunityStatus::OrderComplete,
-        ];
-
-        return array_map(fn (OpportunityStatus $s): array => [
-            'label' => $s->state()->label().' · '.$s->label(),
-            'colour' => $this->colourFor($s),
-        ], $statuses);
-    }
-
-    /**
-     * Window counts: total JOBS, plus the ORDERS / QUOTES split.
-     *
-     * @return array{jobs: int, orders: int, quotes: int}
-     */
-    #[Computed]
-    public function counts(): array
-    {
-        $orders = $this->jobs->where('state', OpportunityState::Order)->count();
-        $quotes = $this->jobs->where('state', OpportunityState::Quotation)->count();
-
-        return [
-            'jobs' => $this->jobs->count(),
-            'orders' => $orders,
-            'quotes' => $quotes,
-        ];
+        return app(OpportunityPresentation::class)->legend();
     }
 }; ?>
 
-<div class="s-page">
-    <x-signals.page-header title="{{ __('Job Planner') }}">
-        <x-slot:icon><flux:icon.calendar-days class="!size-5" /></x-slot:icon>
-        <x-slot:meta>{{ __('Schedule of quotes & orders across the planning window') }}</x-slot:meta>
-        <x-slot:actions>
-            <div class="flex items-center gap-2">
-                <button type="button" wire:click="previousPeriod" class="s-btn s-btn-sm s-btn-ghost" aria-label="{{ __('Previous period') }}">
-                    <flux:icon.chevron-left class="!size-4" />
-                </button>
-                <button type="button" wire:click="today" class="s-btn s-btn-sm s-btn-ghost">{{ __('Today') }}</button>
-                <button type="button" wire:click="nextPeriod" class="s-btn s-btn-sm s-btn-ghost" aria-label="{{ __('Next period') }}">
-                    <flux:icon.chevron-right class="!size-4" />
-                </button>
-            </div>
-        </x-slot:actions>
-    </x-signals.page-header>
+<section class="w-full s-avail-grid-page">
+    <div class="s-avail-grid-sticky-chrome pointer-events-none sticky top-0 bg-[var(--content-bg)] shadow-sm">
+        <div class="pointer-events-auto">
+            <x-signals.page-header title="Job Planner">
+                <x-slot:meta>
+                    <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Job Planning</span>
+                </x-slot:meta>
+            </x-signals.page-header>
 
-    {{-- Count badges --}}
-    <div class="mb-4 flex flex-wrap items-center gap-3" wire:loading.class="opacity-60">
-        <span class="s-badge s-badge-navy">{{ __('Jobs') }} <span class="s-chip-count">{{ $this->counts['jobs'] }}</span></span>
-        <span class="s-badge s-badge-blue">{{ __('Orders') }} <span class="s-chip-count">{{ $this->counts['orders'] }}</span></span>
-        <span class="s-badge s-badge-amber">{{ __('Quotes') }} <span class="s-chip-count">{{ $this->counts['quotes'] }}</span></span>
-    </div>
+            <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
+                <div class="s-panel s-planning-filter-panel mb-3">
+                    <div class="s-panel-body flex flex-wrap items-end gap-3">
+                        @include('livewire.partials.filter-store-tags')
 
-    {{-- Filters bar --}}
-    <div class="s-panel mb-4">
-        <div class="s-panel-body flex flex-wrap items-end gap-4">
-            <div class="flex flex-col gap-1">
-                <label class="s-field-label" for="planner-date">{{ __('Date') }}</label>
-                <input id="planner-date" type="date" wire:model.live="date" class="s-input" />
-            </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="s-field-label">{{ __('Start date') }}</span>
+                            <x-signals.datepicker
+                                wire:key="planner-date-{{ $date }}"
+                                :value="$date !== '' ? $date : null"
+                                placeholder="{{ __('Pick a date') }}"
+                                floating
+                                class="s-avail-filter-datepicker min-w-[9.5rem]"
+                                x-on:input="$wire.set('date', $event.detail)"
+                            />
+                        </div>
 
-            <div class="flex flex-col gap-1">
-                <label class="s-field-label" for="planner-view">{{ __('View') }}</label>
-                <select id="planner-view" wire:model.live="viewPeriod" class="s-select">
-                    <option value="1w">{{ __('1 Week') }}</option>
-                    <option value="2w">{{ __('2 Weeks') }}</option>
-                    <option value="1m">{{ __('1 Month') }}</option>
-                    <option value="monthly">{{ __('Monthly') }}</option>
-                </select>
-            </div>
+                        <div class="flex items-end gap-1 pb-0.5">
+                            <button type="button" wire:click="previousPeriod" class="s-btn s-btn-sm s-btn-ghost" aria-label="{{ __('Previous period') }}">
+                                <flux:icon.chevron-left class="!size-4" />
+                            </button>
+                            <button type="button" wire:click="today" class="s-btn s-btn-sm s-btn-ghost">{{ __('Today') }}</button>
+                            <button type="button" wire:click="nextPeriod" class="s-btn s-btn-sm s-btn-ghost" aria-label="{{ __('Next period') }}">
+                                <flux:icon.chevron-right class="!size-4" />
+                            </button>
+                        </div>
 
-            <div class="flex flex-col gap-1">
-                <label class="s-field-label" for="planner-store">{{ __('Store') }}</label>
-                <select id="planner-store" wire:model.live="storeId" class="s-select">
-                    <option value="0">{{ __('All stores') }}</option>
-                    @foreach($this->stores as $store)
-                        <option value="{{ $store->id }}" wire:key="store-{{ $store->id }}">{{ $store->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="s-field-label">{{ __('Zoom') }}</span>
+                            <div class="inline-flex rounded-sm border border-[var(--card-border)] p-0.5">
+                                @foreach(['1w' => __('1W'), '2w' => __('2W'), '1m' => __('1M')] as $zoom => $zoomLabel)
+                                    <button type="button" wire:click="setZoom('{{ $zoom }}')"
+                                            class="s-btn s-btn-sm {{ $viewPeriod === $zoom && $preset === '' ? 's-btn-primary' : 's-btn-ghost' }}"
+                                            wire:key="zoom-{{ $zoom }}">{{ $zoomLabel }}</button>
+                                @endforeach
+                            </div>
+                        </div>
 
-            <div class="flex flex-col gap-1">
-                <span class="s-field-label">{{ __('Include') }}</span>
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-1.5 text-[12px] text-[var(--text-primary)]">
-                        <input type="checkbox" wire:model.live="includeQuotations" class="s-checkbox" /> {{ __('Quotations') }}
-                    </label>
-                    <label class="flex items-center gap-1.5 text-[12px] text-[var(--text-primary)]">
-                        <input type="checkbox" wire:model.live="includeOrders" class="s-checkbox" /> {{ __('Orders') }}
-                    </label>
+                        <div class="flex flex-col gap-1">
+                            <span class="s-field-label">{{ __('Presets') }}</span>
+                            <div class="inline-flex flex-wrap gap-1">
+                                <button type="button" wire:click="applyPreset('next_30_days')"
+                                        class="s-btn s-btn-sm {{ $preset === 'next_30_days' ? 's-btn-primary' : 's-btn-ghost' }}">{{ __('Next 30d') }}</button>
+                                <button type="button" wire:click="applyPreset('this_month')"
+                                        class="s-btn s-btn-sm {{ $preset === 'this_month' ? 's-btn-primary' : 's-btn-ghost' }}">{{ __('This Month') }}</button>
+                                <button type="button" wire:click="applyPreset('next_month')"
+                                        class="s-btn s-btn-sm {{ $preset === 'next_month' ? 's-btn-primary' : 's-btn-ghost' }}">{{ __('Next Month') }}</button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-4 pb-1.5">
+                            <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                                <input type="checkbox" wire:model.live="includeOrders" class="sr-only" />
+                                <span class="s-badge text-white" style="background: #c0392b;">{{ __('Orders') }}</span>
+                                <x-signals.toggle :on="$includeOrders" />
+                            </label>
+                            <label class="inline-flex cursor-pointer items-center gap-2 text-[12px]">
+                                <input type="checkbox" wire:model.live="includeQuotations" class="sr-only" />
+                                <span class="s-badge text-white" style="background: var(--amber, #f39c12);">{{ __('Quotes') }}</span>
+                                <x-signals.toggle :on="$includeQuotations" />
+                            </label>
+                        </div>
+
+                        <div class="flex flex-1 flex-col gap-1" style="min-width: 180px;">
+                            <span class="s-field-label">{{ __('Search') }}</span>
+                            <input id="planner-search" type="search" wire:model.live.debounce.300ms="search"
+                                   placeholder="{{ __('Subject, number or member') }}" class="s-input" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex flex-1 flex-col gap-1" style="min-width: 180px;">
-                <label class="s-field-label" for="planner-search">{{ __('Search') }}</label>
-                <input id="planner-search" type="search" wire:model.live.debounce.300ms="search"
-                       placeholder="{{ __('Subject, number or member') }}" class="s-input" />
+            {{-- Legend --}}
+            <div class="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 px-6 text-[11px] text-[var(--text-muted)] max-md:px-5 max-sm:px-3">
+                <span class="font-semibold uppercase tracking-wide">{{ __('Key') }}</span>
+                @foreach($this->legend as $entry)
+                    <span class="flex items-center gap-1.5" wire:key="legend-{{ $loop->index }}">
+                        @if(isset($entry['narrow']))
+                            <span class="inline-block h-2.5 w-1 rounded-sm" style="background: {{ $entry['colour'] }};"></span>
+                        @elseif(isset($entry['border']))
+                            <span class="inline-block h-3 w-4 rounded-sm border border-[#ffc107] bg-[#fff3cd]"></span>
+                        @else
+                            <span class="inline-block h-3 w-4 rounded-sm" style="background: {{ $entry['colour'] }};"></span>
+                        @endif
+                        @if(isset($entry['icon']))
+                            <flux:icon.truck class="!size-3" />
+                        @endif
+                        {{ $entry['label'] }}
+                    </span>
+                @endforeach
             </div>
 
-            {{-- Gantt <-> Overlap toggle --}}
-            <div class="flex flex-col gap-1">
-                <span class="s-field-label">{{ __('Layout') }}</span>
-                <div class="inline-flex rounded-sm border border-[var(--card-border)] p-0.5">
-                    <button type="button" wire:click="$set('mode', 'gantt')"
-                            class="s-btn s-btn-sm {{ $mode === 'gantt' ? 's-btn-primary' : 's-btn-ghost' }}">{{ __('Gantt') }}</button>
-                    <button type="button" wire:click="$set('mode', 'overlap')"
-                            class="s-btn s-btn-sm {{ $mode === 'overlap' ? 's-btn-primary' : 's-btn-ghost' }}">{{ __('Overlap') }}</button>
+            @if($this->jobsTruncated)
+                <p class="mb-2 px-6 text-[11px] text-[var(--text-muted)] max-md:px-5 max-sm:px-3">{{ __('Showing first :count jobs — refine filters to see more.', ['count' => 200]) }}</p>
+            @endif
+
+            @if(count($this->rows) > 0)
+                <div class="px-6 max-md:px-5 max-sm:px-3">
+                    @include('livewire.planner.partials.grid-header')
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 
-    {{-- Colour key / legend --}}
-    <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
-        <span class="font-semibold uppercase tracking-wide">{{ __('Key') }}</span>
-        @foreach($this->legend as $entry)
-            <span class="flex items-center gap-1.5" wire:key="legend-{{ $loop->index }}">
-                <span class="inline-block h-3 w-3 rounded-sm" style="background: {{ $entry['colour'] }};"></span>{{ $entry['label'] }}
-            </span>
-        @endforeach
+    <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">
+        @include('livewire.partials.planning-grid-shell', [
+            'contentView' => 'livewire.planner.partials.grid',
+            'skeletonView' => 'livewire.planner.partials.grid-skeleton',
+        ])
     </div>
-
-    @include('livewire.planner.partials.grid')
-</div>
+</section>

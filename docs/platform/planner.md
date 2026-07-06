@@ -1,11 +1,11 @@
 ---
 title: Job Planner
-description: A Gantt and overlap timeline of quotes and orders across a configurable planning window, coloured by workflow status.
+description: An overlap timeline of quotes and orders across a configurable planning window, with lane-packed job cards coloured by workflow status and Delivery / In-Use / Collection phase bands.
 ---
 
 ## Overview
 
-The **Job Planner** is a visual timeline of all active quotes and orders plotted across a date window, so you can see at a glance when jobs run, how they overlap, and which customer is taking delivery or returning equipment. It is a planning and coordination view — it does not itself create or modify jobs; those are managed on the [Opportunities](/docs/platform/opportunities) pages.
+The **Job Planner** is a visual overlap timeline of all active quotes and orders plotted across a date window, so you can see at a glance when jobs run, how they overlap, and which customer is taking delivery or returning equipment. It is a planning and coordination view — it does not itself create or modify jobs; those are managed on the [Opportunities](/docs/platform/opportunities) pages.
 
 **Route:** `/planner`
 
@@ -13,7 +13,9 @@ The planner lives under the **Job Planning** section of the main navigation and 
 
 ## The Timeline
 
-Each job appears as a **coloured bar** spanning its hire window. The bar colour reflects the opportunity's current workflow status so you can scan the whole plan and immediately tell quotations from live orders from completed jobs:
+Jobs are packed into horizontal **lanes** by the EventLaneAllocator — concurrent jobs that genuinely overlap sit side-by-side rather than hiding each other. The grid is a horizontal day-column layout that fills its panel edge-to-edge.
+
+Each job appears as a **card** spanning its hire window. The card background colour reflects the opportunity's current workflow status (driven by `OpportunityStatus` via the shared `OpportunityPresentation` service):
 
 | Colour | Status |
 |--------|--------|
@@ -24,51 +26,56 @@ Each job appears as a **coloured bar** spanning its hire window. The bar colour 
 | Green | Order / Returned, Checked, or Complete |
 | Red | Lost, Dead, or Cancelled |
 
-A **colour key / legend** below the toolbar identifies each colour.
+A **colour key / legend** below the filter bar identifies each status swatch plus the Delivery / In-Use / Collection phase bands and Customer Collecting / Returning badges.
 
-### Sub-bands
+### Job cards
 
-Where an opportunity carries RMS lifecycle dates, the bar is subdivided into up to three **sub-bands** that appear as lighter tinted zones within the bar:
+Each card shows:
+
+- **Number — subject** as the headline
+- **Date/time range** for the hire window
+- **Venue address** when set on the opportunity
+- **Status line** with per-status colour and label
+- **Opportunity tags** when present
+- **Customer Collecting** and **Customer Returning** badges when those flags are set
+
+The whole card links to the opportunity detail page.
+
+### Phase bands
+
+Where an opportunity carries RMS lifecycle dates, a **status row** beneath the card body is subdivided into up to three **phase bands** snapped to day columns:
 
 - **Delivery** — the delivery window (`deliver_starts_at` to `deliver_ends_at`).
 - **In Use** — the show/event window (`show_starts_at` to `show_ends_at`), or the full hire span when no show dates are set.
 - **Collection** — the collection window (`collect_starts_at` to `collect_ends_at`).
 
-Sub-bands make it easy to see not just when a job is on hire but when your crew is on site.
+Phase band colours are shared with the [Equipment Availability](/docs/platform/availability) booking grids via `OpportunityPresentation`.
 
-### Customer flags
+### Heatmap and weekends
 
-Bars that have **Customer Collecting** or **Customer Returning** set carry small badges to distinguish self-service jobs from those requiring crew.
-
-## View Modes
-
-A **Layout** toggle in the toolbar switches between two render modes:
-
-### Gantt
-
-Each job occupies its own full-height row with a fixed left-hand label showing the opportunity number and member name. This is the clearest view for a moderate number of jobs: every row is legible and rows link to the opportunity detail page.
-
-### Overlap
-
-All jobs are packed into a single shared track. Concurrent jobs are stacked into horizontal **lanes** by the EventLaneAllocator, so jobs that genuinely run at the same time sit side-by-side rather than hiding each other. The bar label is embedded in the bar itself. This gives the most compact view for a busy week.
+A **per-day job-count row** above the lanes uses colour intensity to show load (more jobs = deeper tint). **Weekend columns** are shaded to help read multi-week windows at a glance.
 
 ## Filters & Controls
 
-The toolbar exposes the following controls; all settings are reflected in the URL so a planner link re-opens exactly as shared:
+The sticky filter bar exposes the following controls; all settings are reflected in the URL so a planner link re-opens exactly as shared:
 
 | Control | Effect |
 |---------|--------|
-| **Date** | The start date of the planning window. Defaults to today. |
-| **View** | The window width: 1 Week (7 days), 2 Weeks (14 days), or 1 Month / Monthly (30 days). |
-| **Store** | Filter to a single store's jobs ("All stores" shows every store). |
-| **Include — Quotations** | Whether to show quotation-state jobs. |
-| **Include — Orders** | Whether to show order-state jobs. |
-| **Search** | Free-text filter across the job subject, opportunity number, and member name. |
-| **Layout** | Gantt or Overlap render mode (see above). |
+| **Stores** | Multi-store tag-input filter (empty = all in-default-query stores). Uses `PlanningStoreFilter`. |
+| **Start date** | The first day of the planning window. Signals datepicker; defaults to today. |
+| **Previous / Today / Next** | Shift the window backwards or forwards by one full period. |
+| **Zoom** | Window width: 1 Week (7 days), 2 Weeks (14 days), or 1 Month (30 days). |
+| **Presets** | Next 30 days, This Month, or Next Month (overrides zoom when active). |
+| **Orders / Quotes** | Toggle switches to include or exclude order-state and quotation-state jobs. Both on by default. |
+| **Search** | Free-text filter across job subject, opportunity number, and member name. |
 
-## Date Navigation
+The default view is **1 Month** with **both orders and quotes** included.
 
-The header carries **previous / today / next** navigation buttons that shift the window backwards or forwards by one full period (a 2-week view steps two weeks at a time), so you can scroll the plan without resetting the filter state.
+## Layout chrome
+
+- **Sticky control bar** — page header and filter panel stay pinned while scrolling the grid.
+- **Sticky day headers** — day labels and the job-count heatmap row remain visible above the lane area.
+- **Loading skeleton** — a deferred grid skeleton paints on first load before jobs are fetched (`wire:init`).
 
 ## Counts
 
@@ -77,4 +84,4 @@ Three badge counters above the planner show the total **Jobs**, **Orders**, and 
 ## Related
 
 - [Opportunities](/docs/platform/opportunities) — create and manage the jobs shown on the planner.
-- [Equipment Availability](/docs/platform/availability) — see equipment stock across the same window.
+- [Equipment Availability](/docs/platform/availability) — see equipment stock across the same window and drill into per-product bookings.

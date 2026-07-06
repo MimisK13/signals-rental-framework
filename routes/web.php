@@ -1,11 +1,30 @@
 <?php
 
 use App\Http\Controllers\CalendarFeedController;
+use App\Http\Controllers\Web\CommunicationUnsubscribeController;
 use App\Http\Controllers\Web\DocsController;
+use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\OpportunityLineItemController;
+use App\Http\Controllers\Web\PublicDocumentController;
 use App\Http\Controllers\Web\SearchController;
+use App\Http\Controllers\Web\SignedDocumentDownloadController;
+use App\Http\Middleware\VerifyInboundWebhookSignature;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+
+Route::post('webhooks/receive/{source}', InboundWebhookController::class)
+    ->middleware(VerifyInboundWebhookSignature::class)
+    ->name('webhooks.receive');
+
+Route::prefix(config('documents.public_route_prefix', 'd'))->group(function (): void {
+    Route::get('{token}', [PublicDocumentController::class, 'show'])->name('documents.public.show');
+    Route::post('{token}/pin', [PublicDocumentController::class, 'verifyPin'])->name('documents.public.verify-pin');
+});
+
+Route::get('documents/{documentId}/file', SignedDocumentDownloadController::class)
+    ->middleware('signed')
+    ->whereNumber('documentId')
+    ->name('documents.signed-download');
 
 Route::get('/', function () {
     if (config('signals.installed') && ! config('signals.setup_complete')) {
@@ -48,9 +67,17 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
     Volt::route('settings/calendar', 'settings.calendar')->name('settings.calendar');
+    Volt::route('settings/notifications', 'settings.notifications')->name('settings.notifications');
 
     // Search
     Route::get('search', SearchController::class)->name('search');
+
+    // API Console
+    Volt::route('api', 'api.index')->name('api.index');
+    Volt::route('api/explorer', 'api.explorer')->name('api.explorer');
+    Volt::route('api/logs', 'api.logs')->name('api.logs');
+    Volt::route('api/usage', 'api.usage')->name('api.usage');
+    Volt::route('api/webhooks', 'api.webhooks')->name('api.webhooks');
 
     // Members
     Volt::route('members', 'members.index')->name('members.index');
@@ -79,6 +106,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('members/{member}/member-contacts', 'members.member-contacts')->name('members.contacts');
     Volt::route('members/{member}/activities', 'members.activities')->name('members.activities');
     Volt::route('members/{member}/files', 'members.files')->name('members.files');
+    Volt::route('members/{member}/communications', 'members.communications')->name('members.communications');
 
     // Products
     Volt::route('products', 'products.index')->name('products.index');
@@ -90,6 +118,8 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('products/{product}/rates', 'products.rates')->name('products.rates');
     Volt::route('products/{product}/rates/create', 'products.rate-form')->name('products.rates.create');
     Volt::route('products/{product}/rates/{rate}/edit', 'products.rate-form')->name('products.rates.edit');
+    Volt::route('products/{product}/supplier-costs', 'products.supplier-costs')->name('products.supplier-costs');
+    Volt::route('products/{product}/container-config', 'products.container-config')->name('products.container-config');
     Volt::route('products/{product}/custom-fields', 'products.custom-fields')->name('products.custom-fields');
     Volt::route('products/{product}/activities', 'products.activities')->name('products.activities');
     Volt::route('products/{product}/files', 'products.files')->name('products.files');
@@ -105,6 +135,36 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('stock-levels/{stockLevel}', 'stock-levels.show')->name('stock-levels.show');
     Volt::route('stock-levels/{stockLevel}/edit', 'stock-levels.form')->name('stock-levels.edit');
     Volt::route('stock-levels/{stockLevel}/activities', 'stock-levels.activities')->name('stock-levels.activities');
+
+    // Invoices
+    Volt::route('invoices', 'invoices.index')->name('invoices.index');
+    Volt::route('invoices/create', 'invoices.form')->name('invoices.create');
+    Volt::route('invoices/{invoice}', 'invoices.show')->name('invoices.show');
+    Volt::route('invoices/{invoice}/communications', 'invoices.communications')->name('invoices.communications');
+    Volt::route('invoices/{invoice}/edit', 'invoices.form')->name('invoices.edit');
+
+    // Credit notes & payments
+    Route::redirect('finance/credit-notes', '/credit-notes', 301);
+    Route::redirect('finance/payments', '/payments', 301);
+    Volt::route('credit-notes', 'credit-notes.index')->name('credit-notes.index');
+    Volt::route('payments', 'payments.index')->name('payments.index');
+
+    // Purchase orders
+    Volt::route('purchase-orders', 'purchase-orders.index')->name('purchase-orders.index');
+    Volt::route('purchase-orders/create', 'purchase-orders.form')->name('purchase-orders.create');
+    Volt::route('purchase-orders/{purchaseOrder}', 'purchase-orders.show')->name('purchase-orders.show');
+    Volt::route('purchase-orders/{purchaseOrder}/edit', 'purchase-orders.form')->name('purchase-orders.edit');
+
+    // Virtual stock
+    Volt::route('virtual-stock', 'virtual-stock.index')->name('virtual-stock.index');
+    Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
+    Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
+
+    // Containers (P49 scaffold — full warehouse UI in P55)
+    Volt::route('containers', 'containers.index')->name('containers.index');
+    Volt::route('containers/{container}', 'containers.show')->name('containers.show');
+    Volt::route('containers/{container}/pack', 'containers.pack')->name('containers.pack');
+    Volt::route('containers/{container}/repack/{opportunity}', 'containers.repack')->name('containers.repack');
 
     // Opportunities
     //
@@ -130,12 +190,15 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // so an archived opportunity's tabs remain reachable.
     Volt::route('opportunities/{opportunity}/assets', 'opportunities.assets')->name('opportunities.assets')->withTrashed();
     Volt::route('opportunities/{opportunity}/costs', 'opportunities.costs')->name('opportunities.costs')->withTrashed();
+    Volt::route('opportunities/{opportunity}/invoices', 'opportunities.invoices')->name('opportunities.invoices')->withTrashed();
     Volt::route('opportunities/{opportunity}/participants', 'opportunities.participants')->name('opportunities.participants')->withTrashed();
     Volt::route('opportunities/{opportunity}/shortages', 'opportunities.shortages')->name('opportunities.shortages')->withTrashed();
     Volt::route('opportunities/{opportunity}/versions', 'opportunities.versions')->name('opportunities.versions')->withTrashed();
     Volt::route('opportunities/{opportunity}/activities', 'opportunities.activities')->name('opportunities.activities')->withTrashed();
     Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
     Volt::route('opportunities/{opportunity}/files', 'opportunities.files')->name('opportunities.files')->withTrashed();
+    Volt::route('opportunities/{opportunity}/communications', 'opportunities.communications')->name('opportunities.communications')->withTrashed();
+    Volt::route('opportunities/{opportunity}/documents', 'opportunities.documents')->name('opportunities.documents')->withTrashed();
 
     Route::delete('opportunities/{opportunity}/items/{item}', [OpportunityLineItemController::class, 'destroy'])
         ->name('opportunities.items.destroy')
@@ -148,6 +211,12 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // API uses) and gates on availability.view; the Job Planning nav link points
     // here.
     Volt::route('availability', 'availability.index')->name('availability.index');
+
+    // Per-product availability / bookings grid (Current RMS "Product Bookings").
+    // Summary rows, opportunity demand bars, then serialised asset rows.
+    Volt::route('availability/bookings/{product}/{from}/{days}', 'availability.bookings')
+        ->name('availability.bookings')
+        ->where(['from' => '[0-9]{4}-[0-9]{2}-[0-9]{2}', 'days' => '[0-9]+']);
 
     // Job Planner
     //
@@ -197,6 +266,19 @@ Route::middleware(['signals.setup-complete'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Customer communication unsubscribe (signed URL, no auth required)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['signals.setup-complete', 'signed', 'throttle:'.config('communications.unsubscribe_throttle', '10,1')])->group(function (): void {
+    Route::get('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'show'])
+        ->name('communications.unsubscribe.show');
+    Route::post('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'confirm'])
+        ->name('communications.unsubscribe.confirm');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Calendar iCal Feeds (signed URL, no auth required)
 |--------------------------------------------------------------------------
 */
@@ -219,16 +301,6 @@ Route::middleware(['signals.setup-complete'])->group(function () {
 Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.session-timeout'])->group(function () {
     Volt::route('admin', 'admin.index')->name('admin.index');
     Route::redirect('admin/settings', 'admin');
-
-    // Editor Lab — the chosen "local-first" prototype, KEPT as the design
-    // reference for the production line-item editor rebuild (RMS-unified model)
-    // until that rebuild is confirmed. The three non-chosen prototypes
-    // (jquery / sortable-tree / sortablejs) were removed 2026-06-22. NOT a
-    // production route: it lives behind the admin gate so only admins/owners can
-    // reach the design reference. The live Overview editor (opportunities.items)
-    // is untouched.
-    Volt::route('opportunities/{opportunity}/editor-lab/local-first', 'opportunities.prototypes.editor-local-first')
-        ->name('opportunities.editor-lab.local-first')->withTrashed();
 
     // Account
     Volt::route('admin/settings/company', 'admin.settings.company')->name('admin.settings.company');
@@ -253,6 +325,8 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/email-templates', 'admin.settings.email-templates')->name('admin.settings.email-templates');
     Volt::route('admin/settings/email-templates/{template}/edit', 'admin.settings.email-template-form')->name('admin.settings.email-templates.edit');
     Volt::route('admin/settings/notifications', 'admin.settings.notifications')->name('admin.settings.notifications');
+    Volt::route('admin/settings/communication-log', 'admin.settings.communication-log')->name('admin.settings.communication-log');
+    Volt::route('admin/settings/communication-templates/{communicationTemplate}/edit', 'admin.settings.communication-template-editor')->name('admin.settings.communication-templates.edit');
     Volt::route('admin/settings/scheduling', 'admin.settings.scheduling')->name('admin.settings.scheduling');
 
     // Integrations
@@ -264,8 +338,8 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/infrastructure', 'admin.settings.infrastructure')->name('admin.settings.infrastructure');
     Volt::route('admin/settings/seeders', 'admin.settings.seeders')->name('admin.settings.seeders');
 
-    // Webhooks
-    Volt::route('admin/settings/webhooks', 'admin.settings.webhooks')->name('admin.settings.webhooks');
+    // Webhooks (redirected to API Console)
+    Route::redirect('admin/settings/webhooks', '/api/webhooks')->name('admin.settings.webhooks');
 
     // Data
     Volt::route('admin/settings/custom-field-groups', 'admin.settings.custom-field-groups')->name('admin.settings.custom-field-groups');
@@ -290,6 +364,15 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/tax/organisation-tax-classes/create', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.create');
     Volt::route('admin/settings/tax/organisation-tax-classes/{organisationTaxClass}/edit', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.edit');
 
+    // Tax Zones & Categories
+    Volt::route('admin/settings/finance', 'admin.settings.finance')->name('admin.settings.finance');
+    Volt::route('admin/settings/tax/zones', 'admin.settings.tax.zones')->name('admin.settings.tax.zones');
+    Volt::route('admin/settings/tax/zones/create', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.create');
+    Volt::route('admin/settings/tax/zones/{taxZone}/edit', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.edit');
+    Volt::route('admin/settings/tax/categories', 'admin.settings.tax.categories')->name('admin.settings.tax.categories');
+    Volt::route('admin/settings/tax/categories/create', 'admin.settings.tax.category-form')->name('admin.settings.tax.categories.create');
+    Volt::route('admin/settings/tax/categories/{taxCategory}/edit', 'admin.settings.tax.category-form')->name('admin.settings.tax.categories.edit');
+
     // Tax Rates
     Volt::route('admin/settings/tax/rates', 'admin.settings.tax.rates')->name('admin.settings.tax.rates');
     Volt::route('admin/settings/tax/rates/create', 'admin.settings.tax.rate-form')->name('admin.settings.tax.rates.create');
@@ -298,12 +381,33 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     // Tax Rules
     Volt::route('admin/settings/tax/rules', 'admin.settings.tax.rules')->name('admin.settings.tax.rules');
     Volt::route('admin/settings/tax/rules/create', 'admin.settings.tax.rule-form')->name('admin.settings.tax.rules.create');
+    Volt::route('admin/settings/tax/rules/create-zone', 'admin.settings.tax.zone-rule-form')->name('admin.settings.tax.rules.create-zone');
     Volt::route('admin/settings/tax/rules/{taxRule}/edit', 'admin.settings.tax.rule-form')->name('admin.settings.tax.rules.edit');
+    Volt::route('admin/settings/tax/rules/{taxRule}/edit-zone', 'admin.settings.tax.zone-rule-form')->name('admin.settings.tax.rules.edit-zone');
 
     // Pricing
     Volt::route('admin/settings/rate-definitions', 'admin.settings.rate-definitions')->name('admin.settings.rate-definitions');
     Volt::route('admin/settings/rate-definitions/create', 'admin.settings.rate-definition-form')->name('admin.settings.rate-definitions.create');
     Volt::route('admin/settings/rate-definitions/{rateDefinition}/edit', 'admin.settings.rate-definition-form')->name('admin.settings.rate-definitions.edit');
+
+    // Pricing categories
+    Volt::route('admin/settings/pricing/discount-categories', 'admin.settings.pricing.discount-categories')->name('admin.settings.pricing.discount-categories');
+
+    // Documents
+    Volt::route('admin/settings/numbering', 'admin.settings.numbering')->name('admin.settings.numbering');
+    Volt::route('admin/document-templates', 'document-templates.index')->name('admin.document-templates.index');
+    Volt::route('admin/document-templates/{documentTemplate}/edit', 'document-templates.edit')->name('admin.document-templates.edit');
+    Volt::route('admin/settings/pricing/discount-categories/create', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.create');
+    Volt::route('admin/settings/pricing/discount-categories/{discountCategory}/edit', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.edit');
+    Volt::route('admin/settings/pricing/price-categories', 'admin.settings.pricing.price-categories')->name('admin.settings.pricing.price-categories');
+    Volt::route('admin/settings/pricing/price-categories/create', 'admin.settings.pricing.price-category-form')->name('admin.settings.pricing.price-categories.create');
+    Volt::route('admin/settings/pricing/price-categories/{priceCategory}/edit', 'admin.settings.pricing.price-category-form')->name('admin.settings.pricing.price-categories.edit');
+    Volt::route('admin/settings/pricing/bundle-rules', 'admin.settings.pricing.bundle-rules')->name('admin.settings.pricing.bundle-rules');
+    Volt::route('admin/settings/pricing/bundle-rules/create', 'admin.settings.pricing.bundle-rule-form')->name('admin.settings.pricing.bundle-rules.create');
+    Volt::route('admin/settings/pricing/bundle-rules/{bundleRule}/edit', 'admin.settings.pricing.bundle-rule-form')->name('admin.settings.pricing.bundle-rules.edit');
+    Volt::route('admin/settings/pricing/surcharge-groups', 'admin.settings.pricing.surcharge-groups')->name('admin.settings.pricing.surcharge-groups');
+    Volt::route('admin/settings/pricing/surcharge-groups/create', 'admin.settings.pricing.surcharge-group-form')->name('admin.settings.pricing.surcharge-groups.create');
+    Volt::route('admin/settings/pricing/surcharge-groups/{surchargeGroup}/edit', 'admin.settings.pricing.surcharge-group-form')->name('admin.settings.pricing.surcharge-groups.edit');
 });
 
 /*
@@ -385,6 +489,8 @@ Route::prefix('docs')->group(function () {
     Route::get('changelog', [DocsController::class, 'changelog'])->name('docs.changelog');
     Route::get('sitemap.xml', [DocsController::class, 'sitemap'])->name('docs.sitemap');
     Route::get('robots.txt', [DocsController::class, 'robots'])->name('docs.robots');
+    Route::redirect('getting-started/sso', '/docs/getting-started/authentication', 301);
+    Route::redirect('getting-started/magic-link', '/docs/getting-started/authentication', 301);
     Route::get('images/{path}', [DocsController::class, 'image'])
         ->name('docs.image')
         ->where('path', '.+');

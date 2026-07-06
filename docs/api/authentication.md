@@ -36,6 +36,15 @@ Tokens are scoped with abilities that control what endpoints they can access:
 | `webhooks:manage` | Manage webhook registrations |
 | `system:read` | View system health |
 | `action-log:read` | View the audit trail |
+| `communications:read` | Read communication log entries |
+| `communication-templates:read` | Read communication templates and version history |
+| `communication-templates:write` | Create, update, delete, and restore communication templates |
+| `notification-preferences:read` | Read user and member notification preferences |
+| `notification-preferences:write` | Update user and member notification preferences |
+| `channel-providers:read` | Read notification channel provider configuration (secrets masked) |
+| `channel-providers:write` | Create, update, delete, and test channel providers |
+| `notification-settings:read` | Read tenant notification type settings |
+| `notification-settings:write` | Update tenant notification type settings |
 
 ## Rate Limiting
 

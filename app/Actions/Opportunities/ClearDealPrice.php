@@ -7,25 +7,10 @@ use App\Data\Opportunities\OpportunityData;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
 use App\Verbs\Events\Opportunities\DealPriceCleared;
+use App\Verbs\Events\Opportunities\ItemDealPriceDiscountSet;
 
-/**
- * Clears a manual deal-total override via the DealPriceCleared event.
- *
- * Runs the M7 {@see GuardPipeline} for the `opportunity.clear_deal_price`
- * transition (Permission stage replaces the bare Gate::authorize the action used
- * to make).
- *
- * It deliberately does NOT declare `changes_rate`/`changes_tax`: clearing a
- * deal-total override reverts the headline to the summed NET lines — a structural
- * net edit, not a re-derivation of the exchange rate or the tax rule. Per
- * {@see App\Services\Opportunities\OpportunityTotalsCalculator} (class docblock,
- * "LOCKING"), the FX/tax lock freezes only later FX-rate or tax-rule re-pricing of
- * the already-agreed basis — structural/price edits on a locked order must STILL
- * recompute the net charge_total (at the frozen exchange-rate snapshot, without
- * re-deriving tax). So {@see App\Guards\Opportunities\Rules\FxTaxLockRule} must NOT
- * block this edit; the calculator's tax_locked branch keeps the tax figures frozen.
- */
 class ClearDealPrice
 {
     use CommitsVerbsEvents;
@@ -38,6 +23,18 @@ class ClearDealPrice
                 opportunity: $opportunity,
                 permission: 'opportunities.edit',
             ));
+
+            $itemsWithDealDiscount = OpportunityItem::query()
+                ->where('opportunity_id', $opportunity->id)
+                ->whereNotNull('deal_price_discount_percent')
+                ->get();
+
+            foreach ($itemsWithDealDiscount as $item) {
+                ItemDealPriceDiscountSet::fire(
+                    opportunity_item_id: (int) $item->state_id,
+                    deal_price_discount_percent: null,
+                );
+            }
 
             DealPriceCleared::fire(opportunity_id: $opportunity->state_id);
         });

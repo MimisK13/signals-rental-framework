@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\ClearsDemoPhase4Data;
 use App\Console\Commands\Concerns\HasSignalsBranding;
 use App\Models\Activity;
 use App\Models\Email;
@@ -18,6 +19,7 @@ use function Laravel\Prompts\confirm;
 #[AsCommand(name: 'signals:clear-demo')]
 class SignalsClearDemoCommand extends Command
 {
+    use ClearsDemoPhase4Data;
     use HasSignalsBranding;
 
     protected $signature = 'signals:clear-demo
@@ -42,6 +44,8 @@ class SignalsClearDemoCommand extends Command
         }
 
         $this->components->info('Removing demo data...');
+
+        $this->clearDemoPhase4Data();
 
         // Remove demo members and their cascading relationships
         $demoMemberIds = Member::query()

@@ -10,6 +10,7 @@ use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\RestructureOpportunityItemsData;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
+use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -35,6 +36,7 @@ uses(UsesPostgres::class)->group('pgsql');
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
+    Store::factory()->create(['is_default' => true]);
     $this->actor = User::factory()->owner()->create();
     $this->actingAs($this->actor);
 });

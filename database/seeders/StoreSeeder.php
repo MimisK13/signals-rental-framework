@@ -19,6 +19,7 @@ class StoreSeeder extends Seeder
         Store::create([
             'name' => 'Main Warehouse',
             'is_default' => true,
+            'country_code' => 'GB',
         ]);
     }
 }
