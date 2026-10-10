@@ -75,7 +75,14 @@ class GettingStartedChecklist extends Component
 
     public function progress(): int
     {
-        $items = $this->items();
+        return $this->progressFor($this->items());
+    }
+
+    /**
+     * @param  array<int, array{label: string, completed: bool, description: string}>  $items
+     */
+    private function progressFor(array $items): int
+    {
         $completed = collect($items)->filter(fn (array $item) => $item['completed'])->count();
 
         return $items ? (int) round(($completed / count($items)) * 100) : 0;
@@ -83,9 +90,11 @@ class GettingStartedChecklist extends Component
 
     public function render(): View
     {
+        $items = $this->items();
+
         return view('livewire.dashboard.getting-started-checklist', [
-            'items' => $this->items(),
-            'progress' => $this->progress(),
+            'items' => $items,
+            'progress' => $this->progressFor($items),
         ]);
     }
 }

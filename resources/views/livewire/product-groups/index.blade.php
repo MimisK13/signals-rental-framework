@@ -43,6 +43,9 @@ new #[Layout('components.layouts.app')] #[Title('Product Groups')] class extends
     /** @var array<string, mixed> */
     public array $quickCustomFieldValues = [];
 
+    /** @var array<int|string, string>|null */
+    private ?array $parentOptionsCache = null;
+
     public function saveQuickGroup(): void
     {
         $this->validate([
@@ -203,6 +206,17 @@ new #[Layout('components.layouts.app')] #[Title('Product Groups')] class extends
             ->groupBy(fn (CustomField $field): string => $field->group?->name ?? 'General');
     }
 
+    /**
+     * @return array<int|string, string>
+     */
+    private function parentOptionsForView(): array
+    {
+        return $this->parentOptionsCache ??= ProductGroup::query()
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
     public function deleteGroup(int $groupId): void
     {
         $group = ProductGroup::findOrFail($groupId);
@@ -235,7 +249,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Groups')] class extends
      */
     public function with(): array
     {
-        $parentOptions = ProductGroup::query()->orderBy('name')->pluck('name', 'id')->all();
+        $parentOptions = $this->parentOptionsForView();
 
         return [
             'parentOptions' => $parentOptions,

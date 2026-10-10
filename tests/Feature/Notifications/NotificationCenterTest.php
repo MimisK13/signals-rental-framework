@@ -31,6 +31,7 @@ test('notification pane lists unread notifications for the authenticated member'
     ));
 
     Volt::test('notifications.pane')
+        ->call('refreshNotifications')
         ->assertSee('Opportunity updated')
         ->assertSee('Something changed.')
         ->assertSet('unreadCount', 1);
@@ -182,6 +183,7 @@ test('notification link resolves opportunity show route from payload', function 
     ));
 
     Volt::test('notifications.pane')
+        ->call('refreshNotifications')
         ->assertSee(route('opportunities.show', $opportunity, absolute: false));
 });
 

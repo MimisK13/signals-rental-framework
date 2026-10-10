@@ -31,7 +31,6 @@ new class extends Component
 
         $this->member = $user->member;
         $this->memberId = $user->member->id;
-        $this->refreshNotifications();
     }
 
     /**
@@ -119,7 +118,6 @@ new class extends Component
                 x-cloak
                 x-show="notificationsOpen"
                 x-effect="if (notificationsOpen) { $wire.refreshNotifications() }"
-                wire:poll.60s="refreshNotifications"
             >
                 <div class="app-notifications-header">
                     <span class="app-notifications-title">{{ __('Notifications') }}</span>

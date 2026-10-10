@@ -27,6 +27,7 @@ yarn-error.log
 /.vscode
 /.zed
 /storage/phpstan
+/storage/debugbar
 /framework-plans
 /.cursor/
 /.worktrees

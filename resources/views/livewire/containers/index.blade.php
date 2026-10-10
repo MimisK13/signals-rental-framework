@@ -12,6 +12,7 @@ use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Containers\ContainerBarcodeResolver;
 use App\Services\Containers\RepackOnReturnEligibility;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -39,6 +40,9 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
     public array $repackOpportunityChoices = [];
 
     public ?int $selectedRepackOpportunityId = null;
+
+    /** @var Collection<int, Store>|null */
+    private ?Collection $storesCache = null;
 
     public function mount(): void
     {
@@ -188,7 +192,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
     public function containers()
     {
         return Container::query()
-            ->with(['product', 'store', 'serialisedItem.store'])
+            ->with(['product', 'serialisedItem.store'])
             ->withCount('activeItems')
             ->when($this->statusFilter === '', fn ($q) => $q->active())
             ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
@@ -212,7 +216,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
         return [
             'statuses' => ContainerStatus::cases(),
             'modes' => ContainerAvailabilityMode::cases(),
-            'stores' => Store::query()->orderBy('name')->get(['id', 'name']),
+            'stores' => $this->storesCache ??= Store::query()->orderBy('name')->get(['id', 'name']),
         ];
     }
 }; ?>
@@ -334,7 +338,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
                                 </td>
                                 <td><span class="s-badge s-badge-zinc">{{ $container->status->label() }}</span></td>
                                 <td>{{ $container->availabilityMode()->label() }}</td>
-                                <td>{{ $container->store?->name ?? $container->serialisedItem?->store?->name ?? '—' }}</td>
+                                <td>{{ $stores->firstWhere('id', (int) $container->store_id)?->name ?? $container->serialisedItem?->store?->name ?? '—' }}</td>
                                 <td>{{ $container->is_temporary ? 'Temporary' : 'Product-backed' }}</td>
                                 <td class="text-right font-mono">{{ $container->active_items_count }}</td>
                                 <td class="text-center">

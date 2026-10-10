@@ -22,6 +22,9 @@ new #[Layout('components.layouts.app')] #[Title('Products')] class extends Compo
 
     public int $totalCount = 0;
 
+    /** @var array<int|string, string>|null */
+    private ?array $groupOptionsCache = null;
+
     public function mount(): void
     {
         $type = request()->query('type', '');
@@ -110,7 +113,10 @@ new #[Layout('components.layouts.app')] #[Title('Products')] class extends Compo
             ->mapWithKeys(fn (ProductType $t): array => [$t->value => $t->label()])
             ->all();
 
-        $groupOptions = ProductGroup::query()->orderBy('name')->pluck('name', 'id')->all();
+        $groupOptions = $this->groupOptionsCache ??= ProductGroup::query()
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
 
         return [
             'productTypes' => [

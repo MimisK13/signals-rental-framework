@@ -55,6 +55,9 @@ class Index extends Component
     #[Url(as: 'stores')]
     public array $storeIds = [];
 
+    /** @var list<array{id: int, name: string}> */
+    public array $storeFilterStores = [];
+
     #[Url(as: 'q')]
     public string $search = '';
 
@@ -71,6 +74,15 @@ class Index extends Component
         if (! array_key_exists($this->viewPeriod, self::VIEW_PERIODS)) {
             $this->viewPeriod = '1m';
         }
+
+        $this->storeFilterStores = app(PlanningStoreFilter::class)
+            ->storesForFilter()
+            ->map(static fn ($store): array => [
+                'id' => (int) $store->id,
+                'name' => (string) $store->name,
+            ])
+            ->values()
+            ->all();
     }
 
     public function initializeGrid(): void
@@ -86,19 +98,37 @@ class Index extends Component
     /** @param list<string> $tagNames */
     public function syncStoreIdsFromTags(array $tagNames): void
     {
-        $this->storeIds = app(PlanningStoreFilter::class)->storeIdsFromTags($tagNames);
+        $namesById = collect($this->storeFilterStores)->pluck('id', 'name');
+
+        $this->storeIds = collect($tagNames)
+            ->map(static fn (string $name): ?int => $namesById->get($name))
+            ->filter(static fn (?int $id): bool => $id !== null)
+            ->map(static fn (int $id): int => $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /** @return list<string> */
     public function selectedStoreTags(): array
     {
-        return app(PlanningStoreFilter::class)->selectedStoreTags($this->storeIds);
+        if ($this->storeIds === []) {
+            return [];
+        }
+
+        $namesById = collect($this->storeFilterStores)->pluck('name', 'id');
+
+        return collect($this->storeIds)
+            ->map(static fn (int $id): ?string => $namesById->get($id))
+            ->filter(static fn (?string $name): bool => $name !== null && $name !== '')
+            ->values()
+            ->all();
     }
 
     /** @return list<string> */
     public function storeNameSuggestions(): array
     {
-        return app(PlanningStoreFilter::class)->storeNameSuggestions();
+        return collect($this->storeFilterStores)->pluck('name')->all();
     }
 
     public function windowDays(): int
