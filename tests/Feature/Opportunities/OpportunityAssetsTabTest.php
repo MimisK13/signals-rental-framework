@@ -5,23 +5,35 @@ use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
+use App\Actions\Opportunities\DispatchAsset;
+use App\Actions\Opportunities\PrepareAsset;
+use App\Actions\Opportunities\ReturnAsset;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Data\Opportunities\DispatchAssetData;
+use App\Data\Opportunities\ReturnAssetData;
 use App\Enums\AssetAssignmentStatus;
+use App\Enums\AssetCondition;
+use App\Enums\AssetLifecycleStatus;
 use App\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\ShortageDispatchPolicy;
+use App\Models\Asset;
+use App\Models\Container;
 use App\Models\Demand;
+use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
+use App\Models\Repair;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -112,11 +124,44 @@ it('renders the assets tab with the sub-tabs and grouped table', function () {
         ->assertSee($this->product->name);
 });
 
+it('renders opportunity containers in the unified execution workspace', function () {
+    [$opportunity] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
+
+    $container = Container::factory()->create([
+        'opportunity_id' => $opportunity->id,
+        'store_id' => $this->store->id,
+        'name' => 'AMP RACK 01',
+    ]);
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+        ->assertSee('Containers')
+        ->assertSee($container->name)
+        ->assertSee('Pack');
+});
+
 it('forbids the assets tab for a user without opportunities.view', function () {
     [$opportunity] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
 
     $stranger = User::factory()->create();
     $this->actingAs($stranger);
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity])->assertForbidden();
+});
+
+it('forbids the assets tab for a viewer without access to the Opportunity Store', function () {
+    [$opportunity] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
+
+    $viewer = User::factory()->create();
+    $viewer->givePermissionTo('opportunities.view');
+    $viewerStore = Store::factory()->create();
+    MemberStore::create([
+        'member_id' => $viewer->member_id,
+        'store_id' => $viewerStore->id,
+        'created_at' => now(),
+    ]);
+    $this->actingAs($viewer);
 
     Volt::test('opportunities.assets', ['opportunity' => $opportunity])->assertForbidden();
 });
@@ -203,6 +248,156 @@ it('prepares, books out and checks in via the scan bars', function () {
         ->toBe(AssetAssignmentStatus::CheckedIn);
 });
 
+it('executes a serialized scan from the unified workspace', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
+    $asset = makeAssetsTabAsset($this->store, $this->product, 'UNIFIED-SCAN');
+
+    Auth::login($this->owner);
+    (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $asset->id]));
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->set('executionMode', 'prepare')
+        ->set('scanAsset', 'UNIFIED-SCAN')
+        ->call('executeScan');
+
+    expect(OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole()->status)
+        ->toBe(AssetAssignmentStatus::Prepared);
+});
+
+it('exposes checked-in assets for explicit return inspection and finalisation', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product, '1');
+    $asset = makeAssetsTabAsset($this->store, $this->product, 'INSPECT-001');
+
+    Auth::login($this->owner);
+    (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $asset->id]));
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole();
+    (new DispatchAsset)($assignment, DispatchAssetData::from([]));
+    (new ReturnAsset)($assignment->refresh(), ReturnAssetData::from([]));
+
+    $component = Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->assertSee('Awaiting inspection')
+        ->call('inspectAsset', $assignment->id)
+        ->assertSet('inspectionAssetId', $assignment->id)
+        ->assertSet('inspectionCondition', AssetCondition::Good->value)
+        ->assertSee('Return inspection')
+        ->set('inspectionCondition', AssetCondition::Damaged->value)
+        ->set('inspectionNotes', 'Minor cosmetic damage.')
+        ->call('finaliseInspection');
+
+    expect($component->get('inspectionAssetId'))->toBeNull()
+        ->and($assignment->refresh()->status)->toBe(AssetAssignmentStatus::Finalised)
+        ->and($assignment->condition_on_return)->toBe(AssetCondition::Damaged);
+});
+
+it('hands a damaged asset to repair from the inspection modal', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product, '1');
+    $physicalAsset = Asset::factory()->create(['product_id' => $this->product->id]);
+    $stockLevel = StockLevel::factory()->serialised()->create([
+        'product_id' => $this->product->id,
+        'store_id' => $this->store->id,
+        'asset_id' => $physicalAsset->id,
+        'asset_number' => 'INSPECT-REPAIR-001',
+    ]);
+
+    Auth::login($this->owner);
+    (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $stockLevel->id]));
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole();
+    (new DispatchAsset)($assignment, DispatchAssetData::from([]));
+    (new ReturnAsset)($assignment->refresh(), ReturnAssetData::from([]));
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->call('inspectAsset', $assignment->id)
+        ->set('inspectionCondition', AssetCondition::Damaged->value)
+        ->assertSee('Send to repair')
+        ->set('sendToRepair', true)
+        ->set('repairUnusable', true)
+        ->call('finaliseInspection');
+
+    $repair = Repair::query()->where('asset_id', $physicalAsset->id)->sole();
+
+    expect($repair->is_usable)->toBeFalse()
+        ->and($assignment->refresh()->status)->toBe(AssetAssignmentStatus::Finalised);
+});
+
+it('executes partial bulk dispatch and return from the unified workspace', function () {
+    $bulkProduct = Product::factory()->rental()->bulk()->create(['name' => 'XLR 10m']);
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $bulkProduct->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 20,
+    ]);
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $bulkProduct, '10');
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->assertSee('Bulk execution')
+        ->assertSee('To dispatch')
+        ->set('bulkQuantities.'.$item->id, '6')
+        ->call('dispatchBulk', $item->id)
+        ->set('bulkQuantities.'.$item->id, '4')
+        ->call('returnBulk', $item->id)
+        ->assertSee('Outstanding return');
+
+    expect((float) $item->refresh()->dispatched_quantity)->toBe(6.0)
+        ->and((float) $item->refresh()->returned_quantity)->toBe(4.0);
+});
+
+it('shows action-specific remaining work for a partially dispatched bulk line', function () {
+    $bulkProduct = Product::factory()->rental()->bulk()->create(['name' => 'Progress cable']);
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $bulkProduct->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 20,
+    ]);
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $bulkProduct, '20');
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->set('bulkQuantities.'.$item->id, '8')
+        ->call('dispatchBulk', $item->id)
+        ->set('subTab', 'book_out')
+        ->assertSee('8 / 20 dispatched')
+        ->assertSee('to dispatch: 12');
+});
+
+it('renders serialized and bulk lines together in one execution workspace', function () {
+    Auth::login($this->owner);
+
+    $created = (new CreateOpportunity)(CreateOpportunityData::from([
+        'subject' => 'Mixed warehouse order',
+        'store_id' => $this->store->id,
+        'starts_at' => '2026-09-01T09:00:00Z',
+        'ends_at' => '2026-09-05T17:00:00Z',
+    ]));
+    $opportunity = Opportunity::query()->whereKey($created->id)->firstOrFail();
+    (new ConvertToQuotation)($opportunity);
+
+    $bulkProduct = Product::factory()->rental()->bulk()->create(['name' => 'Bulk cable']);
+
+    (new AddOpportunityItem)($opportunity->refresh(), AddOpportunityItemData::from([
+        'name' => $this->product->name,
+        'itemable_id' => $this->product->id,
+        'itemable_type' => Product::class,
+        'quantity' => '2',
+        'transaction_type' => LineItemTransactionType::Rental->value,
+    ]));
+    (new AddOpportunityItem)($opportunity->refresh(), AddOpportunityItemData::from([
+        'name' => $bulkProduct->name,
+        'itemable_id' => $bulkProduct->id,
+        'itemable_type' => Product::class,
+        'quantity' => '10',
+        'transaction_type' => LineItemTransactionType::Rental->value,
+    ]));
+    (new ConvertToOrder)($opportunity->refresh());
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->assertSee($this->product->name)
+        ->assertSee('Bulk cable')
+        ->assertSee('Bulk execution');
+});
+
 it('flashes an error when a scan bar cannot resolve the asset number', function () {
     [$opportunity] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
 
@@ -212,7 +407,75 @@ it('flashes an error when a scan bar cannot resolve the asset number', function 
         ->set('subTab', 'prepare')
         ->set('scanAsset', 'DOES-NOT-EXIST')
         ->call('scanPrepare')
-        ->assertSee('No allocated asset numbered');
+        ->assertSee('Unknown asset');
+});
+
+it('rejects an ambiguous serialized identifier without allocating either asset', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
+    makeAssetsTabAsset($this->store, $this->product, 'DUPLICATE-001');
+    makeAssetsTabAsset($this->store, $this->product, 'DUPLICATE-001');
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+        ->set('subTab', 'allocate')
+        ->set('scanAsset', 'DUPLICATE-001')
+        ->call('scanAllocate')
+        ->assertSee('Ambiguous identifier');
+
+    expect(OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->count())->toBe(0);
+});
+
+it('marks an outstanding serialized asset missing without fabricating a return', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product, '1');
+    $physicalAsset = Asset::factory()->create(['product_id' => $this->product->id]);
+    $stockLevel = StockLevel::factory()->serialised()->create([
+        'product_id' => $this->product->id,
+        'store_id' => $this->store->id,
+        'asset_id' => $physicalAsset->id,
+        'asset_number' => 'MISSING-001',
+    ]);
+
+    Auth::login($this->owner);
+    (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $stockLevel->id]));
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole();
+    (new PrepareAsset)($assignment->refresh());
+    (new DispatchAsset)($assignment->refresh(), DispatchAssetData::from([]));
+
+    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->call('markMissing', $assignment->id)
+        ->assertSee('Missing');
+
+    expect($physicalAsset->refresh()->lifecycleStatus())->toBe(AssetLifecycleStatus::Missing)
+        ->and($assignment->refresh()->status)->toBe(AssetAssignmentStatus::Dispatched)
+        ->and($assignment->returned_at)->toBeNull();
+});
+
+it('confirms and restores lifecycle exceptions without automatically checking the asset in', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product, '1');
+    $physicalAsset = Asset::factory()->create(['product_id' => $this->product->id]);
+    $stockLevel = StockLevel::factory()->serialised()->create([
+        'product_id' => $this->product->id,
+        'store_id' => $this->store->id,
+        'asset_id' => $physicalAsset->id,
+        'asset_number' => 'LOST-001',
+    ]);
+
+    Auth::login($this->owner);
+    (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $stockLevel->id]));
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole();
+    (new PrepareAsset)($assignment->refresh());
+    (new DispatchAsset)($assignment->refresh(), DispatchAssetData::from([]));
+
+    $component = Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+        ->call('markMissing', $assignment->id)
+        ->call('confirmLost', $assignment->id)
+        ->call('restoreAsset', $assignment->id);
+
+    expect($component->get('canEdit'))->toBeTrue()
+        ->and($physicalAsset->refresh()->lifecycleStatus())->toBe(AssetLifecycleStatus::Active)
+        ->and($assignment->refresh()->status)->toBe(AssetAssignmentStatus::Dispatched)
+        ->and($assignment->returned_at)->toBeNull();
 });
 
 it('prepares the selected assets via the Functions Action menu', function () {
@@ -365,12 +628,41 @@ it('renders read-only for a view-only user (no row actions, disabled controls)',
 
     $viewer = User::factory()->create();
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
+    MemberStore::create([
+        'member_id' => $viewer->member_id,
+        'store_id' => $this->store->id,
+        'created_at' => now(),
+    ]);
     $this->actingAs($viewer);
 
     Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
         ->assertSet('canEdit', false)
         ->assertSee($this->product->name)
         ->assertDontSee('wire:click="prepare', escape: false);
+});
+
+it('rejects direct warehouse action invocation for a user without Opportunity Store access', function () {
+    [$opportunity, $item] = makeAssetsTabOrder($this->owner, $this->store, $this->product);
+    $asset = makeAssetsTabAsset($this->store, $this->product, 'FOREIGN-ACTION-001');
+
+    Auth::login($this->owner);
+    $assignment = (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $asset->id]));
+
+    $foreignStore = Store::factory()->create();
+    $operator = User::factory()->create();
+    $operator->givePermissionTo('opportunities.edit');
+    MemberStore::create([
+        'member_id' => $operator->member_id,
+        'store_id' => $foreignStore->id,
+        'created_at' => now(),
+    ]);
+    $this->actingAs($operator);
+
+    expect(fn () => (new PrepareAsset)(OpportunityItemAsset::query()->findOrFail($assignment->id)))
+        ->toThrow(AuthorizationException::class);
+
+    expect(OpportunityItemAsset::query()->findOrFail($assignment->id)->status)
+        ->toBe(AssetAssignmentStatus::Allocated);
 });
 
 it('rejects an illegal fulfilment call and leaves the status unchanged', function () {

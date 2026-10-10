@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Enums\AllowedStockType;
+use App\Enums\AssetLifecycleStatus;
 use App\Enums\StockCategory;
 use App\Enums\StockMethod;
 use App\Models\Traits\HasCustomFields;
@@ -42,6 +43,7 @@ class StockLevel extends Model implements HasSchema
         'product_id',
         'store_id',
         'member_id',
+        'asset_id',
         'item_name',
         'asset_number',
         'serial_number',
@@ -145,6 +147,14 @@ class StockLevel extends Model implements HasSchema
     }
 
     /**
+     * @return BelongsTo<Asset, $this>
+     */
+    public function asset(): BelongsTo
+    {
+        return $this->belongsTo(Asset::class);
+    }
+
+    /**
      * The container stock level that holds this item.
      *
      * @return BelongsTo<self, $this>
@@ -170,6 +180,34 @@ class StockLevel extends Model implements HasSchema
     public function stockTransactions(): HasMany
     {
         return $this->hasMany(StockTransaction::class);
+    }
+
+    /** @return HasMany<ContainerBulkMembership, $this> */
+    public function containerBulkMemberships(): HasMany
+    {
+        return $this->hasMany(ContainerBulkMembership::class);
+    }
+
+    public function isEligibleForBulkContainment(): bool
+    {
+        return (int) $this->getRawOriginal('stock_category') === StockCategory::BulkStock->value
+            && (int) ($this->product?->getRawOriginal('stock_method') ?? 0) === StockMethod::Bulk->value
+            && ! $this->isVirtualAsset()
+            && $this->asset_id === null;
+    }
+
+    public function containedBulkQuantity(): string
+    {
+        return bcadd((string) $this->containerBulkMemberships()->sum('quantity'), '0', 2);
+    }
+
+    /**
+     * Loose quantity is derived from owned quantity and current bulk
+     * containment. It is not stored and does not create a second ledger.
+     */
+    public function looseBulkQuantity(): string
+    {
+        return bcsub((string) $this->quantity_held, $this->containedBulkQuantity(), 2);
     }
 
     /**
@@ -269,6 +307,36 @@ class StockLevel extends Model implements HasSchema
     public function scopeSerialized(Builder $query): Builder
     {
         return $query->where('stock_category', StockCategory::SerialisedStock);
+    }
+
+    /**
+     * Scope to physical serialized supply whose durable Asset is operational.
+     * Legacy serialized rows without an Asset remain eligible until they are
+     * explicitly linked, preserving existing inventory semantics.
+     *
+     * @param  Builder<StockLevel>  $query
+     * @return Builder<StockLevel>
+     */
+    public function scopeOperationalSerializedSupply(Builder $query): Builder
+    {
+        return $query
+            ->serialized()
+            ->where(function (Builder $assetQuery): void {
+                $assetQuery
+                    ->whereNull('asset_id')
+                    ->orWhereHas('asset', function (Builder $asset): void {
+                        $asset->where('lifecycle_status', AssetLifecycleStatus::Active->value);
+                    });
+            });
+    }
+
+    public function isOperationalSerializedSupply(): bool
+    {
+        if (! $this->isSerialised() || $this->isVirtualAsset()) {
+            return false;
+        }
+
+        return $this->asset_id === null || $this->asset?->isOperationallyActive() === true;
     }
 
     /**

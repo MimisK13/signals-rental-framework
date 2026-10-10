@@ -42,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string|null $description
  * @property string $quantity
+ * @property string|null $reserved_quantity
  * @property int $unit_price
  * @property int|null $price_category_tier_id
  * @property string|null $price_category_tier_multiplier
@@ -58,6 +59,8 @@ use Illuminate\Support\Carbon;
  * @property LineItemTransactionType $transaction_type
  * @property Carbon|null $starts_at
  * @property Carbon|null $ends_at
+ * @property Carbon|null $planning_starts_at
+ * @property Carbon|null $planning_ends_at
  * @property string $dispatched_quantity
  * @property string $returned_quantity
  * @property Carbon|null $shortage_escalated_at
@@ -98,6 +101,7 @@ class OpportunityItem extends Model implements HasSchema
         'name',
         'description',
         'quantity',
+        'reserved_quantity',
         'unit_price',
         'price_category_tier_id',
         'price_category_tier_multiplier',
@@ -114,6 +118,8 @@ class OpportunityItem extends Model implements HasSchema
         'transaction_type',
         'starts_at',
         'ends_at',
+        'planning_starts_at',
+        'planning_ends_at',
         'dispatched_quantity',
         'returned_quantity',
         'shortage_escalated_at',
@@ -134,6 +140,7 @@ class OpportunityItem extends Model implements HasSchema
             'item_type' => OpportunityItemType::class,
             'revenue_group_id' => 'integer',
             'quantity' => 'decimal:2',
+            'reserved_quantity' => 'decimal:2',
             'unit_price' => 'integer',
             'price_category_tier_id' => 'integer',
             'price_category_tier_multiplier' => 'decimal:4',
@@ -149,6 +156,8 @@ class OpportunityItem extends Model implements HasSchema
             'transaction_type' => LineItemTransactionType::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'planning_starts_at' => 'datetime',
+            'planning_ends_at' => 'datetime',
             'dispatched_quantity' => 'decimal:2',
             'returned_quantity' => 'decimal:2',
             'shortage_escalated_at' => 'datetime',
@@ -173,6 +182,7 @@ class OpportunityItem extends Model implements HasSchema
         $builder->string('name')->label('Name')->required()->searchable()->filterable()->sortable();
         $builder->text('description')->label('Description')->searchable();
         $builder->decimal('quantity')->label('Quantity')->filterable()->sortable();
+        $builder->decimal('reserved_quantity')->label('Reserved Quantity')->filterable()->sortable();
         $builder->decimal('invoiced_quantity')->label('Invoiced Quantity')->filterable()->sortable();
         $builder->integer('unit_price')->label('Unit Price')->sortable();
         $builder->enum('charge_period')->label('Charge Period')->filterable()->groupable();
@@ -198,6 +208,14 @@ class OpportunityItem extends Model implements HasSchema
     public function assets(): HasMany
     {
         return $this->hasMany(OpportunityItemAsset::class, 'opportunity_item_id');
+    }
+
+    /**
+     * @return HasMany<AssetUsage, $this>
+     */
+    public function assetUsages(): HasMany
+    {
+        return $this->hasMany(AssetUsage::class);
     }
 
     /**

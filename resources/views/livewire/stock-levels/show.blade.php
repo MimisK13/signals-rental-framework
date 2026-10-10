@@ -5,19 +5,23 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.app')] class extends Component {
+new #[Layout('components.layouts.app')] class extends Component
+{
     public StockLevel $stockLevel;
 
-    public int $transactionType = 4;
+    public int $transactionType = 2;
+
     public string $transactionQuantity = '1';
-    public ?string $transactionAt = null;
+
     public string $transactionDescription = '';
 
     public ?int $deletingTransactionId = null;
 
+    public string $reversalReason = '';
+
     public function mount(StockLevel $stockLevel): void
     {
-        $this->stockLevel = $stockLevel->load(['product', 'store', 'member', 'stockTransactions']);
+        $this->stockLevel = $stockLevel->load(['product', 'store', 'member', 'stockTransactions.actor', 'stockTransactions.reversal']);
     }
 
     public function rendering(View $view): void
@@ -34,53 +38,69 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function openTransactionModal(): void
     {
         $this->resetValidation();
-        $this->transactionType = \App\Enums\TransactionType::Buy->value;
+        $this->transactionType = \App\Enums\TransactionType::Increase->value;
         $this->transactionQuantity = '1';
         $this->transactionDescription = '';
-        $this->transactionAt = now()->format('Y-m-d\TH:i');
     }
 
     public function addTransaction(): void
     {
-        // Serialised stock moves a single unit per transaction (+1 / -1); bulk
-        // stock accepts any positive whole number. Decimals are never allowed.
-        $quantityRules = $this->isSerialised()
-            ? ['required', 'integer', 'in:1']
-            : ['required', 'integer', 'min:1'];
-
         $this->validate([
-            'transactionQuantity' => $quantityRules,
-            'transactionType' => ['required', 'integer', \Illuminate\Validation\Rule::in(\App\Enums\TransactionType::manualCreationValues())],
+            'transactionQuantity' => ['required', 'integer', 'min:1'],
+            'transactionType' => ['required', 'integer', \Illuminate\Validation\Rule::in(\App\Enums\TransactionType::adjustmentValues())],
+            'transactionDescription' => ['required', 'string', 'max:1000'],
         ], [
             'transactionQuantity.integer' => 'Quantity must be a whole number.',
-            'transactionQuantity.in' => 'Serialised stock can only move one unit per transaction.',
+            'transactionDescription.required' => 'A reason is required for a stock adjustment.',
         ]);
 
         try {
-            $dto = \App\Data\Products\CreateStockTransactionData::from([
-                'stock_level_id' => $this->stockLevel->id,
-                'store_id' => $this->stockLevel->store_id,
+            $dto = \App\Data\Products\AdjustStockLevelData::from([
                 'transaction_type' => $this->transactionType,
-                'transaction_at' => $this->transactionAt,
                 'quantity' => $this->transactionQuantity,
-                'description' => $this->transactionDescription ?: null,
+                'reason' => $this->transactionDescription,
             ]);
 
-            (new \App\Actions\Products\CreateStockTransaction)($dto);
+            (new \App\Actions\Products\AdjustStockLevel)($this->stockLevel, $dto);
 
             $this->stockLevel->refresh();
-            $this->stockLevel->load(['product', 'store', 'member', 'stockTransactions']);
+            $this->stockLevel->load(['product', 'store', 'member', 'stockTransactions.actor', 'stockTransactions.reversal']);
             $this->transactionQuantity = '1';
             $this->transactionDescription = '';
             $this->dispatch('transaction-saved');
         } catch (\Illuminate\Auth\Access\AuthorizationException) {
             $this->addError('transactionQuantity', 'You do not have permission to adjust stock.');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            foreach ($exception->errors() as $field => $messages) {
+                foreach ($messages as $message) {
+                    $this->addError($field, $message);
+                }
+            }
         }
+    }
+
+    public function previewQuantity(): string
+    {
+        $current = (float) $this->stockLevel->quantity_held;
+        $quantity = (float) $this->transactionQuantity;
+        $sign = \App\Enums\TransactionType::tryFrom((int) $this->transactionType)?->quantitySign() ?? 1;
+
+        return number_format($current + ($quantity * $sign), 2, '.', '');
+    }
+
+    public function previewQuantityMove(): string
+    {
+        $quantity = (float) $this->transactionQuantity;
+        $sign = \App\Enums\TransactionType::tryFrom((int) $this->transactionType)?->quantitySign() ?? 1;
+
+        return number_format($quantity * $sign, 2, '.', '');
     }
 
     public function confirmDeleteTransaction(int $transactionId): void
     {
         $this->deletingTransactionId = $transactionId;
+        $this->reversalReason = '';
+        $this->resetValidation();
     }
 
     public function deleteTransaction(): void
@@ -91,15 +111,20 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         try {
             $transaction = $this->stockLevel->stockTransactions()->findOrFail($this->deletingTransactionId);
-            (new \App\Actions\Products\DeleteStockTransaction)($transaction);
+            $this->validate([
+                'reversalReason' => ['required', 'string', 'max:1000'],
+            ]);
+
+            (new \App\Actions\Products\ReverseStockTransaction)($transaction, $this->reversalReason);
 
             $this->stockLevel->refresh();
-            $this->stockLevel->load(['product', 'store', 'member', 'stockTransactions']);
+            $this->stockLevel->load(['product', 'store', 'member', 'stockTransactions.actor', 'stockTransactions.reversal']);
         } catch (\Illuminate\Auth\Access\AuthorizationException) {
             $this->addError('transactionQuantity', 'You do not have permission to adjust stock.');
         }
 
         $this->deletingTransactionId = null;
+        $this->reversalReason = '';
         $this->dispatch('transaction-deleted');
     }
 }; ?>
@@ -110,10 +135,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             <x-signals.entity-icon :model="$stockLevel->product ?? $stockLevel" :size="44" />
         </x-slot:icon>
         <x-slot:breadcrumbs>
-            <a href="{{ route('stock-levels.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Stock Levels</a>
+            <a href="{{ route('stock-levels.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Stock Levels</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             @if($stockLevel->product)
-                <a href="{{ route('products.show', $stockLevel->product) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $stockLevel->item_name ?? $stockLevel->product->name }}</a>
+                <a href="{{ route('products.show', $stockLevel->product) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $stockLevel->item_name ?? $stockLevel->product->name }}</a>
             @else
                 <span>{{ $stockLevel->item_name ?? 'Stock Level' }}</span>
             @endif
@@ -223,10 +248,12 @@ new #[Layout('components.layouts.app')] class extends Component {
         <div class="order-1">
             <x-signals.panel title="Transactions">
                 <div class="flex justify-end mb-4">
-                    <button type="button" wire:click="openTransactionModal" x-on:click="$dispatch('open-modal', 'add-transaction')" class="s-btn s-btn-sm s-btn-primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Add Transaction
-                    </button>
+                    @if(! $this->isSerialised() && ! $stockLevel->is_virtual && $stockLevel->container_stock_level_id === null)
+                        <button type="button" wire:click="openTransactionModal" x-on:click="$dispatch('open-modal', 'add-transaction')" class="s-btn s-btn-sm s-btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Adjust Stock
+                        </button>
+                    @endif
                 </div>
 
                 <div x-data="{ ready: false }" x-init="$nextTick(() => ready = true)">
@@ -261,7 +288,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     <th>Move</th>
                                     <th>Closing c/fwd</th>
                                     <th>Description</th>
+                                    <th>Actor</th>
+                                    <th>Before / after</th>
                                     <th>Manual</th>
+                                    <th>Status</th>
                                     <th class="w-[60px]"></th>
                                 </tr>
                             </thead>
@@ -299,9 +329,20 @@ new #[Layout('components.layouts.app')] class extends Component {
                                             @endif
                                         </td>
                                         <td>{{ $txn->description ?? '—' }}</td>
+                                        <td>{{ $txn->actor?->name ?? 'System' }}</td>
+                                        <td>{{ $txn->quantity_before ?? '—' }} / {{ $txn->quantity_after ?? '—' }}</td>
                                         <td>{{ $txn->manual ? 'Yes' : 'No' }}</td>
+                                        <td>
+                                            @if($txn->reversal_of_id !== null)
+                                                Reversal
+                                            @elseif($txn->reversal !== null)
+                                                Reversed
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
                                         <td class="text-right">
-                                            <button type="button" wire:click="confirmDeleteTransaction({{ $txn->id }})" x-on:click="$dispatch('open-modal', 'delete-transaction')" class="s-btn s-btn-xs s-btn-ghost text-[var(--red)]" title="Delete transaction">
+                                            <button type="button" wire:click="confirmDeleteTransaction({{ $txn->id }})" x-on:click="$dispatch('open-modal', 'delete-transaction')" class="s-btn s-btn-xs s-btn-ghost text-[var(--red)]" title="Reverse transaction">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                             </button>
                                         </td>
@@ -319,40 +360,41 @@ new #[Layout('components.layouts.app')] class extends Component {
         </div>
     </div>
 
-    {{-- Add Transaction modal --}}
-    <x-signals.modal name="add-transaction" title="Add Transaction" x-on:transaction-saved.window="open = false">
+    {{-- Stock adjustment modal --}}
+    <x-signals.modal name="add-transaction" title="Adjust Stock" x-on:transaction-saved.window="open = false">
         <form id="add-transaction-form" wire:submit="addTransaction" class="flex flex-col gap-4">
-            <flux:select wire:model="transactionType" label="Type">
-                @foreach(\App\Enums\TransactionType::manualCreationValues() as $val)
+            <flux:select wire:model="transactionType" label="Adjustment type">
+                @foreach(\App\Enums\TransactionType::adjustmentValues() as $val)
                     <option value="{{ $val }}">{{ \App\Enums\TransactionType::from($val)->label() }}</option>
                 @endforeach
             </flux:select>
 
-            @if($this->isSerialised())
-                <flux:input wire:model="transactionQuantity" label="Quantity" type="number" readonly
-                    description="Serialised stock moves one unit (+1 / -1) per transaction." />
-            @else
-                <flux:input wire:model="transactionQuantity" label="Quantity" type="number" step="1" min="1" required
-                    description="Whole numbers only." />
-            @endif
+            <flux:input wire:model.live="transactionQuantity" label="Quantity" type="number" step="1" min="1" required
+                description="Enter a positive whole-number quantity." />
 
-            <flux:input wire:model="transactionAt" label="Date" type="datetime-local" />
-            <flux:input wire:model="transactionDescription" label="Description" />
+            <flux:input wire:model="transactionDescription" label="Reason" required />
+
+            <div class="rounded border border-[var(--card-border)] bg-[var(--surface-muted)] px-3 py-2 text-sm">
+                <div><span class="text-[var(--text-muted)]">Current quantity:</span> <span class="font-semibold">{{ $stockLevel->quantity_held }}</span></div>
+                <div><span class="text-[var(--text-muted)]">Adjustment:</span> <span class="font-semibold">{{ $this->previewQuantityMove() }}</span></div>
+                <div><span class="text-[var(--text-muted)]">New quantity:</span> <span class="font-semibold">{{ $this->previewQuantity() }}</span></div>
+            </div>
         </form>
 
         <x-slot:footer>
             <button type="button" class="s-btn s-btn-sm" x-on:click="$dispatch('close-modal', 'add-transaction')">Cancel</button>
-            <button type="submit" form="add-transaction-form" class="s-btn s-btn-sm s-btn-primary">Save Transaction</button>
+            <button type="submit" form="add-transaction-form" wire:loading.attr="disabled" wire:target="addTransaction" class="s-btn s-btn-sm s-btn-primary">Confirm adjustment</button>
         </x-slot:footer>
     </x-signals.modal>
 
     {{-- Delete Transaction confirmation modal --}}
-    <x-signals.modal name="delete-transaction" title="Delete Transaction" size="sm" x-on:transaction-deleted.window="open = false">
-        <p>Are you sure you want to delete this transaction? The stock level quantity will be adjusted to reverse its effect. This cannot be undone.</p>
+    <x-signals.modal name="delete-transaction" title="Reverse Transaction" size="sm" x-on:transaction-deleted.window="open = false">
+        <p>This keeps the original ledger fact and creates a compensating transaction.</p>
+        <flux:textarea wire:model="reversalReason" label="Reason" required />
 
         <x-slot:footer>
             <button type="button" class="s-btn s-btn-sm" x-on:click="$dispatch('close-modal', 'delete-transaction')">Cancel</button>
-            <button type="button" class="s-btn s-btn-sm s-btn-danger" wire:click="deleteTransaction" x-on:click="$dispatch('close-modal', 'delete-transaction')">Delete Transaction</button>
+            <button type="button" class="s-btn s-btn-sm s-btn-danger" wire:click="deleteTransaction" x-on:click="$dispatch('close-modal', 'delete-transaction')">Reverse Transaction</button>
         </x-slot:footer>
     </x-signals.modal>
 </section>

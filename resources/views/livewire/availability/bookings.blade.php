@@ -504,7 +504,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
                 <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">{{ __('Job Planning') }}</span>
             </x-slot:meta>
             <x-slot:actions>
-                <flux:button variant="ghost" href="{{ $availabilityIndexUrl }}" wire:navigate icon="arrow-left">
+                <flux:button variant="ghost" href="{{ $availabilityIndexUrl }}" wire:navigate.hover icon="arrow-left">
                     {{ __('Equipment Availability') }}
                 </flux:button>
             </x-slot:actions>

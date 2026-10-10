@@ -315,6 +315,14 @@ describe('ReturnKitContainer check-in modes', function () {
             ->and(OpportunityItemAsset::query()
                 ->whereHas('item', fn ($q) => $q->where('opportunity_id', $opportunity->id))
                 ->where('status', AssetAssignmentStatus::CheckedIn)
+                ->count())->toBe(2)
+            ->and(Demand::query()
+                ->where('source_type', 'inspection_hold')
+                ->where('is_active', true)
+                ->whereIn('source_id', OpportunityItemAsset::query()
+                    ->whereHas('item', fn ($q) => $q->where('opportunity_id', $opportunity->id))
+                    ->where('status', AssetAssignmentStatus::CheckedIn)
+                    ->pluck('id'))
                 ->count())->toBe(2);
     });
 

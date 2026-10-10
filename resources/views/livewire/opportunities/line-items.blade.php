@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\Opportunities\OpportunityLineItemsEditorContract;
 use App\Actions\Opportunities\AddOpportunityAccessory;
 use App\Actions\Opportunities\AddOpportunityGroup;
 use App\Actions\Opportunities\AddOpportunityItem;
@@ -8,9 +7,11 @@ use App\Actions\Opportunities\ApplyDiscountCategory;
 use App\Actions\Opportunities\ChangeItemDates;
 use App\Actions\Opportunities\ChangeItemQuantity;
 use App\Actions\Opportunities\ClearDealPrice;
-use App\Actions\Opportunities\RemoveOpportunityItem;
+use App\Actions\Opportunities\ExpandOpportunityCombination;
 use App\Actions\Opportunities\MergeOpportunityItems;
 use App\Actions\Opportunities\OverrideItemPrice;
+use App\Actions\Opportunities\RecalculateOpportunity;
+use App\Actions\Opportunities\RemoveOpportunityItem;
 use App\Actions\Opportunities\RenameOpportunityItem;
 use App\Actions\Opportunities\RestructureOpportunityItems;
 use App\Actions\Opportunities\SetDealPrice;
@@ -18,6 +19,7 @@ use App\Actions\Opportunities\SetItemDiscount;
 use App\Actions\Opportunities\SubstituteItem;
 use App\Actions\Opportunities\ToggleItemOptional;
 use App\Actions\Opportunities\UpdateOpportunityItemDetails;
+use App\Contracts\Opportunities\OpportunityLineItemsEditorContract;
 use App\Data\Opportunities\AddOpportunityAccessoryData;
 use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\AddOpportunityItemData;
@@ -26,15 +28,14 @@ use App\Data\Opportunities\ChangeItemDatesData;
 use App\Data\Opportunities\ChangeItemQuantityData;
 use App\Data\Opportunities\MergeOpportunityItemsData;
 use App\Data\Opportunities\OverrideItemPriceData;
+use App\Data\Opportunities\RecalculateOpportunityData;
 use App\Data\Opportunities\RenameOpportunityItemData;
 use App\Data\Opportunities\RestructureOpportunityItemsData;
-use App\Actions\Opportunities\RecalculateOpportunity;
-use App\Data\Opportunities\RecalculateOpportunityData;
-use App\Enums\DealPriceMode;
 use App\Data\Opportunities\SetItemDiscountData;
 use App\Data\Opportunities\SubstituteItemData;
 use App\Data\Opportunities\ToggleItemOptionalData;
 use App\Data\Opportunities\UpdateOpportunityItemDetailsData;
+use App\Enums\DealPriceMode;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
@@ -44,6 +45,7 @@ use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use App\Services\Opportunities\OpportunityLineItemTreeRevision;
 use App\Services\Opportunities\ProductSearchService;
+use App\Services\Planning\OpportunityItemPlanningReader;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -92,8 +94,16 @@ new class extends Component implements OpportunityLineItemsEditorContract
     public function tree(): array
     {
         $opportunity = $this->opportunity->fresh(['items']) ?? $this->opportunity;
+        $tree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
+        $planning = app(OpportunityItemPlanningReader::class)
+            ->forOpportunity($opportunity)
+            ->keyBy('opportunity_item_id');
 
-        return app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
+        return array_map(function (array $row) use ($planning): array {
+            $row['planning'] = $planning->get((int) $row['id'])?->toArray();
+
+            return $row;
+        }, $tree);
     }
 
     public function treeRevision(): int
@@ -188,6 +198,37 @@ new class extends Component implements OpportunityLineItemsEditorContract
     public function quickAdd(int $productId, float $quantity = 1): void
     {
         $this->addProduct($productId, $quantity, $this->quickAddDestination);
+    }
+
+    #[Renderless]
+    public function addCombination(int $productId, float $quantity = 1, ?string $destination = null): void
+    {
+        $this->guardEditable();
+
+        $this->runMutation(function () use ($productId, $quantity, $destination): void {
+            $product = Product::query()->find($productId);
+
+            if ($product === null) {
+                throw ValidationException::withMessages([
+                    'product' => 'The selected combination could not be found.',
+                ]);
+            }
+
+            $opportunity = $this->opportunity->fresh(['items']) ?? $this->opportunity;
+            $parentPath = $this->resolveParentPathForCombination(
+                $opportunity->items,
+                $destination ?? $this->quickAddDestination,
+            );
+
+            (new ExpandOpportunityCombination)(
+                $opportunity,
+                $product,
+                (string) max(0.01, $quantity),
+                $parentPath,
+            );
+
+            $this->refreshOpportunity();
+        }, 'Combination added');
     }
 
     public function addTextLine(): void
@@ -981,6 +1022,25 @@ new class extends Component implements OpportunityLineItemsEditorContract
     }
 
     /**
+     * Combination expansion creates its own structural parent. Keep it at the
+     * root unless the operator explicitly selected an existing group.
+     *
+     * @param  \Illuminate\Support\Collection<int, OpportunityItem>  $items
+     */
+    private function resolveParentPathForCombination(
+        \Illuminate\Support\Collection $items,
+        ?string $destination,
+    ): ?string {
+        $normalized = $this->normalizeGroupKey($destination);
+
+        if ($normalized === null || $normalized === '' || $normalized === 'auto:ungrouped') {
+            return null;
+        }
+
+        return $this->treeService()->parentPathForGroupKey($items, $normalized);
+    }
+
+    /**
      * @param  \Illuminate\Support\Collection<int, OpportunityItem>  $items
      */
     private function resolveParentPathForText(
@@ -1328,6 +1388,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                             x-on:keydown="onQuickAddInputKeydown($event, $refs.quickAddInput)"
                             x-on:focus="onPickerInput($refs.quickAddInput, quickAddQuery, true)"
                             x-on:blur="closePickerSoon()"
+                            x-bind:disabled="mutationPending"
                         >
                         <span class="text-xs text-[var(--text-faint)] font-mono" x-show="quickAddQtyHint" x-text="quickAddQtyHint"></span>
                     </div>
@@ -1342,9 +1403,10 @@ new class extends Component implements OpportunityLineItemsEditorContract
                     x-ref="quickAddQty"
                     x-model="quickAddQty"
                     x-on:keydown="onQuickAddQtyKeydown($event)"
+                    x-bind:disabled="mutationPending"
                 >
                 <span class="text-xs text-[var(--text-faint)]">into</span>
-                <select class="s-input" style="max-width: 230px;" wire:model="quickAddDestination">
+                <select class="s-input" style="max-width: 230px;" wire:model="quickAddDestination" x-bind:disabled="mutationPending">
                     @foreach($this->destinations as $dest)
                         <option value="{{ $dest['value'] }}" wire:key="dest-{{ $dest['value'] }}">{{ $dest['label'] }}</option>
                     @endforeach
@@ -1463,7 +1525,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                                 'lf-row-removing': row._removing,
                                 'lf-row-nest-target': nestDropGroupId === row.id,
                                 'lf-row-dragging': dragId === row.id,
-                                'lf-row-shortage': row.has_shortage,
+                                'lf-row-shortage': row.planning?.has_shortage || row.has_shortage,
                                 'opacity-60': row.is_optional,
                             }"
                             :data-id="row.id"
@@ -1525,6 +1587,31 @@ new class extends Component implements OpportunityLineItemsEditorContract
                                         <span class="not-italic text-[var(--text-faint)]">Warehouse:</span>
                                         <span x-text="row.notes"></span>
                                     </div>
+                                </div>
+                                <div
+                                    x-show="row.planning"
+                                    x-cloak
+                                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] leading-snug text-[var(--text-muted)]"
+                                    :style="`padding-left:${(row.depth - 1) * 22}px`"
+                                >
+                                    <span class="font-mono">Req <span x-text="fmtQty(row.planning?.requested_quantity)"></span></span>
+                                    <template x-if="row.planning?.reservation_mode === 'legacy'">
+                                        <span class="s-badge s-badge-muted text-[10px] uppercase tracking-wide">Legacy</span>
+                                    </template>
+                                    <template x-if="row.planning?.reservation_mode === 'explicit'">
+                                        <span class="font-mono">Reserved <span x-text="fmtQty(row.planning?.reserved_quantity)"></span></span>
+                                        <span class="s-badge s-badge-muted text-[10px] uppercase tracking-wide" x-text="'Reservation ' + row.planning.reservation_state"></span>
+                                    </template>
+                                    <span class="font-mono">Available <span x-text="fmtQty(row.planning?.available_quantity)"></span></span>
+                                    <template x-if="row.planning?.has_shortage">
+                                        <span class="s-badge s-badge-red text-[10px] uppercase tracking-wide">Shortage <span x-text="fmtQty(row.planning?.shortage_quantity)"></span></span>
+                                    </template>
+                                    <template x-if="row.planning?.external_supply_quantity > 0">
+                                        <span class="font-mono">External <span x-text="fmtQty(row.planning?.external_supply_quantity)"></span></span>
+                                    </template>
+                                    <template x-if="row.planning?.allocated_quantity !== null">
+                                        <span class="font-mono">Allocated <span x-text="fmtQty(row.planning?.allocated_quantity)"></span></span>
+                                    </template>
                                 </div>
                             </td>
                             <td>
@@ -1749,6 +1836,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                         <span x-show="!hit.image_url" x-cloak class="font-bold text-[var(--text-muted)]" style="font-family: var(--font-display); font-size: 11px;" x-text="hit.initials || '?'"></span>
                     </span>
                     <span class="flex-1 min-w-0 truncate" x-text="hit.name"></span>
+                    <span x-show="hit.is_combination" class="shrink-0 rounded border border-[var(--card-border)] px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Package</span>
                     <span class="font-mono text-xs text-[var(--text-faint)] shrink-0" x-text="hit.sku || ''"></span>
                 </button>
             </template>

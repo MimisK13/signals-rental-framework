@@ -38,7 +38,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Rates')] class extends Comp
 <section class="w-full">
     <x-admin.layout group="tax" title="Tax Rates" description="Manage tax rates applied through tax rules.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.tax.rates.create') }}" wire:navigate>
+            <flux:button variant="primary" href="{{ route('admin.settings.tax.rates.create') }}" wire:navigate.hover>
                 Add Tax Rate
             </flux:button>
         </x-slot:actions>
@@ -74,7 +74,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Rates')] class extends Comp
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('admin.settings.tax.rates.edit', $taxRate) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                <a href="{{ route('admin.settings.tax.rates.edit', $taxRate) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                     <flux:icon.pencil-square class="w-4 h-4" />
                                 </a>
                                 <button wire:click="deleteTaxRate({{ $taxRate->id }})"

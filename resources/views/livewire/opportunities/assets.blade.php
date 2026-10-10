@@ -1,63 +1,76 @@
 <?php
 
 use App\Actions\Containers\DispatchContainer;
+use App\Actions\Containers\ReturnKitContainer;
 use App\Actions\Containers\StartRepackOnReturn;
+use App\Actions\Containers\VerifyKitCheckin;
+use App\Actions\Assets\ConfirmAssetLost;
+use App\Actions\Assets\MarkAssetMissing;
+use App\Actions\Assets\RestoreAsset;
 use App\Actions\Opportunities\AllocateAsset;
-use App\Actions\Opportunities\CheckAsset;
 use App\Actions\Opportunities\ClearAssetContainer;
 use App\Actions\Opportunities\DeallocateAsset;
 use App\Actions\Opportunities\DispatchAsset;
 use App\Actions\Opportunities\DispatchBulkQuantity;
+use App\Actions\Opportunities\FinaliseAssetReturnInspection;
 use App\Actions\Opportunities\MarkAssetOnHire;
 use App\Actions\Opportunities\PrepareAsset;
 use App\Actions\Opportunities\QuickAllocateAssets;
 use App\Actions\Opportunities\QuickBookOut;
 use App\Actions\Opportunities\QuickCheckIn;
 use App\Actions\Opportunities\QuickPrepareAssets;
+use App\Actions\Opportunities\ReturnAsset;
+use App\Actions\Opportunities\ReturnBulkQuantity;
 use App\Actions\Opportunities\RevertAssetPreparation;
 use App\Actions\Opportunities\RevertAssetStatus;
-use App\Actions\Opportunities\ReturnAsset;
 use App\Actions\Opportunities\SetAssetContainer;
 use App\Actions\Opportunities\SubstituteAsset;
 use App\Data\Containers\DispatchContainerData;
+use App\Data\Containers\ReturnKitContainerData;
 use App\Data\Containers\StartRepackOnReturnData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\BulkDispatchData;
+use App\Data\Opportunities\BulkReturnData;
 use App\Data\Opportunities\CheckAssetData;
 use App\Data\Opportunities\DispatchAssetData;
 use App\Data\Opportunities\QuickAllocateAssetsData;
 use App\Data\Opportunities\QuickBookOutData;
 use App\Data\Opportunities\QuickCheckInData;
 use App\Data\Opportunities\QuickPrepareAssetsData;
-use App\Data\Opportunities\RevertAssetStatusData;
 use App\Data\Opportunities\ReturnAssetData;
+use App\Data\Opportunities\RevertAssetStatusData;
 use App\Data\Opportunities\SetAssetContainerData;
 use App\Data\Opportunities\SubstituteAssetData;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AssetCondition;
+use App\Enums\AssetLifecycleStatus;
 use App\Enums\ContainerStatus;
 use App\Enums\OpportunityState;
 use App\Enums\StockMethod;
 use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
+use App\Livewire\Concerns\HasOpportunityActions;
 use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
+use App\Models\Repair;
 use App\Models\StockLevel;
 use App\Services\Containers\ContainerBarcodeResolver;
+use App\Services\Containers\ContainerManifestService;
 use App\Services\Containers\RepackOnReturnEligibility;
 use App\ValueObjects\DispatchGateResult;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Volt\Component;
-use App\Livewire\Concerns\HasOpportunityActions;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Thunk\Verbs\Exceptions\EventNotValid;
 
@@ -112,6 +125,24 @@ new #[Layout('components.layouts.app')] class extends Component
     /** The chosen Functions Action menu operation, applied to {@see $selected}. */
     public string $bulkAction = '';
 
+    /** The unified scan workspace's explicit serialized execution context. */
+    public string $executionMode = 'prepare';
+
+    /** @var array<int, string> */
+    public array $bulkQuantities = [];
+
+    public ?int $inspectionAssetId = null;
+
+    public ?string $inspectionAssetLabel = null;
+
+    public int $inspectionCondition = AssetCondition::Good->value;
+
+    public ?string $inspectionNotes = null;
+
+    public bool $sendToRepair = false;
+
+    public bool $repairUnusable = false;
+
     /** The container asset number the Functions "Set container" action targets. */
     public ?string $bulkContainer = null;
 
@@ -129,7 +160,6 @@ new #[Layout('components.layouts.app')] class extends Component
     /** @var array<string, mixed>|null */
     public ?array $containerDispatchPrompt = null;
 
-    /** @var string|null */
     public ?string $pendingContainerDispatchUuid = null;
 
     /** Allocate sub-tab: allow allocating a free asset not pre-listed against any line. */
@@ -140,7 +170,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
     public function mount(Opportunity $opportunity): void
     {
-        Gate::authorize('opportunities.view');
+        Gate::authorize('view', $opportunity);
 
         $this->opportunity = $opportunity->load('store');
         $this->canEdit = Gate::allows('opportunities.edit') && ! $opportunity->statusEnum()->isClosed();
@@ -171,6 +201,23 @@ new #[Layout('components.layouts.app')] class extends Component
             : 'functions';
 
         $this->resetScanBar();
+    }
+
+    /** Execute one scanner intent through the existing action-backed scan methods. */
+    public function executeScan(): void
+    {
+        if (! in_array($this->executionMode, ['allocate', 'prepare', 'book_out', 'check_in'], true)) {
+            $this->executionMode = 'prepare';
+        }
+
+        match ($this->executionMode) {
+            'allocate' => $this->scanAllocate(),
+            'prepare' => $this->scanPrepare(),
+            'book_out' => $this->scanBookOut(),
+            'check_in' => $this->scanCheckIn(),
+        };
+
+        $this->dispatch('warehouse-scan-ready');
     }
 
     protected function resetScanBar(): void
@@ -275,14 +322,76 @@ new #[Layout('components.layouts.app')] class extends Component
             }
         }
 
-        if ($container === null || $container->status !== ContainerStatus::Sealed) {
+        if ($container === null) {
             return false;
         }
 
+        if ($container->status !== ContainerStatus::Sealed) {
+            if ($resolution['type'] === 'container') {
+                session()->flash('error', __('Only sealed containers can be booked out.'));
+
+                return true;
+            }
+
+            return false;
+        }
+
+        $this->dispatchContainer($container);
+
+        return true;
+    }
+
+    public function dispatchContainerFromWorkspace(string $containerUuid): void
+    {
+        $container = $this->findOpportunityContainer($containerUuid);
+
+        if ($container === null) {
+            session()->flash('error', __('The container could not be found for this opportunity.'));
+
+            return;
+        }
+
+        $this->dispatchContainer($container);
+    }
+
+    public function returnContainerFromWorkspace(string $containerUuid): void
+    {
+        $container = $this->findOpportunityContainer($containerUuid);
+
+        if ($container === null) {
+            session()->flash('error', __('The container could not be found for this opportunity.'));
+
+            return;
+        }
+
+        $this->run(function () use ($container): void {
+            (new ReturnKitContainer)($container, ReturnKitContainerData::from([]));
+        }, __('Container returned.'));
+
+        $this->resetScanBar();
+    }
+
+    public function verifyContainerFromWorkspace(string $containerUuid): void
+    {
+        $container = $this->findOpportunityContainer($containerUuid);
+
+        if ($container === null) {
+            session()->flash('error', __('The container could not be found for this opportunity.'));
+
+            return;
+        }
+
+        $this->run(function () use ($container): void {
+            (new VerifyKitCheckin)($container);
+        }, __('Container check-in verified.'));
+    }
+
+    protected function dispatchContainer(Container $container): void
+    {
         if (! Gate::check('dispatch', $container)) {
             session()->flash('error', __('You do not have permission to dispatch this container.'));
 
-            return true;
+            return;
         }
 
         try {
@@ -303,8 +412,6 @@ new #[Layout('components.layouts.app')] class extends Component
         } catch (AuthorizationException) {
             session()->flash('error', __('You do not have permission to perform this action.'));
         }
-
-        return true;
     }
 
     /**
@@ -359,6 +466,10 @@ new #[Layout('components.layouts.app')] class extends Component
             return;
         }
 
+        if ($this->tryReturnScannedContainer($number)) {
+            return;
+        }
+
         $this->actOnScannedAssignment(function (OpportunityItemAsset $asset): void {
             (new ReturnAsset)($asset, ReturnAssetData::from([]));
             $this->applyScanContainer($asset->id);
@@ -367,13 +478,27 @@ new #[Layout('components.layouts.app')] class extends Component
 
     protected function tryStartRepackFromCheckIn(string $assetNumber): bool
     {
-        $assignment = OpportunityItemAsset::query()
-            ->whereHas('item', fn ($query) => $query->where('opportunity_id', $this->opportunity->id))
-            ->whereHas('stockLevel', fn ($query) => $query
+        $stockLevels = StockLevel::query()
+            ->where(fn ($query) => $query
                 ->where('asset_number', $assetNumber)
-                ->orWhere('serial_number', $assetNumber))
-            ->with('stockLevel.product')
-            ->first();
+                ->orWhere('serial_number', $assetNumber)
+                ->orWhere('barcode', $assetNumber))
+            ->get();
+
+        if ($stockLevels->count() > 1) {
+            throw ValidationException::withMessages([
+                'asset' => __('Ambiguous identifier: ":number" matches multiple physical assets.', ['number' => $assetNumber]),
+            ]);
+        }
+
+        $stockLevel = $stockLevels->first();
+        $assignment = $stockLevel === null
+            ? null
+            : OpportunityItemAsset::query()
+                ->where('stock_level_id', $stockLevel->id)
+                ->whereHas('item', fn ($query) => $query->where('opportunity_id', $this->opportunity->id))
+                ->with('stockLevel.product')
+                ->first();
 
         if ($assignment === null) {
             return false;
@@ -429,6 +554,42 @@ new #[Layout('components.layouts.app')] class extends Component
         }, $success);
 
         $this->resetScanBar();
+    }
+
+    /** Return a scanned dispatched kit/hybrid container through its canonical action. */
+    protected function tryReturnScannedContainer(string $number): bool
+    {
+        $resolution = app(ContainerBarcodeResolver::class)->resolve($number);
+
+        if ($resolution === null) {
+            return false;
+        }
+
+        $container = $resolution['container'];
+
+        if ($container === null) {
+            return false;
+        }
+
+        if ($container->status !== ContainerStatus::Dispatched) {
+            if ($resolution['type'] === 'container') {
+                session()->flash('error', __('Only dispatched containers can be checked in.'));
+
+                return true;
+            }
+
+            return false;
+        }
+
+        if (! $container->availabilityMode()->isBookableKit()) {
+            session()->flash('error', __('Transport containers are returned through the repack workflow.'));
+
+            return true;
+        }
+
+        $this->returnContainerFromWorkspace($container->uuid);
+
+        return true;
     }
 
     /**
@@ -674,14 +835,222 @@ new #[Layout('components.layouts.app')] class extends Component
         }, __('Asset checked in.'));
     }
 
-    /** Finalise the condition check on a returned (checked-in) asset, marking it Good. */
+    /** Mark a physically outstanding Asset missing through its canonical lifecycle action. */
+    public function markMissing(int $assetId): void
+    {
+        $assignment = $this->findAsset($assetId);
+
+        if (! in_array($assignment->status, [AssetAssignmentStatus::Dispatched, AssetAssignmentStatus::OnHire], true)) {
+            session()->flash('error', __('Only an Asset that is still out can be marked missing.'));
+
+            return;
+        }
+
+        $asset = $assignment->load('stockLevel.asset')->stockLevel?->asset;
+
+        if ($asset === null) {
+            session()->flash('error', __('The physical Asset could not be resolved for this assignment.'));
+
+            return;
+        }
+
+        $this->run(function () use ($asset): void {
+            (new MarkAssetMissing)($asset, ['reason' => __('Marked missing from rental return.')]);
+        }, __('Asset marked missing.'));
+    }
+
+    /** Confirm an already-missing Asset as lost through its canonical lifecycle action. */
+    public function confirmLost(int $assetId): void
+    {
+        $assignment = $this->findAsset($assetId);
+        $asset = $assignment->load('stockLevel.asset')->stockLevel?->asset;
+
+        if ($asset?->lifecycleStatus() !== AssetLifecycleStatus::Missing) {
+            session()->flash('error', __('Only a missing Asset can be confirmed lost.'));
+
+            return;
+        }
+
+        $this->run(function () use ($asset): void {
+            (new ConfirmAssetLost)($asset, ['reason' => __('Confirmed lost from rental return.')]);
+        }, __('Asset confirmed lost.'));
+    }
+
+    /** Restore a Missing/Lost Asset without fabricating a physical return. */
+    public function restoreAsset(int $assetId): void
+    {
+        $assignment = $this->findAsset($assetId);
+        $asset = $assignment->load('stockLevel.asset')->stockLevel?->asset;
+
+        if ($asset === null || ! in_array($asset->lifecycleStatus(), [AssetLifecycleStatus::Missing, AssetLifecycleStatus::Lost], true)) {
+            session()->flash('error', __('Only a missing or lost Asset can be restored.'));
+
+            return;
+        }
+
+        $storeId = $assignment->stockLevel?->store_id;
+
+        $this->run(function () use ($asset, $storeId): void {
+            (new RestoreAsset)($asset, array_filter([
+                'store_id' => $storeId,
+                'reason' => __('Asset restored after rental return review.'),
+            ], static fn (mixed $value): bool => $value !== null));
+        }, __('Asset restored. It still requires the normal physical check-in path.'));
+    }
+
+    /** Open the return inspection for a physically returned asset. */
+    public function inspectAsset(int $assetId): void
+    {
+        $asset = $this->findAsset($assetId);
+
+        if ($asset->status !== AssetAssignmentStatus::CheckedIn) {
+            session()->flash('error', __('Only checked-in assets can be inspected.'));
+
+            return;
+        }
+
+        $asset->loadMissing('stockLevel');
+        $this->inspectionAssetId = $asset->id;
+        $this->inspectionAssetLabel = $asset->stockLevel?->asset_number
+            ?? $asset->stockLevel?->serial_number
+            ?? $asset->stockLevel?->item_name
+            ?? '#'.$asset->id;
+        $this->inspectionCondition = AssetCondition::Good->value;
+        $this->inspectionNotes = null;
+        $this->sendToRepair = false;
+        $this->repairUnusable = false;
+        $this->dispatch('open-modal', 'inspect-asset');
+    }
+
+    public function updatedInspectionCondition(int|string $condition): void
+    {
+        if ((int) $condition !== AssetCondition::Damaged->value) {
+            $this->sendToRepair = false;
+            $this->repairUnusable = false;
+        }
+    }
+
+    /** Finalise the return inspection through the canonical CheckAsset action. */
+    public function finaliseInspection(): void
+    {
+        $this->validate([
+            'inspectionAssetId' => ['required', 'integer'],
+            'inspectionCondition' => [
+                'required',
+                'integer',
+                Rule::in([
+                    AssetCondition::Good->value,
+                    AssetCondition::Damaged->value,
+                ]),
+            ],
+            'inspectionNotes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        if ($this->sendToRepair && $this->inspectionCondition !== AssetCondition::Damaged->value) {
+            $this->addError('sendToRepair', __('Only a damaged return can be sent to repair.'));
+
+            return;
+        }
+
+        if ($this->repairUnusable && ! $this->sendToRepair) {
+            $this->addError('repairUnusable', __('Select Send to repair before marking the equipment unusable.'));
+
+            return;
+        }
+
+        if ($this->sendToRepair && ! $this->canCreateRepair()) {
+            $this->addError('sendToRepair', __('You do not have permission to create repairs.'));
+
+            return;
+        }
+
+        $assetId = $this->inspectionAssetId;
+        $condition = $this->inspectionCondition;
+        $notes = $this->inspectionNotes;
+
+        $message = $this->sendToRepair
+            ? ($this->repairUnusable
+                ? __('Asset finalised and sent to repair as unusable.')
+                : __('Asset finalised and sent to repair.'))
+            : __('Asset finalised.');
+
+        $sendToRepair = $this->sendToRepair;
+        $repairUnusable = $this->repairUnusable;
+        $completed = $this->run(function () use ($assetId, $condition, $notes, $sendToRepair, $repairUnusable): void {
+            (new FinaliseAssetReturnInspection)($this->findAsset($assetId), CheckAssetData::from([
+                'condition' => $condition,
+                'damage_notes' => $notes,
+            ]), $sendToRepair, $repairUnusable);
+        }, $message);
+
+        if (! $completed) {
+            return;
+        }
+
+        $this->reset(['inspectionAssetId', 'inspectionAssetLabel', 'inspectionCondition', 'inspectionNotes']);
+        $this->inspectionCondition = AssetCondition::Good->value;
+        $this->sendToRepair = false;
+        $this->repairUnusable = false;
+        $this->dispatch('close-modal', 'inspect-asset');
+    }
+
+    public function canCreateRepair(): bool
+    {
+        if (! Gate::allows('create', Repair::class) || $this->inspectionAssetId === null) {
+            return false;
+        }
+
+        $storeId = $this->findAsset($this->inspectionAssetId)->stockLevel?->store_id;
+
+        return $storeId !== null
+            && Gate::allows('create', new Repair(['store_id' => $storeId]));
+    }
+
+    /** Backward-compatible entry point for existing action bindings. */
     public function check(int $assetId): void
     {
-        $this->run(function () use ($assetId): void {
-            (new CheckAsset)($this->findAsset($assetId), CheckAssetData::from([
-                'condition' => AssetCondition::Good->value,
-            ]));
-        }, __('Asset finalised.'));
+        $this->inspectAsset($assetId);
+    }
+
+    /** Dispatch a partial quantity on a bulk line through the canonical action. */
+    public function dispatchBulk(int $itemId): void
+    {
+        $item = $this->findBulkItem($itemId);
+        $quantity = trim((string) ($this->bulkQuantities[$itemId] ?? ''));
+
+        if ($quantity === '') {
+            session()->flash('error', __('Enter a quantity to dispatch.'));
+
+            return;
+        }
+
+        $action = new DispatchBulkQuantity;
+
+        $this->run(function () use ($action, $item, $quantity): void {
+            $action($item, BulkDispatchData::from(['quantity' => $quantity]));
+        }, __('Bulk quantity dispatched.'));
+
+        $this->flashGateWarning($action->gateResult);
+        $this->bulkQuantities[$itemId] = '';
+    }
+
+    /** Return a partial quantity on a bulk line through the canonical action. */
+    public function returnBulk(int $itemId): void
+    {
+        $item = $this->findBulkItem($itemId);
+        $quantity = trim((string) ($this->bulkQuantities[$itemId] ?? ''));
+
+        if ($quantity === '') {
+            session()->flash('error', __('Enter a quantity to return.'));
+
+            return;
+        }
+
+        $this->run(function () use ($item, $quantity): void {
+            (new ReturnBulkQuantity)($item, BulkReturnData::from(['quantity' => $quantity]));
+        }, __('Bulk quantity returned.'));
+
+        $this->bulkQuantities[$itemId] = '';
     }
 
     /** Remove an asset assignment from its container via {@see ClearAssetContainer}. */
@@ -766,10 +1135,33 @@ new #[Layout('components.layouts.app')] class extends Component
      *
      * @return list<array{action: string, label: string, variant: string, confirm: string|null}>
      */
-    public function assetActions(AssetAssignmentStatus $status): array
+    public function assetActions(
+        AssetAssignmentStatus $status,
+        ?AssetLifecycleStatus $lifecycleStatus = null,
+        ?int $storeId = null,
+    ): array
     {
         $order = $this->isOrder();
+        $canAdjustLifecycle = Gate::allows('stock.adjust')
+            && auth()->user()?->canAccessStore($storeId);
         $actions = [];
+
+        if ($lifecycleStatus === AssetLifecycleStatus::Missing) {
+            if ($canAdjustLifecycle) {
+                $actions[] = $this->descriptor('confirmLost', __('Confirm lost'), 'danger', __('Confirm this Asset as lost?'));
+                $actions[] = $this->descriptor('restoreAsset', __('Restore'), 'ghost', __('Restore this Asset lifecycle? It will still require the normal physical check-in path.'));
+            }
+
+            return $actions;
+        }
+
+        if ($lifecycleStatus === AssetLifecycleStatus::Lost) {
+            if ($canAdjustLifecycle) {
+                $actions[] = $this->descriptor('restoreAsset', __('Restore'), 'ghost', __('Restore this Asset lifecycle? It will still require the normal physical check-in path.'));
+            }
+
+            return $actions;
+        }
 
         switch ($status) {
             case AssetAssignmentStatus::Allocated:
@@ -792,16 +1184,22 @@ new #[Layout('components.layouts.app')] class extends Component
             case AssetAssignmentStatus::Dispatched:
                 $actions[] = $this->descriptor('markOnHire', __('Mark on hire'), 'outline-blue');
                 $actions[] = $this->descriptor('returnAsset', __('Check in'), 'outline-green');
+                if ($canAdjustLifecycle) {
+                    $actions[] = $this->descriptor('markMissing', __('Mark missing'), 'danger', __('Mark this Asset as missing?'));
+                }
                 $actions[] = $this->descriptor('revertStatus', __('Revert'), 'ghost', __('Revert this asset one step back?'));
                 break;
 
             case AssetAssignmentStatus::OnHire:
                 $actions[] = $this->descriptor('returnAsset', __('Check in'), 'outline-green');
+                if ($canAdjustLifecycle) {
+                    $actions[] = $this->descriptor('markMissing', __('Mark missing'), 'danger', __('Mark this Asset as missing?'));
+                }
                 $actions[] = $this->descriptor('revertStatus', __('Revert'), 'ghost', __('Revert this asset one step back?'));
                 break;
 
             case AssetAssignmentStatus::CheckedIn:
-                $actions[] = $this->descriptor('check', __('Finalise'), 'outline-green');
+                $actions[] = $this->descriptor('inspectAsset', __('Inspect / Finalise'), 'outline-green');
                 $actions[] = $this->descriptor('revertStatus', __('Revert'), 'ghost', __('Revert this asset one step back?'));
                 break;
 
@@ -847,17 +1245,20 @@ new #[Layout('components.layouts.app')] class extends Component
      *
      * @param  \Closure(): void  $action
      */
-    protected function run(\Closure $action, string $success): void
+    protected function run(\Closure $action, string $success): bool
     {
         if (! $this->canEdit) {
             session()->flash('error', __('This opportunity is closed or you cannot edit it.'));
 
-            return;
+            return false;
         }
+
+        $completed = false;
 
         try {
             $action();
             session()->flash('asset_status', $success);
+            $completed = true;
         } catch (AuthorizationException) {
             session()->flash('error', __('You do not have permission to perform this action.'));
         } catch (NotFoundHttpException) {
@@ -872,6 +1273,8 @@ new #[Layout('components.layouts.app')] class extends Component
         }
 
         $this->opportunity->refresh();
+
+        return $completed;
     }
 
     /**
@@ -916,15 +1319,50 @@ new #[Layout('components.layouts.app')] class extends Component
      */
     protected function resolveAssignment(string $number): OpportunityItemAsset
     {
-        $asset = OpportunityItemAsset::query()
-            ->whereHas('item', fn ($q) => $q->where('opportunity_id', $this->opportunity->id))
-            ->whereHas('stockLevel', fn ($q) => $q->where('asset_number', $number)->orWhere('serial_number', $number))
-            ->orderBy('id')
-            ->first();
+        $stockLevels = StockLevel::query()
+            ->where(fn ($query) => $query
+                ->where('asset_number', $number)
+                ->orWhere('serial_number', $number)
+                ->orWhere('barcode', $number))
+            ->get();
+
+        if ($stockLevels->count() > 1) {
+            throw ValidationException::withMessages([
+                'asset' => __('Ambiguous identifier: ":number" matches multiple physical assets.', ['number' => $number]),
+            ]);
+        }
+
+        $stockLevel = $stockLevels->first();
+        $asset = $stockLevel === null
+            ? null
+            : OpportunityItemAsset::query()
+                ->where('stock_level_id', $stockLevel->id)
+                ->whereHas('item', fn ($query) => $query->where('opportunity_id', $this->opportunity->id))
+                ->first();
 
         if ($asset === null) {
+            if ($stockLevel === null) {
+                throw ValidationException::withMessages([
+                    'asset' => __('Unknown asset: ":number".', ['number' => $number]),
+                ]);
+            }
+
+            if ($stockLevel->store_id !== null && $this->opportunity->store_id !== null
+                && (int) $stockLevel->store_id !== (int) $this->opportunity->store_id) {
+                throw ValidationException::withMessages([
+                    'asset' => __('This asset belongs to another Store and was not changed.'),
+                ]);
+            }
+
+            $assignedElsewhere = OpportunityItemAsset::query()
+                ->where('stock_level_id', $stockLevel->id)
+                ->whereHas('item', fn ($query) => $query->where('opportunity_id', '!=', $this->opportunity->id))
+                ->exists();
+
             throw ValidationException::withMessages([
-                'asset' => __('No allocated asset numbered ":number" was found on this opportunity.', ['number' => $number]),
+                'asset' => $assignedElsewhere
+                    ? __('This asset belongs to another Order and was not changed.')
+                    : __('Asset ":number" exists but is not assigned to this Order.', ['number' => $number]),
             ]);
         }
 
@@ -937,10 +1375,21 @@ new #[Layout('components.layouts.app')] class extends Component
      */
     protected function resolveFreeStockLevel(string $number): StockLevel
     {
-        $level = StockLevel::query()
+        $levels = StockLevel::query()
             ->serialized()
-            ->where(fn ($q) => $q->where('asset_number', $number)->orWhere('serial_number', $number))
-            ->first();
+            ->where(fn ($q) => $q
+                ->where('asset_number', $number)
+                ->orWhere('serial_number', $number)
+                ->orWhere('barcode', $number))
+            ->get();
+
+        if ($levels->count() > 1) {
+            throw ValidationException::withMessages([
+                'asset' => __('Ambiguous identifier: ":number" matches multiple physical assets.', ['number' => $number]),
+            ]);
+        }
+
+        $level = $levels->first();
 
         if ($level === null) {
             throw ValidationException::withMessages([
@@ -1000,6 +1449,22 @@ new #[Layout('components.layouts.app')] class extends Component
         }
 
         return $asset;
+    }
+
+    protected function findBulkItem(int $itemId): OpportunityItem
+    {
+        $item = OpportunityItem::query()
+            ->whereKey($itemId)
+            ->where('opportunity_id', $this->opportunity->id)
+            ->first();
+
+        if ($item === null || $this->itemIsSerialised($item)) {
+            throw ValidationException::withMessages([
+                'item' => __('That line is not available for bulk quantity execution.'),
+            ]);
+        }
+
+        return $item;
     }
 
     /**
@@ -1124,14 +1589,128 @@ new #[Layout('components.layouts.app')] class extends Component
     {
         $this->opportunity->load([
             'items' => fn ($q) => $q->orderBy('path')->orderBy('id'),
-            'items.assets' => fn ($q) => $q->with(['stockLevel', 'container'])->orderBy('id'),
+            'items.assets' => fn ($q) => $q->with(['stockLevel.asset', 'container'])->orderBy('id'),
         ]);
+        $containers = $this->opportunityContainers();
 
         return [
             ...$this->opportunityActionData(),
 
             'groups' => $this->buildGroups(),
+            'containers' => $containers,
+            'containerProgress' => $this->containerProgress($containers),
             'freeAssets' => $this->freeAssetsForItem($this->substituteAssetItemId())->values(),
+        ];
+    }
+
+    /**
+     * Resolve the physical containers relevant to this opportunity without creating
+     * a second Opportunity-to-Container relationship. Before dispatch, relevance is
+     * derived from assigned assets' housing stock level; after dispatch the canonical
+     * container opportunity_id is used.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function opportunityContainers(): array
+    {
+        return $this->opportunityContainersQuery()
+            ->with([
+                'product',
+                'store',
+                'serialisedItem.store',
+                'activeItems.product',
+                'activeItems.serialisedItem',
+            ])
+            ->withCount(['activeItems', 'children'])
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (Container $container): bool => Gate::allows('view', $container))
+            ->map(function (Container $container): array {
+                $compliance = app(ContainerManifestService::class)->compliance($container);
+                $complianceSummary = collect($compliance->slots)
+                    ->filter(fn ($slot): bool => $slot->status !== 'ok')
+                    ->map(fn ($slot): string => $slot->status === 'unexpected'
+                        ? __('Unexpected :actual', ['actual' => $slot->actual_quantity])
+                        : __(ucfirst($slot->status).' — expected :expected, actual :actual', [
+                            'expected' => $slot->expected_quantity,
+                            'actual' => $slot->actual_quantity,
+                        ]))
+                    ->values()
+                    ->all();
+
+                return [
+                'uuid' => $container->uuid,
+                'name' => $container->name,
+                'barcode' => $container->barcode,
+                'status' => $container->status->label(),
+                'status_value' => $container->status->value,
+                'mode' => $container->availabilityMode()->label(),
+                'store' => $container->store?->name ?? $container->serialisedItem?->store?->name ?? '—',
+                'contents_count' => (int) $container->active_items_count,
+                'children_count' => (int) $container->children_count,
+                'compliance_label' => $container->checkin_verification_required_at !== null
+                    ? __('Verification required')
+                    : ($complianceSummary === [] ? __('Complete') : implode(' · ', $complianceSummary)),
+                'compliance_attention' => $container->checkin_verification_required_at !== null || $complianceSummary !== [],
+                'show_url' => route('containers.show', $container),
+                'pack_url' => route('containers.pack', $container),
+                'can_pack' => Gate::allows('pack', $container),
+                'can_seal' => Gate::allows('seal', $container),
+                'can_dispatch' => Gate::allows('dispatch', $container),
+                'can_return' => Gate::allows('return', $container),
+                'can_verify' => Gate::allows('verifyCheckin', $container),
+                'is_bookable_kit' => $container->availabilityMode()->isBookableKit(),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return Builder<Container>
+     */
+    protected function opportunityContainersQuery(): Builder
+    {
+        $assignedHousingIds = OpportunityItemAsset::query()
+            ->whereHas('item', fn ($query) => $query->where('opportunity_id', $this->opportunity->id))
+            ->whereNotNull('container_stock_level_id')
+            ->select('container_stock_level_id');
+
+        return Container::query()
+            ->active()
+            ->where(function (Builder $query) use ($assignedHousingIds): void {
+                $query
+                    ->where('opportunity_id', $this->opportunity->id)
+                    ->orWhereIn('serialised_item_id', $assignedHousingIds);
+            });
+    }
+
+    protected function findOpportunityContainer(string $uuid): ?Container
+    {
+        $container = $this->opportunityContainersQuery()
+            ->where('uuid', $uuid)
+            ->with(['product', 'store', 'serialisedItem'])
+            ->first();
+
+        return $container !== null && Gate::allows('view', $container) ? $container : null;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $containers
+     * @return array{total: int, dispatched: int, returned: int, ready: int, to_return: int}
+     */
+    protected function containerProgress(array $containers): array
+    {
+        $statuses = collect($containers)->pluck('status_value');
+        $dispatched = $statuses->filter(fn (string $status): bool => in_array($status, ['dispatched', 'returned'], true))->count();
+        $returned = $statuses->filter(fn (string $status): bool => $status === 'returned')->count();
+
+        return [
+            'total' => count($containers),
+            'dispatched' => $dispatched,
+            'returned' => $returned,
+            'ready' => $statuses->filter(fn (string $status): bool => $status === 'sealed')->count(),
+            'to_return' => $statuses->filter(fn (string $status): bool => $status === 'dispatched')->count(),
         ];
     }
 
@@ -1148,10 +1727,21 @@ new #[Layout('components.layouts.app')] class extends Component
 
         foreach ($this->opportunity->items as $item) {
             $serialised = $this->itemIsSerialised($item);
+            $required = (int) ceil((float) $item->quantity);
 
             $rows = [];
 
             foreach ($item->assets as $asset) {
+                $lifecycleStatus = $asset->stockLevel?->asset?->lifecycleStatus();
+                $isMissingOrLost = in_array($lifecycleStatus, [AssetLifecycleStatus::Missing, AssetLifecycleStatus::Lost], true);
+                $statusLabel = match (true) {
+                    $lifecycleStatus === AssetLifecycleStatus::Missing => AssetLifecycleStatus::Missing->label(),
+                    $lifecycleStatus === AssetLifecycleStatus::Lost => AssetLifecycleStatus::Lost->label(),
+                    $asset->status === AssetAssignmentStatus::CheckedIn && $asset->checked_at === null => __('Awaiting inspection'),
+                    in_array($asset->status, [AssetAssignmentStatus::Dispatched, AssetAssignmentStatus::OnHire], true) => __('Still out'),
+                    default => $asset->status->label(),
+                };
+
                 $rows[] = [
                     'id' => $asset->id,
                     'asset_number' => $asset->stockLevel?->asset_number
@@ -1159,10 +1749,59 @@ new #[Layout('components.layouts.app')] class extends Component
                         ?? $asset->stockLevel?->item_name
                         ?? '#'.$asset->id,
                     'status' => $asset->status,
+                    'status_label' => $statusLabel,
+                    'lifecycle_status' => $lifecycleStatus,
+                    'lifecycle_label' => $lifecycleStatus?->label(),
+                    'store_id' => $asset->stockLevel?->store_id,
+                    'is_missing_or_lost' => $isMissingOrLost,
                     'container' => $asset->container?->asset_number
                         ?? $asset->container?->item_name,
                 ];
             }
+
+            $allocated = $item->assets->count();
+            $prepared = $item->assets
+                ->filter(fn (OpportunityItemAsset $asset): bool => $asset->status->value >= AssetAssignmentStatus::Prepared->value)
+                ->count();
+            $dispatched = $item->assets
+                ->filter(fn (OpportunityItemAsset $asset): bool => $asset->status->value >= AssetAssignmentStatus::Dispatched->value)
+                ->count();
+            $returned = $item->assets
+                ->filter(fn (OpportunityItemAsset $asset): bool => $asset->status->value >= AssetAssignmentStatus::CheckedIn->value)
+                ->count();
+            $inspectionFinalised = $item->assets
+                ->filter(fn (OpportunityItemAsset $asset): bool => $asset->status === AssetAssignmentStatus::Finalised
+                    && $asset->checked_at !== null)
+                ->count();
+            $inspectionPending = $item->assets
+                ->filter(fn (OpportunityItemAsset $asset): bool => $asset->status === AssetAssignmentStatus::CheckedIn
+                    && $asset->returned_at !== null
+                    && $asset->checked_at === null)
+                ->count();
+            $missing = collect($rows)->where('lifecycle_status', AssetLifecycleStatus::Missing)->count();
+            $lost = collect($rows)->where('lifecycle_status', AssetLifecycleStatus::Lost)->count();
+            $stillOut = collect($rows)
+                ->filter(fn (array $row): bool => in_array($row['status'], [AssetAssignmentStatus::Dispatched, AssetAssignmentStatus::OnHire], true)
+                    && ! $row['is_missing_or_lost'])
+                ->count();
+
+            if ($serialised) {
+                [$progressDone, $progressRequired, $progressLabel, $remainingLabel] = match ($this->subTab) {
+                    'allocate' => [$allocated, $required, __('allocated'), __('to allocate')],
+                    'prepare' => [$prepared, $required, __('prepared'), __('to prepare')],
+                    'book_out' => [$dispatched, $required, __('dispatched'), __('to dispatch')],
+                    'check_in' => [$returned, $dispatched, __('returned'), __('to check in')],
+                    default => [$allocated, $required, __('allocated'), __('remaining')],
+                };
+            } else {
+                $bulkDispatched = (float) $item->dispatched_quantity;
+                $bulkReturned = (float) $item->returned_quantity;
+                [$progressDone, $progressRequired, $progressLabel, $remainingLabel] = $this->subTab === 'check_in'
+                    ? [$bulkReturned, $bulkDispatched, __('returned'), __('to return')]
+                    : [$bulkDispatched, (float) $item->quantity, __('dispatched'), __('to dispatch')];
+            }
+
+            $remainingForAction = max(0, (float) $progressRequired - (float) $progressDone);
 
             $groups[] = [
                 'id' => $item->id,
@@ -1170,11 +1809,24 @@ new #[Layout('components.layouts.app')] class extends Component
                 'type' => $item->transaction_type->label(),
                 'serialised' => $serialised,
                 'rows' => $rows,
-                'requested' => (int) ceil((float) $item->quantity),
+                'requested' => $required,
                 'quantity' => $this->formatQuantity($item->quantity),
-                'allocated' => $item->assets->count(),
+                'allocated' => $allocated,
+                'prepared' => $prepared,
                 'dispatched' => $this->formatQuantity($item->dispatched_quantity),
                 'returned' => $this->formatQuantity($item->returned_quantity),
+                'inspection_finalised' => $inspectionFinalised,
+                'inspection_pending' => $inspectionPending,
+                'still_out' => $stillOut,
+                'missing' => $missing,
+                'lost' => $lost,
+                'remaining_dispatch' => $this->formatQuantity(max(0, (float) $item->quantity - (float) $item->dispatched_quantity)),
+                'remaining_return' => $this->formatQuantity(max(0, (float) $item->dispatched_quantity - (float) $item->returned_quantity)),
+                'progress_done' => $this->formatQuantity($progressDone),
+                'progress_required' => $this->formatQuantity($progressRequired),
+                'progress_label' => $progressLabel,
+                'remaining_label' => $remainingLabel,
+                'remaining_for_action' => $remainingForAction,
             ];
         }
 
@@ -1187,18 +1839,22 @@ new #[Layout('components.layouts.app')] class extends Component
     }
 }; ?>
 
-<section class="w-full">
+<section class="w-full" data-density="compact">
     @include('livewire.opportunities.partials.opportunity-header', ['opportunity' => $opportunity, 'subpage' => 'Assets', 'showActions' => true, 'canChangeStatus' => $canChangeStatus])
     @include('livewire.opportunities.partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'assets'])
 
     @php
-        $statusBadge = fn (\App\Enums\AssetAssignmentStatus $s) => match ($s) {
+        $statusBadge = fn (\App\Enums\AssetAssignmentStatus $s, ?\App\Enums\AssetLifecycleStatus $lifecycle = null) => match (true) {
+            $lifecycle === \App\Enums\AssetLifecycleStatus::Lost => 's-status-red',
+            $lifecycle === \App\Enums\AssetLifecycleStatus::Missing => 's-status-amber',
+            default => match ($s) {
             \App\Enums\AssetAssignmentStatus::Allocated => 's-status-zinc',
             \App\Enums\AssetAssignmentStatus::Prepared => 's-status-blue',
             \App\Enums\AssetAssignmentStatus::Dispatched => 's-status-amber',
             \App\Enums\AssetAssignmentStatus::OnHire => 's-status-amber',
             \App\Enums\AssetAssignmentStatus::CheckedIn => 's-status-blue',
             \App\Enums\AssetAssignmentStatus::Finalised => 's-status-green',
+            },
         };
 
         // The internal sub-tabs (Livewire state, NOT routes). The scan-driven four
@@ -1212,7 +1868,27 @@ new #[Layout('components.layouts.app')] class extends Component
         ];
     @endphp
 
-    <div class="flex-1 space-y-5 px-6 py-4 max-md:px-5 max-sm:px-3" x-data="{ subTab: @entangle('subTab') }">
+    @php
+        $executionStatus = $opportunity->statusEnum();
+        $nextStep = match ($executionStatus) {
+            \App\Enums\OpportunityStatus::OrderActive => __('Preparation'),
+            \App\Enums\OpportunityStatus::OrderDispatched => __('Going out'),
+            \App\Enums\OpportunityStatus::OrderOnHire => __('Return'),
+            \App\Enums\OpportunityStatus::OrderReturned, \App\Enums\OpportunityStatus::OrderChecked => __('Checking'),
+            default => $executionStatus->label(),
+        };
+    @endphp
+
+    <div
+        class="flex-1 space-y-5 px-6 py-4 max-md:px-5 max-sm:px-3"
+        x-data="{
+            subTab: @entangle('subTab'),
+            focusScanner() {
+                this.$nextTick(() => this.$root.querySelector('[data-scanner-input]:not([disabled])')?.focus())
+            }
+        }"
+        x-on:warehouse-scan-ready.window="focusScanner()"
+    >
 
         @if(session('error'))
             <x-signals.alert type="danger">{{ session('error') }}</x-signals.alert>
@@ -1229,6 +1905,23 @@ new #[Layout('components.layouts.app')] class extends Component
                 {{ __('Assets can be allocated and prepared on a reserved quotation, but booking out and checking in only become available once it is an order.') }}
             </x-signals.alert>
         @endunless
+
+        <x-signals.card>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex min-w-0 items-center gap-3">
+                    <div class="min-w-0">
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Execution workspace') }}</div>
+                        <div class="truncate text-sm font-semibold text-[var(--text)]">{{ $opportunity->subject }}</div>
+                    </div>
+                    <span class="s-badge s-badge-blue">{{ $executionStatus->label() }}</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)]">
+                    <span><strong class="font-medium text-[var(--text)]">{{ __('Next') }}:</strong> {{ $nextStep }}</span>
+                    <span><strong class="font-medium text-[var(--text)]">{{ __('Store') }}:</strong> {{ $opportunity->store?->name ?? __('No store') }}</span>
+                    <span><strong class="font-medium text-[var(--text)]">{{ __('Lines') }}:</strong> {{ count($groups) }}</span>
+                </div>
+            </div>
+        </x-signals.card>
 
         {{-- Internal sub-tabs (Livewire, not routes) --}}
         <div class="flex flex-wrap items-center gap-1 border-b border-[var(--border)] pb-px">
@@ -1252,6 +1945,38 @@ new #[Layout('components.layouts.app')] class extends Component
         {{--  SUB-TAB CONTROLS                                            --}}
         {{-- ============================================================ --}}
         @if($canEdit)
+            {{-- UNIFIED SCANNER WORKSPACE: an explicit mode selects the existing action. --}}
+            <div class="s-panel" style="padding: 12px 14px;" x-show="subTab === 'functions'" x-cloak data-density="comfortable">
+                <form wire:submit="executeScan" class="flex flex-wrap items-end gap-3" x-on:submit="$nextTick(() => focusScanner())">
+                    <div class="min-w-[220px] flex-1">
+                        <label for="workspace-scan-asset" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Scan equipment') }}</label>
+                        <input
+                            id="workspace-scan-asset"
+                            data-scanner-input
+                            type="text"
+                            wire:model="scanAsset"
+                            class="s-input w-full font-mono"
+                            placeholder="{{ __('Scan / type asset number, then Enter') }}"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <div class="min-w-[150px]">
+                        <label for="workspace-execution-mode" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Current action') }}</label>
+                        <select id="workspace-execution-mode" wire:model="executionMode" class="s-input w-full">
+                            <option value="allocate">{{ __('Allocate') }}</option>
+                            <option value="prepare">{{ __('Prepare') }}</option>
+                            <option value="book_out" @disabled(! $this->isOrder())>{{ __('Book out') }}</option>
+                            <option value="check_in" @disabled(! $this->isOrder())>{{ __('Check in') }}</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="s-btn s-btn-primary" wire:loading.attr="disabled" wire:target="executeScan">
+                        <span wire:loading.remove wire:target="executeScan">{{ __('Execute') }}</span>
+                        <span wire:loading wire:target="executeScan">{{ __('Working…') }}</span>
+                    </button>
+                </form>
+                <p class="mt-2 text-[11px] text-[var(--text-muted)]">{{ __('Select the intended lifecycle action before scanning. The existing warehouse action validates the current asset state and Store.') }}</p>
+            </div>
+
             {{-- FUNCTIONS: the multiselect-driven Action toolbar --}}
             <div class="s-panel" style="padding: 12px 14px;" x-show="subTab === 'functions'" x-cloak>
                 <div class="flex flex-wrap items-end gap-3">
@@ -1299,7 +2024,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <form wire:submit="scanAllocate" class="flex flex-wrap items-end gap-3">
                     <div class="min-w-[200px] flex-1">
                         <label for="alloc-asset" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Asset') }}</label>
-                        <input id="alloc-asset" type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off">
+                        <input id="alloc-asset" data-scanner-input type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off">
                     </div>
                     <div class="w-24">
                         <label for="alloc-qty" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Quantity') }}</label>
@@ -1324,7 +2049,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <form wire:submit="scanPrepare" class="flex flex-wrap items-end gap-3">
                     <div class="min-w-[200px] flex-1">
                         <label for="prep-asset" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Asset') }}</label>
-                        <input id="prep-asset" type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off">
+                        <input id="prep-asset" data-scanner-input type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off">
                     </div>
                     <div class="w-44">
                         <label for="prep-container" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Container') }}</label>
@@ -1339,7 +2064,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <form wire:submit="scanBookOut" class="flex flex-wrap items-end gap-3">
                     <div class="min-w-[200px] flex-1">
                         <label for="out-asset" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Asset') }}</label>
-                        <input id="out-asset" type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off" @disabled(! $this->isOrder())>
+                        <input id="out-asset" data-scanner-input type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off" @disabled(! $this->isOrder())>
                     </div>
                     <div class="w-44">
                         <label for="out-container" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Container') }}</label>
@@ -1354,7 +2079,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <form wire:submit="scanCheckIn" class="flex flex-wrap items-end gap-3">
                     <div class="min-w-[200px] flex-1">
                         <label for="in-asset" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Asset') }}</label>
-                        <input id="in-asset" type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off" @disabled(! $this->isOrder())>
+                        <input id="in-asset" data-scanner-input type="text" wire:model="scanAsset" class="s-input w-full font-mono" placeholder="{{ __('Scan / type asset number, then Enter') }}" autocomplete="off" @disabled(! $this->isOrder())>
                     </div>
                     <div class="w-44">
                         <label for="in-container" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Container') }}</label>
@@ -1363,6 +2088,110 @@ new #[Layout('components.layouts.app')] class extends Component
                     <button type="submit" class="s-btn s-btn-outline-green" @disabled(! $this->isOrder())>{{ __('Check in') }}</button>
                 </form>
             </div>
+        @endif
+
+        @if($containers !== [])
+            <x-signals.card
+                title="{{ __('Containers') }}"
+                data-density="compact"
+            >
+                <div class="flex flex-wrap items-center gap-3 border-b border-[var(--card-border)] px-3 py-2 text-xs text-[var(--text-muted)]">
+                    <span class="font-mono">
+                        {{ $containerProgress['dispatched'] }} / {{ $containerProgress['total'] }} {{ __('booked out') }}
+                    </span>
+                    @if($subTab === 'check_in')
+                        <span class="font-mono">{{ $containerProgress['to_return'] }} {{ __('to check in') }}</span>
+                    @elseif($containerProgress['ready'] > 0)
+                        <span class="font-mono">{{ $containerProgress['ready'] }} {{ __('ready') }}</span>
+                    @endif
+                </div>
+                <x-signals.table-wrap>
+                    <table class="s-table s-table-compact w-full">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Container') }}</th>
+                                <th>{{ __('Store') }}</th>
+                                <th>{{ __('Contents') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th class="text-center"><span class="sr-only">{{ __('Actions') }}</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($containers as $container)
+                                <tr wire:key="execution-container-{{ $container['uuid'] }}">
+                                    <td>
+                                        <a href="{{ $container['show_url'] }}" wire:navigate.hover class="font-medium text-[var(--text)] hover:text-[var(--blue)]">
+                                            {{ $container['name'] }}
+                                        </a>
+                                        @if($container['barcode'])
+                                            <div class="font-mono text-xs text-[var(--text-muted)]">{{ $container['barcode'] }}</div>
+                                        @endif
+                                    </td>
+                                    <td>{{ $container['store'] }}</td>
+                                    <td class="tabular-nums">
+                                        {{ $container['contents_count'] }}
+                                        @if($container['children_count'] > 0)
+                                            <span class="text-xs text-[var(--text-muted)]">· {{ $container['children_count'] }} {{ __('nested') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="s-badge s-badge-zinc">{{ $container['status'] }}</span>
+                                        <span class="text-xs text-[var(--text-muted)]">{{ $container['mode'] }}</span>
+                                        @if($container['compliance_attention'])
+                                            <span class="mt-1 block s-badge s-badge-amber">{{ $container['compliance_label'] }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="flex flex-wrap justify-center gap-1">
+                                            <a href="{{ $container['show_url'] }}" wire:navigate.hover class="s-btn-ghost s-btn-xs">
+                                                {{ __('Open') }}
+                                            </a>
+                                            @if($container['status_value'] === 'open' && $container['can_pack'])
+                                                <a href="{{ $container['pack_url'] }}" wire:navigate.hover class="s-btn-ghost s-btn-xs">
+                                                    {{ __('Pack') }}
+                                                </a>
+                                            @endif
+                                            @if($container['status_value'] === 'sealed' && $container['can_dispatch'] && $this->isOrder())
+                                                <button
+                                                    type="button"
+                                                    wire:click="dispatchContainerFromWorkspace('{{ $container['uuid'] }}')"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="dispatchContainerFromWorkspace('{{ $container['uuid'] }}')"
+                                                    class="s-btn-ghost s-btn-xs"
+                                                >
+                                                    {{ __('Book out') }}
+                                                </button>
+                                            @endif
+                                            @if($container['status_value'] === 'dispatched' && $container['is_bookable_kit'] && $container['can_return'] && $this->isOrder())
+                                                <button
+                                                    type="button"
+                                                    wire:click="returnContainerFromWorkspace('{{ $container['uuid'] }}')"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="returnContainerFromWorkspace('{{ $container['uuid'] }}')"
+                                                    class="s-btn-ghost s-btn-xs"
+                                                >
+                                                    {{ __('Check in') }}
+                                                </button>
+                                            @endif
+                                            @if($container['status_value'] === 'returned' && $container['can_verify'])
+                                                <button
+                                                    type="button"
+                                                    wire:click="verifyContainerFromWorkspace('{{ $container['uuid'] }}')"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="verifyContainerFromWorkspace('{{ $container['uuid'] }}')"
+                                                    class="s-btn-ghost s-btn-xs"
+                                                >
+                                                    {{ __('Verify') }}
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </x-signals.table-wrap>
+            </x-signals.card>
         @endif
 
         {{-- ============================================================ --}}
@@ -1390,7 +2219,7 @@ new #[Layout('components.layouts.app')] class extends Component
                             <th style="width: 90px;">{{ __('Type') }}</th>
                             <th style="width: 130px;">{{ __('Status') }}</th>
                             <th style="width: 130px;">{{ __('Container') }}</th>
-                            <th class="text-center" style="width: 150px;">{{ __('Qty · Alloc · Out · In') }}</th>
+                            <th class="text-center" style="width: 150px;">{{ __('Progress') }}</th>
                             <th style="width: 40px;"></th>
                         </tr>
                     </thead>
@@ -1410,13 +2239,90 @@ new #[Layout('components.layouts.app')] class extends Component
                                             <span class="s-badge s-badge-zinc s-badge-outline">{{ __('Bulk') }}</span>
                                         @endif
                                         <span class="text-xs text-[var(--text-faint)]">{{ count($group['rows']) }} {{ \Illuminate\Support\Str::plural('asset', count($group['rows'])) }}</span>
+                                        @if($group['serialised'] && ($group['inspection_finalised'] > 0 || $group['inspection_pending'] > 0))
+                                            <span class="text-xs text-[var(--text-muted)]">
+                                                {{ __('Inspection') }}: {{ $group['inspection_finalised'] }}/{{ $group['inspection_finalised'] + $group['inspection_pending'] }}
+                                                @if($group['inspection_pending'] > 0)
+                                                    · {{ $group['inspection_pending'] }} {{ __('pending') }}
+                                                @endif
+                                            </span>
+                                        @endif
+                                        @if($group['serialised'] && $group['still_out'] > 0)
+                                            <span class="s-badge s-badge-zinc">{{ $group['still_out'] }} {{ __('still out') }}</span>
+                                        @endif
+                                        @if($group['serialised'] && $group['missing'] > 0)
+                                            <span class="s-badge s-badge-amber">{{ $group['missing'] }} {{ __('missing') }}</span>
+                                        @endif
+                                        @if($group['serialised'] && $group['lost'] > 0)
+                                            <span class="s-badge s-badge-red">{{ $group['lost'] }} {{ __('lost') }}</span>
+                                        @endif
                                     </button>
                                 </td>
                                 <td class="text-center font-mono text-xs text-[var(--text-muted)]">
-                                    {{ $group['requested'] }} · {{ $group['allocated'] }} · {{ $group['dispatched'] }} · {{ $group['returned'] }}
+                                    <div>{{ $group['progress_done'] }} / {{ $group['progress_required'] }} {{ $group['progress_label'] }}</div>
+                                    @if($group['remaining_for_action'] > 0)
+                                        <div class="mt-1 text-[var(--text-faint)]">{{ $group['remaining_label'] }}: {{ $this->formatQuantity($group['remaining_for_action']) }}</div>
+                                    @else
+                                        <div class="mt-1 text-[var(--green)]">{{ __('Complete') }}</div>
+                                    @endif
                                 </td>
                                 <td></td>
                             </tr>
+                            @if(! $group['serialised'])
+                                <tr class="s-table-line" wire:key="bulk-controls-{{ $group['id'] }}">
+                                    <td></td>
+                                    <td colspan="5">
+                                        <div class="flex flex-wrap items-center gap-3" data-density="comfortable">
+                                            <span class="text-xs text-[var(--text-muted)]">{{ __('Bulk execution') }}</span>
+                                            <span class="text-xs font-mono text-[var(--text-muted)]">
+                                                {{ __('To dispatch') }}: {{ $group['remaining_dispatch'] }} · {{ __('Outstanding return') }}: {{ $group['remaining_return'] }}
+                                            </span>
+                                            @if($canEdit && $this->isOrder())
+                                                <div class="ml-auto flex flex-wrap items-center gap-2">
+                                                    <input
+                                                        type="number"
+                                                        min="0.01"
+                                                        step="any"
+                                                        wire:model="bulkQuantities.{{ $group['id'] }}"
+                                                        class="s-input w-24 font-mono"
+                                                        placeholder="{{ $this->formatQuantity($group['remaining_for_action']) }}"
+                                                        aria-label="{{ __('Bulk quantity') }}"
+                                                        @disabled($group['remaining_for_action'] <= 0)
+                                                    >
+                                                    @if($subTab === 'functions' || $subTab === 'book_out')
+                                                        <button
+                                                            type="button"
+                                                            wire:click="dispatchBulk({{ $group['id'] }})"
+                                                            wire:loading.attr="disabled"
+                                                            wire:target="dispatchBulk({{ $group['id'] }})"
+                                                            class="s-btn s-btn-outline-green"
+                                                            @disabled((float) $group['remaining_dispatch'] <= 0)
+                                                        >
+                                                            {{ __('Dispatch') }}
+                                                        </button>
+                                                    @endif
+                                                    @if($subTab === 'functions' || $subTab === 'check_in')
+                                                        <button
+                                                            type="button"
+                                                            wire:click="returnBulk({{ $group['id'] }})"
+                                                            wire:loading.attr="disabled"
+                                                            wire:target="returnBulk({{ $group['id'] }})"
+                                                            class="s-btn s-btn-outline-blue"
+                                                            @disabled((float) $group['remaining_return'] <= 0)
+                                                        >
+                                                            {{ __('Return') }}
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="ml-auto text-xs text-[var(--text-faint)]">{{ __('Bulk actions are available on an active order.') }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            @endif
                         </tbody>
 
                         <tbody x-show="!isCollapsed('{{ $groupKey }}')">
@@ -1431,7 +2337,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                     <td class="font-medium font-mono">{{ $row['asset_number'] }}</td>
                                     <td>{{ $group['type'] }}</td>
                                     <td>
-                                        <span class="s-status {{ $statusBadge($row['status']) }}"><span class="s-status-dot"></span> {{ $row['status']->label() }}</span>
+                                        <span class="s-status {{ $statusBadge($row['status'], $row['lifecycle_status']) }}"><span class="s-status-dot"></span> {{ $row['status_label'] }}</span>
                                     </td>
                                     <td class="text-[var(--text-muted)]">
                                         @if($row['container'])
@@ -1442,7 +2348,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                     </td>
                                     <td></td>
                                     <td class="text-center">
-                                        @if($canEdit && $this->assetActions($row['status']) !== [])
+                                        @if($canEdit && $this->assetActions($row['status'], $row['lifecycle_status'], $row['store_id']) !== [])
                                             <div class="relative inline-block" x-data="rowActionsMenu()">
                                                 <button type="button" class="s-btn-icon" x-ref="trigger" x-on:click="toggle()">▾</button>
                                                 {{-- Teleported to <body> so the table-wrap overflow can't clip it. --}}
@@ -1458,7 +2364,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                                              made through `$wire` (captured from the original Alpine scope,
                                                              preserved across the teleport) so the actions actually fire;
                                                              confirmations use a native confirm() guard in the handler. --}}
-                                                        @foreach($this->assetActions($row['status']) as $act)
+                                                        @foreach($this->assetActions($row['status'], $row['lifecycle_status'], $row['store_id']) as $act)
                                                             <button type="button"
                                                                 wire:key="act-{{ $row['id'] }}-{{ $act['action'] }}"
                                                                 class="s-dropdown-item w-full text-left"
@@ -1503,6 +2409,67 @@ new #[Layout('components.layouts.app')] class extends Component
             </x-signals.table-wrap>
         @endif
     </div>
+
+    {{-- ============================================================ --}}
+    {{--  RETURN INSPECTION MODAL                                     --}}
+    {{-- ============================================================ --}}
+    <x-signals.modal name="inspect-asset" title="{{ __('Return inspection') }}" :teleport="false">
+        <div class="space-y-4">
+            <div class="rounded-md border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Asset') }}</div>
+                <div class="mt-1 font-mono font-medium text-[var(--text)]">{{ $inspectionAssetLabel ?? '—' }}</div>
+                <div class="mt-1 text-xs text-[var(--text-muted)]">{{ __('Checked in — awaiting inspection') }}</div>
+            </div>
+
+            <div>
+                <label for="inspection-condition" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Condition') }}</label>
+                <select id="inspection-condition" wire:model="inspectionCondition" class="s-input w-full">
+                    <option value="{{ AssetCondition::Good->value }}">{{ AssetCondition::Good->label() }}</option>
+                    <option value="{{ AssetCondition::Damaged->value }}">{{ AssetCondition::Damaged->label() }}</option>
+                </select>
+                @error('inspectionCondition') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="inspection-notes" class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{{ __('Notes') }}</label>
+                <textarea id="inspection-notes" wire:model="inspectionNotes" rows="3" class="s-input w-full"></textarea>
+                @error('inspectionNotes') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            @if($inspectionCondition === AssetCondition::Damaged->value)
+                @if($this->canCreateRepair())
+                    <label class="flex items-start gap-2 text-sm text-[var(--text)]">
+                        <input type="checkbox" wire:model.live="sendToRepair" class="s-checkbox mt-0.5">
+                        <span>
+                            <span class="font-medium">{{ __('Send to repair') }}</span>
+                            <span class="block text-xs text-[var(--text-muted)]">{{ __('Create a repair record for this physical asset.') }}</span>
+                        </span>
+                    </label>
+                    @error('sendToRepair') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+
+                    @if($sendToRepair)
+                        <label class="flex items-start gap-2 text-sm text-[var(--text)]">
+                            <input type="checkbox" wire:model.live="repairUnusable" class="s-checkbox mt-0.5">
+                            <span>
+                                <span class="font-medium">{{ __('Equipment is unusable') }}</span>
+                                <span class="block text-xs text-[var(--text-muted)]">{{ __('Keep this asset unavailable until the repair domain releases it.') }}</span>
+                            </span>
+                        </label>
+                        @error('repairUnusable') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    @endif
+                @else
+                    <p class="text-xs text-[var(--text-muted)]">{{ __('You can record the damage, but you do not have permission to create a repair.') }}</p>
+                @endif
+            @endif
+        </div>
+
+        <x-slot:footer>
+            <button type="button" x-on:click="$dispatch('close-modal', 'inspect-asset')" class="s-btn s-btn-ghost">{{ __('Cancel') }}</button>
+            <button type="button" wire:click="finaliseInspection" wire:loading.attr="disabled" class="s-btn s-btn-primary">
+                {{ $inspectionCondition === AssetCondition::Damaged->value && $sendToRepair ? __('Finalise & send to repair') : __('Finalise inspection') }}
+            </button>
+        </x-slot:footer>
+    </x-signals.modal>
 
     {{-- ============================================================ --}}
     {{--  SUBSTITUTE-ASSET MODAL                                       --}}

@@ -83,7 +83,7 @@ it('nets bulk returned quantity against the active demand quantity', function ()
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    expect(Demand::query()->where('source_id', $item->id)->first()->quantity)->toBe(3);
+    expect(Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->first()->quantity)->toBe(3);
 });
 
 it('writes no bulk demand when the line is fully returned', function () {
@@ -96,7 +96,7 @@ it('writes no bulk demand when the line is fully returned', function () {
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    expect(Demand::query()->where('source_id', $item->id)->count())->toBe(0);
+    expect(Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->count())->toBe(0);
 });
 
 it('keeps a remainder demand when only part of a serialised line is allocated', function () {
@@ -112,7 +112,7 @@ it('keeps a remainder demand when only part of a serialised line is allocated', 
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    $demands = Demand::query()->where('source_id', $item->id)->get();
+    $demands = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->get();
 
     expect($demands)->toHaveCount(2)
         ->and($demands->whereNotNull('asset_id')->first()->quantity)->toBe(1)
@@ -139,7 +139,7 @@ it('pulls asset demand start forward when dispatched before the planned start', 
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    $demand = Demand::query()->where('source_id', $item->id)->first();
+    $demand = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->first();
 
     expect($demand->starts_at->toIso8601String())->toBe('2026-07-30T08:00:00+00:00')
         ->and($demand->phase)->toBe(DemandPhase::Operational);
@@ -166,11 +166,18 @@ it('closes returned asset demand at the actual return and flags pending check-in
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    $demand = Demand::query()->where('source_id', $item->id)->first();
+    $demand = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->first();
+
+    $inspectionHold = Demand::query()
+        ->where('source_type', 'inspection_hold')
+        ->where('source_id', $item->assets()->firstOrFail()->id)
+        ->firstOrFail();
 
     expect($demand->ends_at->toIso8601String())->toBe('2026-08-02T10:00:00+00:00')
         ->and($demand->phase)->toBe(DemandPhase::Closed)
-        ->and($demand->metadata['pending_checkin'])->toBeTrue();
+        ->and($demand->metadata['pending_checkin'])->toBeTrue()
+        ->and($inspectionHold->is_active)->toBeTrue()
+        ->and($inspectionHold->asset_id)->toBe($asset->id);
 });
 
 it('explodes pool components and claims hybrid housing as a serialised unit', function () {
@@ -193,7 +200,7 @@ it('explodes pool components and claims hybrid housing as a serialised unit', fu
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    $demands = Demand::query()->where('source_id', $item->id)->get();
+    $demands = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->get();
 
     expect($demands->where('product_id', $pool->id)->first()->quantity)->toBe(4)
         ->and($demands->where('product_id', $housing->id)->first()->quantity)->toBe(2);
@@ -222,7 +229,7 @@ it('voids demands for inactive version items and resyncs the active version on o
     $resolver->syncDemands($staleItem);
     $resolver->syncDemands($activeItem);
 
-    expect(Demand::query()->where('source_id', $staleItem->id)->where('is_active', true)->count())->toBe(1);
+    expect(Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $staleItem->id)->where('is_active', true)->count())->toBe(1);
 
     $opportunity->forceFill([
         'status' => OpportunityStatus::OrderCancelled->statusValue(),
@@ -231,9 +238,9 @@ it('voids demands for inactive version items and resyncs the active version on o
 
     $resolver->resyncForOpportunity($opportunity->fresh());
 
-    expect(Demand::query()->where('source_id', $staleItem->id)->where('phase', DemandPhase::Void->value)->exists())
+    expect(Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $staleItem->id)->where('phase', DemandPhase::Void->value)->exists())
         ->toBeTrue()
-        ->and(Demand::query()->where('source_id', $activeItem->id)->where('phase', DemandPhase::Void->value)->exists())
+        ->and(Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $activeItem->id)->where('phase', DemandPhase::Void->value)->exists())
         ->toBeTrue();
 });
 
@@ -267,7 +274,7 @@ it('skips a kit pool component whose backing product no longer exists when explo
 
     app(OpportunityItemDemandResolver::class)->syncDemands($item);
 
-    $demands = Demand::query()->where('source_id', $item->id)->get();
+    $demands = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->get();
 
     // The live component got a demand; the orphaned one produced nothing.
     expect($demands->where('product_id', $live->id)->count())->toBe(1)

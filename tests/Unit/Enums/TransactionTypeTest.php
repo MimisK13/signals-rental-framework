@@ -15,16 +15,18 @@ it('returns human-readable labels', function () {
         ->and(TransactionType::TransferOut->label())->toBe('Transfer Out');
 });
 
-it('returns manual creation values', function () {
-    $values = TransactionType::manualCreationValues();
-    expect($values)->toContain(4, 5, 6, 7, 9);
-    expect($values)->not->toContain(1);
-    expect($values)->not->toContain(2);
-    expect($values)->not->toContain(3);
+it('returns operator adjustment values', function () {
+    $values = TransactionType::adjustmentValues();
+    expect($values)->toBe([
+        TransactionType::Increase->value,
+        TransactionType::Decrease->value,
+        TransactionType::WriteOff->value,
+    ]);
 });
 
 it('returns correct quantity sign', function () {
     expect(TransactionType::Buy->quantitySign())->toBe(1)
+        ->and(TransactionType::Decrease->quantitySign())->toBe(-1)
         ->and(TransactionType::Sell->quantitySign())->toBe(-1)
         ->and(TransactionType::WriteOff->quantitySign())->toBe(-1)
         ->and(TransactionType::Opening->quantitySign())->toBe(1);

@@ -33,6 +33,7 @@ class ProductSearchResultData extends Data
         public ?string $sku,
         public ?string $default_rate,
         public array $accessories = [],
+        public bool $is_combination = false,
         public ?string $availability = null,
         public ?string $image_url = null,
         public string $initials = '',

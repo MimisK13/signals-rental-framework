@@ -28,6 +28,7 @@ class CountryData
             'AU' => ['name' => 'Australia', 'currency' => 'AUD', 'timezone' => 'Australia/Sydney', 'tax_rate' => '10.00', 'tax_label' => 'GST', 'date_format' => 'd/m/Y', 'time_format' => 'g:i A'],
             'NZ' => ['name' => 'New Zealand', 'currency' => 'NZD', 'timezone' => 'Pacific/Auckland', 'tax_rate' => '15.00', 'tax_label' => 'GST', 'date_format' => 'd/m/Y', 'time_format' => 'g:i A'],
             'IE' => ['name' => 'Ireland', 'currency' => 'EUR', 'timezone' => 'Europe/Dublin', 'tax_rate' => '23.00', 'tax_label' => 'VAT', 'date_format' => 'd/m/Y', 'time_format' => 'H:i'],
+            'GR' => ['name' => 'Greece', 'currency' => 'EUR', 'timezone' => 'Europe/Athens', 'tax_rate' => '24.00', 'tax_label' => 'VAT', 'date_format' => 'd/m/Y', 'time_format' => 'H:i'],
             'DE' => ['name' => 'Germany', 'currency' => 'EUR', 'timezone' => 'Europe/Berlin', 'tax_rate' => '19.00', 'tax_label' => 'MwSt', 'date_format' => 'd.m.Y', 'time_format' => 'H:i'],
             'FR' => ['name' => 'France', 'currency' => 'EUR', 'timezone' => 'Europe/Paris', 'tax_rate' => '20.00', 'tax_label' => 'TVA', 'date_format' => 'd/m/Y', 'time_format' => 'H:i'],
             'NL' => ['name' => 'Netherlands', 'currency' => 'EUR', 'timezone' => 'Europe/Amsterdam', 'tax_rate' => '21.00', 'tax_label' => 'BTW', 'date_format' => 'd-m-Y', 'time_format' => 'H:i'],

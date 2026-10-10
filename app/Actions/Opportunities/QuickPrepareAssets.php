@@ -32,7 +32,7 @@ class QuickPrepareAssets
 
     public function __invoke(Opportunity $opportunity, QuickPrepareAssetsData $data): OpportunityData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $opportunity);
 
         $preparedAt = $data->prepared_at ?? Carbon::now('UTC')->toIso8601String();
 

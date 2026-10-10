@@ -49,6 +49,7 @@ class DispatchContainer
     public function __invoke(Container $container, DispatchContainerData $data): ContainerDispatchResultData
     {
         Gate::authorize('dispatch', $container);
+        Gate::authorize('update', Opportunity::query()->findOrFail($data->opportunity_id));
 
         if ($container->availabilityMode()->isBookableKit()) {
             return (new DispatchKitContainer)($container, $data);

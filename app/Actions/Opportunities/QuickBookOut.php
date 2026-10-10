@@ -47,7 +47,7 @@ class QuickBookOut
 
     public function __invoke(Opportunity $opportunity, QuickBookOutData $data): OpportunityData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $opportunity);
 
         $dispatchedAt = $data->dispatched_at ?? Carbon::now('UTC')->toIso8601String();
 

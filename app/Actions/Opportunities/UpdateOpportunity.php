@@ -7,13 +7,19 @@ use App\Actions\Opportunities\Concerns\ValidatesOpportunityMember;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\UpdateOpportunityData;
+use App\Enums\AssetAssignmentStatus;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
+use App\Models\OpportunityItemAsset;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Verbs\Events\Opportunities\ItemDatesChanged;
 use App\Verbs\Events\Opportunities\OpportunityUpdated;
+use Brick\Math\BigDecimal;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -40,12 +46,12 @@ class UpdateOpportunity
      */
     private const NULLABLE_FIELDS = [
         'subject', 'member_id', 'store_id', 'owned_by',
-        'starts_at', 'ends_at', 'charge_starts_at', 'charge_ends_at',
+        'starts_at', 'ends_at', 'planning_starts_at', 'planning_ends_at', 'charge_starts_at', 'charge_ends_at',
         'prep_starts_at', 'prep_ends_at', 'load_starts_at', 'load_ends_at',
         'deliver_starts_at', 'deliver_ends_at', 'setup_starts_at', 'setup_ends_at',
         'show_starts_at', 'show_ends_at', 'takedown_starts_at', 'takedown_ends_at',
         'collect_starts_at', 'collect_ends_at', 'unload_starts_at', 'unload_ends_at',
-        'deprep_starts_at', 'deprep_ends_at', 'ordered_at', 'quote_invalid_at',
+        'deprep_starts_at', 'deprep_ends_at', 'ordered_at', 'quote_invalid_at', 'reservation_priority',
         'use_chargeable_days', 'open_ended_rental', 'customer_collecting', 'customer_returning',
     ];
 
@@ -75,6 +81,8 @@ class UpdateOpportunity
         // this same update, scope to the new member; otherwise the current one. Only
         // address fields actually provided (not their Optional sentinel) are checked.
         $this->assertAddressesBelongToMember($opportunity, $data);
+        $this->assertStoreChangeIsSafe($opportunity, $data);
+        $this->assertOperationalPeriodChangeIsSafe($opportunity, $data);
 
         // D7: when the opportunity hire window changes, the line items that still
         // INHERIT it (their per-item window equals the opportunity's current window —
@@ -86,6 +94,8 @@ class UpdateOpportunity
         [$newStartsAtIso, $newEndsAtIso] = $this->resolvedHireWindowIso($opportunity, $data);
 
         $this->commitVerbs(function () use ($opportunity, $data, $provided, $itemsToReschedule, $newStartsAtIso, $newEndsAtIso): void {
+            $this->acquireCapacityLocks($opportunity, $data->store_id);
+
             OpportunityUpdated::fire(
                 opportunity_id: $opportunity->state_id,
                 provided: $provided,
@@ -99,6 +109,8 @@ class UpdateOpportunity
                 external_description: $this->resolveOptional($data->external_description),
                 starts_at: $data->starts_at,
                 ends_at: $data->ends_at,
+                planning_starts_at: $data->planning_starts_at,
+                planning_ends_at: $data->planning_ends_at,
                 charge_starts_at: $data->charge_starts_at,
                 charge_ends_at: $data->charge_ends_at,
                 prep_starts_at: $data->prep_starts_at,
@@ -131,6 +143,7 @@ class UpdateOpportunity
                 delivery_address_id: $this->resolveOptional($data->delivery_address_id),
                 collection_address_id: $this->resolveOptional($data->collection_address_id),
                 rating: $this->resolveOptional($data->rating),
+                reservation_priority: $data->reservation_priority,
                 is_invoiced: $data->invoiced,
                 tag_list: $this->resolveTagList($data->tag_list),
             );
@@ -245,6 +258,110 @@ class UpdateOpportunity
 
             $this->assertAddressBelongsToMember($field, (int) $value, $memberId);
         }
+    }
+
+    private function assertStoreChangeIsSafe(Opportunity $opportunity, UpdateOpportunityData $data): void
+    {
+        if ($data->store_id === null || $data->store_id === $opportunity->store_id) {
+            return;
+        }
+
+        $activeStatuses = [
+            AssetAssignmentStatus::Dispatched->value,
+            AssetAssignmentStatus::OnHire->value,
+            AssetAssignmentStatus::CheckedIn->value,
+            AssetAssignmentStatus::Finalised->value,
+        ];
+
+        $hasOperationalAssignment = $this->hasOperationalActivity($opportunity, $activeStatuses);
+
+        if ($hasOperationalAssignment) {
+            throw ValidationException::withMessages([
+                'store_id' => ['The operational Store cannot change after equipment activity has started.'],
+            ]);
+        }
+    }
+
+    private function assertOperationalPeriodChangeIsSafe(Opportunity $opportunity, UpdateOpportunityData $data): void
+    {
+        $periodFields = [
+            'starts_at' => $data->starts_at,
+            'ends_at' => $data->ends_at,
+            'planning_starts_at' => $data->planning_starts_at,
+            'planning_ends_at' => $data->planning_ends_at,
+        ];
+
+        $changed = array_filter($periodFields, static fn (?string $value): bool => $value !== null);
+
+        if ($changed === []) {
+            return;
+        }
+
+        $operationalStatuses = [
+            AssetAssignmentStatus::Dispatched->value,
+            AssetAssignmentStatus::OnHire->value,
+            AssetAssignmentStatus::CheckedIn->value,
+            AssetAssignmentStatus::Finalised->value,
+        ];
+
+        $hasOperationalAssignment = $this->hasOperationalActivity($opportunity, $operationalStatuses);
+
+        if ($hasOperationalAssignment) {
+            throw ValidationException::withMessages([
+                'starts_at' => ['Operational periods cannot be changed after equipment activity has started.'],
+            ]);
+        }
+    }
+
+    /**
+     * Serialized assignment status and bulk dispatch quantity are both durable
+     * projections of event-sourced physical execution. Bulk dispatch quantity is
+     * cumulative, so it remains authoritative after a complete bulk return.
+     *
+     * @param  list<int|string>  $assetStatuses
+     */
+    private function hasOperationalActivity(Opportunity $opportunity, array $assetStatuses): bool
+    {
+        $hasSerializedActivity = OpportunityItemAsset::query()
+            ->whereIn('opportunity_item_id', $opportunity->items()->pluck('id'))
+            ->whereIn('status', $assetStatuses)
+            ->exists();
+
+        if ($hasSerializedActivity) {
+            return true;
+        }
+
+        return $opportunity->allItems()
+            ->get(['dispatched_quantity'])
+            ->contains(fn (OpportunityItem $item): bool => BigDecimal::of((string) ($item->dispatched_quantity ?? '0'))->isGreaterThan(0));
+    }
+
+    private function acquireCapacityLocks(Opportunity $opportunity, ?int $newStoreId): void
+    {
+        $resolver = app(OpportunityItemDemandResolver::class);
+        $scopes = [];
+
+        OpportunityItem::query()
+            ->where('opportunity_id', $opportunity->id)
+            ->get()
+            ->each(function (OpportunityItem $item) use ($opportunity, $resolver, $newStoreId, &$scopes): void {
+                $item->setRelation('opportunity', $opportunity);
+                $context = $resolver->resolveContext($item);
+
+                if ($context['product_id'] === null) {
+                    return;
+                }
+
+                if ($context['store_id'] !== null) {
+                    $scopes[] = ['product_id' => $context['product_id'], 'store_id' => $context['store_id']];
+                }
+
+                if ($newStoreId !== null) {
+                    $scopes[] = ['product_id' => $context['product_id'], 'store_id' => $newStoreId];
+                }
+            });
+
+        app(ProductStoreCapacityLock::class)->acquireMany($scopes);
     }
 
     /**

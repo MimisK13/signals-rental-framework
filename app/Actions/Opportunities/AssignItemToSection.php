@@ -42,19 +42,19 @@ class AssignItemToSection
                 }
             }
 
-            $oldSectionId = $item->section_id;
+            $oldSectionId = $item->getAttribute('section_id');
 
             // Plain projection write — NOT a Verbs event. saveQuietly() avoids
             // model events; section_id is fillable but is never part of the event
             // stream, so this assignment survives a Verbs replay untouched.
-            $item->section_id = $data->section_id;
+            $item->setAttribute('section_id', $data->section_id);
             $item->saveQuietly();
 
             event(new AuditableEvent(
                 $item,
                 'opportunity.item_section_assigned',
                 oldValues: ['section_id' => $oldSectionId],
-                newValues: ['section_id' => $item->section_id],
+                newValues: ['section_id' => $item->getAttribute('section_id')],
             ));
 
             return OpportunityItemData::fromModel($item->refresh());

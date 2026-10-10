@@ -45,8 +45,9 @@ it('rejects a decimal transaction quantity', function () {
     $stockLevel = StockLevel::factory()->create(['quantity_held' => 0]);
 
     Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
-        ->set('transactionType', TransactionType::Buy->value)
+        ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '2.5')
+        ->set('transactionDescription', 'Received correction')
         ->call('addTransaction')
         ->assertHasErrors('transactionQuantity');
 });
@@ -56,10 +57,11 @@ it('limits serialised stock transactions to a single unit', function () {
     $stockLevel = StockLevel::factory()->create(['product_id' => $product->id]);
 
     Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
-        ->set('transactionType', TransactionType::Buy->value)
+        ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '3')
+        ->set('transactionDescription', 'Invalid serialized adjustment')
         ->call('addTransaction')
-        ->assertHasErrors('transactionQuantity');
+        ->assertHasErrors('stock_level_id');
 });
 
 it('allows multiple units for bulk stock transactions', function () {
@@ -67,8 +69,9 @@ it('allows multiple units for bulk stock transactions', function () {
     $stockLevel = StockLevel::factory()->create(['product_id' => $product->id, 'quantity_held' => 0]);
 
     Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
-        ->set('transactionType', TransactionType::Buy->value)
+        ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '5')
+        ->set('transactionDescription', 'Stock correction')
         ->call('addTransaction')
         ->assertHasNoErrors();
 
@@ -79,8 +82,9 @@ it('deletes a transaction and reverses its effect through the confirm flow', fun
     $stockLevel = StockLevel::factory()->create(['quantity_held' => 0]);
 
     $component = Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
-        ->set('transactionType', TransactionType::Buy->value)
+        ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '4')
+        ->set('transactionDescription', 'Stock correction')
         ->call('addTransaction')
         ->assertHasNoErrors();
 
@@ -90,9 +94,11 @@ it('deletes a transaction and reverses its effect through the confirm flow', fun
 
     $component->call('confirmDeleteTransaction', $txn->id)
         ->assertSet('deletingTransactionId', $txn->id)
+        ->set('reversalReason', 'Correction')
         ->call('deleteTransaction')
         ->assertSet('deletingTransactionId', null);
 
-    expect(StockTransaction::find($txn->id))->toBeNull();
+    expect(StockTransaction::find($txn->id))->not->toBeNull();
+    expect($stockLevel->stockTransactions()->where('reversal_of_id', $txn->id)->exists())->toBeTrue();
     expect((float) $stockLevel->fresh()->quantity_held)->toBe(0.0);
 });

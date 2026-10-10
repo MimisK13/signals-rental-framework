@@ -258,7 +258,7 @@ new #[Layout('components.layouts.app')] #[Title('Discount Category')] class exte
 
                 <div class="flex items-center gap-3 pt-2">
                     <flux:button type="submit" variant="primary">Save</flux:button>
-                    <flux:button href="{{ route('admin.settings.pricing.discount-categories') }}" wire:navigate variant="ghost">Cancel</flux:button>
+                    <flux:button href="{{ route('admin.settings.pricing.discount-categories') }}" wire:navigate.hover variant="ghost">Cancel</flux:button>
                 </div>
             </form>
         </x-signals.card>

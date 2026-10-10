@@ -350,7 +350,7 @@ class AvailabilityService
         return StockLevel::query()
             ->forProduct($productId)
             ->forStore($storeId)
-            ->serialized()
+            ->operationalSerializedSupply()
             ->where(function (EloquentBuilder $query) use ($from, $to): void {
                 $query->where('is_virtual', false)
                     ->orWhere(function (EloquentBuilder $virtual) use ($from, $to): void {
@@ -437,6 +437,10 @@ class AvailabilityService
             return false;
         }
 
+        if (! $stockLevel->is_virtual && $stockLevel->isSerialised() && ! $stockLevel->isOperationalSerializedSupply()) {
+            return false;
+        }
+
         if ($stockLevel->is_virtual && ! $this->virtualAssetAvailableForWindow($stockLevel, $from, $to)) {
             return false;
         }
@@ -492,52 +496,99 @@ class AvailabilityService
         string $excludeSourceType,
         int $excludeSourceId,
     ): int {
-        // Defensive: a reversed window (from > to) would build an invalid
-        // tstzrange and throw at the DB — normalise the bounds.
-        if ($from->greaterThan($to)) {
-            [$from, $to] = [$to, $from];
+        $results = $this->availableForItems([[
+            'product_id' => $productId,
+            'store_id' => $storeId,
+            'from' => $from,
+            'to' => $to,
+            'exclude_source_type' => $excludeSourceType,
+            'exclude_source_id' => $excludeSourceId,
+        ]]);
+
+        return $results[0] ?? 0;
+    }
+
+    /**
+     * Compute live availability for several line items while sharing the
+     * product/store/window reads for identical contexts. The exclusion remains
+     * line-specific, so each result still excludes only its own demand.
+     *
+     * @param  list<array{
+     *     product_id: int,
+     *     store_id: int,
+     *     from: Carbon,
+     *     to: Carbon,
+     *     exclude_source_type: string,
+     *     exclude_source_id: int
+     * }>  $requests
+     * @return array<int, int>
+     */
+    public function availableForItems(array $requests): array
+    {
+        $results = [];
+        $groups = [];
+
+        foreach ($requests as $index => $request) {
+            $from = $request['from'];
+            $to = $request['to'];
+
+            if ($from->greaterThan($to)) {
+                [$from, $to] = [$to, $from];
+            }
+
+            $requests[$index]['from'] = $from;
+            $requests[$index]['to'] = $to;
+            $key = implode('|', [
+                $request['product_id'],
+                $request['store_id'],
+                $from->getTimestamp(),
+                $to->getTimestamp(),
+            ]);
+            $groups[$key][] = $index;
         }
 
-        $product = Product::query()->find($productId);
+        foreach ($groups as $indexes) {
+            $first = $requests[$indexes[0]];
+            $product = Product::query()->find($first['product_id']);
 
-        if ($product === null) {
-            return 0;
+            if ($product === null) {
+                foreach ($indexes as $index) {
+                    $results[$index] = 0;
+                }
+
+                continue;
+            }
+
+            [$slotFrom, $slotTo] = $this->clampToHorizon($first['from'], $first['to']);
+            $timezone = $this->storeTimezone($first['store_id']);
+            $totalStock = $this->pipeline->totalStock($product, $first['store_id']);
+
+            /** @var Collection<int, Demand> $demands */
+            $demands = Demand::query()
+                ->where('product_id', $first['product_id'])
+                ->where('store_id', $first['store_id'])
+                ->active()
+                ->overlapping($first['from'], $first['to'])
+                ->get();
+
+            foreach ($indexes as $index) {
+                $request = $requests[$index];
+                $competingDemands = $demands->reject(static fn (Demand $demand): bool => $demand->source_type === $request['exclude_source_type']
+                    && (int) $demand->source_id === $request['exclude_source_id']);
+                $worst = null;
+
+                foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
+                    $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
+                    [$demanded] = $this->sumDemandIn($competingDemands, $slotStart, $slotEnd);
+                    $available = $totalStock - $demanded;
+                    $worst = $worst === null ? $available : min($worst, $available);
+                }
+
+                $results[$index] = $worst ?? $totalStock;
+            }
         }
 
-        // Clamp an open-ended / sentinel-dated window to the rolling snapshot
-        // horizon before generating slots (see checkAvailability()). The competing
-        // demand set is still fetched against the ORIGINAL window so an indefinite
-        // demand is seen across every clamped horizon slot — the worst slot is
-        // therefore the correct answer for "units free for this item".
-        [$slotFrom, $slotTo] = $this->clampToHorizon($from, $to);
-
-        $timezone = $this->storeTimezone($storeId);
-        $totalStock = $this->pipeline->totalStock($product, $storeId);
-
-        /** @var Collection<int, Demand> $demands */
-        $demands = Demand::query()
-            ->where('product_id', $productId)
-            ->where('store_id', $storeId)
-            ->active()
-            ->overlapping($from, $to)
-            ->where(static function ($query) use ($excludeSourceType, $excludeSourceId): void {
-                // Exclude this item's own demand: everything else competes for stock.
-                $query->where('source_type', '!=', $excludeSourceType)
-                    ->orWhere('source_id', '!=', $excludeSourceId);
-            })
-            ->get();
-
-        $worst = null;
-
-        foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
-            $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
-            [$demanded] = $this->sumDemandIn($demands, $slotStart, $slotEnd);
-
-            $available = $totalStock - $demanded;
-            $worst = $worst === null ? $available : min($worst, $available);
-        }
-
-        return $worst ?? $totalStock;
+        return $results;
     }
 
     /**

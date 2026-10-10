@@ -1,8 +1,13 @@
 <?php
 
+use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\CreateOpportunity;
+use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Models\Opportunity;
+use App\Models\Product;
+use App\Models\SerialisedComponent;
+use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -92,4 +97,80 @@ it('renders read-only for view-only users', function () {
         ->assertOk()
         ->assertSee('This opportunity has no line items yet.')
         ->assertDontSee('Quick add');
+});
+
+it('adds a combination through the quotation editor and preserves the item tree', function () {
+    Auth::login($this->owner);
+
+    $created = (new CreateOpportunity)(CreateOpportunityData::from([
+        'subject' => 'Combination quotation',
+        'store_id' => $this->store->id,
+    ]));
+    $opportunity = Opportunity::query()->whereKey($created->id)->firstOrFail();
+    $package = Product::factory()->kit()->create(['name' => 'Small PA Package']);
+    $speaker = Product::factory()->create(['name' => 'Speaker']);
+    $amp = Product::factory()->create(['name' => 'Amplifier']);
+
+    SerialisedComponent::factory()->pool()->create([
+        'product_id' => $package->id,
+        'component_product_id' => $speaker->id,
+        'quantity' => '2',
+        'sort_order' => 1,
+    ]);
+    SerialisedComponent::factory()->pool()->create([
+        'product_id' => $package->id,
+        'component_product_id' => $amp->id,
+        'quantity' => '1',
+        'sort_order' => 2,
+    ]);
+
+    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        ->call('addCombination', $package->id, 2)
+        ->assertHasNoErrors()
+        ->assertDispatched('toast', type: 'success', message: 'Combination added');
+
+    $items = $opportunity->fresh(['items'])->items->sortBy('path')->values();
+
+    $packageGroup = $items->firstWhere('name', 'Small PA Package');
+
+    expect($items)->toHaveCount(3)
+        ->and($packageGroup?->item_type->value)->toBe('group')
+        ->and($packageGroup?->quantity)->toBe('2.00')
+        ->and($items->firstWhere('itemable_id', $speaker->id)?->quantity)->toBe('4.00')
+        ->and($items->firstWhere('itemable_id', $amp->id)?->quantity)->toBe('2.00');
+});
+
+it('exposes canonical planning data on physical rows without adding it to groups', function () {
+    Auth::login($this->owner);
+
+    $created = (new CreateOpportunity)(CreateOpportunityData::from([
+        'subject' => 'Planning quotation',
+        'store_id' => $this->store->id,
+    ]));
+    $opportunity = Opportunity::query()->whereKey($created->id)->firstOrFail();
+    $product = Product::factory()->bulk()->create(['name' => 'Planning Cable']);
+
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 20,
+    ]);
+    (new AddOpportunityItem)($opportunity, AddOpportunityItemData::from([
+        'name' => $product->name,
+        'itemable_id' => $product->id,
+        'itemable_type' => Product::class,
+        'quantity' => '4',
+    ]));
+
+    $rows = lineItemsEditorInstance(
+        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+    )->serverTree()['tree'];
+    $row = collect($rows)->firstWhere('product_id', $product->id);
+
+    expect($row['planning']['requested_quantity'])->toBe('4.00')
+        ->and($row['planning']['available_quantity'])->toBe(20)
+        ->and($row['planning']['reservation_mode'])->toBe('legacy')
+        ->and(collect($rows)->where('item_type', 'group')->every(
+            fn (array $group): bool => $group['planning'] === null,
+        ))->toBeTrue();
 });

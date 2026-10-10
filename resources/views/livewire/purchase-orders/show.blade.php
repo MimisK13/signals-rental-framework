@@ -40,7 +40,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         Gate::authorize('view', $purchaseOrder);
 
-        $this->purchaseOrder = $purchaseOrder->load(['supplier', 'store', 'opportunity', 'items.product', 'virtualStockIntakes.product']);
+        $this->purchaseOrder = $purchaseOrder->load(['supplier', 'store', 'opportunity', 'items.product', 'virtualStockIntakes.product', 'supplierBills.supplier']);
         $this->resetReceiveLines();
     }
 
@@ -148,7 +148,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     private function refreshPurchaseOrder(): void
     {
-        $this->purchaseOrder->refresh()->load(['supplier', 'store', 'opportunity', 'items.product', 'virtualStockIntakes.product']);
+        $this->purchaseOrder->refresh()->load(['supplier', 'store', 'opportunity', 'items.product', 'virtualStockIntakes.product', 'supplierBills.supplier']);
     }
 
     /**
@@ -187,7 +187,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     <x-signals.page-header :title="$purchaseOrder->number">
         <x-slot:breadcrumbs>
-            <a href="{{ route('purchase-orders.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Purchase Orders</a>
+            <a href="{{ route('purchase-orders.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Purchase Orders</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $purchaseOrder->number }}</span>
         </x-slot:breadcrumbs>
@@ -196,7 +196,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         </x-slot:meta>
         <x-slot:actions>
             @if($canUpdate)
-                <a href="{{ route('purchase-orders.edit', $purchaseOrder) }}" wire:navigate class="s-btn s-btn-sm s-btn-secondary">Edit</a>
+                <a href="{{ route('purchase-orders.edit', $purchaseOrder) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-secondary">Edit</a>
             @endif
             @if($canSend)
                 <button type="button" wire:click="send" wire:confirm="Send this purchase order to the supplier?" class="s-btn s-btn-sm s-btn-accent">Send</button>
@@ -275,7 +275,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     @if($purchaseOrder->po_type === 'sub_hire' && $item->product_id)
                                         <td class="text-right">
                                             @can('create', App\Models\VirtualStockIntake::class)
-                                                <a href="{{ route('virtual-stock.create', ['purchase_order_id' => $purchaseOrder->id, 'purchase_order_item_id' => $item->id]) }}" wire:navigate class="text-sm text-[var(--link)] hover:underline">Create intake</a>
+                                                <a href="{{ route('virtual-stock.create', ['purchase_order_id' => $purchaseOrder->id, 'purchase_order_item_id' => $item->id]) }}" wire:navigate.hover class="text-sm text-[var(--link)] hover:underline">Create intake</a>
                                             @endcan
                                         </td>
                                     @elseif($purchaseOrder->po_type === 'sub_hire')
@@ -309,7 +309,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 @endphp
                                 <tr wire:key="po-intake-{{ $intake->id }}">
                                     <td>
-                                        <a href="{{ route('virtual-stock.show', $intake) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $intake->number }}</a>
+                                        <a href="{{ route('virtual-stock.show', $intake) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $intake->number }}</a>
                                         @if($intake->isLateReturn())
                                             <span class="s-badge s-badge-amber ml-1">Late</span>
                                         @endif
@@ -329,6 +329,20 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </x-signals.table-wrap>
             </x-signals.card>
         @endif
+
+        @can('supplier_bills.view')
+            <x-signals.card title="Supplier bills">
+                @if($purchaseOrder->supplierBills->isEmpty())
+                    <p class="text-sm text-[var(--text-muted)]">No supplier bills linked to this purchase order.</p>
+                @else
+                    <x-signals.table-wrap><table class="s-table"><thead><tr><th>Document</th><th>Supplier</th><th>Status</th><th>Total</th></tr></thead><tbody>
+                    @foreach($purchaseOrder->supplierBills as $bill)
+                        <tr wire:key="po-supplier-bill-{{ $bill->id }}"><td><a href="{{ route('supplier-bills.show', $bill) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $bill->document_number }}</a></td><td>{{ $bill->supplier?->name }}</td><td>{{ $bill->status->label() }}</td><td>{{ $bill->formatMoneyCost('total') }}</td></tr>
+                    @endforeach
+                    </tbody></table></x-signals.table-wrap>
+                @endif
+            </x-signals.card>
+        @endcan
 
         @costs
             <div class="flex justify-end">

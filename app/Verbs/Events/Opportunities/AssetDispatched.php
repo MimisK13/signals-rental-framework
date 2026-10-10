@@ -4,15 +4,16 @@ namespace App\Verbs\Events\Opportunities;
 
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\OpportunityState;
+use App\Models\AssetUsage;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
+use App\Models\StockLevel;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\Events\Opportunities\Concerns\SyncsAssetDemands;
 use App\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Carbon;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;
 
@@ -66,7 +67,9 @@ class AssetDispatched extends Event
     public function apply(AssetAssignmentState $state): void
     {
         $state->status = AssetAssignmentStatus::Dispatched->value;
-        $state->dispatched_at = $this->dispatchedAt();
+        $state->dispatched_at = $this->dispatched_at !== null
+            ? CarbonImmutable::parse($this->dispatched_at)
+            : null;
         $state->last_event_at = CarbonImmutable::now();
     }
 
@@ -82,6 +85,20 @@ class AssetDispatched extends Event
             'status' => AssetAssignmentStatus::Dispatched->value,
             'dispatched_at' => $state->dispatched_at,
         ])->saveQuietly();
+
+        $stockLevel = StockLevel::query()->find($state->stock_level_id);
+
+        if ($state->dispatched_at !== null
+            && $stockLevel !== null
+            && $stockLevel->asset_id !== null
+            && $stockLevel->isSerialised()
+            && ! $stockLevel->isVirtualAsset()) {
+            AssetUsage::query()->firstOrCreate([
+                'asset_id' => $stockLevel->asset_id,
+                'opportunity_item_id' => $state->opportunity_item_id,
+                'dispatched_at' => $state->dispatched_at,
+            ]);
+        }
 
         $item = $asset->item()->first();
 
@@ -105,7 +122,7 @@ class AssetDispatched extends Event
                     'assignment_id' => $state->assignment_id,
                     'dispatched_by' => $this->dispatched_by,
                     'vehicle_id' => $this->vehicle_id,
-                    'dispatched_at' => Carbon::parse($state->dispatched_at)->toIso8601String(),
+                    'dispatched_at' => $state->dispatched_at?->toIso8601String(),
                 ],
                 oldValues: ['status' => AssetAssignmentStatus::Allocated->value],
             );
@@ -123,12 +140,5 @@ class AssetDispatched extends Event
             $this->opportunityForAssignment($state->assignment_id),
             $this->singleAssetOverlay($state->assignment_id, AssetAssignmentStatus::Dispatched),
         );
-    }
-
-    private function dispatchedAt(): CarbonImmutable
-    {
-        return $this->dispatched_at !== null
-            ? CarbonImmutable::parse($this->dispatched_at)
-            : CarbonImmutable::now();
     }
 }

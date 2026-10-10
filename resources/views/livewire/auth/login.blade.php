@@ -226,7 +226,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <div class="s-auth-field-row">
                 <label class="s-field-label">{{ __('Password') }}</label>
                 @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" wire:navigate class="s-auth-description underline hover:opacity-80 transition-opacity">{{ __('Forgot your password?') }}</a>
+                    <a href="{{ route('password.request') }}" wire:navigate.hover class="s-auth-description underline hover:opacity-80 transition-opacity">{{ __('Forgot your password?') }}</a>
                 @endif
             </div>
             <input wire:model="password" type="password" name="password" class="s-input" required autocomplete="current-password" placeholder="Password">

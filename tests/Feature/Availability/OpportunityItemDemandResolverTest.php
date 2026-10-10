@@ -14,6 +14,7 @@ use App\Models\Store;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Build an opportunity (in the given state/status) with a single product-backed
@@ -369,7 +370,7 @@ it('is idempotent — re-syncing converges rather than duplicating', function ()
     expect(Demand::query()->where('source_id', $item->id)->count())->toBe(1);
 });
 
-it('skips creating demands when the opportunity has no store', function () {
+it('rejects active product demands when the opportunity has no store', function () {
     $product = Product::factory()->create(['stock_method' => StockMethod::Bulk->value]);
 
     $opportunity = Opportunity::factory()->order()->create(['store_id' => null]);
@@ -378,10 +379,127 @@ it('skips creating demands when the opportunity has no store', function () {
         'itemable_id' => $product->id,
     ]);
 
+    expect(fn () => demandResolver()->syncDemands($item))
+        ->toThrow(ValidationException::class);
+});
+
+it('uses explicit planning dates for demand while preserving usage dates', function () {
+    $product = Product::factory()->create(['stock_method' => StockMethod::Bulk->value]);
+    $store = Store::factory()->create();
+    $opportunity = Opportunity::factory()->order()->create([
+        'store_id' => $store->id,
+        'starts_at' => '2026-11-03 20:00:00',
+        'ends_at' => '2026-11-05 23:00:00',
+        'planning_starts_at' => '2026-11-03 08:00:00',
+        'planning_ends_at' => '2026-11-06 18:00:00',
+    ]);
+    $item = OpportunityItem::factory()->for($opportunity)->create([
+        'itemable_type' => Product::class,
+        'itemable_id' => $product->id,
+        'starts_at' => '2026-11-03 20:00:00',
+        'ends_at' => '2026-11-05 23:00:00',
+    ]);
+
+    demandResolver()->syncDemands($item);
+
+    $demand = Demand::query()->where('source_id', $item->id)->sole();
+
+    expect($demand->starts_at->toDateTimeString())->toBe('2026-11-03 08:00:00')
+        ->and($demand->ends_at->toDateTimeString())->toBe('2026-11-06 18:00:00')
+        ->and($item->starts_at->toDateTimeString())->toBe('2026-11-03 20:00:00');
+});
+
+it('projects opportunity reservation priority onto active demand', function () {
+    $product = Product::factory()->create(['stock_method' => StockMethod::Bulk->value]);
+    $store = Store::factory()->create();
+    $opportunity = Opportunity::factory()->order()->create([
+        'store_id' => $store->id,
+        'reservation_priority' => 50,
+    ]);
+    $item = OpportunityItem::factory()->for($opportunity)->create([
+        'itemable_type' => Product::class,
+        'itemable_id' => $product->id,
+    ]);
+
+    demandResolver()->syncDemands($item);
+
+    expect(Demand::query()->where('source_id', $item->id)->sole()->priority)->toBe(50);
+});
+
+it('keeps explicit planning independent from billing changes', function () {
+    settings()->set('availability.demand_date_source', 'charge');
+
+    $product = Product::factory()->create(['stock_method' => StockMethod::Bulk->value]);
+    $store = Store::factory()->create();
+    $opportunity = Opportunity::factory()->order()->create([
+        'store_id' => $store->id,
+        'starts_at' => '2026-11-01 20:00:00',
+        'ends_at' => '2026-11-03 23:00:00',
+        'planning_starts_at' => '2026-10-31 08:00:00',
+        'planning_ends_at' => '2026-11-04 18:00:00',
+        'charge_starts_at' => '2026-11-02 00:00:00',
+        'charge_ends_at' => '2026-11-03 00:00:00',
+    ]);
+    $item = OpportunityItem::factory()->for($opportunity)->create([
+        'itemable_type' => Product::class,
+        'itemable_id' => $product->id,
+        'quantity' => 1,
+    ]);
+
+    demandResolver()->syncDemands($item);
+    $first = Demand::query()->where('source_id', $item->id)->sole();
+
+    $opportunity->forceFill([
+        'charge_starts_at' => '2026-11-10 00:00:00',
+        'charge_ends_at' => '2026-11-11 00:00:00',
+    ])->saveQuietly();
+    demandResolver()->syncDemands($item->refresh());
+    $second = Demand::query()->where('source_id', $item->id)->sole();
+
+    expect($first->starts_at->toDateTimeString())->toBe('2026-10-31 08:00:00')
+        ->and($first->ends_at->toDateTimeString())->toBe('2026-11-04 18:00:00')
+        ->and($second->starts_at->toDateTimeString())->toBe('2026-10-31 08:00:00')
+        ->and($second->ends_at->toDateTimeString())->toBe('2026-11-04 18:00:00');
+});
+
+it('allows a draft product line to exist without a Store', function () {
+    $product = Product::factory()->create(['stock_method' => StockMethod::Bulk->value]);
+    $opportunity = Opportunity::factory()->create([
+        'state' => OpportunityStatus::DraftOpen->state()->value,
+        'status' => OpportunityStatus::DraftOpen->statusValue(),
+        'store_id' => null,
+    ]);
+    $item = OpportunityItem::factory()->for($opportunity)->create([
+        'itemable_type' => Product::class,
+        'itemable_id' => $product->id,
+        'quantity' => 1,
+    ]);
+
     demandResolver()->syncDemands($item);
 
     expect(Demand::query()->where('source_id', $item->id)->count())->toBe(0);
 });
+
+it('requires a Store for every active reservation phase', function (OpportunityStatus $status) {
+    $product = Product::factory()->create(['stock_method' => StockMethod::Bulk->value]);
+    $opportunity = Opportunity::factory()->create([
+        'state' => $status->state()->value,
+        'status' => $status->statusValue(),
+        'store_id' => null,
+    ]);
+    $item = OpportunityItem::factory()->for($opportunity)->create([
+        'itemable_type' => Product::class,
+        'itemable_id' => $product->id,
+        'quantity' => 1,
+    ]);
+
+    expect(fn () => demandResolver()->syncDemands($item))
+        ->toThrow(ValidationException::class);
+})->with([
+    'held' => OpportunityStatus::QuotationPostponed,
+    'committed' => OpportunityStatus::OrderActive,
+    'operational' => OpportunityStatus::OrderDispatched,
+]);
 
 it('skips non-product line items', function () {
     $store = Store::factory()->create();

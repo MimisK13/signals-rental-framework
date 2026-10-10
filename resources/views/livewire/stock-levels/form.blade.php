@@ -344,13 +344,18 @@ new #[Layout('components.layouts.app')] class extends Component {
             return;
         }
 
-        $this->validate([
+        $rules = [
             'productId' => ['required', 'integer', 'exists:products,id'],
             'storeId' => ['required', 'integer', 'exists:stores,id'],
             'assetNumber' => ['nullable', 'string', 'max:255', \Illuminate\Validation\Rule::unique('stock_levels', 'asset_number')->ignore($this->stockLevelId)],
             'serialNumber' => ['nullable', 'string', 'max:255', \Illuminate\Validation\Rule::unique('stock_levels', 'serial_number')->ignore($this->stockLevelId)],
-            'quantityHeld' => ['required', 'integer', 'min:0'],
-        ], [
+        ];
+
+        if (! $this->stockLevelId) {
+            $rules['quantityHeld'] = ['required', 'integer', 'min:0'];
+        }
+
+        $this->validate($rules, [
             'assetNumber.unique' => 'This asset / barcode number is already in use.',
             'serialNumber.unique' => 'This serial number is already in use.',
         ]);
@@ -374,13 +379,13 @@ new #[Layout('components.layouts.app')] class extends Component {
             'asset_number' => $this->assetNumber ?: null,
             'serial_number' => $this->serialNumber ?: null,
             'barcode' => $this->assetNumber ?: null,
-            'quantity_held' => $this->quantityHeld,
         ];
 
         if ($this->stockLevelId) {
             $stockLevel = StockLevel::findOrFail($this->stockLevelId);
             $result = (new UpdateStockLevel)($stockLevel, UpdateStockLevelData::from($payload));
         } else {
+            $payload['quantity_held'] = $this->quantityHeld;
             $result = (new CreateStockLevel)(CreateStockLevelData::from($payload));
         }
 
@@ -450,9 +455,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     @if($isEditing)
         <x-signals.page-header title="Edit Stock Level">
             <x-slot:breadcrumbs>
-                <a href="{{ route('stock-levels.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Stock Levels</a>
+                <a href="{{ route('stock-levels.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Stock Levels</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
-                <a href="{{ route('stock-levels.show', $stockLevelId) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $selectedProductName ?: 'Stock Level' }}</a>
+                <a href="{{ route('stock-levels.show', $stockLevelId) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $selectedProductName ?: 'Stock Level' }}</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Edit</span>
             </x-slot:breadcrumbs>
@@ -460,7 +465,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     @else
         <x-signals.page-header title="Create Stock Level">
             <x-slot:breadcrumbs>
-                <a href="{{ route('stock-levels.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Stock Levels</a>
+                <a href="{{ route('stock-levels.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Stock Levels</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
@@ -471,7 +476,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         @if(! $hasStores)
             <div class="rounded-lg border border-amber-300 bg-amber-50 p-6 text-center dark:border-amber-700 dark:bg-amber-950">
                 <p class="text-sm font-medium text-amber-800 dark:text-amber-200">You need to create a store before adding stock levels.</p>
-                <a href="{{ route('admin.settings.stores') }}" wire:navigate class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--link)] hover:underline">
+                <a href="{{ route('admin.settings.stores') }}" wire:navigate.hover class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--link)] hover:underline">
                     Go to Store Settings &rarr;
                 </a>
             </div>
@@ -661,7 +666,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 :href="$isEditing
                                     ? route('stock-levels.show', $stockLevelId)
                                     : ($sourceProductId ? route('products.show', $sourceProductId) : route('stock-levels.index'))"
-                                wire:navigate
+                                wire:navigate.hover
                             >Cancel</flux:button>
                         </div>
                     </div>
@@ -676,6 +681,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         <flux:input wire:model.number="quantityHeld" label="Quantity Held" type="number" min="1" max="1" value="1" required disabled />
                                         <p class="mt-1 text-xs text-[var(--text-muted)]">Serialised stock is always quantity 1.</p>
                                     </div>
+                                @elseif($isEditing)
+                                    <flux:input label="Quantity Held" type="number" :value="$quantityHeld" disabled />
+                                    <p class="mt-1 text-xs text-[var(--text-muted)]">Physical quantity is changed through stock transactions.</p>
                                 @else
                                     <flux:input wire:model.number="quantityHeld" label="Quantity Held" type="number" min="0" required />
                                 @endif

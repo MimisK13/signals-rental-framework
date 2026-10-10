@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Components\DataTable;
+use App\Models\CustomField;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\User;
@@ -21,6 +22,34 @@ it('renders the product groups index page', function () {
         ->assertSee('Product Groups');
 });
 
+it('renders the quick add product group action and drawer', function () {
+    Volt::test('product-groups.index')
+        ->assertSee('Quick Add')
+        ->assertSee('New Product Group')
+        ->assertSeeHtml('product-group-quick-create')
+        ->assertSeeHtml('dense-side-panel-footer')
+        ->assertSee('Cancel')
+        ->assertSee('Create Group');
+});
+
+it('renders ProductGroup custom fields in the quick add panel', function () {
+    CustomField::factory()->string()->create([
+        'name' => 'colour_code',
+        'display_name' => 'Colour Code',
+        'module_type' => 'ProductGroup',
+    ]);
+
+    expect(CustomField::query()->forModule('ProductGroup')->active()->count())->toBe(1);
+
+    $component = Volt::test('product-groups.index');
+
+    expect($component->viewData('groupedCustomFields')->count())->toBe(1);
+
+    $component
+        ->assertSee('Colour Code')
+        ->assertSeeHtml('wire:model="quickCustomFieldValues.colour_code"');
+});
+
 it('lists product groups', function () {
     ProductGroup::factory()->create(['name' => 'Lighting']);
     ProductGroup::factory()->create(['name' => 'Sound']);
@@ -39,7 +68,7 @@ it('deletes a product group', function () {
     expect(ProductGroup::find($group->id))->toBeNull();
 });
 
-it('renders view products, edit and delete row actions', function () {
+it('renders view products, panel edit and delete row actions', function () {
     $group = ProductGroup::factory()->create(['name' => 'Group With Actions']);
 
     Volt::test('product-groups.index')
@@ -47,7 +76,6 @@ it('renders view products, edit and delete row actions', function () {
         ->assertSee('Edit')
         ->assertSee('Delete')
         ->assertSeeHtml(route('products.index', ['filters' => ['product_group_id' => $group->id]]))
-        ->assertSeeHtml(route('product-groups.edit', $group->id))
         ->assertSeeHtml("open-modal', 'delete-group-{$group->id}'");
 });
 

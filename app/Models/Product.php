@@ -277,6 +277,26 @@ class Product extends Model implements HasSchema
     }
 
     /**
+     * @return HasMany<Asset, $this>
+     */
+    public function assets(): HasMany
+    {
+        return $this->hasMany(Asset::class);
+    }
+
+    /** @return HasMany<Repair, $this> */
+    public function repairs(): HasMany
+    {
+        return $this->hasMany(Repair::class);
+    }
+
+    /** @return HasMany<InspectionPolicy, $this> */
+    public function inspectionPolicies(): HasMany
+    {
+        return $this->hasMany(InspectionPolicy::class);
+    }
+
+    /**
      * Rate assignments for this product.
      *
      * @return HasMany<ProductRate, $this>
@@ -294,6 +314,16 @@ class Product extends Model implements HasSchema
     public function supplierCosts(): HasMany
     {
         return $this->hasMany(ProductSupplierCost::class);
+    }
+
+    /**
+     * Supplier bill lines explicitly mapped to this Product.
+     *
+     * @return HasMany<SupplierBillItem, $this>
+     */
+    public function supplierBillItems(): HasMany
+    {
+        return $this->hasMany(SupplierBillItem::class);
     }
 
     /**

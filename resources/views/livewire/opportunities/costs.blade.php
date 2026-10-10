@@ -67,7 +67,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                 <td>
                                     {{ $cost->description }}
                                     @if($cost->virtual_stock_intake_id && auth()->user()?->can('costs.view'))
-                                        <a href="{{ route('virtual-stock.show', $cost->virtual_stock_intake_id) }}" wire:navigate class="block text-xs text-[var(--link)] hover:underline">
+                                        <a href="{{ route('virtual-stock.show', $cost->virtual_stock_intake_id) }}" wire:navigate.hover class="block text-xs text-[var(--link)] hover:underline">
                                             Intake {{ $cost->virtualStockIntake?->number ?? $cost->virtual_stock_intake_id }}
                                         </a>
                                     @endif

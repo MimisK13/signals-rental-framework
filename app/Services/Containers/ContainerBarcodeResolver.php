@@ -4,6 +4,7 @@ namespace App\Services\Containers;
 
 use App\Models\Container;
 use App\Models\StockLevel;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Resolves a scanned or typed barcode / asset number to a container or housing
@@ -22,19 +23,41 @@ class ContainerBarcodeResolver
             return null;
         }
 
-        $container = Container::query()
+        $containers = Container::query()
             ->active()
             ->where(fn ($q) => $q->where('barcode', $term)->orWhere('uuid', $term))
-            ->first();
+            ->get();
+
+        $stockLevels = StockLevel::query()
+            ->serialized()
+            ->where(fn ($q) => $q
+                ->where('asset_number', $term)
+                ->orWhere('serial_number', $term)
+                ->orWhere('barcode', $term))
+            ->get();
+
+        $container = $containers->first();
+
+        // A product-backed Container intentionally inherits its scan identity
+        // from its housing StockLevel. Treat those two rows as one physical
+        // target, while still rejecting collisions with another StockLevel.
+        if ($container !== null) {
+            $stockLevels = $stockLevels->reject(
+                fn (StockLevel $stockLevel): bool => (int) $container->serialised_item_id === (int) $stockLevel->id
+            );
+        }
+
+        if ($containers->count() + $stockLevels->count() > 1) {
+            throw ValidationException::withMessages([
+                'scan' => __('Ambiguous identifier: ":number" matches multiple physical records.', ['number' => $term]),
+            ]);
+        }
 
         if ($container !== null) {
             return ['type' => 'container', 'container' => $container];
         }
 
-        $stockLevel = StockLevel::query()
-            ->serialized()
-            ->where(fn ($q) => $q->where('asset_number', $term)->orWhere('serial_number', $term))
-            ->first();
+        $stockLevel = $stockLevels->first();
 
         if ($stockLevel === null) {
             return null;

@@ -48,14 +48,14 @@ new #[Layout('components.layouts.app')] class extends Component {
 <section class="w-full">
     <x-signals.page-header :title="$member->name">
         <x-slot:breadcrumbs>
-            <a href="{{ route('members.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Members</a>
+            <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
-            <a href="{{ route('members.show', $member) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
+            <a href="{{ route('members.show', $member) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>Relationships</span>
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('members.relationships.create', $member) }}" wire:navigate>Add Relationship</flux:button>
+            <flux:button variant="primary" href="{{ route('members.relationships.create', $member) }}" wire:navigate.hover>Add Relationship</flux:button>
         </x-slot:actions>
     </x-signals.page-header>
 
@@ -80,7 +80,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         @continue(! $relatedMember)
                         <tr wire:key="relationship-{{ $relationship->id }}">
                             <td class="font-medium">
-                                <a href="{{ route('members.show', $relatedMember) }}" wire:navigate class="text-[var(--link)] hover:underline">
+                                <a href="{{ route('members.show', $relatedMember) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">
                                     {{ $relatedMember->name }}
                                 </a>
                                 <span class="ml-1 s-badge s-badge-blue">{{ $relatedMember->membership_type->label() }}</span>

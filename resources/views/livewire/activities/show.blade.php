@@ -130,7 +130,7 @@ new #[Layout('components.layouts.app')] class extends Component
 <section class="w-full" x-data="{ tab: 'details' }">
     <x-signals.page-header :title="$activity->subject">
         <x-slot:breadcrumbs>
-            <a href="{{ route('activities.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Activities</a>
+            <a href="{{ route('activities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Activities</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $activity->subject }}</span>
         </x-slot:breadcrumbs>
@@ -153,7 +153,7 @@ new #[Layout('components.layouts.app')] class extends Component
                         Complete
                     </button>
                 @endif
-                <a href="{{ route('activities.edit', $activity->id) }}" wire:navigate class="s-btn s-btn-sm s-btn-ghost">Edit</a>
+                <a href="{{ route('activities.edit', $activity->id) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-ghost">Edit</a>
                 <button wire:click="deleteActivity" wire:confirm="Are you sure you want to delete this activity?" class="s-btn s-btn-sm s-btn-danger">Delete</button>
             </div>
         </x-slot:actions>

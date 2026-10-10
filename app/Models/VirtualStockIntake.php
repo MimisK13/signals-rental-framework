@@ -209,6 +209,14 @@ class VirtualStockIntake extends Model implements HasSchema
     }
 
     /**
+     * @return HasMany<SupplierBillItem, $this>
+     */
+    public function supplierBillItems(): HasMany
+    {
+        return $this->hasMany(SupplierBillItem::class);
+    }
+
+    /**
      * @return HasOne<ShortageResolution, $this>
      */
     public function shortageResolution(): HasOne

@@ -21,7 +21,7 @@
         <div class="s-avail-group-row-label">
             @if(! empty($url))
                 <a href="{{ $url }}"
-                   @if($navigate ?? true) wire:navigate @endif
+                   @if($navigate ?? true) wire:navigate.hover @endif
                    class="{{ $labelTextClass }} hover:underline"
                    @if($labelTitle) title="{{ $labelTitle }}" @endif>{{ $label }}</a>
             @else

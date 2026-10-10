@@ -101,7 +101,7 @@ new #[Layout('components.layouts.app')] #[Title('API Console')] class extends Co
                 @foreach($this->areas as $area)
                     @if(isset($area['gate']))
                         @can($area['gate'])
-                            <a href="{{ route($area['route']) }}" wire:navigate class="s-module-card enabled">
+                            <a href="{{ route($area['route']) }}" wire:navigate.hover class="s-module-card enabled">
                                 <div class="s-module-icon">
                                     <flux:icon :name="$area['icon']" class="!size-5" />
                                 </div>
@@ -113,7 +113,7 @@ new #[Layout('components.layouts.app')] #[Title('API Console')] class extends Co
                             </a>
                         @endcan
                     @else
-                        <a href="{{ route($area['route']) }}" wire:navigate class="s-module-card enabled">
+                        <a href="{{ route($area['route']) }}" wire:navigate.hover class="s-module-card enabled">
                             <div class="s-module-icon">
                                 <flux:icon :name="$area['icon']" class="!size-5" />
                             </div>

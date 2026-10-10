@@ -269,7 +269,7 @@ it('renders toggle switches and grid skeleton markup', function () {
     Volt::test('availability.index')->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertSeeHtml('s-toggle')
-        ->assertSeeHtml('s-tag-input')
+        ->assertSeeHtml('erp-store-picker')
         ->assertSeeHtml('wire:init="initializeGrid"')
         ->assertSeeHtml('avail-skeleton-row');
 });

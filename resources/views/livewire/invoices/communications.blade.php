@@ -52,13 +52,13 @@ new #[Layout('components.layouts.app')] class extends Component
 <section class="w-full">
     <x-signals.page-header :title="$invoice->number">
         <x-slot:breadcrumbs>
-            <a href="{{ route('invoices.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Invoices</a>
+            <a href="{{ route('invoices.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Invoices</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $invoice->number }}</span>
         </x-slot:breadcrumbs>
         @if($invoice->member)
             <x-slot:meta>
-                <a href="{{ route('members.show', $invoice->member) }}" wire:navigate class="s-chip">{{ $invoice->member->name }}</a>
+                <a href="{{ route('members.show', $invoice->member) }}" wire:navigate.hover class="s-chip">{{ $invoice->member->name }}</a>
             </x-slot:meta>
         @endif
     </x-signals.page-header>

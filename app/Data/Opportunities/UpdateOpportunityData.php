@@ -30,6 +30,8 @@ class UpdateOpportunityData extends Data
         public string|null|Optional $external_description = new Optional,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
+        public ?string $planning_starts_at = null,
+        public ?string $planning_ends_at = null,
         public ?string $charge_starts_at = null,
         public ?string $charge_ends_at = null,
         // Event-logistics lifecycle dates (C3a). Plain-nullable: null = leave
@@ -74,6 +76,7 @@ class UpdateOpportunityData extends Data
         // Sales priority/quality rating 0–5 (C3i). Optional so an absent key
         // (unchanged) is told apart from an explicit null (clear the rating).
         public int|null|Optional $rating = new Optional,
+        public ?int $reservation_priority = null,
         /** @var list<string>|null|Optional */
         public array|null|Optional $tag_list = new Optional,
         /** @var array<string, mixed>|null */
@@ -115,6 +118,8 @@ class UpdateOpportunityData extends Data
             'external_description' => ['sometimes', 'nullable', 'string'],
             'starts_at' => ['sometimes', 'nullable', 'date'],
             'ends_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:starts_at'],
+            'planning_starts_at' => ['sometimes', 'nullable', 'date'],
+            'planning_ends_at' => ['sometimes', 'nullable', 'date', 'after:planning_starts_at'],
             'charge_starts_at' => ['sometimes', 'nullable', 'date'],
             'charge_ends_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:charge_starts_at'],
             'prep_starts_at' => ['sometimes', 'nullable', 'date'],
@@ -148,6 +153,7 @@ class UpdateOpportunityData extends Data
             'delivery_address_id' => ['sometimes', 'nullable', 'integer', $addressExists],
             'collection_address_id' => ['sometimes', 'nullable', 'integer', $addressExists],
             'rating' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:5'],
+            'reservation_priority' => ['sometimes', 'integer', 'min:0'],
             'tag_list' => ['sometimes', 'nullable', 'array'],
             'tag_list.*' => ['string', 'max:255'],
             'custom_fields' => ['sometimes', 'nullable', 'array'],

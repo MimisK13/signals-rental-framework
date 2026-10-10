@@ -87,6 +87,14 @@ class PermissionSeeder extends Seeder
             'purchase_orders.cancel' => ['label' => 'Cancel Purchase Orders', 'description' => 'Cancel purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
             'purchase_orders.receive' => ['label' => 'Receive Purchase Orders', 'description' => 'Record goods received against purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
 
+            // Supplier bills
+            'supplier_bills.view' => ['label' => 'View Supplier Bills', 'description' => 'View supplier bills and actual supplier charges', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['costs.view']],
+            'supplier_bills.create' => ['label' => 'Create Supplier Bills', 'description' => 'Record supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.view']],
+            'supplier_bills.edit' => ['label' => 'Edit Supplier Bills', 'description' => 'Edit draft supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.view']],
+            'supplier_bills.delete' => ['label' => 'Delete Supplier Bills', 'description' => 'Delete draft supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.edit']],
+            'supplier_bills.issue' => ['label' => 'Issue Supplier Bills', 'description' => 'Mark supplier bills as authoritative charges', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.edit']],
+            'supplier_bills.void' => ['label' => 'Void Supplier Bills', 'description' => 'Void issued supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.issue']],
+
             // Virtual stock
             'virtual_stock.access' => ['label' => 'Access Virtual Stock', 'description' => 'Access the virtual stock area', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
             'virtual_stock.view' => ['label' => 'View Virtual Stock', 'description' => 'View virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.access']],
@@ -123,6 +131,7 @@ class PermissionSeeder extends Seeder
             'stock.access' => ['label' => 'Access Stock', 'description' => 'Access the stock area', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
             'stock.view' => ['label' => 'View Stock', 'description' => 'View stock levels and movements', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.access']],
             'stock.adjust' => ['label' => 'Adjust Stock', 'description' => 'Make stock adjustments', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
+            'stock.count' => ['label' => 'Count Stock', 'description' => 'Record physical stock counts', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
             'stock.transfer' => ['label' => 'Transfer Stock', 'description' => 'Transfer stock between stores', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
             'availability.view' => ['label' => 'View Availability', 'description' => 'View product availability and shortages', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.access']],
 

@@ -47,6 +47,8 @@ class ItemAdded extends Event
         public int $charge_period = 1,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
+        public ?string $planning_starts_at = null,
+        public ?string $planning_ends_at = null,
         public bool $is_optional = false,
         public ?int $manual_unit_price = null,
         public ?string $discount_percent = null,
@@ -73,6 +75,8 @@ class ItemAdded extends Event
         $state->charge_period = $this->charge_period;
         $state->starts_at = $this->starts_at !== null ? CarbonImmutable::parse($this->starts_at) : null;
         $state->ends_at = $this->ends_at !== null ? CarbonImmutable::parse($this->ends_at) : null;
+        $state->planning_starts_at = $this->planning_starts_at !== null ? CarbonImmutable::parse($this->planning_starts_at) : null;
+        $state->planning_ends_at = $this->planning_ends_at !== null ? CarbonImmutable::parse($this->planning_ends_at) : null;
         $state->is_optional = $this->is_optional;
         $state->manual_unit_price = $this->manual_unit_price;
         $state->unit_price = $this->manual_unit_price ?? 0;
@@ -102,6 +106,7 @@ class ItemAdded extends Event
                 'name' => $state->name,
                 'description' => $state->description,
                 'quantity' => $state->quantity,
+                'reserved_quantity' => $state->reserved_quantity,
                 'unit_price' => $state->unit_price,
                 'charge_period' => $state->charge_period,
                 'total' => 0,
@@ -111,6 +116,8 @@ class ItemAdded extends Event
                 'transaction_type' => $state->transaction_type,
                 'starts_at' => $state->starts_at,
                 'ends_at' => $state->ends_at,
+                'planning_starts_at' => $state->planning_starts_at,
+                'planning_ends_at' => $state->planning_ends_at,
                 'is_optional' => $state->is_optional,
                 'custom_fields' => $state->custom_fields,
                 'notes' => $state->notes,

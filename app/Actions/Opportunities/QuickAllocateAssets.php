@@ -8,6 +8,7 @@ use App\Data\Opportunities\QuickAllocateAssetsData;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
+use App\Models\StockLevel;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\Opportunities\AssetAllocated;
 use Illuminate\Support\Carbon;
@@ -33,7 +34,7 @@ class QuickAllocateAssets
 
     public function __invoke(Opportunity $opportunity, QuickAllocateAssetsData $data): OpportunityData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $opportunity);
 
         $allocatedAt = Carbon::now('UTC')->toIso8601String();
 
@@ -61,6 +62,8 @@ class QuickAllocateAssets
                 if ($item === null || $item->opportunity_id !== $opportunity->id) {
                     throw new NotFoundHttpException('A line item in the batch does not belong to the opportunity.');
                 }
+
+                Gate::authorize('access', StockLevel::query()->findOrFail((int) $allocation['stock_level_id']));
 
                 $alreadyAllocated = (int) ($existingCounts[$item->id] ?? 0);
 

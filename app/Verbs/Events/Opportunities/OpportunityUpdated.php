@@ -3,6 +3,7 @@
 namespace App\Verbs\Events\Opportunities;
 
 use App\Models\Opportunity;
+use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityState;
@@ -33,6 +34,7 @@ class OpportunityUpdated extends Event
      */
     private const DATE_FIELDS = [
         'starts_at', 'ends_at', 'charge_starts_at', 'charge_ends_at',
+        'planning_starts_at', 'planning_ends_at',
         'prep_starts_at', 'prep_ends_at', 'load_starts_at', 'load_ends_at',
         'deliver_starts_at', 'deliver_ends_at', 'setup_starts_at', 'setup_ends_at',
         'show_starts_at', 'show_ends_at', 'takedown_starts_at', 'takedown_ends_at',
@@ -45,6 +47,7 @@ class OpportunityUpdated extends Event
         'subject', 'member_id', 'venue_id', 'store_id', 'owned_by',
         'reference', 'description', 'external_description',
         'starts_at', 'ends_at', 'charge_starts_at', 'charge_ends_at',
+        'planning_starts_at', 'planning_ends_at',
         'prep_starts_at', 'prep_ends_at', 'load_starts_at', 'load_ends_at',
         'deliver_starts_at', 'deliver_ends_at', 'setup_starts_at', 'setup_ends_at',
         'show_starts_at', 'show_ends_at', 'takedown_starts_at', 'takedown_ends_at',
@@ -55,6 +58,7 @@ class OpportunityUpdated extends Event
         'delivery_instructions', 'collection_instructions',
         'delivery_address_id', 'collection_address_id',
         'rating', 'is_invoiced', 'tag_list',
+        'reservation_priority',
     ];
 
     /**
@@ -76,6 +80,8 @@ class OpportunityUpdated extends Event
         public ?string $external_description = null,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
+        public ?string $planning_starts_at = null,
+        public ?string $planning_ends_at = null,
         public ?string $charge_starts_at = null,
         public ?string $charge_ends_at = null,
         public ?string $prep_starts_at = null,
@@ -108,6 +114,7 @@ class OpportunityUpdated extends Event
         public ?int $delivery_address_id = null,
         public ?int $collection_address_id = null,
         public ?int $rating = null,
+        public ?int $reservation_priority = null,
         public ?bool $is_invoiced = null,
         /** @var list<string>|null */
         public ?array $tag_list = null,
@@ -169,6 +176,8 @@ class OpportunityUpdated extends Event
                 'external_description' => $state->external_description,
                 'starts_at' => $state->starts_at,
                 'ends_at' => $state->ends_at,
+                'planning_starts_at' => $state->planning_starts_at,
+                'planning_ends_at' => $state->planning_ends_at,
                 'charge_starts_at' => $state->charge_starts_at,
                 'charge_ends_at' => $state->charge_ends_at,
                 'prep_starts_at' => $state->prep_starts_at,
@@ -201,11 +210,16 @@ class OpportunityUpdated extends Event
                 'delivery_address_id' => $state->delivery_address_id,
                 'collection_address_id' => $state->collection_address_id,
                 'rating' => $state->rating,
+                'reservation_priority' => $state->reservation_priority,
                 'invoiced' => $state->is_invoiced,
                 'tag_list' => $state->tag_list,
             ]);
 
         $opportunity = Opportunity::query()->where('state_id', $state->id)->firstOrFail();
+
+        if (array_intersect(['planning_starts_at', 'planning_ends_at', 'store_id'], $changedFields) !== []) {
+            app(OpportunityItemDemandResolver::class)->resyncForOpportunity($opportunity->refresh());
+        }
 
         // A member change can move the opportunity onto a different organisation
         // tax class, which makes the stored tax figures stale. Recompute the

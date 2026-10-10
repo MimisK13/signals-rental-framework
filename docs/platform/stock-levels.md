@@ -94,3 +94,34 @@ System views for stock levels:
 - All Stock Levels
 - Serialised Stock (stock_category = 50)
 - Bulk Stock (stock_category = 10)
+
+## H2.1 Bulk containment quantity floor
+
+For a physical bulk StockLevel, `StockTransaction` remains the authoritative
+owned-quantity history and `quantity_held` remains its current projection.
+H2.1 adds current physical containment through `ContainerBulkMembership`.
+Containment is not ownership and does not create a StockTransaction.
+
+```text
+Inventory Authority
+├── Owned quantity
+│   ├── StockTransaction
+│   └── StockLevel.quantity_held
+└── Physical containment
+    ├── Serialized: ContainerItem
+    └── Bulk
+        ├── Current: ContainerBulkMembership
+        └── History: ContainerBulkMembershipEvent
+```
+
+For one exact bulk StockLevel:
+
+```text
+contained_quantity = SUM(current ContainerBulkMembership.quantity)
+loose_quantity = quantity_held - contained_quantity
+```
+
+The loose quantity is derived, not stored. Quantity-decreasing transaction
+paths lock the exact StockLevel and reject a result below current contained
+quantity. A result equal to contained quantity is valid; memberships are not
+automatically altered. Stock increases remain independent of containment.

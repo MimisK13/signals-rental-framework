@@ -20,6 +20,7 @@ use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\AvailabilityService;
 use App\Services\Containers\ContainerEventRecorder;
 use App\Services\Containers\ContainerManifestService;
@@ -89,6 +90,33 @@ class PackContainerItem
         bool $confirmedNesting = false,
         ?int $returnedFromOpportunityId = null,
     ): ContainerItem {
+        $lockedContainer = Container::query()
+            ->whereKey($container->id)
+            ->lockForUpdate()
+            ->first();
+
+        if ($lockedContainer === null) {
+            throw ValidationException::withMessages([
+                'container' => __('The target container no longer exists.'),
+            ]);
+        }
+
+        if (! $lockedContainer->status->acceptsPacking()) {
+            throw ValidationException::withMessages([
+                'container' => __('Items can only be packed into an open container.'),
+            ]);
+        }
+
+        $container = $lockedContainer;
+
+        app(ProductStoreCapacityLock::class)->acquire($stockLevel->product_id, $stockLevel->store_id);
+
+        // Re-check after taking the capacity lock so an allocation committed
+        // concurrently with the initial conflict read cannot be packed into a
+        // container. Checked-in/finalised assignments remain valid here for the
+        // existing repack-on-return path.
+        $this->guardPreDispatchAssignment($stockLevel);
+
         BeforeContainerPacked::dispatch($container, $stockLevel);
 
         $item = new ContainerItem([
@@ -187,10 +215,14 @@ class PackContainerItem
         }
 
         $opportunityId = (int) $assignment->item?->opportunity_id;
+        $returnedAt = Carbon::now('UTC')->toIso8601String();
 
-        $item = DB::transaction(function () use ($container, $data, $stockLevel, $assignment, $opportunityId): ContainerItem {
-            $this->commitVerbs(function () use ($assignment): void {
-                AssetReturned::fire(state_id: $assignment->state_id);
+        $item = DB::transaction(function () use ($container, $data, $stockLevel, $assignment, $opportunityId, $returnedAt): ContainerItem {
+            $this->commitVerbs(function () use ($assignment, $returnedAt): void {
+                AssetReturned::fire(
+                    state_id: $assignment->state_id,
+                    returned_at: $returnedAt,
+                );
             });
 
             if ($assignment->item !== null) {
@@ -261,6 +293,8 @@ class PackContainerItem
             throw $this->alreadyInContainerConflict($container, $existing);
         }
 
+        $this->guardPreDispatchAssignment($stockLevel);
+
         if ($assignment = $this->findCheckedOutAssignment($stockLevel)) {
             throw $this->checkedOutConflict($container, $assignment);
         }
@@ -278,6 +312,33 @@ class PackContainerItem
                 'serialised_item_id' => __('This item is currently committed to an opportunity and cannot be packed into a container.'),
             ]);
         }
+    }
+
+    /**
+     * An allocated or prepared opportunity asset is still committed to its
+     * line and cannot be independently packed into a container. Repack-on-return
+     * deliberately reaches executePack only after AssetReturned has moved the
+     * assignment to CheckedIn, so physical repacking remains supported.
+     *
+     * @throws ValidationException
+     */
+    protected function guardPreDispatchAssignment(StockLevel $stockLevel): void
+    {
+        $assignment = OpportunityItemAsset::query()
+            ->where('stock_level_id', $stockLevel->id)
+            ->whereIn('status', [
+                AssetAssignmentStatus::Allocated,
+                AssetAssignmentStatus::Prepared,
+            ])
+            ->first();
+
+        if ($assignment === null) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'serialised_item_id' => __('This item is already allocated to an opportunity and cannot be packed into a container.'),
+        ]);
     }
 
     protected function alreadyInContainerConflict(Container $target, ContainerItem $existing): ContainerPackConflictException

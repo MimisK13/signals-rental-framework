@@ -217,26 +217,35 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
     }
 }; ?>
 
-<section class="w-full">
+<section class="w-full" data-density="compact">
     <x-signals.page-header title="Containers">
         <x-slot:meta>
-            <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Stock</span>
+            <span>Physical warehouse units</span>
         </x-slot:meta>
+        <x-slot:actions>
+            @can('create', Container::class)
+                <flux:button :href="route('containers.create')" variant="primary" size="sm" wire:navigate.hover>
+                    New durable Container
+                </flux:button>
+            @endcan
+        </x-slot:actions>
     </x-signals.page-header>
 
-    <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
-        <x-signals.card class="mb-4">
-            <form wire:submit="submitScan" class="flex flex-wrap items-end gap-3">
-                <flux:field class="min-w-[16rem] flex-1">
-                    <flux:label>Scan barcode</flux:label>
-                    <flux:input wire:model="scanBarcode" class="font-mono" placeholder="Container barcode or housing asset number…" autocomplete="off" />
-                </flux:field>
-                <flux:button type="submit" wire:loading.attr="disabled" variant="primary">Go</flux:button>
+    <div class="flex-1 space-y-4 px-6 py-4 max-md:px-5 max-sm:px-3">
+        <x-signals.toolbar class="w-full flex-wrap items-end !gap-3 !px-0 !py-0" data-density="comfortable">
+            <form wire:submit="submitScan" class="flex w-full items-end gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-col gap-1">
+                    <x-dense::field-label for="container-scan-barcode">{{ __('Scan barcode') }}</x-dense::field-label>
+                    <x-dense::search-input model="scanBarcode" placeholder="Container barcode or housing asset number…" class="w-full" />
+                    </div>
+                </div>
+                <flux:button type="submit" wire:loading.attr="disabled" variant="primary" size="sm" class="!h-[var(--erp-control-height,40px)]">{{ __('Go') }}</flux:button>
             </form>
             @error('scanBarcode')
-                <p class="mt-2 text-sm text-[var(--danger)]">{{ $message }}</p>
+                <p class="w-full text-sm text-[var(--danger)]">{{ $message }}</p>
             @enderror
-        </x-signals.card>
+        </x-signals.toolbar>
 
         <x-signals.modal name="repack-opportunity-picker" title="{{ __('Start repack from return') }}" size="md" :teleport="false">
             <p class="text-sm text-[var(--muted)] mb-4">{{ __('This housing is checked out on multiple opportunities. Choose which return to process.') }}</p>
@@ -256,31 +265,52 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
             </div>
         </x-signals.modal>
 
-        <div class="mb-4 flex flex-wrap items-center gap-3">
-            <flux:input wire:model.live.debounce.300ms="search" placeholder="Search by name or barcode..." class="max-w-sm" />
-            <flux:select wire:model.live="storeFilter" class="max-w-[10rem]">
-                <option value="">All stores</option>
-                @foreach($stores as $store)
-                    <option value="{{ $store->id }}" wire:key="store-opt-{{ $store->id }}">{{ $store->name }}</option>
-                @endforeach
-            </flux:select>
-            <div class="flex flex-wrap gap-2">
-                <button type="button" wire:click="setModeFilter('')" class="s-chip {{ $modeFilter === '' ? 's-chip-active' : '' }}">All modes</button>
-                @foreach($modes as $mode)
-                    <button type="button" wire:click="setModeFilter('{{ $mode->value }}')" wire:key="mode-filter-{{ $mode->value }}" class="s-chip {{ $modeFilter === $mode->value ? 's-chip-active' : '' }}">{{ $mode->label() }}</button>
-                @endforeach
+        <x-signals.toolbar class="w-full flex-wrap items-end justify-between !gap-3 !px-0 !py-0">
+            <div class="min-w-52 flex-1 sm:max-w-80">
+                <div class="flex flex-col gap-1">
+                    <x-dense::field-label for="container-search">{{ __('Search') }}</x-dense::field-label>
+                    <x-dense::search-input id="container-search" model="search" placeholder="Name or barcode" />
+                </div>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="min-w-52 flex-1 sm:w-64 sm:flex-none">
+                <div class="flex flex-col gap-1">
+                    <x-dense::field-label>{{ __('Store') }}</x-dense::field-label>
+                    <x-dense::store-picker
+                        :value="$storeFilter !== '' && $stores->firstWhere('id', (int) $storeFilter) ? [$stores->firstWhere('id', (int) $storeFilter)->name] : []"
+                        :suggestions="$stores->pluck('name')->all()"
+                        single
+                        float-suggestions
+                        placeholder="{{ __('All stores') }}"
+                        class="w-full"
+                        x-on:tags-changed="$wire.set('storeFilter', $event.detail[0] ? {{ \Illuminate\Support\Js::from($stores->mapWithKeys(fn ($store): array => [$store->name => (string) $store->id])->all()) }}[$event.detail[0]] : '')"
+                    />
+                </div>
+            </div>
+        </x-signals.toolbar>
+
+        <div class="flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)]">
+            <nav class="flex flex-wrap items-center gap-1" aria-label="Container status">
+                <span class="mr-1 font-medium text-[var(--text)]">{{ __('Status') }}</span>
                 <button type="button" wire:click="setStatusFilter('')" class="s-chip {{ $statusFilter === '' ? 's-chip-active' : '' }}">Active</button>
                 @foreach($statuses as $status)
                     <button type="button" wire:click="setStatusFilter('{{ $status->value }}')" wire:key="status-filter-{{ $status->value }}" class="s-chip {{ $statusFilter === $status->value ? 's-chip-active' : '' }}">{{ $status->label() }}</button>
                 @endforeach
-            </div>
+            </nav>
+            <nav class="flex flex-wrap items-center gap-1" aria-label="Container mode">
+                <span class="mr-1 font-medium text-[var(--text)]">{{ __('Mode') }}</span>
+                <button type="button" wire:click="setModeFilter('')" class="s-chip {{ $modeFilter === '' ? 's-chip-active' : '' }}">All</button>
+                @foreach($modes as $mode)
+                    <button type="button" wire:click="setModeFilter('{{ $mode->value }}')" wire:key="mode-filter-{{ $mode->value }}" class="s-chip {{ $modeFilter === $mode->value ? 's-chip-active' : '' }}">{{ $mode->label() }}</button>
+                @endforeach
+            </nav>
         </div>
 
-        <x-signals.card>
-            <x-signals.table-wrap>
-                <table class="s-table">
+        @php($containers = $this->containers())
+        <x-signals.table-card title="Containers" :count="$containers->total()" count-class="s-badge-blue">
+            @if($containers->isEmpty())
+                <x-signals.empty title="No containers found" description="No containers match the current filters." />
+            @else
+                <table class="s-table s-table-compact w-full">
                     <thead>
                         <tr>
                             <th>Barcode</th>
@@ -290,14 +320,15 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
                             <th>Store</th>
                             <th>Type</th>
                             <th class="text-right">Items</th>
+                            <th class="text-center"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($this->containers() as $container)
+                        @foreach($containers as $container)
                             <tr wire:key="container-row-{{ $container->uuid }}">
                                 <td style="font-family: var(--font-mono);">{{ $container->barcode ?? '—' }}</td>
                                 <td>
-                                    <a href="{{ route('containers.show', $container) }}" wire:navigate class="font-medium text-[var(--link)] hover:underline">
+                                    <a href="{{ route('containers.show', $container) }}" wire:navigate.hover class="font-medium text-[var(--link)] hover:underline">
                                         {{ $container->name }}
                                     </a>
                                 </td>
@@ -305,20 +336,57 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
                                 <td>{{ $container->availabilityMode()->label() }}</td>
                                 <td>{{ $container->store?->name ?? $container->serialisedItem?->store?->name ?? '—' }}</td>
                                 <td>{{ $container->is_temporary ? 'Temporary' : 'Product-backed' }}</td>
-                                <td class="text-right" style="font-family: var(--font-mono);">{{ $container->active_items_count }}</td>
+                                <td class="text-right font-mono">{{ $container->active_items_count }}</td>
+                                <td class="text-center">
+                                    <div class="flex justify-center">
+                                        <div x-data="{ open: false }" x-on:keydown.escape.prevent.stop="open = false" class="relative inline-flex">
+                                            <button
+                                                x-ref="button"
+                                                type="button"
+                                                class="s-btn-ghost s-btn-xs s-btn-icon"
+                                                aria-label="Container actions"
+                                                title="Container actions"
+                                                :aria-expanded="open"
+                                                x-on:click="open = ! open"
+                                            >
+                                                <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                                                    <circle cx="12" cy="5" r="1.5" />
+                                                    <circle cx="12" cy="12" r="1.5" />
+                                                    <circle cx="12" cy="19" r="1.5" />
+                                                </svg>
+                                            </button>
+                                            <div
+                                                x-ref="panel"
+                                                x-show="open"
+                                                x-cloak
+                                                x-on:click.outside="open = false"
+                                                class="s-dropdown"
+                                                style="position: fixed; z-index: 9999; min-width: 150px;"
+                                                x-init="$watch('open', value => {
+                                                    if (value) {
+                                                        $nextTick(() => {
+                                                            const rect = $refs.button.getBoundingClientRect();
+                                                            $el.style.top = rect.bottom + 4 + 'px';
+                                                            $el.style.right = (window.innerWidth - rect.right) + 'px';
+                                                            $el.style.left = 'auto';
+                                                        });
+                                                    }
+                                                })"
+                                            >
+                                                <a href="{{ route('containers.show', $container) }}" wire:navigate.hover x-on:click="open = false">{{ __('Open') }}</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-[var(--muted)] py-8">No containers found.</td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
-            </x-signals.table-wrap>
+            @endif
 
-            <div class="mt-4">
-                {{ $this->containers()->links() }}
-            </div>
-        </x-signals.card>
+            <x-slot:footer>
+                {{ $containers->links() }}
+            </x-slot:footer>
+        </x-signals.table-card>
     </div>
 </section>

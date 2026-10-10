@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-01T00:00:00Z'));
+
     // Drive the pipeline directly over a narrow window; fake the queue so the
     // demand observer's async whole-horizon recompute does not run.
     Queue::fake();
@@ -31,6 +33,10 @@ beforeEach(function () {
         'product_id' => $this->product->id,
         'store_id' => $this->store->id,
     ]);
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 describe('pending_checkin_quantity snapshot population', function () {

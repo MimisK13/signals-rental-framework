@@ -31,7 +31,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Zones')] class extends Comp
 <section class="w-full">
     <x-admin.layout group="tax" title="Tax Zones" description="Geographic zones used for cross-border tax rule matching.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.tax.zones.create') }}" wire:navigate>
+            <flux:button variant="primary" href="{{ route('admin.settings.tax.zones.create') }}" wire:navigate.hover>
                 Add Tax Zone
             </flux:button>
         </x-slot:actions>
@@ -63,7 +63,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Zones')] class extends Comp
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('admin.settings.tax.zones.edit', $taxZone) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                <a href="{{ route('admin.settings.tax.zones.edit', $taxZone) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                     <flux:icon.pencil-square class="w-4 h-4" />
                                 </a>
                                 <button wire:click="deleteTaxZone({{ $taxZone->id }})"

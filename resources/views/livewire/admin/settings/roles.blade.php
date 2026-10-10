@@ -32,7 +32,7 @@ new #[Layout('components.layouts.app')] #[Title('Roles')] class extends Componen
 <section class="w-full">
     <x-admin.layout group="users" title="Roles" description="Manage roles and their permissions.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.roles.create') }}" wire:navigate>Create Role</flux:button>
+            <flux:button variant="primary" href="{{ route('admin.settings.roles.create') }}" wire:navigate.hover>Create Role</flux:button>
         </x-slot:actions>
 
         <div class="s-table-wrap">
@@ -61,7 +61,7 @@ new #[Layout('components.layouts.app')] #[Title('Roles')] class extends Componen
                             </td>
                             <td>
                                 <div class="flex gap-2">
-                                    <a href="{{ route('admin.settings.roles.edit', $role) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.roles.edit', $role) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     @if(! $role->is_system)

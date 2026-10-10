@@ -5,6 +5,10 @@ namespace App\Actions\Containers;
 use App\Data\Containers\ContainerData;
 use App\Models\Container;
 use App\Services\Containers\ContainerEventRecorder;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -17,18 +21,37 @@ class VerifyKitCheckin
     {
         Gate::authorize('verifyCheckin', $container);
 
-        if ($container->checkin_verification_required_at === null) {
-            throw ValidationException::withMessages([
-                'container' => __('This kit does not require check-in verification.'),
-            ]);
-        }
+        $actorId = Auth::id();
+        $occurredAt = CarbonImmutable::now('UTC');
 
-        $container->forceFill([
-            'checkin_verification_required_at' => null,
-        ])->saveQuietly();
+        return DB::transaction(function () use ($container, $actorId, $occurredAt): ContainerData {
+            $locked = Container::query()
+                ->whereKey($container->id)
+                ->lockForUpdate()
+                ->first();
 
-        app(ContainerEventRecorder::class)->checkinVerified($container->fresh() ?? $container);
+            if ($locked === null) {
+                throw (new ModelNotFoundException)->setModel(Container::class, [$container->id]);
+            }
 
-        return ContainerData::fromModel($container->fresh() ?? $container);
+            if ($locked->checkin_verification_required_at === null) {
+                throw ValidationException::withMessages([
+                    'container' => __('This kit does not require check-in verification.'),
+                ]);
+            }
+
+            $locked->forceFill([
+                'checkin_verification_required_at' => null,
+            ])->saveQuietly();
+
+            app(ContainerEventRecorder::class)->checkinVerified(
+                $locked->fresh() ?? $locked,
+                $actorId,
+                $occurredAt,
+                failOnAuditFailure: true,
+            );
+
+            return ContainerData::fromModel($locked->fresh() ?? $locked);
+        });
     }
 }

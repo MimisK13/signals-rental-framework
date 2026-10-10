@@ -33,8 +33,8 @@ beforeEach(function () {
 it('creates open and sealed demo containers on serialised assets', function () {
     seedDemoContainers();
 
-    $open = Container::query()->where('name', 'Demo Open Flight Case')->first();
-    $sealed = Container::query()->where('name', 'Demo Sealed Flight Case')->first();
+    $open = Container::query()->where('name', 'Open Flight Case')->first();
+    $sealed = Container::query()->where('name', 'Sealed Flight Case')->first();
 
     expect($open)->not->toBeNull()
         ->and($open->status)->toBe(ContainerStatus::Open)
@@ -45,9 +45,22 @@ it('creates open and sealed demo containers on serialised assets', function () {
 it('packs items into the sealed demo container', function () {
     seedDemoContainers();
 
-    $sealed = Container::query()->where('name', 'Demo Sealed Flight Case')->firstOrFail();
+    $sealed = Container::query()->where('name', 'Sealed Flight Case')->firstOrFail();
 
     expect($sealed->activeItems()->count())->toBeGreaterThan(0);
+});
+
+it('seeds a real Sennheiser SR2050 flightcase with its serialized transmitter', function () {
+    seedDemoContainers();
+
+    $container = Container::query()
+        ->where('name', 'Sennheiser SR2050 Flightcase 02')
+        ->with('product')
+        ->firstOrFail();
+
+    expect($container->product?->sku)->toBe('CAS-SR2050')
+        ->and($container->activeItems()->count())->toBe(1)
+        ->and($container->activeItems()->first()?->serialisedItem?->product?->sku)->toBe('AUD-SR2050');
 });
 
 it('is idempotent on re-run', function () {

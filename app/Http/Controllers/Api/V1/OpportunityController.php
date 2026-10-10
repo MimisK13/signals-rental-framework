@@ -102,6 +102,7 @@ use App\Data\Opportunities\ToggleOpportunitySurchargeGroupData;
 use App\Data\Opportunities\UpdateOpportunityCostData;
 use App\Data\Opportunities\UpdateOpportunityData;
 use App\Data\Opportunities\UpdateOpportunityParticipantData;
+use App\Data\Planning\OpportunityItemPlanningData;
 use App\Enums\OpportunityItemType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
@@ -121,6 +122,7 @@ use App\Models\OpportunityItemAsset;
 use App\Models\OpportunityParticipant;
 use App\Services\AvailabilityService;
 use App\Services\Opportunities\OpportunityActionDescriber;
+use App\Services\Planning\OpportunityItemPlanningReader;
 use App\ValueObjects\DispatchGateResult;
 use Closure;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
@@ -419,6 +421,23 @@ class OpportunityController extends Controller
             ->all();
 
         return $this->respondWithCollection($context, 'availability');
+    }
+
+    /**
+     * The canonical read-only planning state for every product-backed line.
+     */
+    #[ApiResponse(200, 'Opportunity planning state', type: 'array{planning: list<array<string, mixed>>, meta: array{total: int, per_page: int, page: int}}')]
+    public function planning(Opportunity $opportunity): JsonResponse
+    {
+        $this->authorizeApi('opportunities.view', 'opportunities:read');
+
+        $planning = app(OpportunityItemPlanningReader::class)
+            ->forOpportunity($opportunity)
+            ->map(fn (OpportunityItemPlanningData $data): array => $data->toArray())
+            ->values()
+            ->all();
+
+        return $this->respondWithCollection($planning, 'planning');
     }
 
     /**

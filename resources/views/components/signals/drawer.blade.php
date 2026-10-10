@@ -8,7 +8,6 @@
 @php
     $sideClass = "s-drawer-{$side}";
     $sizeClass = "s-drawer-{$size}";
-    $translateFrom = $side === 'left' ? '-translate-x-full' : 'translate-x-full';
 @endphp
 
 <div
@@ -23,22 +22,16 @@
             class="s-drawer-backdrop"
             x-show="open"
             x-cloak
-            x-transition.opacity
             x-on:click="open = false"
         ></div>
         {{-- Panel --}}
         <div
             class="{{ $sizeClass }} {{ $sideClass }} s-drawer"
+            style="display: flex;"
             x-show="open"
             x-cloak
             x-trap.noscroll="open"
             x-on:keydown.escape.window="open = false"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="{{ $translateFrom }}"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="{{ $translateFrom }}"
         >
             @if($title)
                 <div class="s-drawer-header">

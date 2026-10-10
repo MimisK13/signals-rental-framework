@@ -33,7 +33,7 @@ new #[Layout('components.layouts.app')] #[Title('Price Categories')] class exten
     <x-admin.layout group="pricing" title="Price Categories" description="Define alternative base price lists and tier multipliers. Product assignment and pipeline effects arrive in later milestones.">
         <x-slot:actions>
             @can('pricing.manage')
-                <flux:button variant="primary" href="{{ route('admin.settings.pricing.price-categories.create') }}" wire:navigate>
+                <flux:button variant="primary" href="{{ route('admin.settings.pricing.price-categories.create') }}" wire:navigate.hover>
                     Add Price Category
                 </flux:button>
             @endcan
@@ -65,7 +65,7 @@ new #[Layout('components.layouts.app')] #[Title('Price Categories')] class exten
                             </td>
                             <td class="text-right">
                                 @can('pricing.manage')
-                                    <a href="{{ route('admin.settings.pricing.price-categories.edit', $category) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.pricing.price-categories.edit', $category) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     <button wire:click="deleteCategory({{ $category->id }})"

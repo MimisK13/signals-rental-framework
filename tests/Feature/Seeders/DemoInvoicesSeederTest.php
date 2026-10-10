@@ -73,18 +73,18 @@ it('creates the expected invoice lifecycle references', function () {
         ->pluck('reference')
         ->all();
 
-    expect($references)->toContain('DEMO-INV-DRAFT')
-        ->and($references)->toContain('DEMO-INV-PAID')
-        ->and($references)->toContain('DEMO-INV-PARTIAL')
-        ->and($references)->toContain('DEMO-INV-OVERDUE')
-        ->and($references)->toContain('DEMO-INV-DEPOSIT')
-        ->and($references)->toContain('DEMO-INV-PROFORMA');
+    expect($references)->toContain('INV-DRAFT')
+        ->and($references)->toContain('INV-PAID')
+        ->and($references)->toContain('INV-PARTIAL')
+        ->and($references)->toContain('INV-OVERDUE')
+        ->and($references)->toContain('INV-DEPOSIT')
+        ->and($references)->toContain('INV-PROFORMA');
 });
 
 it('marks the paid demo invoice fully settled', function () {
     seedDemoInvoices();
 
-    $paid = Invoice::query()->where('reference', 'DEMO-INV-PAID')->firstOrFail();
+    $paid = Invoice::query()->where('reference', 'INV-PAID')->firstOrFail();
 
     expect($paid->status)->toBe('paid')
         ->and($paid->amount_outstanding)->toBe(0);
@@ -93,8 +93,8 @@ it('marks the paid demo invoice fully settled', function () {
 it('creates deposit and proforma invoice types', function () {
     seedDemoInvoices();
 
-    $deposit = Invoice::query()->where('reference', 'DEMO-INV-DEPOSIT')->firstOrFail();
-    $proforma = Invoice::query()->where('reference', 'DEMO-INV-PROFORMA')->firstOrFail();
+    $deposit = Invoice::query()->where('reference', 'INV-DEPOSIT')->firstOrFail();
+    $proforma = Invoice::query()->where('reference', 'INV-PROFORMA')->firstOrFail();
 
     expect($deposit->typeEnum())->toBe(InvoiceType::Deposit)
         ->and($proforma->typeEnum())->toBe(InvoiceType::Proforma);
@@ -103,8 +103,8 @@ it('creates deposit and proforma invoice types', function () {
 it('matches the paid invoice total to its source opportunity charge including tax total', function () {
     seedDemoInvoices();
 
-    $opportunity = Opportunity::query()->where('reference', 'DEMO-OPP-0002')->firstOrFail();
-    $invoice = Invoice::query()->where('reference', 'DEMO-INV-PAID')->firstOrFail();
+    $opportunity = Opportunity::query()->where('reference', 'OPP-0002')->firstOrFail();
+    $invoice = Invoice::query()->where('reference', 'INV-PAID')->firstOrFail();
 
     expect($invoice->total)->toBe((int) $opportunity->charge_including_tax_total)
         ->and($invoice->tax_total)->toBeGreaterThan(0)
@@ -114,7 +114,7 @@ it('matches the paid invoice total to its source opportunity charge including ta
 it('records partial payment, refund, and credit note on the partial demo invoice', function () {
     seedDemoInvoices();
 
-    $invoice = Invoice::query()->where('reference', 'DEMO-INV-PARTIAL')->firstOrFail();
+    $invoice = Invoice::query()->where('reference', 'INV-PARTIAL')->firstOrFail();
 
     expect($invoice->amount_paid)->toBeGreaterThan(0)
         ->and($invoice->amount_outstanding)->toBeGreaterThan(0)
@@ -124,7 +124,7 @@ it('records partial payment, refund, and credit note on the partial demo invoice
 it('leaves the overdue demo invoice issued and still outstanding', function () {
     seedDemoInvoices();
 
-    $invoice = Invoice::query()->where('reference', 'DEMO-INV-OVERDUE')->firstOrFail();
+    $invoice = Invoice::query()->where('reference', 'INV-OVERDUE')->firstOrFail();
 
     expect($invoice->status)->toBe('issued')
         ->and($invoice->amount_outstanding)->toBeGreaterThan(0)

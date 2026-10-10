@@ -310,7 +310,7 @@ it('fires audit and webhook events when unsealing', function () {
     $container = Container::factory()->kit()->sealed()->create(['store_id' => $this->store->id]);
 
     (new UnsealContainer)($container, UnsealContainerData::from([
-        'reason' => ContainerUnsealReason::TransferTriggered->value,
+        'reason' => ContainerUnsealReason::Transfer->value,
     ]));
 
     Event::assertDispatched(AuditableEvent::class, fn (AuditableEvent $event): bool => $event->action === 'container.unsealed');

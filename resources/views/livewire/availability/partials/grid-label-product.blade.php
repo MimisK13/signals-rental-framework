@@ -5,7 +5,7 @@
         'days' => $daysPeriod,
         'stores' => ($storeIds ?? []) !== [] ? $storeIds : null,
     ], static fn (mixed $value): bool => $value !== null)) }}"
-       wire:navigate
+       wire:navigate.hover
        class="min-w-0 flex-1 truncate font-medium text-[var(--blue)] hover:underline">
         {{ $productName }}
     </a>

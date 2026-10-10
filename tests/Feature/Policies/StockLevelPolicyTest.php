@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\MemberStore;
 use App\Models\StockLevel;
+use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -12,6 +14,28 @@ beforeEach(function () {
 });
 
 describe('StockLevelPolicy', function () {
+    it('exposes Store access as a resource-scope check without adding a permission', function () {
+        $store = Store::factory()->create();
+        $otherStore = Store::factory()->create();
+        $stockLevel = StockLevel::factory()->create(['store_id' => $store->id]);
+        $user = User::factory()->create();
+
+        MemberStore::create([
+            'member_id' => $user->member_id,
+            'store_id' => $otherStore->id,
+            'created_at' => now(),
+        ]);
+
+        expect($user->can('access', $stockLevel))->toBeFalse();
+
+        MemberStore::create([
+            'member_id' => $user->member_id,
+            'store_id' => $store->id,
+            'created_at' => now(),
+        ]);
+
+        expect($user->can('access', $stockLevel))->toBeTrue();
+    });
     describe('viewAny', function () {
         it('allows owner to view stock levels', function () {
             $owner = User::factory()->owner()->create();

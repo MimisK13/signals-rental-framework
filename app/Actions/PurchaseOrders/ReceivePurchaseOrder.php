@@ -2,8 +2,10 @@
 
 namespace App\Actions\PurchaseOrders;
 
+use App\Actions\Products\CreateStockTransaction;
 use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Concerns\CommitsVerbsEvents;
+use App\Data\Products\CreateStockTransactionData;
 use App\Data\PurchaseOrders\PurchaseOrderData;
 use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
 use App\Enums\ShortageResolutionStatus;
@@ -13,7 +15,6 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\ShortageResolution;
 use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\VirtualStockIntake;
 use App\Services\PurchaseOrders\PurchaseOrderEventRecorder;
 use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
@@ -115,6 +116,7 @@ class ReceivePurchaseOrder
                     'store_id' => (int) $purchaseOrder->store_id,
                     'quantity' => $delta,
                     'description' => "PO {$purchaseOrder->number} receipt",
+                    'source' => $item,
                 ];
             }
         }
@@ -435,7 +437,7 @@ class ReceivePurchaseOrder
     }
 
     /**
-     * @param  array{product_id: int, store_id: int, quantity: string, description: string}  $receipt
+     * @param  array{product_id: int, store_id: int, quantity: string, description: string, source: PurchaseOrderItem}  $receipt
      */
     private function recordStockReceipt(array $receipt): void
     {
@@ -458,17 +460,13 @@ class ReceivePurchaseOrder
             ]);
         }
 
-        $transaction = StockTransaction::query()->create([
+        app(CreateStockTransaction::class)(CreateStockTransactionData::from([
             'stock_level_id' => $stockLevel->id,
             'store_id' => $receipt['store_id'],
             'transaction_type' => TransactionType::Buy->value,
-            'transaction_at' => now(),
             'quantity' => $quantity,
             'description' => $receipt['description'],
-            'manual' => false,
-        ]);
-
-        $stockLevel->increment('quantity_held', (float) $transaction->signedQuantity());
+        ]), $receipt['source']);
     }
 
     /**

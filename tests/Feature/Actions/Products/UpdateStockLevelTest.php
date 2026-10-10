@@ -12,6 +12,7 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
@@ -19,25 +20,31 @@ beforeEach(function () {
     $this->actingAs(User::factory()->owner()->create());
 });
 
-it('updates a stock level', function () {
+it('updates stock metadata without changing physical quantity', function () {
     Event::fake([AuditableEvent::class]);
 
     $stockLevel = StockLevel::factory()->create(['quantity_held' => 5]);
 
-    $data = UpdateStockLevelData::from([
-        'quantity_held' => 20,
-    ]);
+    $data = UpdateStockLevelData::from(['location' => 'Warehouse B']);
 
     $result = (new UpdateStockLevel)($stockLevel, $data);
 
     expect($result->product_id)->toBe($stockLevel->product_id);
-    expect((float) $result->quantity_held)->toBe(20.0);
-    expect((float) $stockLevel->fresh()->quantity_held)->toBe(20.0);
+    expect($result->location)->toBe('Warehouse B');
+    expect((float) $stockLevel->fresh()->quantity_held)->toBe(5.0);
 
     Event::assertDispatched(AuditableEvent::class, function (AuditableEvent $event) {
         return $event->action === 'stock_level.updated';
     });
 });
+
+it('rejects direct physical quantity changes', function () {
+    $stockLevel = StockLevel::factory()->create(['quantity_held' => 5]);
+
+    (new UpdateStockLevel)($stockLevel, UpdateStockLevelData::from([
+        'quantity_held' => '20',
+    ]));
+})->throws(ValidationException::class);
 
 it('clears optional field to null when empty string is passed', function () {
     Event::fake([AuditableEvent::class]);

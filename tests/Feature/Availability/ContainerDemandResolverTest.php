@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-01T00:00:00Z'));
+
     $this->app->bind(AvailabilityResolutionProvider::class, fn () => new class implements AvailabilityResolutionProvider
     {
         public function resolve(): AvailabilityResolution
@@ -46,6 +48,10 @@ beforeEach(function () {
 
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
     $this->resolver = app(ContainerDemandResolver::class);
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 /**

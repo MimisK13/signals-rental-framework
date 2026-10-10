@@ -234,7 +234,7 @@ new #[Layout('components.layouts.app')] #[Title('Surcharge Group')] class extend
                 </div>
 
                 <div class="flex justify-end gap-2">
-                    <flux:button href="{{ route('admin.settings.pricing.surcharge-groups') }}" wire:navigate variant="ghost">Cancel</flux:button>
+                    <flux:button href="{{ route('admin.settings.pricing.surcharge-groups') }}" wire:navigate.hover variant="ghost">Cancel</flux:button>
                     <flux:button type="submit" variant="primary">Save</flux:button>
                 </div>
             </form>

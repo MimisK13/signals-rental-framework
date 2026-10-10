@@ -84,6 +84,25 @@ class AssetAllocated extends Event
             'Only serialised stock can be allocated as a specific asset.',
         );
 
+        $effectiveStoreId = $item !== null
+            ? app(OpportunityItemDemandResolver::class)->resolveContext($item)['store_id']
+            : null;
+
+        $this->assert(
+            $effectiveStoreId !== null,
+            'A serialized allocation requires an operational Store.',
+        );
+
+        $this->assert(
+            $stockLevel?->store_id === $effectiveStoreId,
+            'The asset must belong to the line item\'s operational Store.',
+        );
+
+        $this->assert(
+            $stockLevel?->is_virtual || $stockLevel?->asset_id === null || $stockLevel->asset?->isOperationallyActive() === true,
+            'Only active Assets can be allocated.',
+        );
+
         if ($stockLevel !== null && $stockLevel->is_virtual) {
             $this->assertVirtualAssetAssignable($item, $stockLevel);
         }
@@ -116,6 +135,17 @@ class AssetAllocated extends Event
                 $existing + 1 <= $maxAssets,
                 'Allocating this asset would exceed the line item\'s quantity.',
             );
+
+            if ($item->reserved_quantity !== null) {
+                $maxReservedAssets = BigDecimal::of((string) $item->reserved_quantity)
+                    ->toScale(0, RoundingMode::FLOOR)
+                    ->toInt();
+
+                $this->assert(
+                    $existing + 1 <= $maxReservedAssets,
+                    'Allocating this asset would exceed the line item\'s explicit reservation.',
+                );
+            }
         }
 
         // Over-allocation guard: the asset must be free for the line's window.

@@ -202,4 +202,12 @@ class PurchaseOrder extends Model implements HasSchema
     {
         return $this->hasMany(VirtualStockIntake::class)->orderBy('number');
     }
+
+    /**
+     * @return HasMany<SupplierBill, $this>
+     */
+    public function supplierBills(): HasMany
+    {
+        return $this->hasMany(SupplierBill::class);
+    }
 }

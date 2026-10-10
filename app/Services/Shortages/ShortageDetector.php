@@ -4,192 +4,176 @@ namespace App\Services\Shortages;
 
 use App\Enums\OpportunityState;
 use App\Enums\ShortageResolutionStatus;
+use App\Enums\ShortageResolutionType;
 use App\Enums\StockMethod;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
+use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\ShortageResolutionItem;
+use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\AvailabilityService;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageCollection;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 
 /**
  * Detects inventory shortages on opportunities by comparing line-item demand
- * against what the availability engine reports as free
- * (shortage-resolution-sub-hires.md §2).
- *
- * The detector is a thin, opportunity-aware consumer of the
- * {@see AvailabilityService} — it never modifies the engine. For each
- * product-backed line item it asks the engine how many units are free for that
- * item over its effective window (excluding the item's own demand, via
- * {@see AvailabilityService::availableForItem()}), derives the shortfall, then
- * nets off any active resolution records to produce `remaining_shortfall`.
- *
- * Shortages are computed, never stored: the {@see ShortageCollection} this
- * returns is the typed result feeding the confirmation gate and the per-
- * opportunity badge/API endpoint.
+ * against what the availability engine reports as free.
  */
 class ShortageDetector
 {
     public function __construct(
         private readonly AvailabilityService $availability,
+        private readonly OpportunityItemDemandResolver $demandResolver,
     ) {}
 
     /**
-     * Detect shortages across every product-backed line item of an opportunity
-     * (shortage-resolution-sub-hires.md §2.2, single-opportunity scope). Only
-     * items with a positive shortfall are returned.
+     * @return ShortageCollection<int, Shortage>
      */
     public function forOpportunity(Opportunity $opportunity): ShortageCollection
     {
-        // Eager-load the polymorphic product on every line so the per-item
-        // resolveProduct() reads the loaded relation instead of issuing one
-        // Product::find() query per product-backed line (N+1).
         $opportunity->loadMissing('items.item');
-
         $shortages = new ShortageCollection;
 
-        foreach ($opportunity->items as $item) {
-            $shortage = $this->forItem($item, $opportunity);
-
-            if ($shortage !== null) {
-                $shortages->push($shortage);
-            }
+        foreach ($this->forItems($opportunity->items, $opportunity) as $shortage) {
+            $shortages->push($shortage);
         }
 
         return $shortages;
     }
 
-    /**
-     * Detect a shortage for a single line item (shortage-resolution-sub-hires.md
-     * §2.2, single-item scope), used inline when adding/editing a line. Returns
-     * null when the item is fully serviceable or is not product-backed.
-     */
     public function forItem(OpportunityItem $item, ?Opportunity $opportunity = null): ?Shortage
     {
         $opportunity ??= $item->opportunity;
 
-        $product = $this->resolveProduct($item);
-        $storeId = $opportunity->store_id;
-
-        if ($product === null || $storeId === null || ! $product->track_availability) {
-            return null;
-        }
-
-        $requested = $this->requestedQuantity($item);
-
-        if ($requested <= 0) {
-            return null;
-        }
-
-        [$startsAt, $endsAt] = $this->resolveDates($item, $opportunity);
-
-        $available = $this->availability->availableForItem(
-            $product->id,
-            $storeId,
-            $startsAt,
-            $endsAt,
-            'opportunity_item',
-            $item->id,
-        );
-
-        $shortfall = $requested - $available;
-
-        if ($shortfall <= 0) {
-            return null;
-        }
-
-        return Shortage::make(
-            opportunityItemId: $item->id,
-            opportunityId: $opportunity->id,
-            productId: $product->id,
-            productName: $product->name,
-            storeId: $storeId,
-            requestedQuantity: $requested,
-            availableQuantity: max(0, $available),
-            trackingType: $product->stock_method ?? StockMethod::Bulk,
-            startsAt: $startsAt,
-            endsAt: $endsAt,
-            isCritical: $opportunity->state === OpportunityState::Order,
-            resolvedQuantity: $this->resolvedQuantityFor($item->id),
-        );
+        return $this->forItems(new EloquentCollection([$item]), $opportunity)[$item->id] ?? null;
     }
 
     /**
-     * The requested quantity for a line item: the count of allocated serialised
-     * assets when present (each is one demand of one unit), otherwise the line
-     * quantity rounded to whole units. Mirrors the demand resolver's quantity
-     * resolution so detection and demand agree.
+     * Detect shortages for several lines while batching product, allocation,
+     * resolution and availability reads. The calculation remains the same as
+     * {@see forItem()} for every line.
+     *
+     * @param  Collection<int, OpportunityItem>  $items
+     * @param  array<int, array<string, mixed>>  $contexts
+     * @param  array<int, int>  $availableByItem
+     * @param  array<int, Product>  $productsByItem
+     * @param  array<int, int>  $allocatedByItem
+     * @return array<int, Shortage>
      */
-    private function requestedQuantity(OpportunityItem $item): int
-    {
-        $allocated = $item->assets()->whereNotNull('stock_level_id')->count();
+    public function forItems(
+        Collection $items,
+        Opportunity $opportunity,
+        array $contexts = [],
+        array $availableByItem = [],
+        array $productsByItem = [],
+        array $allocatedByItem = [],
+    ): array {
+        $itemIds = $items->map(static fn (OpportunityItem $item): int => $item->id)->all();
+        $resolvedContexts = [];
+        $productIds = [];
 
-        if ($allocated > 0) {
-            return $allocated;
+        foreach ($items as $item) {
+            $context = $contexts[$item->id] ?? $this->demandResolver->resolveContext($item);
+            $resolvedContexts[$item->id] = $context;
+
+            if ($context['product_id'] !== null) {
+                $productIds[] = $context['product_id'];
+            }
         }
 
-        return max(0, (int) round((float) $item->quantity));
-    }
+        $products = $productsByItem === []
+            ? Product::query()
+                ->whereIn('id', array_values(array_unique($productIds)))
+                ->get()
+                ->keyBy('id')
+            : collect($productsByItem)->unique('id')->keyBy('id');
+        $productsByItem = $productsByItem + $items->mapWithKeys(function (OpportunityItem $item) use ($products): array {
+            $product = $item->relationLoaded('itemable') && $item->getRelation('itemable') instanceof Product
+                ? $item->getRelation('itemable')
+                : ($item->relationLoaded('item') && $item->item instanceof Product
+                    ? $item->item
+                    : $products->get($item->itemable_id));
 
-    /**
-     * Active resolution coverage already recorded for a line item — the quantity
-     * netted off to produce `remaining_shortfall` (§2.3). Summed in a single
-     * aggregate query over the resolution-item pivot, scoped to active resolutions.
-     */
-    private function resolvedQuantityFor(int $opportunityItemId): int
-    {
-        return (int) ShortageResolutionItem::query()
+            return $product === null ? [] : [$item->id => $product];
+        })->all();
+
+        if ($allocatedByItem === []) {
+            $allocatedByItem = OpportunityItemAsset::query()
+                ->whereIn('opportunity_item_id', $itemIds)
+                ->whereNotNull('stock_level_id')
+                ->selectRaw('opportunity_item_id, COUNT(*) as allocated_assets_count')
+                ->groupBy('opportunity_item_id')
+                ->pluck('allocated_assets_count', 'opportunity_item_id')
+                ->map(static fn ($count): int => (int) $count)
+                ->all();
+        }
+
+        $resolvedQuantities = ShortageResolutionItem::query()
+            ->whereIn('opportunity_item_id', $itemIds)
             ->whereHas('resolution', static fn (Builder $query): Builder => $query->whereNotIn('status', [
                 ShortageResolutionStatus::Cancelled->value,
                 ShortageResolutionStatus::Failed->value,
-            ]))
-            ->where('opportunity_item_id', $opportunityItemId)
-            ->sum('quantity_allocated');
-    }
+            ])->where('resolution_type', '!=', ShortageResolutionType::Subhire->value))
+            ->selectRaw('opportunity_item_id, SUM(quantity_allocated) as resolved_quantity')
+            ->groupBy('opportunity_item_id')
+            ->pluck('resolved_quantity', 'opportunity_item_id')
+            ->map(static fn ($quantity): int => (int) $quantity)
+            ->all();
 
-    /**
-     * Resolve the effective demand window for a line item, inheriting the
-     * opportunity's dates when the item's own are null and treating a missing end
-     * as indefinite (the sentinel). Mirrors the demand resolver so the period the
-     * detector checks matches the period the demand claims.
-     *
-     * @return array{0: Carbon, 1: Carbon}
-     */
-    private function resolveDates(OpportunityItem $item, Opportunity $opportunity): array
-    {
-        $startsAt = $item->starts_at ?? $opportunity->starts_at ?? Carbon::now();
-        $endsAt = $item->ends_at ?? $opportunity->ends_at ?? Demand::sentinel();
+        $shortages = [];
 
-        return [Carbon::parse($startsAt), Carbon::parse($endsAt)];
-    }
+        foreach ($items as $item) {
+            $context = $resolvedContexts[$item->id];
+            $product = $productsByItem[$item->id] ?? null;
+            $storeId = $context['store_id'];
 
-    /**
-     * Resolve the catalogue product a line item refers to via its polymorphic
-     * `itemable_type`/`itemable_id`. Non-product lines (services, ad-hoc) resolve to
-     * null and never produce a shortage.
-     *
-     * NOTE: resolved with an explicit find() (rather than the polymorphic `itemable`
-     * relation) because `itemable_type` may be stored as the short `product` morph
-     * alias, which the morphTo relation cannot resolve without a registered morph
-     * map — find() honours {@see OpportunityItem::isProductBacked()} for both forms.
-     */
-    private function resolveProduct(OpportunityItem $item): ?Product
-    {
-        if (! $item->isProductBacked()) {
-            return null;
+            if ($product === null || $storeId === null || ! $product->track_availability) {
+                continue;
+            }
+
+            $allocated = $allocatedByItem[$item->id] ?? 0;
+            $requested = $allocated > 0
+                ? $allocated
+                : max(0, (int) round((float) $item->quantity));
+
+            if ($requested <= 0) {
+                continue;
+            }
+
+            $available = $availableByItem[$item->id] ?? $this->availability->availableForItem(
+                $context['product_id'],
+                $storeId,
+                $context['from'],
+                $context['to'],
+                $this->demandResolver->sourceType(),
+                $item->id,
+            );
+            $shortfall = $requested - $available;
+
+            if ($shortfall <= 0) {
+                continue;
+            }
+
+            $shortages[$item->id] = Shortage::make(
+                opportunityItemId: $item->id,
+                opportunityId: $opportunity->id,
+                productId: $product->id,
+                productName: $product->name,
+                storeId: $storeId,
+                requestedQuantity: $requested,
+                availableQuantity: max(0, $available),
+                trackingType: $product->stock_method ?? StockMethod::Bulk,
+                startsAt: $context['from'],
+                endsAt: $context['to'],
+                isCritical: $opportunity->state === OpportunityState::Order,
+                resolvedQuantity: $resolvedQuantities[$item->id] ?? 0,
+            );
         }
 
-        // Prefer the eager-loaded polymorphic relation (populated by forOpportunity)
-        // to avoid a query per item; fall back to a direct lookup on the single-item
-        // path where the relation was not pre-loaded.
-        if ($item->relationLoaded('item') && $item->item instanceof Product) {
-            return $item->item;
-        }
-
-        return Product::query()->find($item->itemable_id);
+        return $shortages;
     }
 }

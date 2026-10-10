@@ -71,7 +71,7 @@ new #[Layout('components.layouts.app')] #[Title('List Name')] class extends Comp
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.list-names') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.list-names') }}" wire:navigate.hover>
                 Back to List Names
             </flux:button>
         </x-slot:actions>
@@ -94,7 +94,7 @@ new #[Layout('components.layouts.app')] #[Title('List Name')] class extends Comp
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create List' }}</flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.list-names') }}" wire:navigate>Cancel</flux:button>
+                <flux:button variant="ghost" href="{{ route('admin.settings.list-names') }}" wire:navigate.hover>Cancel</flux:button>
             </div>
         </form>
     </x-admin.layout>

@@ -358,7 +358,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     <x-signals.page-header :title="$invoice->number">
         <x-slot:breadcrumbs>
-            <a href="{{ route('invoices.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Invoices</a>
+            <a href="{{ route('invoices.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Invoices</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $invoice->number }}</span>
         </x-slot:breadcrumbs>
@@ -369,12 +369,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <span class="s-chip">{{ ucfirst($invoice->type) }}</span>
             @endif
             @if($invoice->member)
-                <a href="{{ route('members.show', $invoice->member) }}" wire:navigate class="s-chip">{{ $invoice->member->name }}</a>
+                <a href="{{ route('members.show', $invoice->member) }}" wire:navigate.hover class="s-chip">{{ $invoice->member->name }}</a>
             @endif
         </x-slot:meta>
         <x-slot:actions>
             @if($canUpdate)
-                <a href="{{ route('invoices.edit', $invoice) }}" wire:navigate class="s-btn s-btn-sm s-btn-ghost">Edit</a>
+                <a href="{{ route('invoices.edit', $invoice) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-ghost">Edit</a>
             @endif
             @if($canIssue)
                 <button type="button" wire:click="issue" wire:confirm="Issue this invoice to the customer?" class="s-btn s-btn-sm s-btn-accent">Issue</button>
@@ -577,7 +577,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <div class="s-data-list-item">
                             <div class="s-data-list-label">Opportunity</div>
                             <div class="s-data-list-value">
-                                <a href="{{ route('opportunities.show', $invoice->opportunity) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $invoice->opportunity->subject }}</a>
+                                <a href="{{ route('opportunities.show', $invoice->opportunity) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $invoice->opportunity->subject }}</a>
                             </div>
                         </div>
                     @endif

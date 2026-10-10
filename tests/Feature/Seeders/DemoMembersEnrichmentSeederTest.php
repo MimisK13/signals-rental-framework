@@ -51,18 +51,18 @@ it('assigns discount and price categories to demo organisations', function () {
 it('creates five tax-variant demo members', function () {
     seedDemoMemberEnrichment();
 
-    expect(Member::query()->where('name', 'Demo - Berlin Events GmbH')->exists())->toBeTrue()
-        ->and(Member::query()->where('name', 'Demo - Amsterdam Trade BV')->exists())->toBeTrue()
-        ->and(Member::query()->where('name', 'Demo - Riverside Community Trust')->exists())->toBeTrue()
-        ->and(Member::query()->where('name', 'Demo - Exempt Arts Foundation')->exists())->toBeTrue()
-        ->and(Member::query()->where('name', 'Demo - Pacific Events LLC')->exists())->toBeTrue();
+    expect(Member::query()->where('name', 'Berlin Events GmbH')->exists())->toBeTrue()
+        ->and(Member::query()->where('name', 'Amsterdam Trade BV')->exists())->toBeTrue()
+        ->and(Member::query()->where('name', 'Riverside Community Trust')->exists())->toBeTrue()
+        ->and(Member::query()->where('name', 'Exempt Arts Foundation')->exists())->toBeTrue()
+        ->and(Member::query()->where('name', 'Pacific Events LLC')->exists())->toBeTrue();
 });
 
 it('pre-validates Berlin Events GmbH and leaves Amsterdam Trade BV pending for VIES demos', function () {
     seedDemoMemberEnrichment();
 
-    $berlin = Member::query()->where('name', 'Demo - Berlin Events GmbH')->firstOrFail();
-    $amsterdam = Member::query()->where('name', 'Demo - Amsterdam Trade BV')->firstOrFail();
+    $berlin = Member::query()->where('name', 'Berlin Events GmbH')->firstOrFail();
+    $amsterdam = Member::query()->where('name', 'Amsterdam Trade BV')->firstOrFail();
 
     expect($berlin->tax_number_validated)->toBeTrue()
         ->and($berlin->tax_number_validated_at)->not->toBeNull()
@@ -74,9 +74,9 @@ it('pre-validates Berlin Events GmbH and leaves Amsterdam Trade BV pending for V
 it('sets plausible tax zones and buyer types on tax-variant members', function () {
     seedDemoMemberEnrichment();
 
-    $charity = Member::query()->where('name', 'Demo - Riverside Community Trust')->firstOrFail();
-    $exempt = Member::query()->where('name', 'Demo - Exempt Arts Foundation')->firstOrFail();
-    $eu = Member::query()->where('name', 'Demo - Berlin Events GmbH')->firstOrFail();
+    $charity = Member::query()->where('name', 'Riverside Community Trust')->firstOrFail();
+    $exempt = Member::query()->where('name', 'Exempt Arts Foundation')->firstOrFail();
+    $eu = Member::query()->where('name', 'Berlin Events GmbH')->firstOrFail();
     $euZoneId = TaxZone::query()->where('slug', 'eu_member')->value('id');
 
     expect($charity->buyer_type)->toBe(TaxBuyerType::Charity)

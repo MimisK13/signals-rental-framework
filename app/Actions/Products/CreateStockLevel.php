@@ -8,10 +8,12 @@ use App\Enums\StockCategory;
 use App\Enums\StockMethod;
 use App\Enums\TransactionType;
 use App\Events\AuditableEvent;
+use App\Models\Asset;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Models\StockTransaction;
 use App\Services\Api\WebhookService;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\CustomFieldValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -21,7 +23,22 @@ class CreateStockLevel
 {
     public function __invoke(CreateStockLevelData $data): StockLevelData
     {
-        Gate::authorize('stock.adjust');
+        return $this->create($data, 'stock.adjust');
+    }
+
+    public function forContainerOnboarding(CreateStockLevelData $data): StockLevelData
+    {
+        // Container onboarding owns the durable-housing workflow. Its
+        // containers.create permission authorizes this composed inventory
+        // creation, while direct StockLevel creation remains stock.adjust.
+        return $this->create($data, 'containers.create');
+    }
+
+    private function create(CreateStockLevelData $data, string $permission): StockLevelData
+    {
+        Gate::authorize($permission);
+
+        Gate::authorize('access', new StockLevel(['store_id' => $data->store_id]));
 
         // Bulk products may only ever have a single stock level.
         $product = Product::find($data->product_id);
@@ -45,7 +62,16 @@ class CreateStockLevel
             ? StockCategory::SerialisedStock->value
             : StockCategory::BulkStock->value;
 
+        if ($stockCategory === StockCategory::SerialisedStock->value
+            && bccomp((string) $data->quantity_held, '1', 2) !== 0) {
+            throw ValidationException::withMessages([
+                'quantity_held' => 'Serialised stock levels must have a quantity of exactly 1.',
+            ]);
+        }
+
         return DB::transaction(function () use ($data, $stockCategory): StockLevelData {
+            app(ProductStoreCapacityLock::class)->acquire($data->product_id, $data->store_id);
+
             $stockLevel = StockLevel::create([
                 'product_id' => $data->product_id,
                 'store_id' => $data->store_id,
@@ -67,6 +93,15 @@ class CreateStockLevel
                 'ends_at' => $data->ends_at,
             ]);
 
+            if ($stockCategory === StockCategory::SerialisedStock->value) {
+                $asset = Asset::create([
+                    'product_id' => $stockLevel->product_id,
+                    'ownership_type' => 'unknown',
+                ]);
+
+                $stockLevel->forceFill(['asset_id' => $asset->id])->saveQuietly();
+            }
+
             $stockLevel->syncCustomFields($data->custom_fields, applyDefaults: true);
 
             // Record the initial quantity as an Opening transaction so the held
@@ -78,6 +113,9 @@ class CreateStockLevel
                     'transaction_type' => TransactionType::Opening->value,
                     'transaction_at' => now(),
                     'quantity' => $stockLevel->quantity_held,
+                    'quantity_before' => '0.00',
+                    'quantity_after' => $stockLevel->quantity_held,
+                    'actor_user_id' => auth()->id(),
                     'description' => 'Opening balance',
                     'manual' => false,
                 ]);

@@ -43,6 +43,8 @@ class OpportunityCreated extends Event
         public ?string $external_description = null,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
+        public ?string $planning_starts_at = null,
+        public ?string $planning_ends_at = null,
         public ?string $charge_starts_at = null,
         public ?string $charge_ends_at = null,
         public ?string $prep_starts_at = null,
@@ -75,6 +77,7 @@ class OpportunityCreated extends Event
         public ?int $delivery_address_id = null,
         public ?int $collection_address_id = null,
         public ?int $rating = null,
+        public int $reservation_priority = 0,
         public int $charge_total = 0,
         public ?string $currency_code = null,
         public ?string $exchange_rate = null,
@@ -99,6 +102,8 @@ class OpportunityCreated extends Event
         $state->external_description = $this->external_description;
         $state->starts_at = $this->starts_at !== null ? CarbonImmutable::parse($this->starts_at) : null;
         $state->ends_at = $this->ends_at !== null ? CarbonImmutable::parse($this->ends_at) : null;
+        $state->planning_starts_at = $this->planning_starts_at !== null ? CarbonImmutable::parse($this->planning_starts_at) : null;
+        $state->planning_ends_at = $this->planning_ends_at !== null ? CarbonImmutable::parse($this->planning_ends_at) : null;
         $state->charge_starts_at = $this->charge_starts_at !== null ? CarbonImmutable::parse($this->charge_starts_at) : null;
         $state->charge_ends_at = $this->charge_ends_at !== null ? CarbonImmutable::parse($this->charge_ends_at) : null;
         // Event-logistics lifecycle dates + milestones (C3a). Each parses its ISO
@@ -134,6 +139,7 @@ class OpportunityCreated extends Event
         $state->delivery_address_id = $this->delivery_address_id;
         $state->collection_address_id = $this->collection_address_id;
         $state->rating = $this->rating;
+        $state->reservation_priority = $this->reservation_priority;
         $state->tag_list = $this->tag_list;
         $state->charge_total = $this->charge_total;
         // The currency is resolved at fire-time by the CreateOpportunity action
@@ -170,6 +176,8 @@ class OpportunityCreated extends Event
                 'external_description' => $state->external_description,
                 'starts_at' => $state->starts_at,
                 'ends_at' => $state->ends_at,
+                'planning_starts_at' => $state->planning_starts_at,
+                'planning_ends_at' => $state->planning_ends_at,
                 'charge_starts_at' => $state->charge_starts_at,
                 'charge_ends_at' => $state->charge_ends_at,
                 'prep_starts_at' => $state->prep_starts_at,
@@ -202,6 +210,7 @@ class OpportunityCreated extends Event
                 'delivery_address_id' => $state->delivery_address_id,
                 'collection_address_id' => $state->collection_address_id,
                 'rating' => $state->rating,
+                'reservation_priority' => $state->reservation_priority,
                 'charge_total' => $state->charge_total,
                 'currency_code' => $state->currency_code,
                 'exchange_rate' => $state->exchange_rate,

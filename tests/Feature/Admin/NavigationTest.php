@@ -145,3 +145,13 @@ describe('Sidebar navigation', function () {
             ->assertSee('Infrastructure');
     });
 });
+
+describe('Global navigation', function () {
+    it('places the Admin route in the header and does not render an empty app sidebar', function () {
+        $response = $this->get(route('dashboard'));
+
+        $response
+            ->assertSee('href="'.route('admin.index').'"', false)
+            ->assertDontSee('class="app-sidebar hidden lg:flex"', false);
+    });
+});

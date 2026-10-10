@@ -44,6 +44,16 @@ class BulkQuantityAdjusted extends Event
             $next->isGreaterThanOrEqualTo(BigDecimal::of($state->dispatched_quantity)),
             'The adjusted quantity cannot drop below what is already dispatched.',
         );
+
+        if ($state->reserved_quantity !== null) {
+            $this->assert(
+                $next->isGreaterThanOrEqualTo(BigDecimal::of($state->reserved_quantity)),
+                sprintf(
+                    'The adjusted quantity cannot drop below the explicitly reserved quantity of %s; reduce the reservation first.',
+                    $state->reserved_quantity,
+                ),
+            );
+        }
     }
 
     public function apply(OpportunityItemState $state): void

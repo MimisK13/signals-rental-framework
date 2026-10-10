@@ -65,8 +65,8 @@ it('seeds demo opportunities tagged demo-data via the event-sourced path', funct
 it('seeds dispatched and returned order statuses', function () {
     seedDemoOpportunities();
 
-    $dispatched = Opportunity::query()->where('reference', 'DEMO-OPP-0009')->firstOrFail();
-    $returned = Opportunity::query()->where('reference', 'DEMO-OPP-0010')->firstOrFail();
+    $dispatched = Opportunity::query()->where('reference', 'OPP-0009')->firstOrFail();
+    $returned = Opportunity::query()->where('reference', 'OPP-0010')->firstOrFail();
 
     expect($dispatched->statusEnum())->toBe(OpportunityStatus::OrderDispatched)
         ->and($returned->statusEnum())->toBe(OpportunityStatus::OrderReturned);
@@ -103,7 +103,7 @@ it('seeds a three-level line-item tree with valid paths and rollups on the headl
 
     $opportunity = Opportunity::query()
         ->whereJsonContains('tag_list', 'demo-data')
-        ->where('reference', 'DEMO-OPP-0001')
+        ->where('reference', 'OPP-0001')
         ->firstOrFail();
 
     $items = $opportunity->items()->orderBy('path')->get();

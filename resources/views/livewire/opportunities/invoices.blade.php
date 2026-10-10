@@ -129,7 +129,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         @foreach($invoices as $invoice)
                             <tr wire:key="opp-invoice-{{ $invoice->id }}">
                                 <td>
-                                    <a href="{{ route('invoices.show', $invoice) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $invoice->number }}</a>
+                                    <a href="{{ route('invoices.show', $invoice) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $invoice->number }}</a>
                                 </td>
                                 <td><span class="s-badge s-badge-zinc">{{ $invoice->typeEnum()->label() }}</span></td>
                                 <td>{{ config('invoices.statuses.'.$invoice->effectiveStatus().'.label', $invoice->status) }}</td>

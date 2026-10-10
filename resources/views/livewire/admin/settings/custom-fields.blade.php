@@ -37,7 +37,7 @@ new #[Layout('components.layouts.app')] #[Title('Custom Fields')] class extends 
 <section class="w-full">
     <x-admin.layout group="data" title="Custom Fields" description="Manage custom field definitions." :wide="true">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.custom-fields.create') }}" wire:navigate>Add Custom Field</flux:button>
+            <flux:button variant="primary" href="{{ route('admin.settings.custom-fields.create') }}" wire:navigate.hover>Add Custom Field</flux:button>
         </x-slot:actions>
 
         {{-- Module Filter --}}
@@ -103,7 +103,7 @@ new #[Layout('components.layouts.app')] #[Title('Custom Fields')] class extends 
                                 </td>
                                 <td>
                                     <div class="flex gap-2">
-                                        <a href="{{ route('admin.settings.custom-fields.edit', $field) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                        <a href="{{ route('admin.settings.custom-fields.edit', $field) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                             <flux:icon.pencil-square class="w-4 h-4" />
                                         </a>
                                         <button

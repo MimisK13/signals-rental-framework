@@ -361,7 +361,7 @@ new #[Layout('components.layouts.app')] class extends Component
     @else
         <x-signals.page-header :title="'Create ' . (\App\Enums\MembershipType::tryFrom($membershipType)?->label() ?? 'Member')">
             <x-slot:breadcrumbs>
-                <a href="{{ route('members.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Members</a>
+                <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
@@ -385,7 +385,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                     <x-signals.entity-icon :model="$member" :size="56" />
                                     <div class="flex flex-col gap-1">
                                         <p class="text-[12px] text-[var(--text-muted)]">Managed from the user's profile.</p>
-                                        <a href="{{ route('settings.profile') }}" wire:navigate class="text-[12px] text-[var(--link)] hover:underline">Edit in profile settings &rarr;</a>
+                                        <a href="{{ route('settings.profile') }}" wire:navigate.hover class="text-[12px] text-[var(--link)] hover:underline">Edit in profile settings &rarr;</a>
                                     </div>
                                 </div>
                             @else
@@ -401,7 +401,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                 <div>
                                     <flux:input wire:model="name" label="Name" readonly disabled
                                         description="Managed from the user's profile" />
-                                    <a href="{{ route('settings.profile') }}" wire:navigate class="mt-1 inline-block text-[12px] text-[var(--link)] hover:underline">Edit in profile settings &rarr;</a>
+                                    <a href="{{ route('settings.profile') }}" wire:navigate.hover class="mt-1 inline-block text-[12px] text-[var(--link)] hover:underline">Edit in profile settings &rarr;</a>
                                 </div>
                             @else
                                 <flux:input wire:model="name" label="Name" required />
@@ -601,7 +601,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     {{-- Actions --}}
                     <div class="flex items-center gap-4 pt-2">
                         <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create ' . (\App\Enums\MembershipType::tryFrom($membershipType)?->label() ?? 'Member') }}</flux:button>
-                        <flux:button variant="ghost" href="{{ $isEditing ? route('members.show', $memberId) : route('members.index') }}" wire:navigate>Cancel</flux:button>
+                        <flux:button variant="ghost" href="{{ $isEditing ? route('members.show', $memberId) : route('members.index') }}" wire:navigate.hover>Cancel</flux:button>
                     </div>
                 </div>
 

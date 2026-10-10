@@ -12,13 +12,13 @@ namespace App\Enums;
 enum ContainerUnsealReason: string
 {
     case Manual = 'manual';
-    case TransferTriggered = 'transfer_triggered';
+    case Transfer = 'transfer';
 
     public function label(): string
     {
         return match ($this) {
             self::Manual => 'Manual',
-            self::TransferTriggered => 'Transfer triggered',
+            self::Transfer => 'Transfer',
         };
     }
 

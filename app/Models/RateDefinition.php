@@ -5,9 +5,10 @@ namespace App\Models;
 use App\Contracts\HasSchema;
 use App\Enums\BasePeriod;
 use App\Enums\CalculationStrategyType;
-use App\Services\RateEngine\RateResolver;
+use App\Observers\RateDefinitionObserver;
 use App\Services\SchemaBuilder;
 use Database\Factories\RateDefinitionFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,29 +22,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array<string, mixed> $strategy_config
  * @property array<string, array<string, mixed>> $modifier_configs
  */
+#[ObservedBy(RateDefinitionObserver::class)]
 class RateDefinition extends Model implements HasSchema
 {
     /** @use HasFactory<RateDefinitionFactory> */
     use HasFactory;
-
-    protected static function booted(): void
-    {
-        // A cached resolution carries its loaded definition, so a definition edit
-        // must bust all resolution caches. Skip when nothing relevant changed: a
-        // brand-new definition has no product rates yet, and an unchanged save
-        // (e.g. idempotent preset re-seeding) needs no invalidation.
-        static::saved(static function (RateDefinition $definition): void {
-            if ($definition->wasRecentlyCreated || ! $definition->wasChanged()) {
-                return;
-            }
-
-            RateResolver::flushAll();
-        });
-
-        static::deleted(static function (): void {
-            RateResolver::flushAll();
-        });
-    }
 
     /** @var list<string> */
     protected $fillable = [

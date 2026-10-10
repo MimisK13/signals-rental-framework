@@ -2,7 +2,7 @@
     @if ($canAccess)
         <x-signals.panel title="Recent Opportunities" class="mb-8">
             <x-slot:headerActions>
-                <a class="s-btn s-btn-sm s-btn-ghost" href="{{ route('opportunities.index') }}" wire:navigate>View All</a>
+                <a class="s-btn s-btn-sm s-btn-ghost" href="{{ route('opportunities.index') }}" wire:navigate.hover>View All</a>
             </x-slot:headerActions>
 
             <x-signals.table-wrap>
@@ -24,7 +24,7 @@
                             @endphp
                             <tr wire:key="recent-opp-{{ $opportunity->id }}">
                                 <td>
-                                    <a class="s-cell-link" href="{{ route('opportunities.show', $opportunity) }}" wire:navigate>
+                                    <a class="s-cell-link" href="{{ route('opportunities.show', $opportunity) }}" wire:navigate.hover>
                                         {{ $opportunity->number ?? '#'.$opportunity->id }}
                                     </a>
                                 </td>

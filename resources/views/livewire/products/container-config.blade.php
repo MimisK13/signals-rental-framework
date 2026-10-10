@@ -246,7 +246,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-sm font-medium text-[var(--text-secondary)]">Template Slots</h3>
+                            <h3 class="text-sm font-medium text-(--text-secondary)">Template Slots</h3>
                             @if($canManage)
                                 <flux:button type="button" size="sm" wire:click="addTemplateSlot">Add Slot</flux:button>
                             @endif
@@ -260,10 +260,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     @else
                                         <flux:input wire:model.live.debounce.300ms="productSearch" label="Product" placeholder="Search serialised products…" :disabled="! $canManage" />
                                         @if($productSearch !== '' && $productSearchResults->isNotEmpty())
-                                            <ul class="mt-1 rounded border border-[var(--border-subtle)] bg-[var(--surface-primary)] shadow-sm">
+                                            <ul class="mt-1 rounded border border-(--border-subtle) bg-(--surface-primary) shadow-sm">
                                                 @foreach($productSearchResults as $result)
                                                     <li>
-                                                        <button type="button" class="w-full px-3 py-2 text-left text-sm hover:bg-[var(--surface-secondary)]" wire:click="selectSlotProduct({{ $index }}, {{ $result->id }}, @js($result->name))">
+                                                        <button type="button" class="w-full px-3 py-2 text-left text-sm hover:bg-(--surface-secondary)" wire:click="selectSlotProduct({{ $index }}, {{ $result->id }}, @js($result->name))">
                                                             {{ $result->name }}
                                                         </button>
                                                     </li>
@@ -287,7 +287,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 @endif
                             </div>
                         @empty
-                            <p class="text-sm text-[var(--text-muted)]">No template slots defined. Add slots to define the strict packing specification.</p>
+                            <p class="text-sm text-(--text-muted)">No template slots defined. Add slots to define the strict packing specification.</p>
                         @endforelse
                     </div>
                 @endif

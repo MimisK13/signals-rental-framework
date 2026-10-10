@@ -7,6 +7,11 @@
     :tabs="[
         ['name' => 'overview', 'label' => 'Overview', 'route' => route('products.show', $product)],
         ['name' => 'stock', 'label' => 'Stock', 'route' => route('products.stock', $product), 'count' => $product->stock_levels_count ?? 0],
+        ...(auth()->user()?->can('availability.view') ? [['name' => 'availability', 'label' => 'Availability', 'route' => route('products.availability', $product)]] : []),
+        ...($product->stock_method === \App\Enums\StockMethod::Serialised && auth()->user()?->can('stock.view') ? [['name' => 'utilization', 'label' => 'Utilization', 'route' => route('products.utilization', $product)]] : []),
+        ...($product->stock_method === \App\Enums\StockMethod::Serialised && auth()->user()?->can('stock.view') ? [['name' => 'financials', 'label' => 'Financials', 'route' => route('products.financials', $product)]] : []),
+        ...($product->stock_method === \App\Enums\StockMethod::Serialised && auth()->user()?->can('stock.view') ? [['name' => 'investment', 'label' => 'Investment', 'route' => route('products.investment', $product)]] : []),
+        ...($product->stock_method === \App\Enums\StockMethod::Serialised && auth()->user()?->can('stock.view') ? [['name' => 'inspections', 'label' => 'Inspections', 'route' => route('products.inspections', $product)]] : []),
         ['name' => 'accessories', 'label' => 'Accessories', 'route' => route('products.accessories', $product), 'count' => $product->accessories_count ?? 0],
         ...(auth()->user()?->can('rates.view') ? [['name' => 'rates', 'label' => 'Rates', 'route' => route('products.rates', $product), 'count' => $product->rates_count ?? 0]] : []),
         ...(auth()->user()?->can('costs.view') ? [['name' => 'supplier-costs', 'label' => 'Supplier Costs', 'route' => route('products.supplier-costs', $product), 'count' => $product->supplier_costs_count ?? 0]] : []),

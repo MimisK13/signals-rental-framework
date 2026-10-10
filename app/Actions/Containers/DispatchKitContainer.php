@@ -47,6 +47,7 @@ class DispatchKitContainer
         $this->pendingLinesByProduct = [];
 
         $opportunity = Opportunity::query()->whereKey($data->opportunity_id)->firstOrFail();
+        Gate::authorize('update', $opportunity);
 
         $this->guardContainer($container);
         $this->guardOpportunity($opportunity);

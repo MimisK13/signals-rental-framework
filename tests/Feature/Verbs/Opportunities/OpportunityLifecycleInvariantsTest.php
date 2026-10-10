@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Assets\MarkAssetMissing;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ChangeOpportunityStatus;
@@ -26,6 +27,7 @@ use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Enums\ReleasePoint;
+use App\Models\Asset;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
@@ -166,6 +168,28 @@ it('rejects completing an order with an unreturned asset', function () {
     (new DispatchAsset)($row, DispatchAssetData::from([]));
 
     expect(fn () => (new ChangeOpportunityStatus)($opportunity->refresh(), OpportunityStatus::OrderComplete))
+        ->toThrow(EventNotValid::class);
+});
+
+it('keeps order completion blocked when an outstanding asset is marked missing', function () {
+    [$opportunity, $item] = makeInvariantOrder($this->store, $this->product);
+    $physicalAsset = Asset::factory()->create(['product_id' => $this->product->id]);
+    $stockLevel = StockLevel::factory()->serialised()->create([
+        'product_id' => $this->product->id,
+        'store_id' => $this->store->id,
+        'asset_id' => $physicalAsset->id,
+    ]);
+    $row = allocateInvariant($item, $stockLevel);
+
+    (new DispatchAsset)($row, DispatchAssetData::from([]));
+    (new MarkAssetMissing)($physicalAsset->refresh(), [
+        'reason' => 'Declared missing during return reconciliation.',
+    ]);
+
+    expect($row->refresh()->status)->toBe(AssetAssignmentStatus::Dispatched)
+        ->and($row->returned_at)->toBeNull()
+        ->and($physicalAsset->refresh()->lifecycleStatus()->value)->toBe('missing')
+        ->and(fn () => (new ChangeOpportunityStatus)($opportunity->refresh(), OpportunityStatus::OrderComplete))
         ->toThrow(EventNotValid::class);
 });
 

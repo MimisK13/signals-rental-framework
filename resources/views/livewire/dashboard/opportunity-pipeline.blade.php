@@ -3,7 +3,7 @@
         <h2 class="s-panel-title mb-3">Opportunity Pipeline</h2>
         <x-signals.stat-grid class="mb-8">
             <a href="{{ route('opportunities.index', ['state' => \App\Enums\OpportunityState::Quotation->value]) }}"
-               wire:navigate
+               wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-blue">
                     <flux:icon.document-text />
@@ -15,7 +15,7 @@
             </a>
 
             <a href="{{ route('opportunities.index', ['state' => \App\Enums\OpportunityState::Order->value]) }}"
-               wire:navigate
+               wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-green">
                     <flux:icon.briefcase />
@@ -27,7 +27,7 @@
             </a>
 
             <a href="{{ route('opportunities.index', ['state' => \App\Enums\OpportunityState::Order->value]) }}"
-               wire:navigate
+               wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-violet">
                     <flux:icon.truck />
@@ -42,7 +42,7 @@
             </a>
 
             <a href="{{ route('opportunities.index', ['has_shortage' => 1]) }}"
-               wire:navigate
+               wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-amber">
                     <flux:icon.exclamation-triangle />

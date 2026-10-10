@@ -23,6 +23,7 @@ class CreateTemporaryContainer
     public function __invoke(CreateTemporaryContainerData $data): ContainerData
     {
         Gate::authorize('createTemporary', Container::class);
+        Gate::authorize('access', new StockLevel(['store_id' => $data->store_id]));
 
         $barcode = trim($data->barcode);
 
@@ -77,7 +78,10 @@ class CreateTemporaryContainer
 
         $collidesWithSerialisedStock = StockLevel::query()
             ->serialized()
-            ->where(fn ($q) => $q->where('asset_number', $barcode)->orWhere('serial_number', $barcode))
+            ->where(fn ($q) => $q
+                ->where('asset_number', $barcode)
+                ->orWhere('serial_number', $barcode)
+                ->orWhere('barcode', $barcode))
             ->exists();
 
         if ($collidesWithSerialisedStock) {

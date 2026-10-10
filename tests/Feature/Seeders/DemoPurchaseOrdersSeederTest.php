@@ -38,15 +38,15 @@ it('seeds draft and received sub-hire purchase orders via actions', function () 
 
     seedDemoPurchaseOrders();
 
-    expect(PurchaseOrder::query()->where('reference', 'DEMO-PO-0001')->exists())->toBeTrue()
-        ->and(PurchaseOrder::query()->where('reference', 'DEMO-PO-0002')->exists())->toBeTrue()
+    expect(PurchaseOrder::query()->where('reference', 'PO-0001')->exists())->toBeTrue()
+        ->and(PurchaseOrder::query()->where('reference', 'PO-0002')->exists())->toBeTrue()
         ->and(DB::table('verb_events')->count())->toBeGreaterThan($eventsBefore);
 });
 
 it('confirms virtual stock intake on the received sub-hire purchase order', function () {
     seedDemoPurchaseOrders();
 
-    $po = PurchaseOrder::query()->where('reference', 'DEMO-PO-0002')->firstOrFail();
+    $po = PurchaseOrder::query()->where('reference', 'PO-0002')->firstOrFail();
     $vsi = VirtualStockIntake::query()->where('purchase_order_id', $po->id)->firstOrFail();
 
     expect($po->status)->toBe('received')
@@ -57,17 +57,17 @@ it('confirms virtual stock intake on the received sub-hire purchase order', func
 it('links purchase order lines to demo catalogue products', function () {
     seedDemoPurchaseOrders();
 
-    $product = Product::query()->where('sku', 'DEMO-STG-DECK2X1')->firstOrFail();
-    $po = PurchaseOrder::query()->where('reference', 'DEMO-PO-0001')->with('items')->firstOrFail();
+    $product = Product::query()->where('sku', 'STG-DECK2X1')->firstOrFail();
+    $po = PurchaseOrder::query()->where('reference', 'PO-0001')->with('items')->firstOrFail();
 
     expect($po->items->first()?->product_id)->toBe($product->id);
 });
 
 it('is idempotent on re-run', function () {
     seedDemoPurchaseOrders();
-    $firstCount = PurchaseOrder::query()->where('reference', 'like', 'DEMO-PO-%')->count();
+    $firstCount = PurchaseOrder::query()->where('reference', 'like', 'PO-%')->count();
 
     seedDemoPurchaseOrders();
 
-    expect(PurchaseOrder::query()->where('reference', 'like', 'DEMO-PO-%')->count())->toBe($firstCount);
+    expect(PurchaseOrder::query()->where('reference', 'like', 'PO-%')->count())->toBe($firstCount);
 });

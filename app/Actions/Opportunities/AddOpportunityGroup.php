@@ -55,6 +55,7 @@ class AddOpportunityGroup
                 item_type: OpportunityItemType::Group->value,
                 path: $path,
                 name: $data->name,
+                quantity: $data->quantity,
                 custom_fields: $data->custom_fields,
             );
         });

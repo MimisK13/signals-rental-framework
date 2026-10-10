@@ -8,6 +8,7 @@ use App\Models\OpportunityItemAsset;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
+use App\Verbs\Events\Opportunities\Concerns\SyncsAssetDemands;
 use App\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
@@ -24,7 +25,7 @@ use Thunk\Verbs\Event;
  */
 class AssetChecked extends Event
 {
-    use GuardsAssetAssignment, PromotesOpportunityStatus, RecordsOpportunityAudit;
+    use GuardsAssetAssignment, PromotesOpportunityStatus, RecordsOpportunityAudit, SyncsAssetDemands;
 
     public function __construct(
         #[StateId(AssetAssignmentState::class)]
@@ -72,6 +73,12 @@ class AssetChecked extends Event
             'checked_at' => $state->checked_at,
             'notes' => $this->damage_notes ?? $asset->notes,
         ])->saveQuietly();
+
+        $item = $asset->item()->first();
+
+        if ($item !== null) {
+            $this->syncAssetDemands($item);
+        }
 
         $opportunity = $this->opportunityForAssignment($state->assignment_id);
 

@@ -2,11 +2,26 @@
 
 namespace App\Policies;
 
+use App\Models\Opportunity;
+use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
+use App\Policies\Traits\ChecksStoreAccess;
 
 class OpportunityPolicy
 {
-    use AuthorizesByPermission;
+    use AuthorizesByPermission, ChecksStoreAccess;
+
+    public function view(User $user, ?Opportunity $opportunity = null): bool
+    {
+        return $user->can($this->viewPermission())
+            && ($opportunity === null || $this->canAccessStore($user, $opportunity));
+    }
+
+    public function update(User $user, ?Opportunity $opportunity = null): bool
+    {
+        return $user->can($this->editPermission())
+            && ($opportunity === null || $this->canAccessStore($user, $opportunity));
+    }
 
     protected function viewPermission(): string
     {

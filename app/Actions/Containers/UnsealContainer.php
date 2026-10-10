@@ -2,6 +2,7 @@
 
 namespace App\Actions\Containers;
 
+use App\Concerns\LocksModelsForMutation;
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\UnsealContainerData;
 use App\Enums\ContainerStatus;
@@ -23,6 +24,8 @@ use Illuminate\Validation\ValidationException;
  */
 class UnsealContainer
 {
+    use LocksModelsForMutation;
+
     public function __invoke(Container $container, UnsealContainerData $data): ContainerData
     {
         Gate::authorize('unseal', $container);
@@ -36,18 +39,26 @@ class UnsealContainer
         $reason = ContainerUnsealReason::from($data->reason);
 
         return DB::transaction(function () use ($container, $reason): ContainerData {
-            $container->update([
+            $locked = $this->lockModelForMutation($container);
+
+            if ($locked->status !== ContainerStatus::Sealed) {
+                throw ValidationException::withMessages([
+                    'container' => __('Only sealed containers can be unsealed.'),
+                ]);
+            }
+
+            $locked->update([
                 'status' => ContainerStatus::Open,
                 'unsealed_at' => Carbon::now('UTC'),
                 'unsealed_by_user_id' => Auth::id(),
             ]);
 
-            $container->refresh();
+            $locked->refresh();
 
-            ContainerUnsealed::dispatch($container, $reason);
-            app(ContainerEventRecorder::class)->unsealed($container, $reason);
+            ContainerUnsealed::dispatch($locked, $reason);
+            app(ContainerEventRecorder::class)->unsealed($locked, $reason);
 
-            return ContainerData::fromModel($container);
+            return ContainerData::fromModel($locked);
         });
     }
 }

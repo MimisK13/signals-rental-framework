@@ -35,7 +35,7 @@ new #[Layout('components.layouts.app')] #[Title('List Names')] class extends Com
 <section class="w-full">
     <x-admin.layout group="data" title="List Names" description="Manage configurable list definitions.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.list-names.create') }}" wire:navigate>Add List</flux:button>
+            <flux:button variant="primary" href="{{ route('admin.settings.list-names.create') }}" wire:navigate.hover>Add List</flux:button>
         </x-slot:actions>
 
         <div class="s-table-wrap">
@@ -74,11 +74,11 @@ new #[Layout('components.layouts.app')] #[Title('List Names')] class extends Com
                             <td>
                                 <div class="flex items-center gap-1">
                                     @if(! $listName->is_system)
-                                        <a href="{{ route('admin.settings.list-names.edit', $listName) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                        <a href="{{ route('admin.settings.list-names.edit', $listName) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                             <flux:icon.pencil-square class="w-4 h-4" />
                                         </a>
                                     @endif
-                                    <a href="{{ route('admin.settings.lists', $listName) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Manage Values">
+                                    <a href="{{ route('admin.settings.lists', $listName) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Manage Values">
                                         Values
                                     </a>
                                     @if(! $listName->is_system)

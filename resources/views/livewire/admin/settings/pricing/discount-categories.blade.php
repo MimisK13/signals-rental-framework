@@ -33,7 +33,7 @@ new #[Layout('components.layouts.app')] #[Title('Discount Categories')] class ex
     <x-admin.layout group="pricing" title="Discount Categories" description="Define discount categories assignable to organisations. Rules and auto-apply arrive in later pricing milestones.">
         <x-slot:actions>
             @can('pricing.manage')
-                <flux:button variant="primary" href="{{ route('admin.settings.pricing.discount-categories.create') }}" wire:navigate>
+                <flux:button variant="primary" href="{{ route('admin.settings.pricing.discount-categories.create') }}" wire:navigate.hover>
                     Add Discount Category
                 </flux:button>
             @endcan
@@ -63,7 +63,7 @@ new #[Layout('components.layouts.app')] #[Title('Discount Categories')] class ex
                             </td>
                             <td class="text-right">
                                 @can('pricing.manage')
-                                    <a href="{{ route('admin.settings.pricing.discount-categories.edit', $category) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.pricing.discount-categories.edit', $category) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     <button wire:click="deleteCategory({{ $category->id }})"

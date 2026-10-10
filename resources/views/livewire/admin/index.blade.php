@@ -115,7 +115,7 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                             @foreach($section['items'] as $item)
                                 @if(isset($item['gate']))
                                     @can($item['gate'])
-                                        <a href="{{ route($item['route']) }}" wire:navigate class="s-module-card enabled">
+                                        <a href="{{ route($item['route']) }}" wire:navigate.hover class="s-module-card enabled">
                                             <div class="s-module-icon">
                                                 <flux:icon :name="$item['icon']" class="!size-5" />
                                             </div>
@@ -127,7 +127,7 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                                         </a>
                                     @endcan
                                 @else
-                                    <a href="{{ route($item['route']) }}" wire:navigate class="s-module-card enabled">
+                                    <a href="{{ route($item['route']) }}" wire:navigate.hover class="s-module-card enabled">
                                         <div class="s-module-icon">
                                             <flux:icon :name="$item['icon']" class="!size-5" />
                                         </div>

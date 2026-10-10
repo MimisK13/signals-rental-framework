@@ -3,10 +3,10 @@
         <x-signals.entity-icon :model="$product" :size="44" />
     </x-slot:icon>
     <x-slot:breadcrumbs>
-        <a href="{{ route('products.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Products</a>
+        <a href="{{ route('products.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Products</a>
         <span class="mx-1 text-[var(--text-muted)]">/</span>
         @if(isset($subpage))
-            <a href="{{ route('products.show', $product) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $product->name }}</a>
+            <a href="{{ route('products.show', $product) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $product->name }}</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $subpage }}</span>
         @else
@@ -50,16 +50,16 @@
         @endif
     </x-slot:meta>
     <x-slot:actions>
-        <a href="{{ route('products.edit', $product) }}" wire:navigate class="s-btn s-btn-sm s-btn-accent">
+        <a href="{{ route('products.edit', $product) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-accent">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
             Edit
         </a>
         <x-signals.split-button label="New" size="sm">
-            <a href="{{ route('products.stock', $product) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('products.stock', $product) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                 Stock Level
             </a>
-            <a href="{{ route('products.accessories', $product) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('products.accessories', $product) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.735-3.684-1.757 1.757a4.5 4.5 0 0 1-6.364 0 4.5 4.5 0 0 1 0-6.364l4.5-4.5a4.5 4.5 0 0 1 6.364 6.364l-1.757 1.757"/></svg>
                 Accessory
             </a>

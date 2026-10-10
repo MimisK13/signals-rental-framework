@@ -10,6 +10,7 @@ use App\Events\AuditableEvent;
 use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Services\Api\WebhookService;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -159,11 +160,25 @@ class ContainerEventRecorder
         ]);
     }
 
-    public function checkinVerified(Container $container): void
-    {
-        event(new AuditableEvent($container, 'container.checkin_verified', newValues: [
-            'checkin_verification_required_at' => null,
-        ]));
+    public function checkinVerified(
+        Container $container,
+        ?int $userId,
+        CarbonInterface $occurredAt,
+        bool $failOnAuditFailure = false,
+    ): void {
+        event(new AuditableEvent(
+            $container,
+            'container.checkin_verified',
+            newValues: ['checkin_verification_required_at' => null],
+            metadata: [
+                'container_uuid' => $container->uuid,
+                'opportunity_id' => $container->opportunity_id,
+                'store_id' => $container->store_id ?? $container->serialisedItem?->store_id,
+            ],
+            userId: $userId,
+            occurredAt: $occurredAt,
+            failOnAuditFailure: $failOnAuditFailure,
+        ));
     }
 
     public function itemTransferred(Container $source, Container $target, ContainerItem $item): void

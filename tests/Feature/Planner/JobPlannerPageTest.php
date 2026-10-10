@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\OpportunityStatus;
+use App\Livewire\Planner\Index as PlannerIndex;
 use App\Models\Address;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -10,7 +11,7 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -58,7 +59,7 @@ function plannerJob(array $attributes = []): Opportunity
 it('renders the planner page for a user with opportunities.access', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->assertSet('viewPeriod', '1m')
         ->assertSet('storeIds', [])
         ->assertSet('date', '2026-06-20')
@@ -71,7 +72,7 @@ it('renders the planner page for a user with opportunities.access', function () 
 it('does not expose KPI summary cards or a gantt layout toggle', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->assertDontSee(__('Total Jobs'))
         ->assertDontSee(__('Total Value'))
         ->assertDontSee(__('Peak Day'))
@@ -83,7 +84,7 @@ it('does not expose KPI summary cards or a gantt layout toggle', function () {
 it('forbids the page for a user without opportunities.access', function () {
     $this->actingAs(User::factory()->create());
 
-    Volt::test('planner.index')->assertForbidden();
+    Livewire::test(PlannerIndex::class)->assertForbidden();
 });
 
 it('shows a job bar for a seeded opportunity in the window', function () {
@@ -95,7 +96,7 @@ it('shows a job bar for a seeded opportunity in the window', function () {
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
+    $rows = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows');
 
     expect($rows)->toHaveCount(1)
         ->and($rows[0]['id'])->toBe($job->id)
@@ -113,7 +114,7 @@ it('excludes opportunities outside the window', function () {
 
     $this->actingAs($this->user);
 
-    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows'))->toHaveCount(0);
+    expect(Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows'))->toHaveCount(0);
 });
 
 it('excludes Draft-state opportunities (only quotations and orders are jobs)', function () {
@@ -121,7 +122,7 @@ it('excludes Draft-state opportunities (only quotations and orders are jobs)', f
 
     $this->actingAs($this->user);
 
-    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows'))->toHaveCount(0);
+    expect(Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows'))->toHaveCount(0);
 });
 
 it('narrows results with the include-quotations / include-orders toggles', function () {
@@ -136,12 +137,12 @@ it('narrows results with the include-quotations / include-orders toggles', funct
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->set('includeQuotations', false)
         ->set('includeOrders', true)
         ->assertCount('rows', 1);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->set('includeQuotations', false)
         ->set('includeOrders', false)
         ->assertCount('rows', 0);
@@ -163,7 +164,7 @@ it('filters by store', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->set('storeIds', [$this->store->id])
         ->assertCount('rows', 1);
 });
@@ -184,17 +185,18 @@ it('filters by multiple stores via storeIds array', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->set('storeIds', [$this->store->id, $other->id])
         ->assertCount('rows', 2);
 });
 
-it('renders store tag-input, datepicker, toggles, and grid skeleton markup', function () {
+it('renders reusable ERP UI filters, toggles, and grid skeleton markup', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
-        ->assertSeeHtml('s-tag-input')
-        ->assertSeeHtml('s-avail-filter-datepicker')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
+        ->assertSeeHtml('erp-store-picker')
+        ->assertSeeHtml('erp-date-picker')
+        ->assertSeeHtml('erp-search-input')
         ->assertSeeHtml('s-toggle')
         ->assertSeeHtml('wire:init="initializeGrid"')
         ->assertSeeHtml('planner-skeleton-lane');
@@ -217,9 +219,9 @@ it('searches across subject, number and member name case-insensitively', functio
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')->set('search', 'Marquee')->assertCount('rows', 1);
-    Volt::test('planner.index')->call('initializeGrid')->set('search', 'festival hire')->assertCount('rows', 1);
-    Volt::test('planner.index')->call('initializeGrid')->set('search', 'Nonexistent')->assertCount('rows', 0);
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')->set('search', 'Marquee')->assertCount('rows', 1);
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')->set('search', 'festival hire')->assertCount('rows', 1);
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')->set('search', 'Nonexistent')->assertCount('rows', 0);
 });
 
 it('lane-packs overlapping jobs into distinct lanes', function () {
@@ -234,7 +236,7 @@ it('lane-packs overlapping jobs into distinct lanes', function () {
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
+    $rows = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows');
 
     expect($rows)->toHaveCount(2)
         ->and($rows[0])->toHaveKey('lane')
@@ -256,7 +258,7 @@ it('marks jobs that extend beyond the visible window', function () {
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
+    $rows = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows');
 
     expect($rows[0]['extends_before'])->toBeTrue()
         ->and($rows[1]['extends_after'])->toBeTrue();
@@ -271,7 +273,7 @@ it('includes opportunity tags on planner rows', function () {
 
     $this->actingAs($this->user);
 
-    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows')[0]['tags'])->toBe(['VIP', 'Festival', 'Outdoor']);
+    expect(Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows')[0]['tags'])->toBe(['VIP', 'Festival', 'Outdoor']);
 });
 
 it('builds day-snapped Delivery / In-Use / Collection segments and customer badges', function () {
@@ -290,7 +292,7 @@ it('builds day-snapped Delivery / In-Use / Collection segments and customer badg
 
     $this->actingAs($this->user);
 
-    $row = Volt::test('planner.index')->call('initializeGrid')->get('rows')[0];
+    $row = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows')[0];
 
     $phaseKeys = array_column($row['day_segments'], 'phase');
 
@@ -309,7 +311,7 @@ it('snaps bar position to whole day columns in the window', function () {
 
     $this->actingAs($this->user);
 
-    $row = Volt::test('planner.index')->call('initializeGrid')->get('rows')[0];
+    $row = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows')[0];
 
     expect($row['left'])->toBe((2 / 30) * 100)
         ->and($row['width'])->toBe((3 / 30) * 100);
@@ -327,7 +329,7 @@ it('adds a symmetric visual gap between consecutive touching jobs in the same la
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('planner.index')->call('initializeGrid');
+    $component = Livewire::test(PlannerIndex::class)->call('initializeGrid');
     $rows = $component->get('rows');
     $halfGap = 2;
 
@@ -352,7 +354,7 @@ it('colours job cards by opportunity status', function () {
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('planner.index')->call('initializeGrid')->get('rows');
+    $rows = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows');
 
     expect($rows[0]['colour'])->toBe(OpportunityStatus::QuotationProvisional->colour())
         ->and($rows[1]['colour'])->toBe(OpportunityStatus::OrderOnHire->colour())
@@ -363,7 +365,7 @@ it('colours job cards by opportunity status', function () {
 it('builds legend swatches from opportunity statuses', function () {
     $this->actingAs($this->user);
 
-    $legend = Volt::test('planner.index')->call('initializeGrid')->get('legend');
+    $legend = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('legend');
     $provisional = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'Provisional');
     $onHire = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'On Hire');
 
@@ -376,7 +378,7 @@ it('builds legend swatches from opportunity statuses', function () {
 it('exposes customer badge colours matching the legend key', function () {
     $this->actingAs($this->user);
 
-    $legend = Volt::test('planner.index')->call('initializeGrid')->get('legend');
+    $legend = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('legend');
 
     $collecting = collect($legend)->first(fn (array $entry): bool => $entry['label'] === __('Collecting'));
     $returning = collect($legend)->first(fn (array $entry): bool => $entry['label'] === __('Returning'));
@@ -397,7 +399,7 @@ it('snaps day segment positions to track day columns', function () {
 
     $this->actingAs($this->user);
 
-    $segment = Volt::test('planner.index')->call('initializeGrid')->get('rows')[0]['day_segments'][0];
+    $segment = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows')[0]['day_segments'][0];
 
     expect($segment['left'])->toBe((2 / 30) * 100)
         ->and($segment['width'])->toBe((1 / 30) * 100);
@@ -422,14 +424,14 @@ it('surfaces venue address on each row with member name fallback', function () {
 
     $this->actingAs($this->user);
 
-    expect(Volt::test('planner.index')->call('initializeGrid')->get('rows')[0]['address'])
+    expect(Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('rows')[0]['address'])
         ->toBe('1 High Street, Bristol, BS1 1AA');
 });
 
 it('uses a distinct in-use phase colour separate from quotation status', function () {
     $this->actingAs($this->user);
 
-    $legend = Volt::test('planner.index')->call('initializeGrid')->get('legend');
+    $legend = Livewire::test(PlannerIndex::class)->call('initializeGrid')->get('legend');
     $inUse = collect($legend)->first(fn (array $entry): bool => $entry['label'] === 'In Use');
 
     expect($inUse)->not->toBeNull()
@@ -440,7 +442,7 @@ it('uses a distinct in-use phase colour separate from quotation status', functio
 it('steps the window forward, back and home', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->assertSet('date', '2026-06-20')
         ->call('nextPeriod')
         ->assertSet('date', '2026-07-20')
@@ -454,13 +456,13 @@ it('steps the window forward, back and home', function () {
 it('changes zoom window length', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('setZoom', '1w')
         ->assertSet('viewPeriod', '1w')
         ->assertSet('preset', '')
         ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(7));
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('setZoom', '1m')
         ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
 });
@@ -468,19 +470,19 @@ it('changes zoom window length', function () {
 it('applies date-range presets', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('applyPreset', 'next_30_days')
         ->assertSet('date', '2026-06-20')
         ->assertSet('preset', 'next_30_days')
         ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('applyPreset', 'this_month')
         ->assertSet('date', '2026-06-01')
         ->assertSet('preset', 'this_month')
         ->tap(fn ($v) => expect($v->instance()->windowDays())->toBe(30));
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('applyPreset', 'next_month')
         ->assertSet('date', '2026-07-01')
         ->assertSet('preset', 'next_month')
@@ -499,11 +501,20 @@ it('counts jobs per calendar day for the heatmap row', function () {
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('planner.index')->call('initializeGrid');
+    $component = Livewire::test(PlannerIndex::class)->call('initializeGrid');
 
     expect($component->get('jobCountsPerDay')['2026-06-22'])->toBe(2)
         ->and($component->get('jobCountsPerDay')['2026-06-25'])->toBe(1)
         ->and($component->get('jobCountHeatmapMax'))->toBe(2);
+});
+
+it('uses a safe default heatmap maximum when there are no jobs', function () {
+    $this->actingAs($this->user);
+
+    expect(Livewire::test(PlannerIndex::class)
+        ->call('initializeGrid')
+        ->get('jobCountHeatmapMax'))
+        ->toBe(1);
 });
 
 it('marks month-start day columns with a thick border class', function () {
@@ -514,7 +525,7 @@ it('marks month-start day columns with a thick border class', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->set('date', '2026-06-28')
         ->set('viewPeriod', '1m')
         ->assertSeeHtml('s-planning-month-start');
@@ -525,7 +536,7 @@ it('syncs storeIds from store tag names', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('syncStoreIdsFromTags', ['Main', 'Depot'])
         ->assertSet('storeIds', [$this->store->id, $depot->id])
         ->tap(fn ($v) => expect($v->instance()->selectedStoreTags())->toBe(['Main', 'Depot']));
@@ -534,7 +545,7 @@ it('syncs storeIds from store tag names', function () {
 it('ignores invalid zoom tokens and clears preset when the date changes', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('applyPreset', 'next_30_days')
         ->call('setZoom', 'invalid')
         ->assertSet('viewPeriod', '1m')
@@ -545,7 +556,7 @@ it('ignores invalid zoom tokens and clears preset when the date changes', functi
 it('ignores unknown date-range presets', function () {
     $this->actingAs($this->user);
 
-    Volt::test('planner.index')->call('initializeGrid')
+    Livewire::test(PlannerIndex::class)->call('initializeGrid')
         ->call('applyPreset', 'not-a-preset')
         ->assertSet('date', '2026-06-20')
         ->assertSet('preset', '');
@@ -559,7 +570,7 @@ it('reports when the job list is truncated at the limit', function () {
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('planner.index')->call('initializeGrid');
+    $component = Livewire::test(PlannerIndex::class)->call('initializeGrid');
 
     expect($component->get('jobsTruncated'))->toBeTrue()
         ->and($component->get('rows'))->toHaveCount(200);

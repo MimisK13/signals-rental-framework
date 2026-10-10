@@ -44,10 +44,11 @@ class StartRepackOnReturn
     public function __invoke(StartRepackOnReturnData $data): RepackOnReturnStartedResultData
     {
         Gate::authorize('create', Container::class);
-        Gate::authorize('opportunities.edit');
 
         $opportunity = Opportunity::query()->whereKey($data->opportunity_id)->firstOrFail();
+        Gate::authorize('update', $opportunity);
         $housing = StockLevel::query()->with('product')->findOrFail($data->serialised_item_id);
+        Gate::authorize('access', $housing);
 
         $this->guard($housing);
 

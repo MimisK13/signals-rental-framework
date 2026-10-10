@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Components;
 
+use App\Models\AssetInspection;
 use App\Models\ListName;
 use App\Services\FileService;
 use Illuminate\Contracts\View\View;
@@ -33,8 +34,12 @@ class FileUploadModal extends Component
     public bool $show = false;
 
     #[On('open-file-upload')]
-    public function open(): void
+    public function open(?int $modelId = null): void
     {
+        if ($modelId !== null && $modelId !== $this->modelId) {
+            return;
+        }
+
         $this->show = true;
     }
 
@@ -45,8 +50,9 @@ class FileUploadModal extends Component
 
     public function save(): void
     {
-        $permission = Str::plural(class_basename($this->modelType)).'.edit';
-        $permission = Str::lower($permission);
+        $permission = $this->modelType === AssetInspection::class
+            ? 'stock.view'
+            : Str::lower(Str::plural(class_basename($this->modelType)).'.edit');
         Gate::authorize($permission);
 
         $this->validate([

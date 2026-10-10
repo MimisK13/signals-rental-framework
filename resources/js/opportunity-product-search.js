@@ -30,7 +30,7 @@ import MiniSearch from 'minisearch';
  */
 
 const INDEX_FIELDS = ['name', 'sku'];
-const STORE_FIELDS = ['id', 'name', 'sku', 'default_rate', 'accessories', 'availability', 'image_url', 'initials'];
+const STORE_FIELDS = ['id', 'name', 'sku', 'default_rate', 'accessories', 'is_combination', 'availability', 'image_url', 'initials'];
 
 const DEFAULT_SEARCH_OPTIONS = {
     prefix: true,
@@ -63,6 +63,7 @@ function normaliseHit(hit) {
         sku: hit.sku ?? null,
         default_rate: hit.default_rate ?? null,
         accessories: hit.accessories ?? [],
+        is_combination: Boolean(hit.is_combination),
         availability: hit.availability ?? null,
         image_url: hit.image_url ?? null,
         initials: hit.initials ?? '',

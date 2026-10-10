@@ -29,6 +29,8 @@ class CreateContainer
             ->with('product')
             ->findOrFail($data->serialised_item_id);
 
+        Gate::authorize('access', $stockLevel);
+
         $this->guard($stockLevel);
 
         $product = $stockLevel->product;
@@ -100,6 +102,40 @@ class CreateContainer
         if ($existing) {
             throw ValidationException::withMessages([
                 'serialised_item_id' => __('This serialised item already has an active container.'),
+            ]);
+        }
+
+        $barcode = $this->defaultBarcode($stockLevel);
+
+        if ($barcode === null) {
+            return;
+        }
+
+        $containerConflict = Container::query()
+            ->active()
+            ->where('barcode', $barcode)
+            ->exists();
+
+        if ($containerConflict) {
+            throw ValidationException::withMessages([
+                'serialised_item_id' => __('The Container barcode is already in use.'),
+            ]);
+        }
+
+        $stockConflict = StockLevel::query()
+            ->serialized()
+            ->whereKeyNot($stockLevel->id)
+            ->where(function ($query) use ($barcode): void {
+                $query
+                    ->where('barcode', $barcode)
+                    ->orWhere('asset_number', $barcode)
+                    ->orWhere('serial_number', $barcode);
+            })
+            ->exists();
+
+        if ($stockConflict) {
+            throw ValidationException::withMessages([
+                'serialised_item_id' => __('The Container barcode conflicts with another serialised asset identifier.'),
             ]);
         }
     }

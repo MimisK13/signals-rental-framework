@@ -129,7 +129,7 @@ new #[Layout('components.layouts.app')] #[Title('User')] class extends Component
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.users') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.users') }}" wire:navigate.hover>
                 Back to Users
             </flux:button>
         </x-slot:actions>
@@ -167,7 +167,7 @@ new #[Layout('components.layouts.app')] #[Title('User')] class extends Component
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit">Save Changes</flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.users') }}" wire:navigate>Cancel</flux:button>
+                <flux:button variant="ghost" href="{{ route('admin.settings.users') }}" wire:navigate.hover>Cancel</flux:button>
             </div>
         </form>
 

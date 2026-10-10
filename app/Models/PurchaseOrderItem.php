@@ -9,6 +9,7 @@ use Database\Factories\PurchaseOrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -108,5 +109,13 @@ class PurchaseOrderItem extends Model implements HasSchema
     public function supplierCost(): BelongsTo
     {
         return $this->belongsTo(ProductSupplierCost::class, 'supplier_cost_id');
+    }
+
+    /**
+     * @return HasMany<SupplierBillItem, $this>
+     */
+    public function supplierBillItems(): HasMany
+    {
+        return $this->hasMany(SupplierBillItem::class);
     }
 }

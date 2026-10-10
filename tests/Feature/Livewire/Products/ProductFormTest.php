@@ -14,7 +14,13 @@ beforeEach(function () {
 it('renders the create form', function () {
     $this->get(route('products.create'))
         ->assertOk()
-        ->assertSee('Create Product');
+        ->assertSee('Create Product')
+        ->assertSee('General')
+        ->assertSee('Stock')
+        ->assertSee('Identification')
+        ->assertSee('Commercial')
+        ->assertSee('Additional')
+        ->assertSee('Custom Fields');
 });
 
 it('renders the edit form with pre-populated data', function () {
@@ -50,6 +56,28 @@ it('creates a product with valid data', function () {
         'name' => 'New Test Product',
         'product_type' => 'rental',
     ]);
+});
+
+it('stores product prices entered in major currency units as minor units', function () {
+    Volt::test('products.form')
+        ->set('name', 'Major Unit Price Product')
+        ->set('purchasePrice', '3000')
+        ->call('save')
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('products', [
+        'name' => 'Major Unit Price Product',
+        'purchase_price' => 300000,
+    ]);
+});
+
+it('hydrates stored minor-unit prices back to major currency units', function () {
+    $product = Product::factory()->create([
+        'purchase_price' => 300000,
+    ]);
+
+    Volt::test('products.form', ['product' => $product])
+        ->assertSet('purchasePrice', '3000.00');
 });
 
 it('validates required name field', function () {

@@ -71,6 +71,39 @@ describe('charge dates + tag_list write path', function () {
             ->and($opportunity->charge_starts_at)->not->toBeNull();
     });
 
+    it('persists explicit planning dates and reservation priority', function () {
+        $token = raWriteToken($this->owner);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/opportunities', [
+                'subject' => 'Planning Contract',
+                'starts_at' => '2026-08-02T09:00:00Z',
+                'ends_at' => '2026-08-03T18:00:00Z',
+                'planning_starts_at' => '2026-08-01T08:00:00Z',
+                'planning_ends_at' => '2026-08-04T20:00:00Z',
+                'reservation_priority' => 50,
+            ])
+            ->assertCreated();
+
+        $opportunity = Opportunity::query()->findOrFail($response->json('opportunity.id'));
+
+        expect($opportunity->planning_starts_at?->toIso8601String())->toBe('2026-08-01T08:00:00+00:00')
+            ->and($opportunity->planning_ends_at?->toIso8601String())->toBe('2026-08-04T20:00:00+00:00')
+            ->and($opportunity->reservation_priority)->toBe(50);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->putJson("/api/v1/opportunities/{$opportunity->id}", [
+                'planning_starts_at' => '2026-08-01T07:00:00Z',
+                'planning_ends_at' => '2026-08-05T20:00:00Z',
+                'reservation_priority' => 100,
+            ])
+            ->assertOk();
+
+        expect($opportunity->refresh()->planning_starts_at?->toIso8601String())->toBe('2026-08-01T07:00:00+00:00')
+            ->and($opportunity->planning_ends_at?->toIso8601String())->toBe('2026-08-05T20:00:00+00:00')
+            ->and($opportunity->reservation_priority)->toBe(100);
+    });
+
     it('clears tag_list when an explicit empty array is supplied on update', function () {
         $opportunity = raCreateOpportunity($this->owner, ['tag_list' => ['keep']]);
         $token = raWriteToken($this->owner);

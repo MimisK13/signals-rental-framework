@@ -4,7 +4,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><polyline points="20 6 9 17 4 12"/></svg>
         </button>
     @endif
-    <a href="{{ route('activities.edit', $item->id) }}" wire:navigate class="s-btn s-btn-xs s-btn-ghost" title="Edit">
+    <a href="{{ route('activities.edit', $item->id) }}" wire:navigate.hover class="s-btn s-btn-xs s-btn-ghost" title="Edit">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </a>
     <button wire:click="$parent.deleteActivity({{ $item->id }})" wire:confirm="Are you sure you want to delete this activity?" class="s-btn s-btn-xs s-btn-ghost s-btn-danger" title="Delete">

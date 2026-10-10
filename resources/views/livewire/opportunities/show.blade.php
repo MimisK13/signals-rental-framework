@@ -138,11 +138,11 @@ new #[Layout('components.layouts.app')] class extends Component
             @if($canGenerateDeposit)
                 <button type="button" wire:click="generateDeposit" class="s-btn s-btn-sm s-btn-ghost">Generate Deposit</button>
             @endif
-            <a href="{{ route('opportunities.invoices', $opportunity) }}" wire:navigate class="s-btn s-btn-sm s-btn-ghost">View Invoices</a>
+            <a href="{{ route('opportunities.invoices', $opportunity) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-ghost">View Invoices</a>
         </div>
     @elseif($fullyInvoiced ?? false)
         <div class="px-6 pt-4 max-md:px-5 max-sm:px-3">
-            <a href="{{ route('opportunities.invoices', $opportunity) }}" wire:navigate class="text-sm text-[var(--link)] hover:underline">View invoices</a>
+            <a href="{{ route('opportunities.invoices', $opportunity) }}" wire:navigate.hover class="text-sm text-[var(--link)] hover:underline">View invoices</a>
         </div>
     @endif
 

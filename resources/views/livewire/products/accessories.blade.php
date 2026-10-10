@@ -209,7 +209,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <tr wire:key="accessory-{{ $accessory->id }}">
                                 <td>
                                     @if($accessory->accessoryProduct)
-                                        <a href="{{ route('products.show', $accessory->accessoryProduct) }}" wire:navigate class="s-cell-link">
+                                        <a href="{{ route('products.show', $accessory->accessoryProduct) }}" wire:navigate.hover class="s-cell-link">
                                             {{ $accessory->accessoryProduct->name }}
                                         </a>
                                     @else

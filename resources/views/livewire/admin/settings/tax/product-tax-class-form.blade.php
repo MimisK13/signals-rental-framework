@@ -88,7 +88,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Tax Class')] class exte
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate.hover>
                 Back to Product Tax Classes
             </flux:button>
         </x-slot:actions>
@@ -110,7 +110,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Tax Class')] class exte
                 <flux:button variant="primary" type="submit">
                     {{ $isEditing ? 'Update Tax Class' : 'Create Tax Class' }}
                 </flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate>
+                <flux:button variant="ghost" href="{{ route('admin.settings.tax.product-tax-classes') }}" wire:navigate.hover>
                     Cancel
                 </flux:button>
             </div>

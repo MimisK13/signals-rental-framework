@@ -88,7 +88,7 @@ new #[Layout('components.layouts.app')] #[Title('Organisation Tax Class')] class
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.tax.organisation-tax-classes') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.tax.organisation-tax-classes') }}" wire:navigate.hover>
                 Back to Organisation Tax Classes
             </flux:button>
         </x-slot:actions>
@@ -110,7 +110,7 @@ new #[Layout('components.layouts.app')] #[Title('Organisation Tax Class')] class
                 <flux:button variant="primary" type="submit">
                     {{ $isEditing ? 'Update Tax Class' : 'Create Tax Class' }}
                 </flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.tax.organisation-tax-classes') }}" wire:navigate>
+                <flux:button variant="ghost" href="{{ route('admin.settings.tax.organisation-tax-classes') }}" wire:navigate.hover>
                     Cancel
                 </flux:button>
             </div>

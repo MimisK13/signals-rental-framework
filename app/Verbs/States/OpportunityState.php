@@ -58,6 +58,11 @@ class OpportunityState extends State
 
     public ?CarbonImmutable $ends_at = null;
 
+    /** Explicit capacity commitment window. Null means legacy fallback to hire dates. */
+    public ?CarbonImmutable $planning_starts_at = null;
+
+    public ?CarbonImmutable $planning_ends_at = null;
+
     public ?CarbonImmutable $charge_starts_at = null;
 
     public ?CarbonImmutable $charge_ends_at = null;
@@ -127,6 +132,9 @@ class OpportunityState extends State
 
     /** Sales priority/quality rating 0–5 (RMS `rating`), nullable (C3i). */
     public ?int $rating = null;
+
+    /** Deterministic capacity reservation priority; higher values win conflicts. */
+    public int $reservation_priority = 0;
 
     /** FK to the chosen delivery address on the `addresses` table (C-data-2). */
     public ?int $delivery_address_id = null;

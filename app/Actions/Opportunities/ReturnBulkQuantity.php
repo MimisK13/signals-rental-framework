@@ -7,6 +7,8 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\BulkReturnData;
 use App\Data\Opportunities\OpportunityItemData;
 use App\Models\OpportunityItem;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Verbs\Events\Opportunities\BulkQuantityReturned;
 use Illuminate\Support\Facades\Gate;
 
@@ -21,11 +23,20 @@ class ReturnBulkQuantity
 
     public function __invoke(OpportunityItem $item, BulkReturnData $data): OpportunityItemData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $item->opportunity);
 
         $this->commitVerbs(function () use ($item, $data): void {
+            $lockedItem = OpportunityItem::query()
+                ->whereKey($item->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $context = app(OpportunityItemDemandResolver::class)->resolveContext($lockedItem);
+            if ($context['product_id'] !== null && $context['store_id'] !== null) {
+                app(ProductStoreCapacityLock::class)->acquire($context['product_id'], $context['store_id']);
+            }
+
             BulkQuantityReturned::fire(
-                opportunity_item_id: $item->state_id,
+                opportunity_item_id: $lockedItem->state_id,
                 quantity: $data->quantity,
                 received_by: $data->received_by,
                 condition: $data->condition,

@@ -6,6 +6,8 @@ use App\Enums\ActivityStatus;
 use App\Models\Activity;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 
 class CalendarEventService
@@ -24,7 +26,7 @@ class CalendarEventService
     public function scheduled(CarbonInterface $from, CarbonInterface $to, array $ownerIds = []): Collection
     {
         return $this->overlapping($from, $to, $ownerIds)
-            ->with(['owner', 'type', 'regarding', 'participants.member' => fn ($query) => $query->withTrashed()->with('user')])
+            ->with(['owner', 'type', 'regarding', 'participants.member' => fn (Relation $relation): Builder => $relation->getQuery()->withoutGlobalScope(SoftDeletingScope::class)->with('user')])
             ->orderBy('starts_at')
             ->get();
     }
@@ -40,7 +42,7 @@ class CalendarEventService
     {
         $query = Activity::query()
             ->whereNull('starts_at')
-            ->with(['owner', 'type', 'regarding', 'participants.member' => fn ($query) => $query->withTrashed()->with('user')])
+            ->with(['owner', 'type', 'regarding', 'participants.member' => fn (Relation $relation): Builder => $relation->getQuery()->withoutGlobalScope(SoftDeletingScope::class)->with('user')])
             ->latest();
 
         if ($ownerIds !== []) {

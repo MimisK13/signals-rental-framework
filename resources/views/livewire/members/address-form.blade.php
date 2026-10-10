@@ -248,7 +248,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <p class="text-xs text-[var(--text-muted)]">
                                 what3words is not configured.
                                 @if($canManageIntegrations)
-                                    <a href="{{ route('admin.settings.integrations') }}" wire:navigate class="text-[var(--link)] hover:underline">Set it up in Integrations settings.</a>
+                                    <a href="{{ route('admin.settings.integrations') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Set it up in Integrations settings.</a>
                                 @endif
                             </p>
                         </div>
@@ -342,7 +342,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Add Address' }}</flux:button>
-                <flux:button variant="ghost" href="{{ route('members.show', $member) }}" wire:navigate>Cancel</flux:button>
+                <flux:button variant="ghost" href="{{ route('members.show', $member) }}" wire:navigate.hover>Cancel</flux:button>
             </div>
         </form>
     </div>

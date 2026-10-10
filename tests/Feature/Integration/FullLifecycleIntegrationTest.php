@@ -189,8 +189,16 @@ it('runs the serialised vertical slice: create → quote → version → order �
     expect($rowA->refresh()->status)->toBe(AssetAssignmentStatus::CheckedIn)
         ->and($opportunity->refresh()->statusEnum())->toBe(OpportunityStatus::OrderOnHire);
     // A's demand closed + released; A's allocation freed; B still out.
-    expect(Demand::query()->where('source_id', $item->id)->where('asset_id', $assetA->id)->sole()->phase)
-        ->toBe(DemandPhase::Closed)
+    expect(Demand::query()
+        ->where('source_type', 'opportunity_item')
+        ->where('source_id', $item->id)
+        ->where('asset_id', $assetA->id)
+        ->sole()->phase)->toBe(DemandPhase::Closed)
+        ->and(Demand::query()
+            ->where('source_type', 'inspection_hold')
+            ->where('source_id', $rowA->id)
+            ->where('is_active', true)
+            ->exists())->toBeTrue()
         ->and((float) $assetA->refresh()->quantity_allocated)->toBe(0.0)
         ->and((float) $assetB->refresh()->quantity_allocated)->toBe(1.0);
 

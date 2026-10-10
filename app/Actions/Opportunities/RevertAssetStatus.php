@@ -20,7 +20,7 @@ class RevertAssetStatus
 
     public function __invoke(OpportunityItemAsset $asset, RevertAssetStatusData $data): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
 
         $this->commitVerbs(function () use ($asset, $data): void {
             AssetStatusReverted::fire(

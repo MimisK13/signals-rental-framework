@@ -302,7 +302,7 @@ new #[Layout('components.layouts.app')] #[Title('Rate Definition')] class extend
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.rate-definitions') }}" wire:navigate>Back</flux:button>
+            <flux:button variant="ghost" href="{{ route('admin.settings.rate-definitions') }}" wire:navigate.hover>Back</flux:button>
         </x-slot:actions>
 
         @if(! $presetChosen)
@@ -387,7 +387,7 @@ new #[Layout('components.layouts.app')] #[Title('Rate Definition')] class extend
 
                 <div class="flex items-center gap-4">
                     <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Rate Definition' }}</flux:button>
-                    <flux:button variant="ghost" href="{{ route('admin.settings.rate-definitions') }}" wire:navigate>Cancel</flux:button>
+                    <flux:button variant="ghost" href="{{ route('admin.settings.rate-definitions') }}" wire:navigate.hover>Cancel</flux:button>
                 </div>
             </form>
         @endif

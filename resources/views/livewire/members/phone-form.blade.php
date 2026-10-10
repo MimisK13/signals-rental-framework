@@ -161,7 +161,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Add Phone' }}</flux:button>
-                <flux:button variant="ghost" href="{{ route('members.show', $member) }}" wire:navigate>Cancel</flux:button>
+                <flux:button variant="ghost" href="{{ route('members.show', $member) }}" wire:navigate.hover>Cancel</flux:button>
             </div>
         </form>
     </div>

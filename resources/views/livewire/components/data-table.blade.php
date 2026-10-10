@@ -40,9 +40,9 @@
                                 />
                             </th>
                         @elseif(($col['key'] ?? '') === 'avatar')
-                            <th class="w-[40px]"></th>
+                            <th class="w-10"></th>
                         @elseif(($col['type'] ?? null) === 'actions')
-                            <th class="w-[60px]"></th>
+                            <th class="w-15"></th>
                         @elseif($col['sortable'] ?? false)
                             <th
                                 class="sortable {{ $sortField === $col['key'] ? ($sortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : '' }}"
@@ -166,11 +166,13 @@
                 @empty
                     <tr>
                         <td colspan="{{ count($displayColumns) }}" class="text-center py-12">
-                            <div class="flex flex-col items-center gap-2 text-[var(--text-muted)]">
+                            <div class="flex flex-col items-center gap-2 text-(--text-muted)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-10 h-10 opacity-30">
                                     <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
                                 </svg>
-                                <span class="text-sm">{{ $emptyMessage }}</span>
+                                <span class="text-sm">
+                                    {{ $emptyMessage }}
+                                </span>
                             </div>
                         </td>
                     </tr>

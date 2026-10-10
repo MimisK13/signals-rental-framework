@@ -32,6 +32,8 @@ use Illuminate\Support\Carbon;
 */
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-01T00:00:00Z'));
+
     $this->app->bind(AvailabilityResolutionProvider::class, fn () => new class implements AvailabilityResolutionProvider
     {
         public function resolve(): AvailabilityResolution
@@ -43,6 +45,10 @@ beforeEach(function () {
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
     $this->service = app(AvailabilityService::class);
     $this->pipeline = app(RecalculationPipeline::class);
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 /**

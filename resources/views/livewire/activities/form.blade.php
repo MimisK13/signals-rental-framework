@@ -327,9 +327,9 @@ new #[Layout('components.layouts.app')] class extends Component
     @if($isEditing)
         <x-signals.page-header title="Edit Activity">
             <x-slot:breadcrumbs>
-                <a href="{{ route('activities.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Activities</a>
+                <a href="{{ route('activities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Activities</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
-                <a href="{{ route('activities.show', $activityId) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $subject }}</a>
+                <a href="{{ route('activities.show', $activityId) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $subject }}</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Edit</span>
             </x-slot:breadcrumbs>
@@ -337,7 +337,7 @@ new #[Layout('components.layouts.app')] class extends Component
     @else
         <x-signals.page-header title="Create Activity">
             <x-slot:breadcrumbs>
-                <a href="{{ route('activities.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Activities</a>
+                <a href="{{ route('activities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Activities</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
@@ -412,7 +412,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
                     <div class="flex items-center gap-4 pt-2">
                         <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Activity' }}</flux:button>
-                        <flux:button variant="ghost" href="{{ $isEditing ? route('activities.show', $activityId) : route('activities.index') }}" wire:navigate>Cancel</flux:button>
+                        <flux:button variant="ghost" href="{{ $isEditing ? route('activities.show', $activityId) : route('activities.index') }}" wire:navigate.hover>Cancel</flux:button>
                     </div>
                 </div>
 

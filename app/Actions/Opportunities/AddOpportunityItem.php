@@ -98,6 +98,8 @@ class AddOpportunityItem
                     charge_period: $data->charge_period,
                     starts_at: $startsAt,
                     ends_at: $endsAt,
+                    planning_starts_at: $data->planning_starts_at,
+                    planning_ends_at: $data->planning_ends_at,
                     is_optional: $data->is_optional,
                     manual_unit_price: $data->unit_price,
                     discount_percent: $data->discount_percent,

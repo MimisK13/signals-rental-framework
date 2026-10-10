@@ -3,10 +3,10 @@
         <x-signals.entity-icon :model="$member" :size="44" />
     </x-slot:icon>
     <x-slot:breadcrumbs>
-        <a href="{{ route('members.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Members</a>
+        <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
         <span class="mx-1 text-[var(--text-muted)]">/</span>
         @if(isset($subpage))
-            <a href="{{ route('members.show', $member) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
+            <a href="{{ route('members.show', $member) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $subpage }}</span>
         @else
@@ -42,12 +42,12 @@
         @endif
     </x-slot:meta>
     <x-slot:actions>
-        <a href="{{ route('members.edit', $member) }}" wire:navigate class="s-btn s-btn-sm s-btn-accent">
+        <a href="{{ route('members.edit', $member) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-accent">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
             Edit
         </a>
         <x-signals.split-button label="New" size="sm">
-            <a href="{{ route('members.relationships.create', $member) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('members.relationships.create', $member) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                 Contact
             </a>
@@ -80,23 +80,23 @@
                 </button>
             @endif
             <div style="height: 1px; background: var(--card-border); margin: 4px 0;"></div>
-            <a href="{{ route('members.addresses.create', $member) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('members.addresses.create', $member) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 Address
             </a>
-            <a href="{{ route('members.emails.create', $member) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('members.emails.create', $member) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 Email
             </a>
-            <a href="{{ route('members.phones.create', $member) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('members.phones.create', $member) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
                 Phone
             </a>
-            <a href="{{ route('members.links.create', $member) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('members.links.create', $member) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                 Link
             </a>
-            <a href="{{ route('members.relationships.create', $member) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+            <a href="{{ route('members.relationships.create', $member) }}" wire:navigate.hover class="s-dropdown-item" style="text-decoration: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5" style="flex-shrink: 0;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Relationship
             </a>

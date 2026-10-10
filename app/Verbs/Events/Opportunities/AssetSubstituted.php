@@ -2,10 +2,13 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Enums\AssetAssignmentStatus;
 use App\Enums\StockMethod;
+use App\Models\AssetUsage;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\StockLevel;
+use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
@@ -35,6 +38,7 @@ class AssetSubstituted extends Event
         public int $state_id,
         public int $new_stock_level_id = 0,
         public ?string $reason = null,
+        public ?string $substituted_at = null,
     ) {}
 
     public function validate(AssetAssignmentState $state): void
@@ -59,6 +63,15 @@ class AssetSubstituted extends Event
         $this->assert(
             $stockLevel?->product?->stock_method === StockMethod::Serialised,
             'Only serialised stock can be substituted in.',
+        );
+
+        $effectiveStoreId = $item !== null
+            ? app(OpportunityItemDemandResolver::class)->resolveContext($item)['store_id']
+            : null;
+
+        $this->assert(
+            $effectiveStoreId !== null && $stockLevel?->store_id === $effectiveStoreId,
+            'The substitute asset must belong to the line item\'s operational Store.',
         );
 
         $this->assert(
@@ -89,6 +102,12 @@ class AssetSubstituted extends Event
         }
 
         $oldStockLevelId = $asset->stock_level_id;
+        $oldStockLevel = StockLevel::query()->find($oldStockLevelId);
+        $alreadyProjected = $oldStockLevelId === $state->stock_level_id;
+        $wasDispatched = in_array($asset->status->value, [
+            AssetAssignmentStatus::Dispatched->value,
+            AssetAssignmentStatus::OnHire->value,
+        ], true);
 
         $asset->forceFill([
             'stock_level_id' => $state->stock_level_id,
@@ -96,6 +115,36 @@ class AssetSubstituted extends Event
 
         $this->decrementStockAllocation($oldStockLevelId, '1');
         $this->incrementStockAllocation($state->stock_level_id, '1');
+
+        if (! $alreadyProjected
+            && $wasDispatched
+            && $this->substituted_at !== null
+            && $oldStockLevel?->asset_id !== null) {
+            $oldUsage = AssetUsage::query()
+                ->where('asset_id', $oldStockLevel->asset_id)
+                ->where('opportunity_item_id', $state->opportunity_item_id)
+                ->whereNull('returned_at')
+                ->lockForUpdate()
+                ->first();
+
+            if ($oldUsage !== null) {
+                $substitutedAt = CarbonImmutable::parse($this->substituted_at);
+                $oldUsage->update(['returned_at' => $substitutedAt]);
+
+                $newStockLevel = StockLevel::query()->find($state->stock_level_id);
+
+                if ($newStockLevel !== null
+                    && $newStockLevel->asset_id !== null
+                    && $newStockLevel->isSerialised()
+                    && ! $newStockLevel->isVirtualAsset()) {
+                    AssetUsage::query()->firstOrCreate([
+                        'asset_id' => $newStockLevel->asset_id,
+                        'opportunity_item_id' => $state->opportunity_item_id,
+                        'dispatched_at' => $substitutedAt,
+                    ]);
+                }
+            }
+        }
 
         $item = $asset->item()->first();
 

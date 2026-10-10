@@ -33,10 +33,26 @@ it('creates supplier costs on demo products', function () {
     expect(ProductSupplierCost::query()->count())->toBeGreaterThanOrEqual(3);
 });
 
+it('seeds an audio-heavy catalogue with several mixing desks', function () {
+    $totalProducts = Product::query()->whereJsonContains('tag_list', 'demo-data')->count();
+    $audioProducts = Product::query()
+        ->whereJsonContains('tag_list', 'demo-data')
+        ->where('sku', 'like', 'AUD-%')
+        ->count();
+    $mixingDesks = Product::query()
+        ->whereJsonContains('tag_list', 'demo-data')
+        ->where('name', 'like', '%Mixing Console%')
+        ->count();
+
+    expect($totalProducts)->toBeGreaterThanOrEqual(30)
+        ->and($audioProducts)->toBeGreaterThan($totalProducts / 2)
+        ->and($mixingDesks)->toBeGreaterThanOrEqual(6);
+});
+
 it('marks one supplier cost as preferred per product where multiple exist', function () {
     seedDemoProductEnrichment();
 
-    $movingHead = Product::query()->where('sku', 'DEMO-LMH-BEAM230')->firstOrFail();
+    $movingHead = Product::query()->where('sku', 'LMH-BEAM230')->firstOrFail();
 
     $costs = ProductSupplierCost::query()
         ->where('product_id', $movingHead->id)
@@ -51,7 +67,7 @@ it('assigns a reduced sale tax category to gaffer tape after deferred showcase a
     applyDeferredDemoProductTaxCategories();
 
     $reduced = TaxCategory::query()->where('slug', 'reduced')->firstOrFail();
-    $gaffer = Product::query()->where('sku', 'DEMO-CON-GAF50')->firstOrFail();
+    $gaffer = Product::query()->where('sku', 'CON-GAF50')->firstOrFail();
 
     expect($gaffer->sale_tax_category_id)->toBe($reduced->id);
 });
@@ -59,12 +75,16 @@ it('assigns a reduced sale tax category to gaffer tape after deferred showcase a
 it('configures a containerable serialised product with demo assets', function () {
     seedDemoProductEnrichment();
 
-    $movingHead = Product::query()->where('sku', 'DEMO-LMH-BEAM230')->firstOrFail();
+    $movingHead = Product::query()->where('sku', 'LMH-BEAM230')->firstOrFail();
 
     expect($movingHead->is_containerable)->toBeTrue()
         ->and($movingHead->container_template)->not->toBeNull()
-        ->and(StockLevel::query()->where('asset_number', 'DEMO-MH-001')->exists())->toBeTrue()
-        ->and(StockLevel::query()->where('asset_number', 'DEMO-PAR-001')->exists())->toBeTrue();
+        ->and(StockLevel::query()->where('asset_number', 'MH-001')->exists())->toBeTrue()
+        ->and(StockLevel::query()->where('asset_number', 'PAR-001')->exists())->toBeTrue()
+        ->and(Product::query()->where('sku', 'AUD-SR2050')->exists())->toBeTrue()
+        ->and(Product::query()->where('sku', 'CAS-SR2050')->where('is_containerable', true)->exists())->toBeTrue()
+        ->and(StockLevel::query()->where('asset_number', 'SR2050-CASE-001')->exists())->toBeTrue()
+        ->and(StockLevel::query()->where('asset_number', 'SR2050-001')->exists())->toBeTrue();
 });
 
 it('is idempotent on re-run', function () {

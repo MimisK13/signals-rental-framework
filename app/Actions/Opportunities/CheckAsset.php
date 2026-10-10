@@ -20,13 +20,18 @@ class CheckAsset
 
     public function __invoke(OpportunityItemAsset $asset, CheckAssetData $data): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
 
         $checkedAt = $data->checked_at ?? Carbon::now('UTC')->toIso8601String();
 
         $this->commitVerbs(function () use ($asset, $data, $checkedAt): void {
+            $locked = OpportunityItemAsset::query()
+                ->whereKey($asset->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             AssetChecked::fire(
-                state_id: $asset->state_id,
+                state_id: $locked->state_id,
                 condition: $data->condition,
                 checked_by: $data->checked_by,
                 damage_notes: $data->damage_notes,

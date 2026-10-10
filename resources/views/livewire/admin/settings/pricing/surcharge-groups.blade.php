@@ -33,7 +33,7 @@ new #[Layout('components.layouts.app')] #[Title('Surcharge Groups')] class exten
     <x-admin.layout group="pricing" title="Surcharge Groups" description="Organise automatic line surcharges into toggleable groups.">
         <x-slot:actions>
             @can('pricing.manage')
-                <flux:button variant="primary" href="{{ route('admin.settings.pricing.surcharge-groups.create') }}" wire:navigate>
+                <flux:button variant="primary" href="{{ route('admin.settings.pricing.surcharge-groups.create') }}" wire:navigate.hover>
                     Add Surcharge Group
                 </flux:button>
             @endcan
@@ -69,7 +69,7 @@ new #[Layout('components.layouts.app')] #[Title('Surcharge Groups')] class exten
                             </td>
                             <td class="text-right">
                                 @can('pricing.manage')
-                                    <a href="{{ route('admin.settings.pricing.surcharge-groups.edit', $group) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.pricing.surcharge-groups.edit', $group) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     <button wire:click="deleteGroup({{ $group->id }})"

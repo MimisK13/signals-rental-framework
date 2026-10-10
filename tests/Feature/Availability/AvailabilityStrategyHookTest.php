@@ -16,6 +16,14 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-01T00:00:00Z'));
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
+});
+
+beforeEach(function () {
     $this->app->bind(AvailabilityResolutionProvider::class, fn () => new class implements AvailabilityResolutionProvider
     {
         public function resolve(): AvailabilityResolution

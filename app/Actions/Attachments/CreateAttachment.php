@@ -4,7 +4,9 @@ namespace App\Actions\Attachments;
 
 use App\Data\Attachments\AttachmentData;
 use App\Data\Attachments\CreateAttachmentData;
+use App\Models\AssetInspection;
 use App\Models\Member;
+use App\Models\Repair;
 use App\Services\FileService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -15,6 +17,8 @@ class CreateAttachment
     /** @var array<string, class-string<Model>> */
     private array $morphMap = [
         'Member' => Member::class,
+        'Repair' => Repair::class,
+        'AssetInspection' => AssetInspection::class,
     ];
 
     public function __invoke(CreateAttachmentData $data, UploadedFile $file): AttachmentData

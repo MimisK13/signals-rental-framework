@@ -223,6 +223,22 @@ class Container extends Model implements HasSchema
     }
 
     /**
+     * Current bulk containment rows. These rows are the bulk containment
+     * authority; history events are deliberately not replayed for reads.
+     *
+     * @return HasMany<ContainerBulkMembership, $this>
+     */
+    public function bulkMemberships(): HasMany
+    {
+        return $this->hasMany(ContainerBulkMembership::class);
+    }
+
+    public function effectiveStoreId(): ?int
+    {
+        return $this->store_id ?? $this->serialisedItem?->store_id;
+    }
+
+    /**
      * The container's availability mode, resolved from the backing product.
      * Temporary containers (no product) default to transport — they hold nothing
      * back from availability.

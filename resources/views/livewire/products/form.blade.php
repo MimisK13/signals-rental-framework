@@ -8,57 +8,92 @@ use App\Enums\ProductType;
 use App\Enums\StockMethod;
 use App\Livewire\Concerns\LoadsCustomFieldValues;
 use App\Livewire\Concerns\ReKeysCustomFieldErrors;
-use App\Models\Country;
 use App\Models\CostGroup;
+use App\Models\Country;
 use App\Models\CustomField;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductTaxClass;
 use App\Models\RevenueGroup;
 use App\Models\TaxCategory;
+use App\Services\Api\RansackFilter;
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
-use App\Services\Api\RansackFilter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.app')] class extends Component {
+new #[Layout('components.layouts.app')] class extends Component
+{
     use LoadsCustomFieldValues;
     use ReKeysCustomFieldErrors;
+
     public ?int $productId = null;
+
     public string $name = '';
+
     public string $productType = 'rental';
+
     public bool $isActive = true;
+
     public string $description = '';
+
     public ?int $productGroupId = null;
+
     public string $productGroupSearch = '';
+
     public int $allowedStockType = 1;
+
     public int $stockMethod = 1;
+
     public ?string $weight = null;
+
     public ?string $barcode = null;
+
     public ?string $sku = null;
-    public int $replacementCharge = 0;
+
+    public string $replacementCharge = '0.00';
+
     public string $bufferPercent = '0.0';
+
     public int $postRentUnavailability = 0;
+
     public bool $accessoryOnly = false;
+
     public bool $system = false;
+
     public bool $discountable = true;
+
     public ?int $taxClassId = null;
+
     public ?int $purchaseTaxClassId = null;
+
     public ?int $saleTaxCategoryId = null;
+
     public ?int $purchaseTaxCategoryId = null;
+
     public ?int $rentalRevenueGroupId = null;
+
     public ?int $saleRevenueGroupId = null;
+
     public ?int $subRentalCostGroupId = null;
-    public int $subRentalPrice = 0;
+
+    public string $subRentalPrice = '0.00';
+
     public ?int $purchaseCostGroupId = null;
-    public int $purchasePrice = 0;
+
+    public string $purchasePrice = '0.00';
+
     public ?int $countryOfOriginId = null;
+
     public string $countrySearch = '';
+
     /** @var list<string> */
     public array $tags = [];
+
     /** @var array<string, mixed> */
     public array $customFieldValues = [];
 
@@ -87,7 +122,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->weight = $product->weight;
             $this->barcode = $product->barcode;
             $this->sku = $product->sku;
-            $this->replacementCharge = $product->replacement_charge ?? 0;
+            $this->replacementCharge = $this->majorAmount($product->replacement_charge ?? 0);
             $this->bufferPercent = $product->buffer_percent ?? '0.0';
             $this->postRentUnavailability = $product->post_rent_unavailability ?? 0;
             $this->accessoryOnly = $product->accessory_only ?? false;
@@ -100,9 +135,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->rentalRevenueGroupId = $product->rental_revenue_group_id;
             $this->saleRevenueGroupId = $product->sale_revenue_group_id;
             $this->subRentalCostGroupId = $product->sub_rental_cost_group_id;
-            $this->subRentalPrice = $product->sub_rental_price ?? 0;
+            $this->subRentalPrice = $this->majorAmount($product->sub_rental_price ?? 0);
             $this->purchaseCostGroupId = $product->purchase_cost_group_id;
-            $this->purchasePrice = $product->purchase_price ?? 0;
+            $this->purchasePrice = $this->majorAmount($product->purchase_price ?? 0);
             $this->countryOfOriginId = $product->country_of_origin_id;
             $this->tags = $product->tag_list ?? [];
 
@@ -165,7 +200,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         }
 
         return ProductGroup::query()
-            ->where('name', 'ilike', '%' . RansackFilter::escapeLike($this->productGroupSearch) . '%')
+            ->where('name', 'ilike', '%'.RansackFilter::escapeLike($this->productGroupSearch).'%')
             ->orderBy('name')
             ->limit(15)
             ->get(['id', 'name']);
@@ -182,7 +217,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         }
 
         return Country::query()
-            ->where('name', 'ilike', '%' . RansackFilter::escapeLike($this->countrySearch) . '%')
+            ->where('name', 'ilike', '%'.RansackFilter::escapeLike($this->countrySearch).'%')
             ->orderBy('name')
             ->limit(15)
             ->get(['id', 'name']);
@@ -214,6 +249,27 @@ new #[Layout('components.layouts.app')] class extends Component {
         return Country::query()->where('id', $this->countryOfOriginId)->value('name');
     }
 
+    private function moneyCurrency(): string
+    {
+        $currency = settings('company.base_currency');
+
+        return is_string($currency) && $currency !== '' ? $currency : 'GBP';
+    }
+
+    private function majorAmount(int $minorAmount): string
+    {
+        return (string) Money::ofMinor($minorAmount, $this->moneyCurrency())->getAmount();
+    }
+
+    private function minorAmount(string|int|float|null $majorAmount): int
+    {
+        $value = $majorAmount === null || $majorAmount === '' ? '0' : (string) $majorAmount;
+
+        return Money::of($value, $this->moneyCurrency(), roundingMode: RoundingMode::HALF_UP)
+            ->getMinorAmount()
+            ->toInt();
+    }
+
     public function save(): void
     {
         $nameUniqueRule = Rule::unique('products', 'name');
@@ -224,6 +280,9 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         $this->validate([
             'name' => ['required', 'string', 'max:255', $nameUniqueRule],
+            'replacementCharge' => ['required', 'numeric', 'min:0'],
+            'subRentalPrice' => ['required', 'numeric', 'min:0'],
+            'purchasePrice' => ['required', 'numeric', 'min:0'],
         ]);
 
         $payload = [
@@ -237,7 +296,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'weight' => $this->weight,
             'barcode' => $this->barcode,
             'sku' => $this->sku,
-            'replacement_charge' => $this->replacementCharge,
+            'replacement_charge' => $this->minorAmount($this->replacementCharge),
             'buffer_percent' => $this->bufferPercent,
             'post_rent_unavailability' => $this->postRentUnavailability,
             'accessory_only' => $this->accessoryOnly,
@@ -250,9 +309,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             'rental_revenue_group_id' => $this->rentalRevenueGroupId,
             'sale_revenue_group_id' => $this->saleRevenueGroupId,
             'sub_rental_cost_group_id' => $this->subRentalCostGroupId,
-            'sub_rental_price' => $this->subRentalPrice,
+            'sub_rental_price' => $this->minorAmount($this->subRentalPrice),
             'purchase_cost_group_id' => $this->purchaseCostGroupId,
-            'purchase_price' => $this->purchasePrice,
+            'purchase_price' => $this->minorAmount($this->purchasePrice),
             'country_of_origin_id' => $this->countryOfOriginId,
             'tag_list' => $this->tags !== [] ? $this->tags : null,
             'custom_fields' => $this->customFieldValues,
@@ -342,7 +401,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     @else
         <x-signals.page-header title="Create Product">
             <x-slot:breadcrumbs>
-                <a href="{{ route('products.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Products</a>
+                <a href="{{ route('products.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Products</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
@@ -351,7 +410,117 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <form wire:submit="save">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+            <div
+                x-data="{
+                    selectedId: null,
+                    init() {
+                        this.$nextTick(() => this.select(this.$id('tab', 1)))
+                    },
+                    select(id) {
+                        this.selectedId = id
+                    },
+                    isSelected(id) {
+                        return this.selectedId === id
+                    },
+                    whichChild(el, parent) {
+                        return Array.from(parent.children).indexOf(el) + 1
+                    }
+                }"
+                x-id="['tab']"
+                class="space-y-6"
+            >
+                    <nav
+                        x-ref="tablist"
+                    @keydown.right.prevent.stop="$focus.wrap().next()"
+                    @keydown.home.prevent.stop="$focus.first()"
+                    @keydown.page-up.prevent.stop="$focus.first()"
+                    @keydown.left.prevent.stop="$focus.wrap().prev()"
+                    @keydown.end.prevent.stop="$focus.last()"
+                    @keydown.page-down.prevent.stop="$focus.last()"
+                        role="tablist"
+                        class="app-subnav -mx-6 max-md:-mx-5 max-sm:-mx-3 px-6 max-md:px-5 max-sm:px-3"
+                    >
+                        <button
+                            :id="$id('tab', whichChild($el, $refs.tablist))"
+                            @click="select($el.id)"
+                            @mousedown.prevent
+                            @focus="select($el.id)"
+                            type="button"
+                            :tabindex="isSelected($el.id) ? 0 : -1"
+                            :aria-selected="isSelected($el.id)"
+                            :class="isSelected($el.id) ? 'active' : ''"
+                            class="subnav-link"
+                            role="tab"
+                        >General</button>
+                        <button
+                            :id="$id('tab', whichChild($el, $refs.tablist))"
+                            @click="select($el.id)"
+                            @mousedown.prevent
+                            @focus="select($el.id)"
+                            type="button"
+                            :tabindex="isSelected($el.id) ? 0 : -1"
+                            :aria-selected="isSelected($el.id)"
+                            :class="isSelected($el.id) ? 'active' : ''"
+                            class="subnav-link"
+                            role="tab"
+                        >Stock</button>
+                        <button
+                            :id="$id('tab', whichChild($el, $refs.tablist))"
+                            @click="select($el.id)"
+                            @mousedown.prevent
+                            @focus="select($el.id)"
+                            type="button"
+                            :tabindex="isSelected($el.id) ? 0 : -1"
+                            :aria-selected="isSelected($el.id)"
+                            :class="isSelected($el.id) ? 'active' : ''"
+                            class="subnav-link"
+                            role="tab"
+                        >Identification</button>
+                        <button
+                            :id="$id('tab', whichChild($el, $refs.tablist))"
+                            @click="select($el.id)"
+                            @mousedown.prevent
+                            @focus="select($el.id)"
+                            type="button"
+                            :tabindex="isSelected($el.id) ? 0 : -1"
+                            :aria-selected="isSelected($el.id)"
+                            :class="isSelected($el.id) ? 'active' : ''"
+                            class="subnav-link"
+                            role="tab"
+                        >Commercial</button>
+                        <button
+                            :id="$id('tab', whichChild($el, $refs.tablist))"
+                            @click="select($el.id)"
+                            @mousedown.prevent
+                            @focus="select($el.id)"
+                            type="button"
+                            :tabindex="isSelected($el.id) ? 0 : -1"
+                            :aria-selected="isSelected($el.id)"
+                            :class="isSelected($el.id) ? 'active' : ''"
+                            class="subnav-link"
+                            role="tab"
+                        >Additional</button>
+                        <button
+                            :id="$id('tab', whichChild($el, $refs.tablist))"
+                            @click="select($el.id)"
+                            @mousedown.prevent
+                            @focus="select($el.id)"
+                            type="button"
+                            :tabindex="isSelected($el.id) ? 0 : -1"
+                            :aria-selected="isSelected($el.id)"
+                            :class="isSelected($el.id) ? 'active' : ''"
+                            class="subnav-link"
+                            role="tab"
+                        >Custom Fields</button>
+                    </nav>
+
+                <div role="tabpanels">
+                    <section
+                        x-show="isSelected($id('tab', whichChild($el, $el.parentElement)))"
+                        :aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
+                        role="tabpanel"
+                        class="space-y-6"
+                    >
 
                 {{-- ======================================== --}}
                 {{-- LEFT COLUMN — Core fields --}}
@@ -405,60 +574,83 @@ new #[Layout('components.layouts.app')] class extends Component {
                         </div>
                     </x-signals.form-section>
 
-                    {{-- Stock --}}
-                    <x-signals.form-section title="Stock">
-                        <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                            <div>
-                                @if($productType === 'sale')
-                                    <flux:select wire:model.live="stockMethod" label="Stock Method" disabled>
-                                        <option value="{{ \App\Enums\StockMethod::Bulk->value }}">{{ \App\Enums\StockMethod::Bulk->label() }}</option>
-                                    </flux:select>
-                                    <p class="text-xs text-[var(--text-muted)] mt-1">Sale products use Bulk stock method only.</p>
-                                @else
-                                    <flux:select wire:model.live="stockMethod" label="Stock Method">
-                                        @foreach($stockMethods as $method)
-                                            <option value="{{ $method->value }}">{{ $method->label() }}</option>
-                                        @endforeach
-                                    </flux:select>
-                                @endif
-                            </div>
-
-                            <flux:select wire:model="allowedStockType" label="Allowed Stock Type">
-                                <option value="1">Rental</option>
-                                <option value="2">Sale</option>
-                                <option value="3">Both</option>
-                            </flux:select>
                         </div>
-                    </x-signals.form-section>
+                    </section>
 
-                    {{-- Identification (after Stock so barcode logic can reference stockMethod) --}}
-                    <x-signals.form-section title="Identification">
-                        <div class="space-y-3">
+                    <section
+                        x-show="isSelected($id('tab', whichChild($el, $el.parentElement)))"
+                        :aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
+                        role="tabpanel"
+                        class="space-y-6"
+                    >
+                        <x-signals.form-section title="Stock">
                             <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                                <flux:input wire:model="sku" label="SKU" />
                                 <div>
-                                    @if($stockMethod == \App\Enums\StockMethod::Serialised->value)
-                                        <flux:input wire:model="barcode" label="Barcode" disabled />
-                                        <p class="text-xs text-[var(--text-muted)] mt-1">Serialised items get individual barcodes at stock level.</p>
+                                    @if($productType === 'sale')
+                                        <flux:select wire:model.live="stockMethod" label="Stock Method" disabled>
+                                            <option value="{{ \App\Enums\StockMethod::Bulk->value }}">{{ \App\Enums\StockMethod::Bulk->label() }}</option>
+                                        </flux:select>
+                                        <p class="text-xs text-(--text-muted) mt-1">Sale products use Bulk stock method only.</p>
                                     @else
-                                        <flux:input wire:model="barcode" label="Barcode" />
+                                        <flux:select wire:model.live="stockMethod" label="Stock Method">
+                                            @foreach($stockMethods as $method)
+                                                <option value="{{ $method->value }}">{{ $method->label() }}</option>
+                                            @endforeach
+                                        </flux:select>
                                     @endif
                                 </div>
+
+                                <flux:select wire:model="allowedStockType" label="Allowed Stock Type">
+                                    <option value="1">Rental</option>
+                                    <option value="2">Sale</option>
+                                    <option value="3">Both</option>
+                                </flux:select>
                             </div>
-                            <flux:input wire:model="weight" label="Weight" type="number" step="any" min="0" />
-                        </div>
-                    </x-signals.form-section>
+                        </x-signals.form-section>
+                    </section>
+
+                    <section
+                        x-show="isSelected($id('tab', whichChild($el, $el.parentElement)))"
+                        :aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
+                        role="tabpanel"
+                        class="space-y-6"
+                    >
+                        <x-signals.form-section title="Identification">
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                                    <flux:input wire:model="sku" label="SKU" />
+                                    <div>
+                                        @if($stockMethod == \App\Enums\StockMethod::Serialised->value)
+                                            <flux:input wire:model="barcode" label="Barcode" disabled />
+                                            <p class="text-xs text-(--text-muted) mt-1">Serialised items get individual barcodes at stock level.</p>
+                                        @else
+                                            <flux:input wire:model="barcode" label="Barcode" />
+                                        @endif
+                                    </div>
+                                </div>
+                                <flux:input wire:model="weight" label="Weight" type="number" step="any" min="0" />
+                            </div>
+                        </x-signals.form-section>
+                    </section>
+
+                    <section
+                        x-show="isSelected($id('tab', whichChild($el, $el.parentElement)))"
+                        :aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
+                        role="tabpanel"
+                        class="space-y-6"
+                    >
+                        <div class="space-y-6">
 
                     {{-- Pricing --}}
                     <x-signals.form-section title="Pricing">
                         <div class="space-y-3">
                             <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                                <flux:input wire:model.number="replacementCharge" label="Replacement Charge" type="number" min="0" />
-                                <flux:input wire:model.number="subRentalPrice" label="Sub-Rental Price" type="number" min="0" />
+                                <flux:input wire:model="replacementCharge" label="Replacement Charge" type="number" min="0" step="0.01" />
+                                <flux:input wire:model="subRentalPrice" label="Sub-Rental Price" type="number" min="0" step="0.01" />
                             </div>
                             <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
                                 @costs
-                                    <flux:input wire:model.number="purchasePrice" label="Purchase Price" type="number" min="0" />
+                                    <flux:input wire:model="purchasePrice" label="Purchase Price" type="number" min="0" step="0.01" />
                                 @endcosts
                                 <flux:input wire:model="bufferPercent" label="Buffer %" type="number" step="any" min="0" max="100" />
                             </div>
@@ -535,63 +727,78 @@ new #[Layout('components.layouts.app')] class extends Component {
                         </div>
                     </x-signals.form-section>
 
-                    {{-- Other --}}
-                    <x-signals.form-section title="Other">
-                        <div class="space-y-3">
-                            {{-- Country of Origin autocomplete --}}
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Country of Origin</label>
-                                <div x-data="{ open: false }" class="relative">
-                                    <div class="flex items-center gap-1">
-                                        @if($this->countryOfOriginId)
-                                            <x-signals.autocomplete-selected :label="$this->selectedCountryName">
-                                                <button type="button" wire:click="$set('countryOfOriginId', null)" class="shrink-0 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">&times;</button>
-                                            </x-signals.autocomplete-selected>
-                                        @else
-                                            <flux:input wire:model.live.debounce.300ms="countrySearch" placeholder="Search countries..." x-on:focus="open = true" x-on:input="open = true" />
-                                        @endif
-                                    </div>
-                                    @if(!$this->countryOfOriginId && count($this->countryResults) > 0)
-                                        <div x-show="open" x-on:click.outside="open = false" class="s-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 50; margin-top: 4px;">
-                                            @foreach($this->countryResults as $country)
-                                                <button type="button" wire:click="selectCountry({{ $country->id }})" x-on:click="open = false" class="s-dropdown-item w-full text-left">{{ $country->name }}</button>
-                                            @endforeach
+                        </div>
+                    </section>
+
+                    <section
+                        x-show="isSelected($id('tab', whichChild($el, $el.parentElement)))"
+                        :aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
+                        role="tabpanel"
+                        class="space-y-6"
+                    >
+                        <div class="space-y-6">
+
+                            {{-- Other --}}
+                            <x-signals.form-section title="Other">
+                                <div class="space-y-3">
+                                    {{-- Country of Origin autocomplete --}}
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Country of Origin</label>
+                                        <div x-data="{ open: false }" class="relative">
+                                            <div class="flex items-center gap-1">
+                                                @if($this->countryOfOriginId)
+                                                    <x-signals.autocomplete-selected :label="$this->selectedCountryName">
+                                                        <button type="button" wire:click="$set('countryOfOriginId', null)" class="shrink-0 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">&times;</button>
+                                                    </x-signals.autocomplete-selected>
+                                                @else
+                                                    <flux:input wire:model.live.debounce.300ms="countrySearch" placeholder="Search countries..." x-on:focus="open = true" x-on:input="open = true" />
+                                                @endif
+                                            </div>
+                                            @if(!$this->countryOfOriginId && count($this->countryResults) > 0)
+                                                <div x-show="open" x-on:click.outside="open = false" class="s-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 50; margin-top: 4px;">
+                                                    @foreach($this->countryResults as $country)
+                                                        <button type="button" wire:click="selectCountry({{ $country->id }})" x-on:click="open = false" class="s-dropdown-item w-full text-left">{{ $country->name }}</button>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endif
+                                    </div>
+
+                                    <x-signals.field label="Tags" :error="$errors->first('tags')">
+                                        <div wire:ignore>
+                                            <x-signals.tag-input :value="$tags" :suggestions="$tagSuggestions" placeholder="Add tag..." x-on:tags-changed="$wire.set('tags', $event.detail)" />
+                                        </div>
+                                    </x-signals.field>
                                 </div>
-                            </div>
+                            </x-signals.form-section>
 
-                            <x-signals.field label="Tags" :error="$errors->first('tags')">
-                                <div wire:ignore>
-                                    <x-signals.tag-input :value="$tags" :suggestions="$tagSuggestions" placeholder="Add tag..." x-on:tags-changed="$wire.set('tags', $event.detail)" />
+                            {{-- Checkboxes --}}
+                            <x-signals.form-section title="Options">
+                                <div class="flex items-center gap-6 pt-1 flex-wrap">
+                                    <flux:checkbox wire:model="isActive" label="Active" />
+                                    <flux:checkbox wire:model="accessoryOnly" label="Accessory Only" />
+                                    <flux:checkbox wire:model="discountable" label="Discountable" />
                                 </div>
-                            </x-signals.field>
+                            </x-signals.form-section>
                         </div>
-                    </x-signals.form-section>
+                    </section>
 
-                    {{-- Checkboxes --}}
-                    <x-signals.form-section title="Options">
-                        <div class="flex items-center gap-6 pt-1 flex-wrap">
-                            <flux:checkbox wire:model="isActive" label="Active" />
-                            <flux:checkbox wire:model="accessoryOnly" label="Accessory Only" />
-                            <flux:checkbox wire:model="discountable" label="Discountable" />
+                    <section
+                        x-show="isSelected($id('tab', whichChild($el, $el.parentElement)))"
+                        :aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
+                        role="tabpanel"
+                        class="space-y-6"
+                    >
+                        <div class="space-y-6">
+                            <x-signals.custom-fields-editor :groupedCustomFields="$groupedCustomFields" />
                         </div>
-                    </x-signals.form-section>
-
-                    {{-- Actions --}}
-                    <div class="flex items-center gap-4 pt-2">
-                        <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Product' }}</flux:button>
-                        <flux:button variant="ghost" href="{{ $isEditing ? route('products.show', $productId) : route('products.index') }}" wire:navigate>Cancel</flux:button>
-                    </div>
+                    </section>
                 </div>
 
-                {{-- ======================================== --}}
-                {{-- RIGHT COLUMN — Custom fields --}}
-                {{-- ======================================== --}}
-                <div class="space-y-6" style="position: sticky; top: 24px;">
-                    <h2 style="font-family: var(--font-display); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); padding-bottom: 4px; border-bottom: 1px solid var(--card-border);">Custom Fields</h2>
-
-                    <x-signals.custom-fields-editor :groupedCustomFields="$groupedCustomFields" />
+                {{-- Form actions remain available regardless of the selected tab. --}}
+                <div class="flex items-center gap-4 pt-2">
+                    <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Product' }}</flux:button>
+                    <flux:button variant="ghost" href="{{ $isEditing ? route('products.show', $productId) : route('products.index') }}" wire:navigate.hover>Cancel</flux:button>
                 </div>
             </div>
         </form>

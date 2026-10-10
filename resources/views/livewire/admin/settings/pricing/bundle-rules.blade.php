@@ -33,7 +33,7 @@ new #[Layout('components.layouts.app')] #[Title('Bundle Rules')] class extends C
     <x-admin.layout group="pricing" title="Bundle Rules" description="Stage 1.5 bundle pricing — fixed or percentage bundles applied at the revenue-group level before discounts.">
         <x-slot:actions>
             @can('pricing.manage')
-                <flux:button variant="primary" href="{{ route('admin.settings.pricing.bundle-rules.create') }}" wire:navigate>
+                <flux:button variant="primary" href="{{ route('admin.settings.pricing.bundle-rules.create') }}" wire:navigate.hover>
                     Add Bundle Rule
                 </flux:button>
             @endcan
@@ -69,7 +69,7 @@ new #[Layout('components.layouts.app')] #[Title('Bundle Rules')] class extends C
                             </td>
                             <td class="text-right">
                                 @can('pricing.manage')
-                                    <a href="{{ route('admin.settings.pricing.bundle-rules.edit', $rule) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.pricing.bundle-rules.edit', $rule) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     <button wire:click="deleteRule({{ $rule->id }})"

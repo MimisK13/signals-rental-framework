@@ -53,7 +53,7 @@
             @endcan
             @can('products.create')
             { group: 'Create', label: 'New Product', icon: 'plus', url: '{{ route('products.create') }}', keywords: 'add create product equipment' },
-            { group: 'Create', label: 'New Product Group', icon: 'plus', url: '{{ route('product-groups.create') }}', keywords: 'add create product group category' },
+            { group: 'Create', label: 'New Product Group', icon: 'plus', url: '{{ route('product-groups.index', ['quickAdd' => 1]) }}', keywords: 'add create product group category' },
             @endcan
             @can('activities.create')
             { group: 'Create', label: 'New Activity', icon: 'plus', url: '{{ route('activities.create') }}', keywords: 'add create activity task call meeting' },

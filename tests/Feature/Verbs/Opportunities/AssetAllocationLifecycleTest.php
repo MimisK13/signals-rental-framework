@@ -3,6 +3,7 @@
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ChangeItemQuantity;
+use App\Actions\Opportunities\ChangeItemReservation;
 use App\Actions\Opportunities\ChangeOpportunityStatus;
 use App\Actions\Opportunities\ClearAssetContainer;
 use App\Actions\Opportunities\ConvertToOrder;
@@ -19,6 +20,7 @@ use App\Actions\Opportunities\SubstituteItem;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\ChangeItemQuantityData;
+use App\Data\Opportunities\ChangeItemReservationData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\QuickAllocateAssetsData;
 use App\Data\Opportunities\QuickPrepareAssetsData;
@@ -139,6 +141,31 @@ it('deallocates an asset: removes the row, decrements quantity_allocated, restor
     expect($demands)->toHaveCount(1)
         ->and($demands->first()->asset_id)->toBeNull()
         ->and((int) $demands->first()->quantity)->toBe(4);
+});
+
+it('preserves an explicit reservation when deallocating a serialized asset', function (): void {
+    $item = makeOrderLine($this->store, $this->product, '4');
+    (new ChangeItemReservation)($item, ChangeItemReservationData::from([
+        'reserved_quantity' => '4',
+    ]));
+    $assets = StockLevel::factory()->serialised()->count(4)->create([
+        'product_id' => $this->product->id,
+        'store_id' => $this->store->id,
+    ]);
+
+    foreach ($assets as $asset) {
+        (new AllocateAsset)($item->refresh(), AllocateAssetData::from(['stock_level_id' => $asset->id]));
+    }
+
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->firstOrFail();
+    (new DeallocateAsset)($assignment);
+
+    $demands = Demand::query()->where('source_id', $item->id)->get();
+    expect($item->refresh()->reserved_quantity)->toBe('4.00')
+        ->and(OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->count())->toBe(3)
+        ->and($demands->whereNotNull('asset_id'))->toHaveCount(3)
+        ->and($demands->whereNull('asset_id')->sole()->quantity)->toBe(1)
+        ->and($demands->sum('quantity'))->toBe(4);
 });
 
 it('rejects reducing a line quantity below its already-allocated asset count', function () {
@@ -275,6 +302,40 @@ it('substitutes an asset: swaps the stock level, preserves status, moves demand 
     // Demand now references B, not A.
     $demands = Demand::query()->where('source_id', $item->id)->whereNotNull('asset_id')->get();
     expect($demands->pluck('asset_id')->all())->toBe([$assetB->id]);
+});
+
+it('preserves explicit reservation when substituting a serialized asset', function (): void {
+    $item = makeOrderLine($this->store, $this->product, '2');
+    (new ChangeItemReservation)($item, ChangeItemReservationData::from([
+        'reserved_quantity' => '1',
+    ]));
+    $assetA = makeSerialisedAsset($this->store, $this->product);
+    $assetB = makeSerialisedAsset($this->store, $this->product);
+
+    (new AllocateAsset)($item->refresh(), AllocateAssetData::from(['stock_level_id' => $assetA->id]));
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole();
+    (new SubstituteAsset)($assignment, SubstituteAssetData::from(['new_stock_level_id' => $assetB->id]));
+
+    expect($item->refresh()->reserved_quantity)->toBe('1.00')
+        ->and($assignment->refresh()->stock_level_id)->toBe($assetB->id)
+        ->and(Demand::query()->where('source_id', $item->id)->whereNotNull('asset_id')->pluck('asset_id')->all())->toBe([$assetB->id])
+        ->and(Demand::query()->where('source_id', $item->id)->sum('quantity'))->toBe(1);
+});
+
+it('rejects substituting an explicitly reserved assignment into another Store', function (): void {
+    $item = makeOrderLine($this->store, $this->product, '1');
+    (new ChangeItemReservation)($item, ChangeItemReservationData::from([
+        'reserved_quantity' => '1',
+    ]));
+    $assetA = makeSerialisedAsset($this->store, $this->product);
+    $otherStore = Store::factory()->create();
+    $assetB = makeSerialisedAsset($otherStore, $this->product);
+
+    (new AllocateAsset)($item->refresh(), AllocateAssetData::from(['stock_level_id' => $assetA->id]));
+    $assignment = OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole();
+
+    expect(fn () => (new SubstituteAsset)($assignment, SubstituteAssetData::from(['new_stock_level_id' => $assetB->id])))
+        ->toThrow(EventNotValid::class);
 });
 
 it('quick-allocates several assets in one atomic commit', function () {

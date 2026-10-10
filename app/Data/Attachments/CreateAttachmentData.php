@@ -20,7 +20,7 @@ class CreateAttachmentData extends Data
     {
         return [
             'file' => ['required', 'file', 'max:20480'],
-            'attachable_type' => ['required', 'string', 'in:Member'],
+            'attachable_type' => ['required', 'string', 'in:Member,Repair,AssetInspection'],
             'attachable_id' => ['required', 'integer'],
             'category' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:1000'],

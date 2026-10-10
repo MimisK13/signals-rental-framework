@@ -74,6 +74,9 @@ class OpportunityItemState extends State
     /** Requested quantity as a decimal string (lossless bc-math). */
     public string $quantity = '0';
 
+    /** Explicit owned-capacity reservation; null preserves legacy semantics. */
+    public ?string $reserved_quantity = null;
+
     /** Price per unit per charge period, in integer minor units. */
     public int $unit_price = 0;
 
@@ -115,6 +118,11 @@ class OpportunityItemState extends State
     public ?CarbonImmutable $starts_at = null;
 
     public ?CarbonImmutable $ends_at = null;
+
+    /** Optional capacity-period override; null inherits from the Opportunity. */
+    public ?CarbonImmutable $planning_starts_at = null;
+
+    public ?CarbonImmutable $planning_ends_at = null;
 
     /** Quantity physically dispatched, as a decimal string. */
     public string $dispatched_quantity = '0';

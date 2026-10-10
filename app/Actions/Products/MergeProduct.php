@@ -7,7 +7,9 @@ use App\Data\Products\ProductData;
 use App\Events\AuditableEvent;
 use App\Models\Accessory;
 use App\Models\Product;
+use App\Models\StockLevel;
 use App\Services\Api\WebhookService;
+use App\Services\Availability\ProductStoreCapacityLock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -28,8 +30,22 @@ class MergeProduct
         }
 
         return DB::transaction(function () use ($primary, $secondary): ProductData {
+            $scopes = StockLevel::query()
+                ->whereIn('product_id', [$primary->id, $secondary->id])
+                ->get(['product_id', 'store_id'])
+                ->map(static fn (StockLevel $stockLevel): array => [
+                    'product_id' => (int) $stockLevel->product_id,
+                    'store_id' => (int) $stockLevel->store_id,
+                ])
+                ->all();
+            app(ProductStoreCapacityLock::class)->acquireMany($scopes);
+
             // Transfer stock levels
             $secondary->stockLevels()->update([
+                'product_id' => $primary->id,
+            ]);
+
+            $secondary->assets()->update([
                 'product_id' => $primary->id,
             ]);
 

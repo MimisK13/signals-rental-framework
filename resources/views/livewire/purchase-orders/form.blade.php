@@ -153,7 +153,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 <section class="w-full">
     <x-signals.page-header :title="$isEditing ? 'Edit Draft Purchase Order' : 'New Draft Purchase Order'">
         <x-slot:breadcrumbs>
-            <a href="{{ route('purchase-orders.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Purchase Orders</a>
+            <a href="{{ route('purchase-orders.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Purchase Orders</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $isEditing ? 'Edit' : 'Create' }}</span>
         </x-slot:breadcrumbs>
@@ -243,7 +243,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <div class="flex gap-2">
                 <flux:button type="submit" variant="primary">Save draft</flux:button>
-                <a href="{{ route('purchase-orders.index') }}" wire:navigate class="s-btn s-btn-secondary">Cancel</a>
+                <a href="{{ route('purchase-orders.index') }}" wire:navigate.hover class="s-btn s-btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

@@ -38,7 +38,7 @@ new #[Layout('components.layouts.app')] #[Title('Rate Definitions')] class exten
 <section class="w-full">
     <x-admin.layout group="pricing" title="Rate Definitions" description="Composable pricing engines used to calculate rental, sale, and service charges.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.rate-definitions.create') }}" wire:navigate>New Rate Definition</flux:button>
+            <flux:button variant="primary" href="{{ route('admin.settings.rate-definitions.create') }}" wire:navigate.hover>New Rate Definition</flux:button>
         </x-slot:actions>
 
         @if($definitions->isEmpty())
@@ -65,7 +65,7 @@ new #[Layout('components.layouts.app')] #[Title('Rate Definitions')] class exten
                         @foreach($definitions as $definition)
                             <tr wire:key="rate-definition-{{ $definition->id }}">
                                 <td class="font-medium">
-                                    <a href="{{ route('admin.settings.rate-definitions.edit', $definition) }}" wire:navigate class="hover:underline">
+                                    <a href="{{ route('admin.settings.rate-definitions.edit', $definition) }}" wire:navigate.hover class="hover:underline">
                                         {{ $definition->name }}
                                     </a>
                                 </td>
@@ -84,7 +84,7 @@ new #[Layout('components.layouts.app')] #[Title('Rate Definitions')] class exten
                                 </td>
                                 <td>
                                     <div class="flex gap-2">
-                                        <a href="{{ route('admin.settings.rate-definitions.edit', $definition) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                        <a href="{{ route('admin.settings.rate-definitions.edit', $definition) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                             <flux:icon.pencil-square class="w-4 h-4" />
                                         </a>
                                         @unless($definition->is_preset)

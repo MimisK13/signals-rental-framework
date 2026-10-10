@@ -7,6 +7,9 @@ use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
+use App\Models\StockLevel;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\Opportunities\AssetAllocated;
 use Illuminate\Support\Carbon;
@@ -23,12 +26,19 @@ class AllocateAsset
 
     public function __invoke(OpportunityItem $item, AllocateAssetData $data): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $item->opportunity);
+        Gate::authorize('access', StockLevel::query()->findOrFail($data->stock_level_id));
 
         $assignmentId = null;
         $allocatedAt = Carbon::now('UTC')->toIso8601String();
 
         $this->commitVerbs(function () use ($item, $data, $allocatedAt, &$assignmentId): void {
+            $stockLevel = StockLevel::query()->findOrFail($data->stock_level_id);
+            $productId = app(OpportunityItemDemandResolver::class)->resolveContext($item)['product_id'];
+            if ($productId !== null) {
+                app(ProductStoreCapacityLock::class)->acquire($productId, $stockLevel->store_id);
+            }
+
             // Allocate the replay-stable small PK and bake it into the event so a
             // truncate + Verbs::replay() rebuild reproduces the identical id.
             $assignmentId = app(SequenceAllocator::class)->next('opportunity_item_assets');

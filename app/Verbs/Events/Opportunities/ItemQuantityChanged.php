@@ -8,6 +8,7 @@ use App\Services\Pricing\DiscountCategoryApplier;
 use App\Verbs\Events\Opportunities\Concerns\PricesOpportunityItems;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityItemState;
+use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;
@@ -36,6 +37,16 @@ class ItemQuantityChanged extends Event
         // read from the projection (validate() runs before handle(), so the rows
         // reflect the pre-mutation state) and replay-safely reproduce.
         $newQuantity = max(0, (int) round((float) $this->quantity));
+
+        if ($state->reserved_quantity !== null) {
+            $this->assert(
+                BigDecimal::of($this->quantity)->isGreaterThanOrEqualTo(BigDecimal::of($state->reserved_quantity)),
+                sprintf(
+                    'Cannot reduce the quantity below the explicitly reserved quantity of %s; reduce the reservation first.',
+                    $state->reserved_quantity,
+                ),
+            );
+        }
 
         $allocatedAssets = OpportunityItemAsset::query()
             ->where('opportunity_item_id', $state->opportunity_item_id)

@@ -1,6 +1,7 @@
 @props([
     'items' => [],
     'layout' => 'horizontal',
+    'dividers' => true,
 ])
 
 @php
@@ -11,14 +12,14 @@
     };
 @endphp
 
-<div {{ $attributes->merge(['class' => "s-data-list {$layoutClass}"]) }}>
+<div {{ $attributes->merge(['class' => "s-data-list {$layoutClass}".($dividers ? '' : ' s-data-list-no-dividers')]) }}>
     @if(count($items) > 0)
         @foreach($items as $item)
             <div class="s-data-list-item">
                 <div class="s-data-list-label">{{ $item['label'] }}</div>
                 <div class="s-data-list-value">
                     @if(!empty($item['href']))
-                        <a href="{{ $item['href'] }}" wire:navigate class="font-semibold hover:underline" style="color: var(--blue); text-decoration: none;">{{ $item['value'] }}</a>
+                        <a href="{{ $item['href'] }}" wire:navigate.hover class="font-semibold hover:underline" style="color: var(--blue); text-decoration: none;">{{ $item['value'] }}</a>
                     @elseif(!empty($item['badge']))
                         <span class="s-badge {{ $item['badge'] }}">{{ $item['value'] }}</span>
                     @elseif(!empty($item['mono']))

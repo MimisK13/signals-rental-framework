@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\MemberStore;
 use App\Models\Opportunity;
+use App\Models\Store;
 use App\Models\User;
 use App\Policies\OpportunityPolicy;
 use Database\Seeders\PermissionSeeder;
@@ -56,6 +58,32 @@ describe('OpportunityPolicy', function () {
             ->and($user->can('create', Opportunity::class))->toBeFalse()
             ->and($user->can('update', $opportunity))->toBeFalse()
             ->and($user->can('delete', $opportunity))->toBeFalse();
+    });
+
+    it('requires access to the Opportunity Store for model authorization', function () {
+        $store = Store::factory()->create();
+        $otherStore = Store::factory()->create();
+        $opportunity = Opportunity::factory()->create(['store_id' => $store->id]);
+        $user = User::factory()->create();
+        $user->givePermissionTo(['opportunities.view', 'opportunities.edit']);
+
+        MemberStore::create([
+            'member_id' => $user->member_id,
+            'store_id' => $otherStore->id,
+            'created_at' => now(),
+        ]);
+
+        expect($user->can('view', $opportunity))->toBeFalse()
+            ->and($user->can('update', $opportunity))->toBeFalse();
+
+        MemberStore::create([
+            'member_id' => $user->member_id,
+            'store_id' => $store->id,
+            'created_at' => now(),
+        ]);
+
+        expect($user->can('view', $opportunity))->toBeTrue()
+            ->and($user->can('update', $opportunity))->toBeTrue();
     });
 
     it('uses opportunities.create as the manage permission', function () {

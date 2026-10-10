@@ -31,7 +31,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Categories')] class extends
 <section class="w-full">
     <x-admin.layout group="tax" title="Tax Categories" description="Product tax treatment classes (standard, reduced, zero, exempt).">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.tax.categories.create') }}" wire:navigate>
+            <flux:button variant="primary" href="{{ route('admin.settings.tax.categories.create') }}" wire:navigate.hover>
                 Add Tax Category
             </flux:button>
         </x-slot:actions>
@@ -63,7 +63,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Categories')] class extends
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('admin.settings.tax.categories.edit', $category) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                <a href="{{ route('admin.settings.tax.categories.edit', $category) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                     <flux:icon.pencil-square class="w-4 h-4" />
                                 </a>
                                 <button wire:click="deleteCategory({{ $category->id }})"

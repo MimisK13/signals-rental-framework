@@ -94,7 +94,7 @@ class ProductSearchService
      * Embed this once in the editor (or fetch it once) and hand it to MiniSearch
      * via `addAll()`. Keeping it lean keeps the client index small.
      *
-     * @return array<int, array{id: int, name: string, sku: string|null, default_rate: string|null, accessories: array<int, array{id: int, name: string, sku: string|null, ratio: string, included: bool, zero_priced: bool}>, image_url: string|null, initials: string}>
+     * @return array<int, array{id: int, name: string, sku: string|null, default_rate: string|null, accessories: array<int, array{id: int, name: string, sku: string|null, ratio: string, included: bool, zero_priced: bool}>, is_combination: bool, image_url: string|null, initials: string}>
      */
     public function catalogueIndex(?int $storeId = null): array
     {
@@ -203,6 +203,7 @@ class ProductSearchService
      */
     private function eagerLoadAccessories(EloquentCollection $products): void
     {
+        $products->load('components');
         $products->load(['accessories' => function ($query): void {
             $query->orderBy('sort_order')->with('accessoryProduct');
         }]);
@@ -220,10 +221,18 @@ class ProductSearchService
             sku: $product->sku,
             default_rate: $this->defaultRate($product, $storeId),
             accessories: $this->accessories($product),
+            is_combination: $this->isCombination($product),
             availability: $withAvailability ? $this->availabilityStatus($product, $storeId) : null,
             image_url: $this->fileService->signedUrlOrNull($product->icon_thumb_url),
             initials: $this->productInitials($product->name),
         );
+    }
+
+    private function isCombination(Product $product): bool
+    {
+        return $product->relationLoaded('components')
+            ? $product->components->isNotEmpty()
+            : $product->components()->exists();
     }
 
     private function productInitials(string $name): string

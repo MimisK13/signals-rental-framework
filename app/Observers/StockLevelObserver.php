@@ -6,8 +6,10 @@ use App\Enums\AvailabilityEventType;
 use App\Jobs\RecalculateAvailabilityJob;
 use App\Models\AvailabilityEvent;
 use App\Models\Product;
+use App\Models\Repair;
 use App\Models\StockLevel;
 use App\Services\Availability\RecalculationPipeline;
+use App\Services\Availability\RepairDemandResolver;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -60,12 +62,20 @@ class StockLevelObserver
 
     public function created(StockLevel $stockLevel): void
     {
+        $this->syncRepairs($stockLevel->asset_id);
         $this->dispatchRecalculation((int) $stockLevel->product_id, (int) $stockLevel->store_id);
         $this->log($stockLevel, 'created');
     }
 
     public function updated(StockLevel $stockLevel): void
     {
+        if ($stockLevel->wasChanged('asset_id')) {
+            $this->syncRepairs($stockLevel->getOriginal('asset_id'));
+            $this->syncRepairs($stockLevel->asset_id);
+        } elseif ($stockLevel->asset_id !== null && $this->touchesQuantity($stockLevel)) {
+            $this->syncRepairs($stockLevel->asset_id);
+        }
+
         if (! $this->touchesQuantity($stockLevel)) {
             return;
         }
@@ -86,8 +96,23 @@ class StockLevelObserver
 
     public function deleted(StockLevel $stockLevel): void
     {
+        $this->syncRepairs($stockLevel->getOriginal('asset_id') ?? $stockLevel->asset_id);
         $this->dispatchRecalculation((int) $stockLevel->product_id, (int) $stockLevel->store_id);
         $this->log($stockLevel, 'deleted');
+    }
+
+    private function syncRepairs(mixed $assetId): void
+    {
+        if ($assetId === null) {
+            return;
+        }
+
+        Repair::query()
+            ->where('asset_id', (int) $assetId)
+            ->get()
+            ->each(function (Repair $repair): void {
+                app(RepairDemandResolver::class)->syncDemands($repair);
+            });
     }
 
     /**

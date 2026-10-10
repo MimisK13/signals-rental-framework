@@ -3,6 +3,7 @@
 use App\Services\SettingsService;
 
 if (! function_exists('settings')) {
+
     /**
      * Get a setting value or the SettingsService instance.
      *

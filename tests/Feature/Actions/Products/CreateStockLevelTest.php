@@ -109,3 +109,17 @@ it('requires stock.adjust permission', function () {
 
     (new CreateStockLevel)($data);
 })->throws(AuthorizationException::class);
+
+it('requires access to the target Store', function (): void {
+    $user = User::factory()->create();
+    $user->givePermissionTo('stock.adjust');
+    $this->actingAs($user);
+    $product = Product::factory()->create();
+    $store = Store::factory()->create();
+
+    (new CreateStockLevel)(CreateStockLevelData::from([
+        'product_id' => $product->id,
+        'store_id' => $store->id,
+        'quantity_held' => 1,
+    ]));
+})->throws(AuthorizationException::class);

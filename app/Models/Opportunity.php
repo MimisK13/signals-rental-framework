@@ -55,6 +55,8 @@ use Illuminate\Support\Carbon;
  * @property bool $has_shortage
  * @property Carbon|null $starts_at
  * @property Carbon|null $ends_at
+ * @property Carbon|null $planning_starts_at
+ * @property Carbon|null $planning_ends_at
  * @property Carbon|null $charge_starts_at
  * @property Carbon|null $charge_ends_at
  * @property Carbon|null $prep_starts_at
@@ -89,6 +91,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $source_opportunity_id
  * @property int|null $rating
  * @property bool $invoiced
+ * @property int $reservation_priority
  * @property-read bool $pricing_locked
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -127,6 +130,8 @@ class Opportunity extends Model implements HasSchema
         'owned_by',
         'starts_at',
         'ends_at',
+        'planning_starts_at',
+        'planning_ends_at',
         'charge_starts_at',
         'charge_ends_at',
         'prep_starts_at',
@@ -160,6 +165,7 @@ class Opportunity extends Model implements HasSchema
         'collection_address_id',
         'source_opportunity_id',
         'rating',
+        'reservation_priority',
         'currency_code',
         'exchange_rate',
         'exchange_rate_locked',
@@ -195,6 +201,8 @@ class Opportunity extends Model implements HasSchema
             'has_alternatives' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'planning_starts_at' => 'datetime',
+            'planning_ends_at' => 'datetime',
             'charge_starts_at' => 'datetime',
             'charge_ends_at' => 'datetime',
             'prep_starts_at' => 'datetime',
@@ -226,6 +234,7 @@ class Opportunity extends Model implements HasSchema
             'collection_address_id' => 'integer',
             'source_opportunity_id' => 'integer',
             'rating' => 'integer',
+            'reservation_priority' => 'integer',
             'exchange_rate' => 'decimal:10',
             'exchange_rate_locked' => 'boolean',
             'tax_locked' => 'boolean',

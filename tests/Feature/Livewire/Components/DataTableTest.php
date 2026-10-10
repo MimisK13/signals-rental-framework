@@ -208,6 +208,27 @@ it('paginates results', function () {
         ->assertViewHas('items', fn ($items) => $items->count() === 10 && $items->total() === $total);
 });
 
+it('keeps select all aligned with the current page after pagination', function () {
+    Member::factory()->count(25)->create();
+
+    $component = Livewire::test(DataTable::class, [
+        'columns' => memberColumns(),
+        'model' => Member::class,
+        'perPage' => 10,
+    ])->call('toggleSelectAll');
+
+    $pageOneIds = $component->viewData('items')->pluck('id')->map(fn (int $id): int => $id)->values()->all();
+    expect($component->get('selected'))->toBe($pageOneIds);
+
+    $component->call('gotoPage', 2);
+    $pageTwoIds = $component->viewData('items')->pluck('id')->map(fn (int $id): int => $id)->values()->all();
+    expect($component->get('selected'))->toBe($pageTwoIds);
+
+    $component->call('gotoPage', 3);
+    $pageThreeIds = $component->viewData('items')->pluck('id')->map(fn (int $id): int => $id)->values()->all();
+    expect($component->get('selected'))->toBe($pageThreeIds);
+});
+
 it('applies default sort', function () {
     $zebra = Member::factory()->create(['name' => 'DefaultSort Zebra']);
     $alpha = Member::factory()->create(['name' => 'DefaultSort Alpha']);

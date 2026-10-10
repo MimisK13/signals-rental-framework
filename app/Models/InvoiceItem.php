@@ -10,6 +10,7 @@ use Database\Factories\InvoiceItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Read-optimised projection of an invoice line item.
@@ -104,6 +105,14 @@ class InvoiceItem extends Model implements HasSchema
     public function opportunityItem(): BelongsTo
     {
         return $this->belongsTo(OpportunityItem::class);
+    }
+
+    /**
+     * @return HasMany<CreditNoteItem, $this>
+     */
+    public function creditNoteItems(): HasMany
+    {
+        return $this->hasMany(CreditNoteItem::class);
     }
 
     /**

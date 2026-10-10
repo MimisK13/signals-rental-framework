@@ -7,7 +7,8 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.app')] class extends Component {
+new #[Layout('components.layouts.app')] class extends Component
+{
     public Product $product;
 
     public float $availableQuantity = 0.0;
@@ -48,7 +49,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         {{-- ============================================================ --}}
         {{-- LEFT SIDEBAR --}}
         {{-- ============================================================ --}}
-        <div class="space-y-6">
+        <div class="flex flex-col space-y-6">
             {{-- Quick Stats --}}
             <x-signals.panel title="Quick Stats">
                 <x-signals.data-list layout="vertical">
@@ -76,12 +77,14 @@ new #[Layout('components.layouts.app')] class extends Component {
             {{-- Product Group --}}
             <x-signals.panel title="Product Group">
                 @if($product->productGroup)
-                    <a href="{{ route('products.index', ['filters' => ['product_group_id' => $product->productGroup->id]]) }}" wire:navigate class="flex items-center gap-2 hover:underline" style="color: var(--blue-ink);">
+                    <a href="{{ route('products.index', ['filters' => ['product_group_id' => $product->productGroup->id]]) }}" wire:navigate.hover class="flex items-center gap-2 hover:underline" style="color: var(--blue-ink);">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-4"><path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"/></svg>
                         <span class="text-sm font-medium" style="font-family: var(--font-display);">{{ $product->productGroup->name }}</span>
                     </a>
                 @else
-                    <p class="text-sm text-[var(--text-muted)]">No group assigned.</p>
+                    <p class="text-sm text-(--text-muted)">
+                        No group assigned.
+                    </p>
                 @endif
             </x-signals.panel>
         </div>
@@ -89,7 +92,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         {{-- ============================================================ --}}
         {{-- CENTER CONTENT --}}
         {{-- ============================================================ --}}
-        <div class="space-y-6">
+        <div class="flex flex-col space-y-6">
             {{-- Description --}}
             @if($product->description)
                 <x-signals.panel title="Description">
@@ -98,7 +101,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             @endif
 
             {{-- Product Details --}}
-            <x-signals.panel title="Product Details">
+            <x-signals.panel title="Product Details" class="order-2">
                 <div class="s-data-list s-data-list-grid">
                     <div class="s-data-list-item">
                         <div class="s-data-list-label">Product Type</div>
@@ -148,7 +151,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             </x-signals.panel>
 
             @if($isSerialised)
-                <x-signals.panel title="Container Configuration">
+                <x-signals.panel title="Container Configuration" class="order-4">
                     @if($product->isContainerable())
                         <x-signals.data-list layout="horizontal" :items="[
                             ['label' => 'Containerable', 'value' => 'Yes'],
@@ -159,14 +162,14 @@ new #[Layout('components.layouts.app')] class extends Component {
                             ['label' => 'Template Slots', 'value' => (string) count($product->container_template['slots'] ?? [])],
                         ]" />
                         <div class="mt-3">
-                            <a href="{{ route('products.container-config', $product) }}" wire:navigate class="text-sm font-medium" style="color: var(--blue-ink);">
+                            <a href="{{ route('products.container-config', $product) }}" wire:navigate.hover class="text-sm font-medium" style="color: var(--blue-ink);">
                                 Edit container configuration →
                             </a>
                         </div>
                     @else
                         <p class="text-sm text-[var(--text-muted)]">This product is not configured as a container housing.</p>
                         <div class="mt-3">
-                            <a href="{{ route('products.container-config', $product) }}" wire:navigate class="text-sm font-medium" style="color: var(--blue-ink);">
+                            <a href="{{ route('products.container-config', $product) }}" wire:navigate.hover class="text-sm font-medium" style="color: var(--blue-ink);">
                                 Configure container settings →
                             </a>
                         </div>
@@ -174,46 +177,43 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </x-signals.panel>
             @endif
 
-            {{-- Tax & Revenue + Pricing side by side --}}
-            <div class="grid grid-cols-2 gap-6 max-md:grid-cols-1">
-                {{-- Tax & Revenue --}}
-                <x-signals.panel title="Tax & Revenue">
-                    <x-signals.data-list layout="horizontal" :items="[
+            {{-- Tax & Revenue --}}
+            <x-signals.panel title="Tax & Revenue" class="order-5">
+                <x-signals.data-list layout="horizontal" :items="[
                         ['label' => 'Tax Class', 'value' => $product->taxClass?->name ?? 'Not set'],
                         ['label' => 'Purchase Tax Class', 'value' => $product->purchaseTaxClass?->name ?? 'Not set'],
                         ['label' => 'Rental Revenue Group', 'value' => $product->rentalRevenueGroup?->name ?? 'Not set'],
                         ['label' => 'Sale Revenue Group', 'value' => $product->saleRevenueGroup?->name ?? 'Not set'],
                         ['label' => 'Sub-Rental Cost Group', 'value' => $product->subRentalCostGroup?->name ?? 'Not set'],
                         ['label' => 'Purchase Cost Group', 'value' => $product->purchaseCostGroup?->name ?? 'Not set'],
-                    ]" />
-                </x-signals.panel>
+                ]" />
+            </x-signals.panel>
 
                 {{-- Pricing --}}
-                <x-signals.panel title="Pricing">
-                    <x-signals.stat-grid style="grid-template-columns: repeat(3, 1fr);">
-                        <x-signals.stat-card
-                            color="green"
-                            label="Sub-Rental Price"
+            <x-signals.panel title="Pricing" class="order-3">
+                <x-signals.stat-grid style="grid-template-columns: repeat(3, 1fr);">
+                    <x-signals.stat-card
+                        color="green"
+                        label="Sub-Rental Price"
                             :value="$product->sub_rental_price ? $formatter->money($product->sub_rental_price) : '—'"
-                        />
+                    />
                         @costs
-                            <x-signals.stat-card
-                                color="blue"
-                                label="Purchase Price"
-                                :value="$product->purchase_price ? $formatter->money($product->purchase_price) : '—'"
-                            />
-                        @endcosts
                         <x-signals.stat-card
-                            color="amber"
-                            label="Replacement Charge"
-                            :value="$product->replacement_charge ? $formatter->money($product->replacement_charge) : '—'"
+                            color="blue"
+                            label="Purchase Price"
+                                :value="$product->purchase_price ? $formatter->money($product->purchase_price) : '—'"
                         />
-                    </x-signals.stat-grid>
-                </x-signals.panel>
-            </div>
+                        @endcosts
+                    <x-signals.stat-card
+                        color="amber"
+                        label="Replacement Charge"
+                            :value="$product->replacement_charge ? $formatter->money($product->replacement_charge) : '—'"
+                    />
+                </x-signals.stat-grid>
+            </x-signals.panel>
 
             {{-- Activity Timeline (placeholder) --}}
-            <x-signals.panel title="Activity Timeline">
+            <x-signals.panel title="Activity Timeline" class="order-6">
                 <div class="py-8 text-center text-sm text-[var(--text-muted)]">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-2 size-8 opacity-30"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
                     Activity timeline will appear here as product events are logged.
@@ -243,7 +243,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         @endforeach
                     </div>
                 @else
-                    <p class="text-sm text-[var(--text-muted)]">No tags assigned.</p>
+                    <p class="text-sm text-(--text-muted)">No tags assigned.</p>
                 @endif
             </x-signals.panel>
         </div>

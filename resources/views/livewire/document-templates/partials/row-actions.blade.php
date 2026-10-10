@@ -1,5 +1,5 @@
 @can('update', $item)
-    {{-- Plain load: the editor uses a different layout; cross-layout wire:navigate breaks CodeMirror mounting. --}}
+    {{-- Plain load: the editor uses a different layout; cross-layout wire:navigate.hover breaks CodeMirror mounting. --}}
     <a href="{{ route('admin.document-templates.edit', $item) }}" class="s-dropdown-item" style="text-decoration: none;">
         <flux:icon.pencil-square class="!size-3.5 shrink-0" />
         Edit

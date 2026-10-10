@@ -174,7 +174,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     <x-signals.page-header :title="$virtualStockIntake->number">
         <x-slot:breadcrumbs>
-            <a href="{{ route('virtual-stock.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Virtual Stock</a>
+            <a href="{{ route('virtual-stock.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Virtual Stock</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $virtualStockIntake->number }}</span>
         </x-slot:breadcrumbs>
@@ -301,7 +301,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         @foreach($profitAndLoss['rows'] as $row)
                                             <tr wire:key="pl-row-{{ $row['opportunity_id'] }}">
                                                 <td>
-                                                    <a href="{{ route('opportunities.costs', $row['opportunity_id']) }}" wire:navigate class="text-[var(--link)] hover:underline">
+                                                    <a href="{{ route('opportunities.costs', $row['opportunity_id']) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">
                                                         {{ $row['opportunity_subject'] }}
                                                     </a>
                                                 </td>

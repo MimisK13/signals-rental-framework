@@ -250,11 +250,16 @@ class ContainerDispatchValidator
             }
 
             $productId = (int) $item->itemable_id;
-            $grouped[$productId] ??= collect();
+            if (! isset($grouped[$productId])) {
+                $grouped[$productId] = new Collection([$item]);
+
+                continue;
+            }
+
             $grouped[$productId]->push($item);
         }
 
-        return collect($grouped);
+        return new Collection($grouped);
     }
 
     /**

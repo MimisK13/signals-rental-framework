@@ -194,6 +194,13 @@ class User extends Authenticatable implements HasSchema
         return array_values(array_unique(array_filter($storeIds)));
     }
 
+    public function canAccessStore(?int $storeId): bool
+    {
+        $storeIds = $this->accessibleStoreIds();
+
+        return $storeIds === null || ($storeId !== null && in_array($storeId, $storeIds, true));
+    }
+
     /**
      * @return BelongsTo<Member, $this>
      */

@@ -5,6 +5,7 @@
     'options' => [],
     'searchable' => true,
     'clearable' => true,
+    'inputId' => null,
 ])
 
 <div
@@ -68,6 +69,7 @@
 >
     <input type="hidden" name="{{ $name }}" x-bind:value="value">
     <input
+        @if($inputId) id="{{ $inputId }}" @endif
         type="text"
         class="s-combobox-input"
         x-ref="input"

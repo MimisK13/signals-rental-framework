@@ -7,6 +7,8 @@ use App\Data\Opportunities\BulkDispatchData;
 use App\Data\Opportunities\OpportunityItemData;
 use App\Enums\ShortageDispatchPolicy;
 use App\Models\OpportunityItem;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\Shortages\DispatchShortageGate;
 use App\ValueObjects\DispatchGateResult;
 use App\Verbs\Events\Opportunities\BulkQuantityDispatched;
@@ -33,16 +35,25 @@ class DispatchBulkQuantity
 
     public function __invoke(OpportunityItem $item, BulkDispatchData $data): OpportunityItemData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $item->opportunity);
 
         $this->commitVerbs(function () use ($item, $data): void {
-            // §7.4 dispatch gate — Block throws (rolling back); Warn/Allow proceed.
-            $this->gateResult = app(DispatchShortageGate::class)->enforceForItem($item);
+            $lockedItem = OpportunityItem::query()
+                ->whereKey($item->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $context = app(OpportunityItemDemandResolver::class)->resolveContext($lockedItem);
+            if ($context['product_id'] !== null && $context['store_id'] !== null) {
+                app(ProductStoreCapacityLock::class)->acquire($context['product_id'], $context['store_id']);
+            }
 
-            $quantity = $this->gateResult->clampBulkDispatchQuantity($item, $data->quantity);
+            // §7.4 dispatch gate — Block throws (rolling back); Warn/Allow proceed.
+            $this->gateResult = app(DispatchShortageGate::class)->enforceForItem($lockedItem);
+
+            $quantity = $this->gateResult->clampBulkDispatchQuantity($lockedItem, $data->quantity);
 
             BulkQuantityDispatched::fire(
-                opportunity_item_id: $item->state_id,
+                opportunity_item_id: $lockedItem->state_id,
                 quantity: $quantity,
                 dispatched_by: $data->dispatched_by,
             );

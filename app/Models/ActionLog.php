@@ -29,6 +29,7 @@ class ActionLog extends Model implements HasSchema
         'user_agent',
         'metadata',
         'verb_event_id',
+        'created_at',
     ];
 
     /**

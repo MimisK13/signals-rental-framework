@@ -24,6 +24,8 @@ use App\Actions\Products\CreateStockLevel;
 use App\Actions\PurchaseOrders\CreatePurchaseOrder;
 use App\Actions\PurchaseOrders\ReceivePurchaseOrder;
 use App\Actions\PurchaseOrders\SendPurchaseOrder;
+use App\Actions\SupplierBills\CreateSupplierBill;
+use App\Actions\SupplierBills\IssueSupplierBill;
 use App\Actions\SupplierCosts\CreateSupplierCost;
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
 use App\Data\Containers\CreateContainerData;
@@ -44,6 +46,7 @@ use App\Data\PurchaseOrders\CreatePurchaseOrderData;
 use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
 use App\Data\SupplierCosts\CreateSupplierCostData;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Enums\ContainerStatus;
 use App\Enums\DiscountRuleScope;
 use App\Enums\MembershipType;
 use App\Enums\OpportunityItemType;
@@ -65,6 +68,7 @@ use App\Models\ProductSupplierCost;
 use App\Models\PurchaseOrder;
 use App\Models\StockLevel;
 use App\Models\Store;
+use App\Models\SupplierBill;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;
 use App\Models\TaxCategory;
@@ -157,39 +161,39 @@ trait SeedsDemoPhase4
 
         $variants = [
             [
-                'name' => 'Demo - Berlin Events GmbH',
+                'name' => 'Berlin Events GmbH',
                 'tax_number' => 'DE123456789',
                 'tax_zone_id' => $tax['eu']->id,
                 'buyer_type' => TaxBuyerType::Business,
                 'tax_exempt' => false,
-                // Demo fixture: pre-validated EU B2B VAT for offline reverse-charge demos (no live VIES).
+                // Development fixture: pre-validated EU B2B VAT for offline reverse-charge testing (no live VIES).
                 'demo_validated_vat' => true,
             ],
             [
-                'name' => 'Demo - Amsterdam Trade BV',
+                'name' => 'Amsterdam Trade BV',
                 'tax_number' => 'NL123456789B01',
                 'tax_zone_id' => $tax['eu']->id,
                 'buyer_type' => TaxBuyerType::Business,
                 'tax_exempt' => false,
-                // Left genuinely pending so the VIES queue flow remains demoable.
+                // Left genuinely pending so the VIES queue flow remains testable.
                 'leave_vat_pending' => true,
             ],
             [
-                'name' => 'Demo - Riverside Community Trust',
+                'name' => 'Riverside Community Trust',
                 'tax_number' => null,
                 'tax_zone_id' => $tax['uk']->id,
                 'buyer_type' => TaxBuyerType::Charity,
                 'tax_exempt' => false,
             ],
             [
-                'name' => 'Demo - Exempt Arts Foundation',
+                'name' => 'Exempt Arts Foundation',
                 'tax_number' => null,
                 'tax_zone_id' => $tax['uk']->id,
                 'buyer_type' => TaxBuyerType::Business,
                 'tax_exempt' => true,
             ],
             [
-                'name' => 'Demo - Pacific Events LLC',
+                'name' => 'Pacific Events LLC',
                 'tax_number' => null,
                 'tax_zone_id' => $tax['world']->id,
                 'buyer_type' => TaxBuyerType::Business,
@@ -260,15 +264,40 @@ trait SeedsDemoPhase4
         }
 
         $this->actingAsDemoOwner(function () use ($store): void {
-            $supplierA = $this->firstOrCreateDemoSupplier('Demo - Supplier Audio Ltd');
-            $supplierB = $this->firstOrCreateDemoSupplier('Demo - Supplier Lighting Co');
+            $supplierA = $this->firstOrCreateDemoSupplier('Supplier Audio Ltd');
+            $supplierB = $this->firstOrCreateDemoSupplier('Supplier Lighting Co');
 
-            $mic = Product::query()->where('sku', 'DEMO-AUD-EW100')->first();
-            $movingHead = Product::query()->where('sku', 'DEMO-LMH-BEAM230')->first();
-            $parCan = Product::query()->where('sku', 'DEMO-LGN-PARRGBW')->first();
+            $mic = Product::query()->where('sku', 'AUD-EW100')->first();
+            $sr2050 = Product::query()->where('sku', 'AUD-SR2050')->first();
+            $sr2050Case = Product::query()->where('sku', 'CAS-SR2050')->first();
+            $movingHead = Product::query()->where('sku', 'LMH-BEAM230')->first();
+            $parCan = Product::query()->where('sku', 'LGN-PARRGBW')->first();
 
             if ($mic !== null) {
                 $this->firstOrCreateSupplierCost($mic, $supplierA, $store, 18000, preferred: true);
+            }
+
+            if ($sr2050 !== null) {
+                $this->firstOrCreateSupplierCost($sr2050, $supplierA, $store, 125000, preferred: true);
+            }
+
+            if ($sr2050Case !== null) {
+                $this->firstOrCreateSupplierCost($sr2050Case, $supplierA, $store, 42000, preferred: true);
+            }
+
+            if ($sr2050 !== null && $sr2050Case !== null) {
+                $sr2050Case->forceFill([
+                    'is_containerable' => true,
+                    'container_template' => [
+                        'slots' => [
+                            ['product_id' => $sr2050->id, 'quantity' => 1, 'binding' => 'fixed'],
+                        ],
+                        'max_items' => 1,
+                    ],
+                ])->save();
+
+                $this->seedDemoSerialisedAssets($sr2050Case, $store, 'SR2050-CASE', 2);
+                $this->seedDemoSerialisedAssets($sr2050, $store, 'SR2050', 2);
             }
 
             if ($movingHead !== null) {
@@ -287,8 +316,8 @@ trait SeedsDemoPhase4
                     ],
                 ])->save();
 
-                $this->seedDemoSerialisedAssets($movingHead, $store, 'DEMO-MH', 2);
-                $this->seedDemoSerialisedAssets($parCan, $store, 'DEMO-PAR', 4);
+                $this->seedDemoSerialisedAssets($movingHead, $store, 'MH', 2);
+                $this->seedDemoSerialisedAssets($parCan, $store, 'PAR', 4);
             }
         });
     }
@@ -300,7 +329,7 @@ trait SeedsDemoPhase4
     private function applyDeferredDemoProductTaxCategories(): void
     {
         $reducedCategory = TaxCategory::query()->where('slug', 'reduced')->first();
-        $gaffer = Product::query()->where('sku', 'DEMO-CON-GAF50')->first();
+        $gaffer = Product::query()->where('sku', 'CON-GAF50')->first();
 
         if ($gaffer === null || $reducedCategory === null) {
             return;
@@ -356,7 +385,7 @@ trait SeedsDemoPhase4
         }
 
         $defaultStore = $stores->first();
-        $scarceSkus = ['DEMO-STG-DECK2X1', 'DEMO-VID-LED55'];
+        $scarceSkus = ['STG-DECK2X1', 'VID-LED55'];
 
         $this->actingAsDemoOwner(function () use ($stores, $defaultStore, $scarceSkus): void {
             $products = Product::query()
@@ -385,7 +414,7 @@ trait SeedsDemoPhase4
                 $targetStores = $isScarce ? collect([$defaultStore]) : $stores;
 
                 foreach ($targetStores as $store) {
-                    $prefix = sprintf('DEMO-%s-S%d', strtoupper(str_replace('DEMO-', '', (string) $product->sku)), $store->id);
+                    $prefix = sprintf('%s-S%d', strtoupper((string) $product->sku), $store->id);
                     $this->seedDemoSerialisedAssets($product, $store, $prefix, $assetCount);
                 }
             }
@@ -481,18 +510,18 @@ trait SeedsDemoPhase4
     private function seedExtendedDemoOpportunityBlueprints(): array
     {
         return [
-            ['DEMO-OPP-0001', 'Summer Festival Main Stage', 'order', null],
-            ['DEMO-OPP-0002', 'Corporate AGM AV Package', 'order', null],
-            ['DEMO-OPP-0003', 'Product Launch Lighting Rig', 'quotation', 'surcharge'],
-            ['DEMO-OPP-0004', 'Awards Dinner Sound System', 'quotation', 'proforma'],
-            ['DEMO-OPP-0005', 'Conference Breakout Rooms', 'quotation', 'deposit'],
-            ['DEMO-OPP-0006', 'Wedding Marquee Hire', 'draft', null],
-            ['DEMO-OPP-0008', 'Charity Gala Staging', 'order', 'partial_pay'],
-            ['DEMO-OPP-0009', 'Exhibition Build & Strike', 'order', 'dispatched'],
-            ['DEMO-OPP-0010', 'Outdoor Concert Rig', 'order', 'returned'],
-            ['DEMO-OPP-0011', 'Fixed-Price Festival Package', 'order', 'deal_price'],
-            ['DEMO-OPP-0012', 'Volume Discount Showcase', 'order', 'quantity_break'],
-            ['DEMO-OPP-0013', 'Arena Tour Production Package', 'order', 'overdue'],
+            ['OPP-0001', 'Summer Festival Main Stage', 'order', null],
+            ['OPP-0002', 'Corporate AGM AV Package', 'order', null],
+            ['OPP-0003', 'Product Launch Lighting Rig', 'quotation', 'surcharge'],
+            ['OPP-0004', 'Awards Dinner Sound System', 'quotation', 'proforma'],
+            ['OPP-0005', 'Conference Breakout Rooms', 'quotation', 'deposit'],
+            ['OPP-0006', 'Wedding Marquee Hire', 'draft', null],
+            ['OPP-0008', 'Charity Gala Staging', 'order', 'partial_pay'],
+            ['OPP-0009', 'Exhibition Build & Strike', 'order', 'dispatched'],
+            ['OPP-0010', 'Outdoor Concert Rig', 'order', 'returned'],
+            ['OPP-0011', 'Fixed-Price Festival Package', 'order', 'deal_price'],
+            ['OPP-0012', 'Volume Discount Showcase', 'order', 'quantity_break'],
+            ['OPP-0013', 'Arena Tour Production Package', 'order', 'overdue'],
         ];
     }
 
@@ -513,13 +542,17 @@ trait SeedsDemoPhase4
 
     private function applyDemoSurchargeGroup(Opportunity $opportunity): void
     {
+        Surcharge::query()
+            ->where('name', 'Demo Weekend Loading')
+            ->update(['name' => 'Weekend Loading']);
+
         $group = SurchargeGroup::query()->firstOrCreate(
-            ['name' => 'Demo - Weekend Delivery'],
-            ['description' => 'Demo surcharge group for UAT.', 'is_default' => false, 'is_active' => true, 'sort_order' => 99],
+            ['name' => 'Weekend Delivery'],
+            ['description' => 'Weekend delivery surcharge group for UAT.', 'is_default' => false, 'is_active' => true, 'sort_order' => 99],
         );
 
         Surcharge::query()->firstOrCreate(
-            ['surcharge_group_id' => $group->id, 'name' => 'Demo Weekend Loading'],
+            ['surcharge_group_id' => $group->id, 'name' => 'Weekend Loading'],
             [
                 'percent_value' => '7.50',
                 'fixed_value_minor' => null,
@@ -540,7 +573,7 @@ trait SeedsDemoPhase4
         $opportunity->refresh();
 
         if ($opportunity->hasLocks()) {
-            (new UnlockOpportunity)($opportunity, 'Demo data seeding');
+            (new UnlockOpportunity)($opportunity, 'Development data seeding');
             $opportunity->refresh();
         }
 
@@ -598,18 +631,18 @@ trait SeedsDemoPhase4
         $this->actingAsDemoOwner(function (): void {
             $demoTag = [self::DEMO_TAG];
 
-            $this->seedDemoInvoiceIfMissing('DEMO-INV-DRAFT', 'DEMO-OPP-0001', function (Opportunity $opportunity) use ($demoTag): void {
+            $this->seedDemoInvoiceIfMissing('INV-DRAFT', 'OPP-0001', function (Opportunity $opportunity) use ($demoTag): void {
                 (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
                     'opportunity_id' => $opportunity->id,
-                    'reference' => 'DEMO-INV-DRAFT',
+                    'reference' => 'INV-DRAFT',
                     'tag_list' => $demoTag,
                 ]));
             });
 
-            $this->seedDemoInvoiceIfMissing('DEMO-INV-PAID', 'DEMO-OPP-0002', function (Opportunity $opportunity) use ($demoTag): void {
+            $this->seedDemoInvoiceIfMissing('INV-PAID', 'OPP-0002', function (Opportunity $opportunity) use ($demoTag): void {
                 $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
                     'opportunity_id' => $opportunity->id,
-                    'reference' => 'DEMO-INV-PAID',
+                    'reference' => 'INV-PAID',
                     'tag_list' => $demoTag,
                 ]));
 
@@ -618,14 +651,14 @@ trait SeedsDemoPhase4
                 (new RecordPayment)($invoice->refresh(), RecordPaymentData::from([
                     'amount' => $invoice->total,
                     'payment_method' => PaymentMethod::BankTransfer,
-                    'reference' => 'DEMO-PAY-FULL',
+                    'reference' => 'PAY-FULL',
                 ]));
             });
 
-            $this->seedDemoInvoiceIfMissing('DEMO-INV-PARTIAL', 'DEMO-OPP-0008', function (Opportunity $opportunity) use ($demoTag): void {
+            $this->seedDemoInvoiceIfMissing('INV-PARTIAL', 'OPP-0008', function (Opportunity $opportunity) use ($demoTag): void {
                 $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
                     'opportunity_id' => $opportunity->id,
-                    'reference' => 'DEMO-INV-PARTIAL',
+                    'reference' => 'INV-PARTIAL',
                     'tag_list' => $demoTag,
                 ]));
 
@@ -635,12 +668,12 @@ trait SeedsDemoPhase4
                 (new RecordPayment)($invoice->refresh(), RecordPaymentData::from([
                     'amount' => $partial,
                     'payment_method' => PaymentMethod::Card,
-                    'reference' => 'DEMO-PAY-PARTIAL',
+                    'reference' => 'PAY-PARTIAL',
                 ]));
                 (new RecordRefund)($invoice->refresh(), RecordPaymentData::from([
                     'amount' => max(1, intdiv($partial, 2)),
                     'payment_method' => PaymentMethod::Card,
-                    'reference' => 'DEMO-REFUND',
+                    'reference' => 'REFUND',
                 ]));
 
                 $item = $invoice->refresh()->items->first();
@@ -649,18 +682,18 @@ trait SeedsDemoPhase4
                         'lines' => [
                             ['invoice_item_id' => $item->id, 'quantity' => bcdiv((string) $item->quantity, '2', 2)],
                         ],
-                        'notes' => 'Demo partial credit note.',
+                        'notes' => 'Partial credit note for testing.',
                     ]));
                 }
             });
 
-            $this->seedDemoInvoiceIfMissing('DEMO-INV-OVERDUE', 'DEMO-OPP-0013', function (Opportunity $opportunity) use ($demoTag): void {
+            $this->seedDemoInvoiceIfMissing('INV-OVERDUE', 'OPP-0013', function (Opportunity $opportunity) use ($demoTag): void {
                 CarbonImmutable::setTestNow(CarbonImmutable::now('UTC')->subDays(120));
 
                 try {
                     $draft = (new GenerateInvoiceFromOpportunity)(GenerateInvoiceFromOpportunityData::from([
                         'opportunity_id' => $opportunity->id,
-                        'reference' => 'DEMO-INV-OVERDUE',
+                        'reference' => 'INV-OVERDUE',
                         'tag_list' => $demoTag,
                     ]));
 
@@ -671,19 +704,19 @@ trait SeedsDemoPhase4
                 }
             });
 
-            $this->seedDemoInvoiceIfMissing('DEMO-INV-DEPOSIT', 'DEMO-OPP-0005', function (Opportunity $opportunity) use ($demoTag): void {
+            $this->seedDemoInvoiceIfMissing('INV-DEPOSIT', 'OPP-0005', function (Opportunity $opportunity) use ($demoTag): void {
                 (new GenerateDepositInvoice)(GenerateDepositInvoiceData::from([
                     'opportunity_id' => $opportunity->id,
                     'amount_percentage' => '25',
-                    'reference' => 'DEMO-INV-DEPOSIT',
+                    'reference' => 'INV-DEPOSIT',
                     'tag_list' => $demoTag,
                 ]));
             }, requiresOrder: false);
 
-            $this->seedDemoInvoiceIfMissing('DEMO-INV-PROFORMA', 'DEMO-OPP-0004', function (Opportunity $opportunity) use ($demoTag): void {
+            $this->seedDemoInvoiceIfMissing('INV-PROFORMA', 'OPP-0004', function (Opportunity $opportunity) use ($demoTag): void {
                 (new GenerateProformaInvoice)(GenerateProformaInvoiceData::from([
                     'opportunity_id' => $opportunity->id,
-                    'reference' => 'DEMO-INV-PROFORMA',
+                    'reference' => 'INV-PROFORMA',
                     'tag_list' => $demoTag,
                 ]));
             }, requiresOrder: false);
@@ -730,21 +763,21 @@ trait SeedsDemoPhase4
         }
 
         $this->actingAsDemoOwner(function () use ($store): void {
-            $supplier = $this->firstOrCreateDemoSupplier('Demo - Sub-Hire Partner Ltd');
-            $product = Product::query()->where('sku', 'DEMO-STG-DECK2X1')->first();
+            $supplier = $this->firstOrCreateDemoSupplier('Sub-Hire Partner Ltd');
+            $product = Product::query()->where('sku', 'STG-DECK2X1')->first();
 
             if ($product === null) {
                 return;
             }
 
-            if (! PurchaseOrder::query()->where('reference', 'DEMO-PO-0001')->exists()) {
+            if (! PurchaseOrder::query()->where('reference', 'PO-0001')->exists()) {
                 (new CreatePurchaseOrder)(CreatePurchaseOrderData::from([
                     'supplier_id' => $supplier->id,
                     'store_id' => $store->id,
                     'po_type' => 'purchase',
-                    'reference' => 'DEMO-PO-0001',
+                    'reference' => 'PO-0001',
                     'supplier_reference' => 'SUP-DRAFT-001',
-                    'notes' => 'Demo draft purchase order.',
+                    'notes' => 'Draft purchase order for development data.',
                     'lines' => [[
                         'product_id' => $product->id,
                         'description' => 'Stage deck hire-in (draft)',
@@ -754,7 +787,7 @@ trait SeedsDemoPhase4
                 ]));
             }
 
-            if (PurchaseOrder::query()->where('reference', 'DEMO-PO-0002')->exists()) {
+            if (PurchaseOrder::query()->where('reference', 'PO-0002')->exists()) {
                 return;
             }
 
@@ -762,11 +795,11 @@ trait SeedsDemoPhase4
                 'supplier_id' => $supplier->id,
                 'store_id' => $store->id,
                 'po_type' => 'sub_hire',
-                'reference' => 'DEMO-PO-0002',
+                'reference' => 'PO-0002',
                 'supplier_reference' => 'SUP-SH-002',
                 'starts_at' => now()->addWeek()->toIso8601String(),
                 'ends_at' => now()->addWeeks(2)->toIso8601String(),
-                'notes' => 'Demo sub-hire PO with virtual stock intake.',
+                'notes' => 'Sub-hire purchase order with virtual stock intake.',
                 'lines' => [[
                     'product_id' => $product->id,
                     'description' => 'Sub-hired staging decks',
@@ -799,6 +832,65 @@ trait SeedsDemoPhase4
         });
     }
 
+    private function createDemoSupplierBills(): void
+    {
+        $this->command->info('Seeding demo supplier bills...');
+
+        $po = PurchaseOrder::query()->where('reference', 'PO-0002')->with('items')->first();
+
+        if ($po === null || $po->items->isEmpty()) {
+            return;
+        }
+
+        $line = $po->items->first();
+
+        $this->actingAsDemoOwner(function () use ($po, $line): void {
+            $productId = (int) $line->product_id;
+
+            if (! PurchaseOrder::query()->where('reference', 'PO-0003')->exists()) {
+                $pending = (new CreatePurchaseOrder)(CreatePurchaseOrderData::from([
+                    'supplier_id' => $po->supplier_id,
+                    'store_id' => $po->store_id,
+                    'po_type' => 'sub_hire',
+                    'reference' => 'PO-0003',
+                    'starts_at' => now()->addWeeks(3)->toIso8601String(),
+                    'ends_at' => now()->addWeeks(4)->toIso8601String(),
+                    'notes' => 'Sub-hire purchase order without a supplier bill yet.',
+                    'lines' => [[
+                        'product_id' => $productId,
+                        'description' => 'Pending external supply',
+                        'quantity' => '1.00',
+                        'unit_cost' => (int) $line->unit_cost,
+                    ]],
+                ]));
+
+                (new SendPurchaseOrder)(PurchaseOrder::query()->findOrFail($pending->id));
+            }
+
+            if (! SupplierBill::query()->where('document_number', 'SB-0001')->exists()) {
+                $bill = app(CreateSupplierBill::class)([
+                    'supplier_id' => $po->supplier_id,
+                    'store_id' => $po->store_id,
+                    'purchase_order_id' => $po->id,
+                    'document_number' => 'SB-0001',
+                    'currency_code' => $po->currency_code,
+                    'exchange_rate' => $po->exchange_rate,
+                    'reference' => 'PO-0002',
+                    'notes' => 'Actual supplier bill; intentionally differs from PO estimate.',
+                ], [[
+                    'product_id' => $line->product_id,
+                    'purchase_order_item_id' => $line->id,
+                    'description' => $line->description,
+                    'quantity' => (string) $line->quantity,
+                    'unit_cost' => (int) $line->unit_cost + 3000,
+                    'tax' => (int) $line->tax,
+                ]]);
+
+                app(IssueSupplierBill::class)($bill);
+            }
+        });
+    }
+
     private function createDemoContainers(): void
     {
         $this->command->info('Seeding demo containers...');
@@ -810,30 +902,32 @@ trait SeedsDemoPhase4
             return;
         }
 
-        $this->actingAsDemoOwner(function (): void {
-            $housingProduct = Product::query()->where('sku', 'DEMO-LMH-BEAM230')->first();
-            $component = Product::query()->where('sku', 'DEMO-LGN-PARRGBW')->first();
+        $this->actingAsDemoOwner(function () use ($store): void {
+            $this->createDemoSennheiserFlightcases($store);
+
+            $housingProduct = Product::query()->where('sku', 'LMH-BEAM230')->first();
+            $component = Product::query()->where('sku', 'LGN-PARRGBW')->first();
 
             if ($housingProduct === null || ! $housingProduct->is_containerable) {
                 return;
             }
 
-            $openHousing = StockLevel::query()->where('asset_number', 'DEMO-MH-001')->first();
+            $openHousing = StockLevel::query()->where('asset_number', 'MH-001')->first();
             if ($openHousing !== null && ! Container::query()->where('serialised_item_id', $openHousing->id)->exists()) {
                 (new CreateContainer)(CreateContainerData::from([
                     'serialised_item_id' => $openHousing->id,
-                    'name' => 'Demo Open Flight Case',
+                    'name' => 'Open Flight Case',
                 ]));
             }
 
-            $sealedHousing = StockLevel::query()->where('asset_number', 'DEMO-MH-002')->first();
+            $sealedHousing = StockLevel::query()->where('asset_number', 'MH-002')->first();
             if ($sealedHousing === null || Container::query()->where('serialised_item_id', $sealedHousing->id)->exists()) {
                 return;
             }
 
             $container = (new CreateContainer)(CreateContainerData::from([
                 'serialised_item_id' => $sealedHousing->id,
-                'name' => 'Demo Sealed Flight Case',
+                'name' => 'Sealed Flight Case',
             ]));
 
             $containerModel = Container::query()->findOrFail($container->id);
@@ -854,5 +948,42 @@ trait SeedsDemoPhase4
                 (new SealContainer)($containerModel);
             }
         });
+    }
+
+    private function createDemoSennheiserFlightcases(Store $store): void
+    {
+        $housing = StockLevel::query()->where('asset_number', 'SR2050-CASE-002')->first();
+        $item = StockLevel::query()->where('asset_number', 'SR2050-002')->first();
+
+        if ($housing === null || $item === null) {
+            return;
+        }
+
+        $container = Container::query()
+            ->where('serialised_item_id', $housing->id)
+            ->first();
+
+        if ($container === null) {
+            $containerData = CreateContainerData::from([
+                'serialised_item_id' => $housing->id,
+                'name' => 'Sennheiser SR2050 Flightcase 02',
+            ]);
+
+            $container = Container::query()->find((new CreateContainer)($containerData)->id);
+        }
+
+        if ($container === null || (int) $container->store_id !== (int) $store->id) {
+            return;
+        }
+
+        if ($container->activeItems()->where('serialised_item_id', $item->id)->doesntExist()) {
+            (new PackContainerItem)($container, PackContainerItemData::from([
+                'serialised_item_id' => $item->id,
+            ]));
+        }
+
+        if ($container->status === ContainerStatus::Open && $container->activeItems()->exists()) {
+            (new SealContainer)($container->refresh());
+        }
     }
 }

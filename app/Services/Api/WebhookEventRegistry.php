@@ -46,6 +46,7 @@ class WebhookEventRegistry
         'stock_level.deleted',
         'stock_transaction.created',
         'stock_transaction.deleted',
+        'stock_transaction.reversed',
         'container.created',
         'container.item.packed',
         'container.item.unpacked',

@@ -116,22 +116,34 @@ new class extends Component
         @if($member)
             <aside
                 class="app-notifications-pane"
-                :class="{ 'open': notificationsOpen, 'ready': notificationsReady }"
+                x-cloak
+                x-show="notificationsOpen"
                 x-effect="if (notificationsOpen) { $wire.refreshNotifications() }"
                 wire:poll.60s="refreshNotifications"
             >
                 <div class="app-notifications-header">
                     <span class="app-notifications-title">{{ __('Notifications') }}</span>
-                    @if($unreadCount > 0)
-                        <button
-                            type="button"
-                            class="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                            style="font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em;"
-                            wire:click="markAllRead"
+                    <div class="flex items-center gap-2">
+                        @if($unreadCount > 0)
+                            <button
+                                type="button"
+                                class="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                                style="font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em;"
+                                wire:click="markAllRead"
+                            >
+                                {{ __('Mark all read') }}
+                            </button>
+                        @endif
+                        <a
+                            href="{{ route('settings.notifications') }}"
+                            wire:navigate.hover
+                            class="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                            title="{{ __('Notification preferences') }}"
+                            aria-label="{{ __('Notification preferences') }}"
                         >
-                            {{ __('Mark all read') }}
-                        </button>
-                    @endif
+                            <flux:icon.cog-6-tooth class="size-4" />
+                        </a>
+                    </div>
                 </div>
 
                 <div class="app-notifications-body">
@@ -143,7 +155,7 @@ new class extends Component
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0 flex-1">
                                     @if($item['url'])
-                                        <a href="{{ $item['url'] }}" wire:navigate class="block text-[12px] font-semibold text-[var(--text-primary)] hover:underline">
+                                        <a href="{{ $item['url'] }}" wire:navigate.hover class="block text-[12px] font-semibold text-[var(--text-primary)] hover:underline">
                                             {{ $item['title'] }}
                                         </a>
                                     @else
@@ -173,22 +185,6 @@ new class extends Component
                     @endforelse
                 </div>
 
-                <div class="app-notifications-footer border-t border-[var(--border-subtle)] px-4 py-2">
-                    <a href="{{ route('settings.notifications') }}" wire:navigate class="text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)]">
-                        {{ __('Notification preferences') }}
-                    </a>
-                </div>
-
-                <button
-                    class="notifications-toggle"
-                    x-on:click="notificationsOpen = !notificationsOpen"
-                    :aria-label="notificationsOpen ? 'Collapse notifications' : 'Expand notifications'"
-                    type="button"
-                >
-                    <svg class="sidebar-toggle-icon" :class="{ 'rotate-180': notificationsOpen }" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M6 3l5 5-5 5"/>
-                    </svg>
-                </button>
             </aside>
         @endif
     @endauth

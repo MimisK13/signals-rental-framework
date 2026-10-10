@@ -2,19 +2,15 @@
 
 namespace App\Livewire\Components;
 
-use App\Models\CustomView;
-use App\Models\User;
-use App\Models\UserViewPreference;
-use App\Services\Api\RansackFilter;
-use App\Services\ColumnRegistryResolver;
-use App\Services\ViewResolver;
-use App\Views\ColumnRegistry;
+use App\Livewire\Components\Concerns\HasDataTableColumns;
+use App\Livewire\Components\Concerns\HasDataTableSelection;
+use App\Livewire\Components\Concerns\HasDataTableViews;
+use App\Services\DataTable\DataTableCsvExporter;
+use App\Services\DataTable\DataTableQueryBuilder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,6 +22,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class DataTable extends Component
 {
+    use HasDataTableColumns;
+    use HasDataTableSelection;
+    use HasDataTableViews;
     use WithPagination;
 
     /** @var array<int, array<string, mixed>> */
@@ -93,27 +92,6 @@ class DataTable extends Component
     #[Url]
     public array $filters = [];
 
-    /** @var array<int, int> */
-    public array $selected = [];
-
-    public bool $selectAll = false;
-
-    public ?int $lastSelectedId = null;
-
-    #[Url(as: 'view')]
-    public ?int $viewId = null;
-
-    #[Locked]
-    public ?string $entityType = null;
-
-    /** @var list<string> Column keys to display (empty = show all) */
-    public array $visibleColumnKeys = [];
-
-    /** @var array<string, array<int, array<string, mixed>>> */
-    public array $availableViews = [];
-
-    public ?string $activeViewName = null;
-
     /**
      * @param  array<int, array<string, mixed>>  $columns
      * @param  array<int, string>  $searchable
@@ -140,10 +118,6 @@ class DataTable extends Component
             throw new \InvalidArgumentException('DataTable requires a valid Eloquent model class.');
         }
 
-        // A leading `-` on the default sort field denotes descending order
-        // (the Ransack `-field` convention). Normalise it into an explicit
-        // field + direction so the field is a clean column key and the sort
-        // summary reads coherently (e.g. "created_at desc", not "-created_at asc").
         if (str_starts_with($defaultSort, '-')) {
             $defaultSort = mb_substr($defaultSort, 1);
             $defaultDirection = 'desc';
@@ -160,7 +134,6 @@ class DataTable extends Component
         $this->scopes = $scopes;
         $this->refreshEvents = $refreshEvents;
 
-        // Validate URL-bound perPage against allowed options
         if (! in_array($this->perPage, $this->perPageOptions, true)) {
             $this->perPage = $perPage;
         }
@@ -208,6 +181,7 @@ class DataTable extends Component
         }
 
         $this->resetPage();
+        $this->syncSelectAllSelection();
     }
 
     public function applyFilter(string $column, string $value): void
@@ -223,12 +197,14 @@ class DataTable extends Component
         }
 
         $this->resetPage();
+        $this->syncSelectAllSelection();
     }
 
     public function clearFilter(string $column): void
     {
         unset($this->filters[$column]);
         $this->resetPage();
+        $this->syncSelectAllSelection();
     }
 
     public function clearAllFilters(): void
@@ -236,80 +212,12 @@ class DataTable extends Component
         $this->filters = [];
         $this->search = '';
         $this->resetPage();
-    }
-
-    public function toggleSelectAll(): void
-    {
-        $this->selectAll = ! $this->selectAll;
-
-        if (! $this->selectAll) {
-            $this->selected = [];
-        }
-    }
-
-    public function toggleSelected(int $id): void
-    {
-        if (in_array($id, $this->selected)) {
-            $this->selected = array_values(array_diff($this->selected, [$id]));
-            $this->lastSelectedId = null;
-        } else {
-            $this->selected[] = $id;
-            $this->lastSelectedId = $id;
-        }
-
-        $this->selectAll = false;
-    }
-
-    /**
-     * Select all rows between the last selected row and the given row.
-     *
-     * @param  int  $id  The shift-clicked row ID
-     * @param  array<int, int>  $pageIds  All row IDs on the current page, in display order
-     */
-    public function shiftSelect(int $id, array $pageIds): void
-    {
-        if ($this->lastSelectedId === null) {
-            $this->toggleSelected($id);
-
-            return;
-        }
-
-        $lastIndex = array_search($this->lastSelectedId, $pageIds);
-        $currentIndex = array_search($id, $pageIds);
-
-        if ($lastIndex === false || $currentIndex === false) {
-            $this->toggleSelected($id);
-
-            return;
-        }
-
-        $start = min($lastIndex, $currentIndex);
-        $end = max($lastIndex, $currentIndex);
-
-        $rangeIds = array_slice($pageIds, $start, $end - $start + 1);
-
-        foreach ($rangeIds as $rangeId) {
-            if (! in_array($rangeId, $this->selected)) {
-                $this->selected[] = $rangeId;
-            }
-        }
-
-        $this->lastSelectedId = $id;
-        $this->selectAll = false;
-    }
-
-    public function clearSelection(): void
-    {
-        $this->selected = [];
-        $this->selectAll = false;
-        $this->lastSelectedId = null;
+        $this->syncSelectAllSelection();
     }
 
     public function refresh(): void
     {
-        $this->selected = [];
-        $this->selectAll = false;
-        $this->lastSelectedId = null;
+        $this->clearSelection();
     }
 
     public function setPerPage(int $perPage): void
@@ -320,17 +228,20 @@ class DataTable extends Component
 
         $this->perPage = $perPage;
         $this->resetPage();
+        $this->syncSelectAllSelection();
     }
 
     public function updatedSearch(): void
     {
         $this->search = mb_substr($this->search, 0, 200);
         $this->resetPage();
+        $this->syncSelectAllSelection();
     }
 
     public function updatedFilters(): void
     {
         $this->resetPage();
+        $this->syncSelectAllSelection();
     }
 
     /**
@@ -338,367 +249,20 @@ class DataTable extends Component
      */
     protected function buildQuery(): Builder
     {
-        /** @var class-string<Model> $modelClass */
-        $modelClass = $this->model;
-
-        /** @var Builder<Model> $query */
-        $query = $modelClass::query();
-
-        // Eager load relationships
-        if (count($this->with) > 0) {
-            $query->with($this->with);
-        }
-
-        if (count($this->withCounts) > 0) {
-            $query->withCount($this->withCounts);
-        }
-
-        // Apply scopes (validated against model)
-        foreach ($this->scopes as $scope => $value) {
-            if (! method_exists($modelClass, 'scope'.ucfirst($scope))) {
-                throw new \InvalidArgumentException("DataTable: scope '{$scope}' does not exist on model {$this->model}.");
-            }
-
-            if ($value === true) {
-                $query->{$scope}();
-            } else {
-                $query->{$scope}($value);
-            }
-        }
-
-        // Apply custom view filters
-        if ($this->viewId !== null && $this->entityType !== null) {
-            $activeView = CustomView::find($this->viewId);
-            if ($activeView instanceof CustomView) {
-                app(ViewResolver::class)->applyFilters($query, $activeView);
-            }
-        }
-
-        // Apply global search (capped at 200 chars, wildcards escaped)
-        $search = mb_substr($this->search, 0, 200);
-        if ($search !== '' && count($this->searchable) > 0) {
-            $searchable = $this->searchable;
-            $escapedSearch = RansackFilter::escapeLike($search);
-
-            $query->where(function (Builder $q) use ($escapedSearch, $searchable): void {
-                foreach ($searchable as $column) {
-                    $q->orWhere($column, 'ilike', "%{$escapedSearch}%");
-                }
-            });
-        }
-
-        // Apply column filters (only for defined filterable columns)
-        $filterableColumns = $this->getFilterableColumnKeys();
-
-        foreach ($this->filters as $column => $value) {
-            if ($value === '' || ! in_array($column, $filterableColumns, true)) {
-                continue;
-            }
-
-            $colDef = $this->getColumnDefinition($column);
-            $filterType = $colDef['filter_type'] ?? 'text';
-
-            if ($filterType === 'select') {
-                $query->where($column, '=', $value);
-            } else {
-                $query->where($column, 'ilike', '%'.RansackFilter::escapeLike($value).'%');
-            }
-        }
-
-        // Apply sorting (only for defined sortable columns)
-        if ($this->sortField !== '' && $this->isSortableColumn($this->sortField)) {
-            $direction = in_array(strtolower($this->sortDirection), ['asc', 'desc'], true)
-                ? $this->sortDirection
-                : 'asc';
-            $query->orderBy($this->sortField, $direction);
-        }
-
-        return $query;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function getColumnDefinition(string $key): array
-    {
-        foreach ($this->columns as $col) {
-            if (($col['key'] ?? '') === $key) {
-                return $col;
-            }
-        }
-
-        return [];
-    }
-
-    protected function isSortableColumn(string $field): bool
-    {
-        foreach ($this->columns as $col) {
-            if (($col['key'] ?? '') === $field && ($col['sortable'] ?? false)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function isFilterableColumn(string $column): bool
-    {
-        return in_array($column, $this->getFilterableColumnKeys(), true);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function getFilterableColumnKeys(): array
-    {
-        return collect($this->columns)
-            ->filter(fn (array $col): bool => $col['filterable'] ?? false)
-            ->map(fn (array $col): string => $col['key'] ?? '')
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Toggle a column's visibility.
-     */
-    public function toggleColumn(string $key): void
-    {
-        // If no explicit column selection yet, start from current display
-        if (empty($this->visibleColumnKeys)) {
-            $this->visibleColumnKeys = collect($this->columns)
-                ->reject(fn (array $c): bool => in_array($c['type'] ?? null, ['checkbox', 'actions']) || ($c['key'] ?? '') === 'avatar')
-                ->pluck('key')
-                ->all();
-        }
-
-        if (in_array($key, $this->visibleColumnKeys, true)) {
-            $this->visibleColumnKeys = array_values(array_filter(
-                $this->visibleColumnKeys,
-                fn (string $k): bool => $k !== $key,
-            ));
-        } else {
-            $this->visibleColumnKeys[] = $key;
-        }
-    }
-
-    /**
-     * Get all toggleable columns with their visibility state.
-     *
-     * @return list<array{key: string, label: string, visible: bool}>
-     */
-    public function getToggleableColumnsProperty(): array
-    {
-        $registry = $this->getColumnRegistry();
-        $visibleKeys = $this->visibleColumnKeys;
-
-        // If no explicit selection, all non-structural columns are visible
-        if (empty($visibleKeys)) {
-            $visibleKeys = collect($this->columns)
-                ->reject(fn (array $c): bool => in_array($c['type'] ?? null, ['checkbox', 'actions']) || ($c['key'] ?? '') === 'avatar')
-                ->pluck('key')
-                ->all();
-        }
-
-        // Use registry if available, otherwise fall back to static columns
-        if ($registry !== null) {
-            $result = [];
-            foreach ($registry->visibleColumns(auth()->user()) as $col) {
-                $result[] = [
-                    'key' => $col->key,
-                    'label' => $col->label,
-                    'visible' => in_array($col->key, $visibleKeys, true),
-                ];
-            }
-
-            return $result;
-        }
-
-        return collect($this->columns)
-            ->reject(fn (array $c): bool => in_array($c['type'] ?? null, ['checkbox', 'actions']) || ($c['key'] ?? '') === 'avatar')
-            ->map(fn (array $c): array => [
-                'key' => $c['key'] ?? '',
-                'label' => $c['label'] ?? $c['key'] ?? '',
-                'visible' => in_array($c['key'] ?? '', $visibleKeys, true),
-            ])
-            ->values()
-            ->all();
-    }
-
-    public function switchView(int $viewId): void
-    {
-        $this->viewId = $viewId;
-        $this->resetPage();
-        $this->applyActiveView();
-    }
-
-    public function clearView(): void
-    {
-        $this->viewId = null;
-        $this->activeViewName = null;
-        $this->resetPage();
-    }
-
-    #[On('view-saved')]
-    public function onViewSaved(): void
-    {
-        $this->loadAvailableViews();
-        $this->applyActiveView();
-    }
-
-    public function setDefaultView(): void
-    {
-        if ($this->viewId === null || $this->entityType === null) {
-            return;
-        }
-
-        UserViewPreference::updateOrCreate(
-            ['user_id' => auth()->id(), 'entity_type' => $this->entityType],
-            ['custom_view_id' => $this->viewId],
+        return app(DataTableQueryBuilder::class)->build(
+            modelClass: $this->model,
+            with: $this->with,
+            withCounts: $this->withCounts,
+            scopes: $this->scopes,
+            columns: $this->columns,
+            searchable: $this->searchable,
+            filters: $this->filters,
+            search: $this->search,
+            sortField: $this->sortField,
+            sortDirection: $this->sortDirection,
+            viewId: $this->viewId,
+            entityType: $this->entityType,
         );
-    }
-
-    private function loadAvailableViews(): void
-    {
-        $user = auth()->user();
-        if (! $user instanceof User || $this->entityType === null) {
-            return;
-        }
-
-        $views = CustomView::query()
-            ->forEntity($this->entityType)
-            ->visibleTo($user)
-            ->orderBy('visibility')
-            ->orderBy('name')
-            ->get();
-
-        $this->availableViews = $views->groupBy('visibility')->map(
-            fn (Collection $group): array => $group
-                ->map(fn (CustomView $v): array => ['id' => $v->id, 'name' => $v->name, 'is_default' => $v->is_default])
-                ->values()
-                ->all()
-        )->all();
-    }
-
-    private function applyActiveView(): void
-    {
-        if ($this->entityType === null) {
-            return;
-        }
-
-        $user = auth()->user();
-        $resolver = app(ViewResolver::class);
-        $view = $resolver->resolve($this->entityType, $this->viewId, $user instanceof User ? $user : null);
-
-        if ($view !== null) {
-            $this->viewId = $view->id;
-            $this->activeViewName = $view->name;
-
-            // Apply view columns
-            if (! empty($view->columns)) {
-                $this->visibleColumnKeys = $view->columns;
-            }
-
-            // Apply view sort
-            if ($view->sort_column) {
-                $this->sortField = $view->sort_column;
-                $this->sortDirection = $view->sort_direction ?? 'asc';
-            }
-
-            // Apply view per_page
-            if ($view->per_page && in_array($view->per_page, $this->perPageOptions, true)) {
-                $this->perPage = $view->per_page;
-            }
-        } else {
-            $this->visibleColumnKeys = [];
-        }
-    }
-
-    /**
-     * Get the columns to display, filtered by the active view's column selection.
-     *
-     * Always includes checkbox and actions columns. When no view columns are set,
-     * shows all columns. For view columns not in the static definitions, generates
-     * basic column definitions from the ColumnRegistry.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public function getDisplayColumnsProperty(): array
-    {
-        if (empty($this->visibleColumnKeys)) {
-            return $this->columns;
-        }
-
-        // Build a map of existing column definitions by key
-        $existingByKey = [];
-        $structural = []; // checkbox, actions, avatar
-        foreach ($this->columns as $col) {
-            $type = $col['type'] ?? null;
-            $key = $col['key'] ?? '';
-
-            if ($type === 'checkbox' || $type === 'actions') {
-                $structural[$type] = $col;
-            } elseif ($key === 'avatar') {
-                $structural['avatar'] = $col;
-            } else {
-                $existingByKey[$key] = $col;
-            }
-        }
-
-        // Build display columns in the view's order
-        $result = [];
-
-        // Checkbox first
-        if (isset($structural['checkbox'])) {
-            $result[] = $structural['checkbox'];
-        }
-
-        // Avatar shown when its paired column (default: 'name') is in the view.
-        // Tables without a 'name' column can pair the avatar with another key
-        // via the column's 'pairWith' setting (e.g. stock levels use 'item_name').
-        $avatarPairKey = $structural['avatar']['pairWith'] ?? 'name';
-        if (isset($structural['avatar']) && in_array($avatarPairKey, $this->visibleColumnKeys, true)) {
-            $result[] = $structural['avatar'];
-        }
-
-        // Get column registry for generating missing definitions
-        $registry = $this->entityType !== null ? $this->getColumnRegistry() : null;
-
-        // Add columns in view order
-        foreach ($this->visibleColumnKeys as $key) {
-            if (isset($existingByKey[$key])) {
-                $result[] = $existingByKey[$key];
-            } elseif ($registry !== null) {
-                // Generate a basic column definition from the registry
-                $regCol = $registry->get($key);
-                if ($regCol !== null) {
-                    $result[] = [
-                        'key' => $regCol->key,
-                        'label' => $regCol->label,
-                        'sortable' => $regCol->sortable,
-                        'filterable' => $regCol->filterable,
-                    ];
-                }
-            }
-        }
-
-        // Actions last
-        if (isset($structural['actions'])) {
-            $result[] = $structural['actions'];
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get the column registry for the current entity type.
-     */
-    private function getColumnRegistry(): ?ColumnRegistry
-    {
-        if ($this->entityType === null) {
-            return null;
-        }
-
-        return app(ColumnRegistryResolver::class)->resolve($this->entityType);
     }
 
     /**
@@ -706,76 +270,19 @@ class DataTable extends Component
      */
     public function exportCsv(): StreamedResponse
     {
-        $exportColumns = collect($this->displayColumns)
-            ->reject(fn (array $col): bool => in_array($col['type'] ?? null, ['checkbox', 'actions'], true))
-            ->reject(fn (array $col): bool => ($col['key'] ?? '') === 'avatar')
-            ->values()
-            ->all();
-
-        $headers = array_map(fn (array $col): string => $col['label'] ?? $col['key'], $exportColumns);
-        $keys = array_map(fn (array $col): string => $col['key'], $exportColumns);
-
-        // Always prepend ID column
-        if (! in_array('id', $keys, true)) {
-            array_unshift($headers, 'ID');
-            array_unshift($keys, 'id');
-        }
-
         $filename = ($this->entityType ?? 'export').'-'.now()->format('Y-m-d').'.csv';
 
-        return response()->streamDownload(function () use ($keys, $headers): void {
-            $handle = fopen('php://output', 'w');
-            if ($handle === false) {
-                throw new \RuntimeException('Unable to open output stream for CSV export.');
-            }
-            fputcsv($handle, $headers);
-
-            $this->buildQuery()->chunk(500, function ($rows) use ($handle, $keys): void {
-                foreach ($rows as $row) {
-                    $csvRow = [];
-                    foreach ($keys as $key) {
-                        $value = data_get($row, $key);
-
-                        if ($value instanceof \BackedEnum) {
-                            $value = method_exists($value, 'label') ? $value->label() : $value->value;
-                        } elseif ($value instanceof \DateTimeInterface) {
-                            $value = $value->format('Y-m-d H:i:s');
-                        } elseif ($value instanceof Model) {
-                            $value = $value->name ?? $value->getKey();
-                        } elseif (is_array($value) || is_object($value)) {
-                            $encoded = json_encode($value);
-                            $value = $encoded !== false ? $encoded : '[encoding error]';
-                        } elseif (is_bool($value)) {
-                            $value = $value ? 'Yes' : 'No';
-                        }
-
-                        $csvRow[] = $value;
-                    }
-
-                    fputcsv($handle, $csvRow);
-                }
-            });
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
-        ]);
+        return app(DataTableCsvExporter::class)->export(
+            query: $this->buildQuery(),
+            columns: $this->displayColumns,
+            filename: $filename,
+        );
     }
 
     public function render(): View
     {
         $query = $this->buildQuery();
-
         $items = $query->paginate($this->perPage);
-
-        // If selectAll is toggled, select all IDs on the current page
-        if ($this->selectAll) {
-            $this->selected = collect($items->items())
-                ->pluck('id')
-                ->map(fn ($id): int => (int) $id)
-                ->all();
-        }
-
         $activeFilterCount = count(array_filter($this->filters, fn (?string $v): bool => $v !== '' && $v !== null));
 
         return view('livewire.components.data-table', [

@@ -11,6 +11,7 @@ use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\OpportunityData;
+use App\Enums\ContainerAvailabilityMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\MembershipType;
 use App\Enums\OpportunityItemType;
@@ -19,7 +20,9 @@ use App\Enums\RateTransactionType;
 use App\Enums\StockMethod;
 use App\Models\Accessory;
 use App\Models\Activity;
+use App\Models\Container;
 use App\Models\Email;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberRelationship;
 use App\Models\Opportunity;
@@ -29,9 +32,13 @@ use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductRate;
 use App\Models\ProductTaxClass;
+use App\Models\PurchaseOrder;
 use App\Models\RateDefinition;
+use App\Models\StockLevel;
 use App\Models\Store;
+use App\Models\SupplierBill;
 use App\Models\User;
+use App\Services\CurrencyService;
 use Database\Seeders\Concerns\DemoDataSeederSupport;
 use Database\Seeders\Concerns\SeedsDemoPhase4;
 use Illuminate\Database\Eloquent\Collection;
@@ -45,6 +52,7 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
+        $this->renameLegacySeededData();
         $this->createDemoStores();
         $this->createDemoMembers();
         $this->enrichDemoMembers();
@@ -55,9 +63,133 @@ class DemoDataSeeder extends Seeder
         $this->createDemoInvoices();
         $this->applyDeferredDemoProductTaxCategories();
         $this->createDemoPurchaseOrders();
+        $this->createDemoSupplierBills();
         $this->createDemoContainers();
         $this->createDemoCustomFields();
         $this->createDemoActivities();
+    }
+
+    private function renameLegacySeededData(): void
+    {
+        $productNames = [
+            'Demo - Sennheiser EW100 G4 Radio Mic' => 'Sennheiser EW100 G4 Radio Mic',
+            'Demo - XLR Cable 5m' => 'XLR Cable 5m',
+            'Demo - LED PAR Can RGBW' => 'LED PAR Can RGBW',
+            'Demo - Moving Head Beam 230W' => 'Moving Head Beam 230W',
+            'Demo - 55" LED Display Screen' => '55" LED Display Screen',
+            'Demo - Stage Deck 2m x 1m' => 'Stage Deck 2m x 1m',
+            'Demo - 16A Power Distro' => '16A Power Distro',
+            'Demo - Gaffer Tape 50mm Black' => 'Gaffer Tape 50mm Black',
+            'Demo - Folding Banquet Chair' => 'Folding Banquet Chair',
+            'Demo - On-Site Technician Day Rate' => 'On-Site Technician Day Rate',
+        ];
+
+        $productSkus = [
+            'DEMO-AUD-EW100' => 'AUD-EW100',
+            'DEMO-AUD-SR2050' => 'AUD-SR2050',
+            'DEMO-CAS-SR2050' => 'CAS-SR2050',
+            'DEMO-AUD-XLR5' => 'AUD-XLR5',
+            'DEMO-LGN-PARRGBW' => 'LGN-PARRGBW',
+            'DEMO-LMH-BEAM230' => 'LMH-BEAM230',
+            'DEMO-VID-LED55' => 'VID-LED55',
+            'DEMO-STG-DECK2X1' => 'STG-DECK2X1',
+            'DEMO-PWR-DISTRO16' => 'PWR-DISTRO16',
+            'DEMO-CON-GAF50' => 'CON-GAF50',
+            'DEMO-FUR-CHAIR' => 'FUR-CHAIR',
+            'DEMO-SVC-TECH' => 'SVC-TECH',
+        ];
+
+        foreach ($productNames as $oldName => $newName) {
+            Product::query()
+                ->where('name', $oldName)
+                ->whereJsonContains('tag_list', self::DEMO_TAG)
+                ->update(['name' => $newName]);
+        }
+
+        foreach ($productSkus as $oldSku => $newSku) {
+            Product::query()
+                ->where('sku', $oldSku)
+                ->whereJsonContains('tag_list', self::DEMO_TAG)
+                ->update(['sku' => $newSku]);
+        }
+
+        $stockLevelPrefixes = [
+            'DEMO-SR2050-CASE-' => 'SR2050-CASE-',
+            'DEMO-SR2050-' => 'SR2050-',
+            'DEMO-MH-' => 'MH-',
+            'DEMO-PAR-' => 'PAR-',
+        ];
+
+        foreach ($stockLevelPrefixes as $oldPrefix => $newPrefix) {
+            StockLevel::query()
+                ->where('asset_number', 'like', $oldPrefix.'%')
+                ->chunkById(100, function ($stockLevels) use ($oldPrefix, $newPrefix): void {
+                    foreach ($stockLevels as $stockLevel) {
+                        $stockLevel->forceFill([
+                            'asset_number' => str_replace($oldPrefix, $newPrefix, (string) $stockLevel->asset_number),
+                            'serial_number' => $stockLevel->serial_number !== null
+                                ? str_replace($oldPrefix, $newPrefix, (string) $stockLevel->serial_number)
+                                : null,
+                            'barcode' => $stockLevel->barcode !== null
+                                ? str_replace($oldPrefix, $newPrefix, (string) $stockLevel->barcode)
+                                : null,
+                        ])->save();
+                    }
+                });
+        }
+
+        $referenceMaps = [
+            [Opportunity::query(), 'reference', 'DEMO-OPP-', 'OPP-'],
+            [Invoice::query(), 'reference', 'DEMO-INV-', 'INV-'],
+            [PurchaseOrder::query(), 'reference', 'DEMO-PO-', 'PO-'],
+            [SupplierBill::query(), 'document_number', 'DEMO-SB-', 'SB-'],
+        ];
+
+        foreach ($referenceMaps as [$query, $column, $oldPrefix, $newPrefix]) {
+            $query->where($column, 'like', $oldPrefix.'%')
+                ->get()
+                ->each(function ($record) use ($column, $oldPrefix, $newPrefix): void {
+                    $record->forceFill([
+                        $column => str_replace($oldPrefix, $newPrefix, (string) $record->{$column}),
+                    ])->save();
+                });
+        }
+
+        SupplierBill::query()
+            ->where('reference', 'like', 'DEMO-PO-%')
+            ->get()
+            ->each(function (SupplierBill $bill): void {
+                $bill->forceFill([
+                    'reference' => str_replace('DEMO-PO-', 'PO-', (string) $bill->reference),
+                ])->save();
+            });
+
+        foreach ([PurchaseOrder::query(), SupplierBill::query()] as $query) {
+            $query->where('notes', 'like', 'Demo %')
+                ->get()
+                ->each(function ($record): void {
+                    $record->forceFill([
+                        'notes' => preg_replace('/^Demo /', '', (string) $record->notes),
+                    ])->save();
+                });
+        }
+
+        foreach ([
+            'Demo Open Flight Case' => 'Open Flight Case',
+            'Demo Sealed Flight Case' => 'Sealed Flight Case',
+        ] as $oldName => $newName) {
+            Container::query()->where('name', $oldName)->update(['name' => $newName]);
+        }
+
+        Member::query()
+            ->whereJsonContains('tag_list', self::DEMO_TAG)
+            ->where('name', 'like', 'Demo - %')
+            ->get()
+            ->each(function (Member $member): void {
+                $member->forceFill([
+                    'name' => preg_replace('/^Demo - /', '', (string) $member->name),
+                ])->save();
+            });
     }
 
     private function createDemoStores(): void
@@ -84,8 +216,8 @@ class DemoDataSeeder extends Seeder
                 'tag_list' => ['demo-data'],
             ],
             [
-                'name' => 'Edinburgh Office',
-                'street' => '78 Festival Square',
+                'name' => 'Edinburgh Warehouse',
+                'street' => '78 Festival Industrial Park',
                 'city' => 'Edinburgh',
                 'county' => 'Midlothian',
                 'postcode' => 'EH1 1BB',
@@ -96,7 +228,14 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($demoStores as $storeData) {
-            $store = Store::create($storeData);
+            $store = Store::query()
+                ->where('name', $storeData['name'])
+                ->whereJsonContains('tag_list', self::DEMO_TAG)
+                ->first();
+
+            if ($store === null) {
+                $store = Store::create($storeData);
+            }
 
             $this->seedDemoStoreDocumentAndCommunicationTemplates($store);
         }
@@ -104,6 +243,12 @@ class DemoDataSeeder extends Seeder
 
     private function createDemoMembers(): void
     {
+        if (Member::query()->whereJsonContains('tag_list', self::DEMO_TAG)->exists()) {
+            $this->command->info('Demo members already exist; skipping bulk demo member creation.');
+
+            return;
+        }
+
         $this->command->info('Seeding 2,000 organisations...');
         $organisations = Member::factory()
             ->organisation()
@@ -228,96 +373,306 @@ class DemoDataSeeder extends Seeder
 
         $products = [
             [
-                'name' => 'Demo - Sennheiser EW100 G4 Radio Mic',
+                'name' => 'Sennheiser EW100 G4 Radio Mic',
                 'description' => 'Wireless handheld radio microphone system.',
-                'group' => 'Audio',
+                'group' => 'Audio / Wireless',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Serialised,
                 'replacement_charge' => 49900,
-                'sku' => 'DEMO-AUD-EW100',
+                'sku' => 'AUD-EW100',
             ],
             [
-                'name' => 'Demo - XLR Cable 5m',
+                'name' => 'Sennheiser SR 2050 IEM Transmitter',
+                'description' => 'Professional dual-channel in-ear monitoring transmitter.',
+                'group' => 'Audio / Wireless',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 249900,
+                'sku' => 'AUD-SR2050',
+            ],
+            [
+                'name' => 'Sennheiser SR 2050 Flightcase',
+                'description' => 'Protective touring flightcase for the Sennheiser SR 2050 IEM system.',
+                'group' => 'Audio / Cases',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 69900,
+                'sku' => 'CAS-SR2050',
+                'is_containerable' => true,
+                'container_availability_mode' => ContainerAvailabilityMode::Kit->value,
+                'container_max_nesting_depth' => 1,
+            ],
+            [
+                'name' => 'Allen & Heath dLive C3500 Mixing Console',
+                'description' => '96kHz digital mixing surface for touring and installed production.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 1249900,
+                'sku' => 'AUD-DLIVE-C3500',
+            ],
+            [
+                'name' => 'Allen & Heath SQ-5 Mixing Console',
+                'description' => 'Compact digital mixing console for live sound and corporate events.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 299900,
+                'sku' => 'AUD-SQ5',
+            ],
+            [
+                'name' => 'Yamaha CL5 Digital Mixing Console',
+                'description' => 'Professional digital mixing console with Dante integration.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 1099900,
+                'sku' => 'AUD-YAMAHA-CL5',
+            ],
+            [
+                'name' => 'Yamaha QL1 Digital Mixing Console',
+                'description' => 'Compact Yamaha digital mixing console for touring systems.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 699900,
+                'sku' => 'AUD-YAMAHA-QL1',
+            ],
+            [
+                'name' => 'Midas M32 Live Mixing Console',
+                'description' => '40-input digital mixing console for live production.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 399900,
+                'sku' => 'AUD-MIDAS-M32',
+            ],
+            [
+                'name' => 'Behringer X32 Digital Mixing Console',
+                'description' => 'Digital mixing console for events, rehearsal rooms and touring.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 299900,
+                'sku' => 'AUD-BEHRINGER-X32',
+            ],
+            [
+                'name' => 'DiGiCo SD11 Digital Mixing Console',
+                'description' => 'Compact professional digital console for touring productions.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 1199900,
+                'sku' => 'AUD-DIGICO-SD11',
+            ],
+            [
+                'name' => 'Soundcraft Vi2000 Digital Mixing Console',
+                'description' => 'Large-format digital console for live sound and broadcast work.',
+                'group' => 'Audio / Mixing Desks',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 899900,
+                'sku' => 'AUD-SOUNDCRAFT-VI2000',
+            ],
+            [
+                'name' => 'Sennheiser EW-D EM Wireless Receiver',
+                'description' => 'Digital wireless microphone receiver for event and touring systems.',
+                'group' => 'Audio / Wireless',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 59900,
+                'sku' => 'AUD-SENN-EWD-EM',
+            ],
+            [
+                'name' => 'Shure ULXD4D Dual Wireless Receiver',
+                'description' => 'Dual-channel digital wireless receiver for professional RF systems.',
+                'group' => 'Audio / Wireless',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 329900,
+                'sku' => 'AUD-SHURE-ULXD4D',
+            ],
+            [
+                'name' => 'Shure SM58 Vocal Microphone',
+                'description' => 'Industry-standard dynamic vocal microphone.',
+                'group' => 'Audio / Microphones',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 11900,
+                'sku' => 'AUD-SHURE-SM58',
+            ],
+            [
+                'name' => 'Shure SM57 Instrument Microphone',
+                'description' => 'Dynamic instrument microphone for drums, guitar and stage use.',
+                'group' => 'Audio / Microphones',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 10900,
+                'sku' => 'AUD-SHURE-SM57',
+            ],
+            [
+                'name' => 'Neumann KM184 Condenser Microphone',
+                'description' => 'Small-diaphragm condenser microphone for detailed capture.',
+                'group' => 'Audio / Microphones',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 79900,
+                'sku' => 'AUD-NEUMANN-KM184',
+            ],
+            [
+                'name' => 'DPA 4060 Lavalier Microphone',
+                'description' => 'Omnidirectional lavalier microphone for broadcast and theatre.',
+                'group' => 'Audio / Microphones',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 49900,
+                'sku' => 'AUD-DPA-4060',
+            ],
+            [
+                'name' => 'L-Acoustics LA4X Amplified Controller',
+                'description' => 'Four-channel amplified controller for professional loudspeaker systems.',
+                'group' => 'Audio / Amplifiers',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 699900,
+                'sku' => 'AUD-LA-ACOUSTICS-LA4X',
+            ],
+            [
+                'name' => 'd&b audiotechnik D20 Amplifier',
+                'description' => 'Four-channel installation and touring amplifier.',
+                'group' => 'Audio / Amplifiers',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 599900,
+                'sku' => 'AUD-DB-D20',
+            ],
+            [
+                'name' => 'Radial JDI Passive Direct Box',
+                'description' => 'Passive direct box for instruments and line-level sources.',
+                'group' => 'Audio / DI & Signal',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 24900,
+                'sku' => 'AUD-RADIAL-JDI',
+            ],
+            [
+                'name' => 'Robe LEDBeam 150 Moving Light',
+                'description' => 'Compact LED moving beam fixture.',
+                'group' => 'Lighting - Moving Heads',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 89900,
+                'sku' => 'LGN-ROBE-LEDBEAM150',
+            ],
+            [
+                'name' => 'Astera AX5 TriplePAR',
+                'description' => 'Battery-powered wireless LED uplighter.',
+                'group' => 'Lighting - Generic',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 64900,
+                'sku' => 'LGN-ASTERA-AX5',
+            ],
+            [
+                'name' => 'Panasonic PT-RZ120 Laser Projector',
+                'description' => '12,000-lumen professional laser projector.',
+                'group' => 'Video',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 899900,
+                'sku' => 'VID-PANASONIC-RZ120',
+            ],
+            [
+                'name' => 'Blackmagic ATEM 4 M/E Production Studio 4K',
+                'description' => '4K live production switcher for multi-camera events.',
+                'group' => 'Video',
+                'product_type' => ProductType::Rental,
+                'stock_method' => StockMethod::Serialised,
+                'replacement_charge' => 399900,
+                'sku' => 'VID-BMD-ATEM4ME',
+            ],
+            [
+                'name' => 'XLR Cable 5m',
                 'description' => 'Balanced microphone cable, bulk stock.',
-                'group' => 'Audio',
+                'group' => 'Audio / Cables',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Bulk,
                 'replacement_charge' => 1200,
-                'sku' => 'DEMO-AUD-XLR5',
+                'sku' => 'AUD-XLR5',
             ],
             [
-                'name' => 'Demo - LED PAR Can RGBW',
+                'name' => 'LED PAR Can RGBW',
                 'description' => 'Compact LED uplighter, RGBW colour mixing.',
                 'group' => 'Lighting - Generic',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Serialised,
                 'replacement_charge' => 19900,
-                'sku' => 'DEMO-LGN-PARRGBW',
+                'sku' => 'LGN-PARRGBW',
             ],
             [
-                'name' => 'Demo - Moving Head Beam 230W',
+                'name' => 'Moving Head Beam 230W',
                 'description' => 'Sharp-beam moving head fixture.',
                 'group' => 'Lighting - Moving Heads',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Serialised,
                 'replacement_charge' => 129900,
                 'weight' => 16.5000,
-                'sku' => 'DEMO-LMH-BEAM230',
+                'sku' => 'LMH-BEAM230',
             ],
             [
-                'name' => 'Demo - 55" LED Display Screen',
+                'name' => '55" LED Display Screen',
                 'description' => 'Full HD display panel with floor stand.',
                 'group' => 'Video',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Serialised,
                 'replacement_charge' => 89900,
-                'sku' => 'DEMO-VID-LED55',
+                'sku' => 'VID-LED55',
             ],
             [
-                'name' => 'Demo - Stage Deck 2m x 1m',
+                'name' => 'Stage Deck 2m x 1m',
                 'description' => 'Modular staging deck, anti-slip surface.',
                 'group' => 'Staging',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Bulk,
                 'replacement_charge' => 24900,
                 'weight' => 22.0000,
-                'sku' => 'DEMO-STG-DECK2X1',
+                'sku' => 'STG-DECK2X1',
             ],
             [
-                'name' => 'Demo - 16A Power Distro',
+                'name' => '16A Power Distro',
                 'description' => '16A power distribution unit with RCD protection.',
                 'group' => 'Power',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Serialised,
                 'replacement_charge' => 34900,
-                'sku' => 'DEMO-PWR-DISTRO16',
+                'sku' => 'PWR-DISTRO16',
             ],
             [
-                'name' => 'Demo - Gaffer Tape 50mm Black',
+                'name' => 'Gaffer Tape 50mm Black',
                 'description' => 'Matt black cloth tape, consumable sale item.',
                 'group' => 'Consumables',
                 'product_type' => ProductType::Sale,
                 'stock_method' => StockMethod::Bulk,
                 'replacement_charge' => 900,
                 'purchase_price' => 650,
-                'sku' => 'DEMO-CON-GAF50',
+                'sku' => 'CON-GAF50',
             ],
             [
-                'name' => 'Demo - Folding Banquet Chair',
+                'name' => 'Folding Banquet Chair',
                 'description' => 'Stackable padded event chair.',
                 'group' => 'Furniture',
                 'product_type' => ProductType::Rental,
                 'stock_method' => StockMethod::Bulk,
                 'replacement_charge' => 4900,
-                'sku' => 'DEMO-FUR-CHAIR',
+                'sku' => 'FUR-CHAIR',
             ],
             [
-                'name' => 'Demo - On-Site Technician Day Rate',
+                'name' => 'On-Site Technician Day Rate',
                 'description' => 'Crew labour service line.',
                 'group' => null,
                 'product_type' => ProductType::Service,
                 'stock_method' => StockMethod::Bulk,
-                'sku' => 'DEMO-SVC-TECH',
+                'sku' => 'SVC-TECH',
             ],
         ];
 
@@ -363,16 +718,39 @@ class DemoDataSeeder extends Seeder
         // Per-SKU price in minor units: a daily hire rate for rental/service lines,
         // a flat sale price for sale lines.
         $rates = [
-            'DEMO-AUD-EW100' => 4500,
-            'DEMO-AUD-XLR5' => 250,
-            'DEMO-LGN-PARRGBW' => 1500,
-            'DEMO-LMH-BEAM230' => 6500,
-            'DEMO-VID-LED55' => 7500,
-            'DEMO-STG-DECK2X1' => 1200,
-            'DEMO-PWR-DISTRO16' => 3500,
-            'DEMO-CON-GAF50' => 900,
-            'DEMO-FUR-CHAIR' => 350,
-            'DEMO-SVC-TECH' => 35000,
+            'AUD-EW100' => 4500,
+            'AUD-SR2050' => 8500,
+            'CAS-SR2050' => 1800,
+            'AUD-DLIVE-C3500' => 27500,
+            'AUD-SQ5' => 9500,
+            'AUD-YAMAHA-CL5' => 25000,
+            'AUD-YAMAHA-QL1' => 18500,
+            'AUD-MIDAS-M32' => 12000,
+            'AUD-BEHRINGER-X32' => 9500,
+            'AUD-DIGICO-SD11' => 29500,
+            'AUD-SOUNDCRAFT-VI2000' => 22500,
+            'AUD-SENN-EWD-EM' => 3200,
+            'AUD-SHURE-ULXD4D' => 7500,
+            'AUD-SHURE-SM58' => 900,
+            'AUD-SHURE-SM57' => 900,
+            'AUD-NEUMANN-KM184' => 2800,
+            'AUD-DPA-4060' => 2200,
+            'AUD-LA-ACOUSTICS-LA4X' => 12500,
+            'AUD-DB-D20' => 11000,
+            'AUD-RADIAL-JDI' => 1400,
+            'AUD-XLR5' => 250,
+            'LGN-PARRGBW' => 1500,
+            'LMH-BEAM230' => 6500,
+            'LGN-ROBE-LEDBEAM150' => 4200,
+            'LGN-ASTERA-AX5' => 3500,
+            'VID-LED55' => 7500,
+            'VID-PANASONIC-RZ120' => 18500,
+            'VID-BMD-ATEM4ME' => 8500,
+            'STG-DECK2X1' => 1200,
+            'PWR-DISTRO16' => 3500,
+            'CON-GAF50' => 900,
+            'FUR-CHAIR' => 350,
+            'SVC-TECH' => 35000,
         ];
 
         foreach ($rates as $sku => $price) {
@@ -412,10 +790,10 @@ class DemoDataSeeder extends Seeder
      */
     private function seedDemoProductAccessories(): void
     {
-        $mic = Product::query()->where('name', 'Demo - Sennheiser EW100 G4 Radio Mic')->first();
-        $cable = Product::query()->where('name', 'Demo - XLR Cable 5m')->first();
-        $movingHead = Product::query()->where('name', 'Demo - Moving Head Beam 230W')->first();
-        $distro = Product::query()->where('name', 'Demo - 16A Power Distro')->first();
+        $mic = Product::query()->where('name', 'Sennheiser EW100 G4 Radio Mic')->first();
+        $cable = Product::query()->where('name', 'XLR Cable 5m')->first();
+        $movingHead = Product::query()->where('name', 'Moving Head Beam 230W')->first();
+        $distro = Product::query()->where('name', '16A Power Distro')->first();
 
         if ($mic !== null && $cable !== null) {
             Accessory::query()->firstOrCreate(
@@ -480,7 +858,7 @@ class DemoDataSeeder extends Seeder
         $products = Product::query()
             ->whereJsonContains('tag_list', self::DEMO_TAG)
             ->whereIn('product_type', [ProductType::Rental, ProductType::Sale])
-            ->where('sku', '!=', 'DEMO-CON-GAF50')
+            ->where('sku', '!=', 'CON-GAF50')
             ->orderBy('id')
             ->get();
 
@@ -509,13 +887,13 @@ class DemoDataSeeder extends Seeder
                     $reference,
                     $member->id,
                     $store->id,
-                    $owner->id,
+                    $owner->member_id,
                     $window,
                 ));
 
                 $opportunity = Opportunity::query()->whereKey($data->id)->firstOrFail();
 
-                if (in_array($reference, ['DEMO-OPP-0001', 'DEMO-OPP-0013'], true)) {
+                if (in_array($reference, ['OPP-0001', 'OPP-0013'], true)) {
                     $this->seedRichDemoLineTree($opportunity, $window);
                 } else {
                     $this->seedStandardDemoLines($opportunity, $window, $index, $products);
@@ -562,7 +940,7 @@ class DemoDataSeeder extends Seeder
         $audioGroup = $this->addDemoGroup($opportunity, 'Main Stage Audio');
         $this->addDemoProductLine(
             $opportunity,
-            $this->demoProduct('Demo - Sennheiser EW100 G4 Radio Mic'),
+            $this->demoProduct('Sennheiser EW100 G4 Radio Mic'),
             $window,
             parentPath: $audioGroup->path,
             quantity: '2',
@@ -570,7 +948,7 @@ class DemoDataSeeder extends Seeder
         );
         $this->addDemoProductLine(
             $opportunity,
-            $this->demoProduct('Demo - Moving Head Beam 230W'),
+            $this->demoProduct('Moving Head Beam 230W'),
             $window,
             parentPath: $audioGroup->path,
             quantity: '4',
@@ -580,7 +958,7 @@ class DemoDataSeeder extends Seeder
         $lightingGroup = $this->addDemoGroup($opportunity, 'Lighting Package');
         $this->addDemoProductLine(
             $opportunity,
-            $this->demoProduct('Demo - LED PAR Can RGBW'),
+            $this->demoProduct('LED PAR Can RGBW'),
             $window,
             parentPath: $lightingGroup->path,
             quantity: '8',
@@ -588,7 +966,7 @@ class DemoDataSeeder extends Seeder
         );
         $this->addDemoProductLine(
             $opportunity,
-            $this->demoProduct('Demo - 55" LED Display Screen'),
+            $this->demoProduct('55" LED Display Screen'),
             $window,
             parentPath: $lightingGroup->path,
             quantity: '2',
@@ -598,7 +976,7 @@ class DemoDataSeeder extends Seeder
         $stagingGroup = $this->addDemoGroup($opportunity, 'Staging & Decks');
         $this->addDemoProductLine(
             $opportunity,
-            $this->demoProduct('Demo - Stage Deck 2m x 1m'),
+            $this->demoProduct('Stage Deck 2m x 1m'),
             $window,
             parentPath: $stagingGroup->path,
             quantity: '12',
@@ -607,7 +985,7 @@ class DemoDataSeeder extends Seeder
 
         $this->addDemoServiceLine(
             $opportunity,
-            $this->demoProduct('Demo - On-Site Technician Day Rate'),
+            $this->demoProduct('On-Site Technician Day Rate'),
             $window,
             quantity: '3',
             unitPrice: 45000,
@@ -661,7 +1039,7 @@ class DemoDataSeeder extends Seeder
         $this->addDemoProductLine($opportunity, $product, $window, quantity: '1', unitPrice: 3000);
         $this->addDemoServiceLine(
             $opportunity,
-            $this->demoProduct('Demo - On-Site Technician Day Rate'),
+            $this->demoProduct('On-Site Technician Day Rate'),
             $window,
             quantity: '1',
             unitPrice: 45000,
@@ -751,7 +1129,7 @@ class DemoDataSeeder extends Seeder
         string $reference,
         int $memberId,
         int $storeId,
-        int $ownerId,
+        ?int $ownerId,
         array $window,
     ): OpportunityData {
         return (new CreateOpportunity)(CreateOpportunityData::from([
@@ -762,6 +1140,7 @@ class DemoDataSeeder extends Seeder
             'owned_by' => $ownerId,
             'starts_at' => $window['starts_at'],
             'ends_at' => $window['ends_at'],
+            'currency' => app(CurrencyService::class)->baseCurrencyCode(),
         ]));
     }
 

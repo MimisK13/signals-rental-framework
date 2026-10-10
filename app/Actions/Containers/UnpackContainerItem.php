@@ -8,6 +8,7 @@ use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\Containers\ContainerEventRecorder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -38,19 +39,34 @@ class UnpackContainerItem
             ]);
         }
 
-        $item = ContainerItem::query()
-            ->where('container_id', $container->id)
-            ->where('serialised_item_id', $data->serialised_item_id)
-            ->whereNull('unpacked_at')
-            ->first();
+        $item = DB::transaction(function () use ($container, $data): ContainerItem {
+            $lockedContainer = Container::query()
+                ->whereKey($container->id)
+                ->lockForUpdate()
+                ->first();
 
-        if ($item === null) {
-            throw ValidationException::withMessages([
-                'serialised_item_id' => __('The item is not packed in this container.'),
-            ]);
-        }
+            if ($lockedContainer === null || ! $lockedContainer->status->acceptsPacking()) {
+                throw ValidationException::withMessages([
+                    'container' => __('Items can only be unpacked from an open container.'),
+                ]);
+            }
 
-        $item = DB::transaction(function () use ($container, $item, $data): ContainerItem {
+            $item = ContainerItem::query()
+                ->where('container_id', $lockedContainer->id)
+                ->where('serialised_item_id', $data->serialised_item_id)
+                ->whereNull('unpacked_at')
+                ->lockForUpdate()
+                ->first();
+
+            if ($item === null) {
+                throw ValidationException::withMessages([
+                    'serialised_item_id' => __('The item is not packed in this container.'),
+                ]);
+            }
+
+            $stockLevel = StockLevel::query()->findOrFail($item->serialised_item_id);
+            app(ProductStoreCapacityLock::class)->acquire($stockLevel->product_id, $stockLevel->store_id);
+
             $item->forceFill([
                 'unpacked_at' => Carbon::now('UTC'),
                 'unpacked_reason' => $data->reason,
@@ -65,7 +81,7 @@ class UnpackContainerItem
                 ]);
 
             // Release the container demand — the item returns to availability.
-            $item->setRelation('container', $container);
+            $item->setRelation('container', $lockedContainer);
             app(ContainerDemandResolver::class)->releaseDemands($item);
 
             app(ContainerEventRecorder::class)->itemUnpacked($container, $item);

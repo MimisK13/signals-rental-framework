@@ -173,6 +173,12 @@ class Store extends Model implements HasSchema
         return $this->hasMany(DocumentSequence::class);
     }
 
+    /** @return HasMany<Stocktake, $this> */
+    public function stocktakes(): HasMany
+    {
+        return $this->hasMany(Stocktake::class);
+    }
+
     /**
      * @return HasMany<Document, $this>
      */

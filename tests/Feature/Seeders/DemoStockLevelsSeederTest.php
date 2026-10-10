@@ -30,7 +30,7 @@ it('seeds stock levels for most demo rental products', function () {
 
     $stockedProducts = Product::query()
         ->whereJsonContains('tag_list', 'demo-data')
-        ->where('sku', '!=', 'DEMO-SVC-TECH')
+        ->where('sku', '!=', 'SVC-TECH')
         ->whereHas('stockLevels')
         ->count();
 
@@ -40,8 +40,8 @@ it('seeds stock levels for most demo rental products', function () {
 it('keeps deliberately scarce demo products low on stock', function () {
     seedDemoStockLevels();
 
-    $stageDeck = Product::query()->where('sku', 'DEMO-STG-DECK2X1')->firstOrFail();
-    $ledScreen = Product::query()->where('sku', 'DEMO-VID-LED55')->firstOrFail();
+    $stageDeck = Product::query()->where('sku', 'STG-DECK2X1')->firstOrFail();
+    $ledScreen = Product::query()->where('sku', 'VID-LED55')->firstOrFail();
 
     $stageQty = StockLevel::query()->where('product_id', $stageDeck->id)->value('quantity_held');
     $ledAssets = StockLevel::query()->where('product_id', $ledScreen->id)->count();

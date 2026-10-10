@@ -65,7 +65,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 <section class="w-full max-w-2xl">
     <x-signals.page-header title="New Virtual Stock Intake">
         <x-slot:breadcrumbs>
-            <a href="{{ route('virtual-stock.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Virtual Stock</a>
+            <a href="{{ route('virtual-stock.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Virtual Stock</a>
         </x-slot:breadcrumbs>
     </x-signals.page-header>
 
@@ -89,7 +89,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <flux:textarea wire:model="notes" label="Notes" rows="3" />
         <div class="flex gap-2">
             <flux:button type="submit" variant="primary">Create draft</flux:button>
-            <a href="{{ route('virtual-stock.index') }}" wire:navigate class="s-btn s-btn-secondary">Cancel</a>
+            <a href="{{ route('virtual-stock.index') }}" wire:navigate.hover class="s-btn s-btn-secondary">Cancel</a>
         </div>
     </form>
 </section>

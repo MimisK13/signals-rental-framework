@@ -49,10 +49,10 @@ new #[Layout('components.layouts.app')] #[Title('Lists')] class extends Componen
 <section class="w-full">
     <x-admin.layout group="data" :title="$listName->name" :description="'Manage values for ' . $listName->name . '.'">
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.list-names') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.list-names') }}" wire:navigate.hover>
                 Back to List Names
             </flux:button>
-            <flux:button variant="primary" href="{{ route('admin.settings.list-values.create', $listName) }}" wire:navigate>Add Value</flux:button>
+            <flux:button variant="primary" href="{{ route('admin.settings.list-values.create', $listName) }}" wire:navigate.hover>Add Value</flux:button>
         </x-slot:actions>
 
         <div class="s-table-wrap">
@@ -98,7 +98,7 @@ new #[Layout('components.layouts.app')] #[Title('Lists')] class extends Componen
                             <td>
                                 <div class="flex items-center gap-1">
                                     @if(! $value->is_system)
-                                        <a href="{{ route('admin.settings.list-values.edit', [$listName, $value]) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                        <a href="{{ route('admin.settings.list-values.edit', [$listName, $value]) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                             <flux:icon.pencil-square class="w-4 h-4" />
                                         </a>
                                         <button wire:click="deleteValue({{ $value->id }})"

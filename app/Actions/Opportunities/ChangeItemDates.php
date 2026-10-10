@@ -7,10 +7,13 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\ChangeItemDatesData;
 use App\Data\Opportunities\OpportunityData;
 use App\Models\OpportunityItem;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\Shortages\ItemShortageProbe;
 use App\Verbs\Events\Opportunities\ItemDatesChanged;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use Spatie\LaravelData\Optional;
 
 /**
  * Changes a line item's per-item hire window via the ItemDatesChanged event.
@@ -42,11 +45,29 @@ class ChangeItemDates
             ?? $this->toIso($opportunity->ends_at)
             ?? Carbon::parse($startsAt)->copy()->addDay()->toIso8601String();
 
-        $this->commitVerbs(function () use ($item, $startsAt, $endsAt): void {
+        $planningStartsAt = $data->planning_starts_at instanceof Optional
+            ? $this->toIso($item->planning_starts_at)
+            : ($data->planning_starts_at !== null ? Carbon::parse($data->planning_starts_at)->toIso8601String() : null);
+        $planningEndsAt = $data->planning_ends_at instanceof Optional
+            ? $this->toIso($item->planning_ends_at)
+            : ($data->planning_ends_at !== null ? Carbon::parse($data->planning_ends_at)->toIso8601String() : null);
+
+        $planningPeriodProvided = ! $data->planning_starts_at instanceof Optional
+            || ! $data->planning_ends_at instanceof Optional;
+
+        $this->commitVerbs(function () use ($item, $startsAt, $endsAt, $planningStartsAt, $planningEndsAt, $planningPeriodProvided): void {
+            $context = app(OpportunityItemDemandResolver::class)->resolveContext($item->refresh());
+            if ($context['product_id'] !== null && $context['store_id'] !== null) {
+                app(ProductStoreCapacityLock::class)->acquire($context['product_id'], $context['store_id']);
+            }
+
             ItemDatesChanged::fire(
                 opportunity_item_id: $item->state_id,
                 starts_at: $startsAt,
                 ends_at: $endsAt,
+                planning_starts_at: $planningStartsAt,
+                planning_ends_at: $planningEndsAt,
+                planning_period_provided: $planningPeriodProvided,
             );
         });
 

@@ -8,7 +8,11 @@ use App\Enums\OpportunityStatus;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
+use App\Models\OpportunityItem;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
 use App\Verbs\Events\Opportunities\OpportunityStatusChanged;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Moves an opportunity to a different status within its current state via the
@@ -31,7 +35,25 @@ class ChangeOpportunityStatus
 
     public function __invoke(Opportunity $opportunity, OpportunityStatus $status): OpportunityData
     {
+        Gate::authorize('update', $opportunity);
+
         $this->commitVerbs(function () use ($opportunity, $status): void {
+            $scopes = OpportunityItem::query()
+                ->where('opportunity_id', $opportunity->id)
+                ->get()
+                ->map(function (OpportunityItem $item): ?array {
+                    $item->setRelation('opportunity', $item->opportunity()->first());
+                    $context = app(OpportunityItemDemandResolver::class)->resolveContext($item);
+
+                    return $context['product_id'] !== null && $context['store_id'] !== null
+                        ? ['product_id' => $context['product_id'], 'store_id' => $context['store_id']]
+                        : null;
+                })
+                ->filter()
+                ->values()
+                ->all();
+            app(ProductStoreCapacityLock::class)->acquireMany($scopes);
+
             app(GuardPipeline::class)->run(new TransitionContext(
                 transition: self::TRANSITION,
                 opportunity: $opportunity,

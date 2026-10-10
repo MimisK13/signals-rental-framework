@@ -355,8 +355,13 @@ it('SignalsSetupCommand selectProfile renders interactive output and rejects inv
     $input = new ArrayInput(['--profile' => FeatureProfile::General->value], $definition);
     $buffer = new BufferedOutput;
     $output = new OutputStyle($input, $buffer);
-    $command->setInput($input);
-    $command->setOutput($output);
+    $commandInput = new ReflectionProperty($command, 'input');
+    $commandInput->setAccessible(true);
+    $commandInput->setValue($command, $input);
+
+    $commandOutput = new ReflectionProperty($command, 'output');
+    $commandOutput->setAccessible(true);
+    $commandOutput->setValue($command, $output);
 
     $components = new ReflectionProperty($command, 'components');
     $components->setAccessible(true);

@@ -97,7 +97,7 @@ it('contracts the asset demand period on early return against the real tstzrange
     (new ReturnAsset)($row->refresh(), ReturnAssetData::from(['returned_at' => '2026-09-05T10:00:00Z']));
 
     // The asset's demand is now Closed (inactive) and ends at the actual return.
-    $demand = Demand::query()->where('asset_id', $asset->id)->sole();
+    $demand = Demand::query()->where('source_type', 'opportunity_item')->where('asset_id', $asset->id)->sole();
     expect($demand->phase)->toBe(DemandPhase::Closed)
         ->and($demand->is_active)->toBeFalse();
 

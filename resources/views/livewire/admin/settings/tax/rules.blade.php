@@ -34,10 +34,10 @@ new #[Layout('components.layouts.app')] #[Title('Tax Rules')] class extends Comp
 <section class="w-full">
     <x-admin.layout group="tax" title="Tax Rules" description="Class-mapping rules and zone-matching rules for cross-border tax treatment.">
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.tax.rules.create') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.tax.rules.create') }}" wire:navigate.hover>
                 Add Class Rule
             </flux:button>
-            <flux:button variant="primary" href="{{ route('admin.settings.tax.rules.create-zone') }}" wire:navigate>
+            <flux:button variant="primary" href="{{ route('admin.settings.tax.rules.create-zone') }}" wire:navigate.hover>
                 Add Zone Rule
             </flux:button>
         </x-slot:actions>
@@ -95,11 +95,11 @@ new #[Layout('components.layouts.app')] #[Title('Tax Rules')] class extends Comp
                             </td>
                             <td class="text-right">
                                 @if($taxRule->isZoneRule())
-                                    <a href="{{ route('admin.settings.tax.rules.edit-zone', $taxRule) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.tax.rules.edit-zone', $taxRule) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                 @else
-                                    <a href="{{ route('admin.settings.tax.rules.edit', $taxRule) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.tax.rules.edit', $taxRule) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                 @endif

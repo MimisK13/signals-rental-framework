@@ -40,6 +40,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
     </form>
 
     <p class="s-auth-description">
-        Or, <a href="{{ route('login') }}" wire:navigate class="underline hover:opacity-80 transition-opacity">return to log in</a>
+        Or, <a href="{{ route('login') }}" wire:navigate.hover class="underline hover:opacity-80 transition-opacity">return to log in</a>
     </p>
 </div>

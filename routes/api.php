@@ -58,6 +58,7 @@ use App\Http\Controllers\Api\V1\SerialisedComponentController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShortageController;
 use App\Http\Controllers\Api\V1\StockLevelController;
+use App\Http\Controllers\Api\V1\StocktakeController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
 use App\Http\Controllers\Api\V1\SurchargeController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
@@ -250,6 +251,15 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Stock Levels
     Route::apiResource('stock_levels', StockLevelController::class)->names('api.v1.stock_levels');
 
+    Route::get('stocktakes', [StocktakeController::class, 'index'])->name('api.v1.stocktakes.index');
+    Route::post('stocktakes', [StocktakeController::class, 'store'])->name('api.v1.stocktakes.store');
+    Route::get('stocktakes/{stocktake}', [StocktakeController::class, 'show'])->name('api.v1.stocktakes.show');
+    Route::post('stocktakes/{stocktake}/start', [StocktakeController::class, 'start'])->name('api.v1.stocktakes.start');
+    Route::post('stocktakes/{stocktake}/lines/{line}/count', [StocktakeController::class, 'count'])->name('api.v1.stocktakes.lines.count');
+    Route::post('stocktakes/{stocktake}/scan', [StocktakeController::class, 'scan'])->name('api.v1.stocktakes.scan');
+    Route::post('stocktakes/{stocktake}/complete', [StocktakeController::class, 'complete'])->name('api.v1.stocktakes.complete');
+    Route::post('stocktakes/{stocktake}/cancel', [StocktakeController::class, 'cancel'])->name('api.v1.stocktakes.cancel');
+
     // Containers — routes bind by public UUID ({@see Container::resolveRouteBinding})
     // with integer-id fallback for backward compatibility. The pack/unpack and
     // temporary create routes are declared before the {container} segment routes.
@@ -285,8 +295,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // Stock Transactions (nested under products/stock_levels, matching RMS)
     Route::get('products/{product}/stock_levels/{stock_level}/stock_transactions', [StockTransactionController::class, 'index'])->name('api.v1.stock_transactions.index');
     Route::get('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}', [StockTransactionController::class, 'show'])->name('api.v1.stock_transactions.show');
+    Route::post('products/{product}/stock_levels/{stock_level}/adjust', [StockTransactionController::class, 'adjust'])->name('api.v1.stock_levels.adjust');
     Route::post('products/{product}/stock_levels/{stock_level}/stock_transactions', [StockTransactionController::class, 'store'])->name('api.v1.stock_transactions.store');
     Route::delete('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}', [StockTransactionController::class, 'destroy'])->name('api.v1.stock_transactions.destroy');
+    Route::post('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}/reverse', [StockTransactionController::class, 'reverse'])->name('api.v1.stock_transactions.reverse');
 
     // Activities
     Route::apiResource('activities', ActivityController::class)->names('api.v1.activities');
@@ -297,6 +309,7 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     // apiResource so the explicit GET routes win.
     Route::get('opportunities/{opportunity}/assets', [OpportunityController::class, 'assets'])->name('api.v1.opportunities.assets');
     Route::get('opportunities/{opportunity}/availability', [OpportunityController::class, 'availability'])->name('api.v1.opportunities.availability');
+    Route::get('opportunities/{opportunity}/planning', [OpportunityController::class, 'planning'])->name('api.v1.opportunities.planning');
     Route::get('opportunities/{opportunity}/activity', [OpportunityController::class, 'activity'])->name('api.v1.opportunities.activity');
     // Guard-aware action availability for the Show toolbar (dry-run, no side effects).
     Route::get('opportunities/{opportunity}/available_actions', [OpportunityController::class, 'availableActions'])->name('api.v1.opportunities.available_actions');

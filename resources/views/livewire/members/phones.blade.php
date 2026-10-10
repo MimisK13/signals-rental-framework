@@ -31,14 +31,14 @@ new #[Layout('components.layouts.app')] class extends Component {
 <section class="w-full">
     <x-signals.page-header :title="$member->name">
         <x-slot:breadcrumbs>
-            <a href="{{ route('members.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Members</a>
+            <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
-            <a href="{{ route('members.show', $member) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
+            <a href="{{ route('members.show', $member) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>Phones</span>
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('members.phones.create', $member) }}" wire:navigate>Add Phone</flux:button>
+            <flux:button variant="primary" href="{{ route('members.phones.create', $member) }}" wire:navigate.hover>Add Phone</flux:button>
         </x-slot:actions>
     </x-signals.page-header>
 
@@ -66,7 +66,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('members.phones.edit', [$member, $phone]) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                <a href="{{ route('members.phones.edit', [$member, $phone]) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                     <flux:icon.pencil-square class="w-4 h-4" />
                                 </a>
                                 <button wire:click="deletePhone({{ $phone->id }})"

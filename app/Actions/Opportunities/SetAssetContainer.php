@@ -19,7 +19,7 @@ class SetAssetContainer
 
     public function __invoke(OpportunityItemAsset $asset, SetAssetContainerData $data): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
 
         $stateId = $asset->state_id;
 

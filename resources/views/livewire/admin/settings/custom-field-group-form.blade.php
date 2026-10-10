@@ -62,7 +62,7 @@ new #[Layout('components.layouts.app')] #[Title('Custom Field Group')] class ext
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.custom-field-groups') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.custom-field-groups') }}" wire:navigate.hover>
                 Back to Custom Field Groups
             </flux:button>
         </x-slot:actions>
@@ -78,7 +78,7 @@ new #[Layout('components.layouts.app')] #[Title('Custom Field Group')] class ext
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Group' }}</flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.custom-field-groups') }}" wire:navigate>Cancel</flux:button>
+                <flux:button variant="ghost" href="{{ route('admin.settings.custom-field-groups') }}" wire:navigate.hover>Cancel</flux:button>
             </div>
         </form>
     </x-admin.layout>

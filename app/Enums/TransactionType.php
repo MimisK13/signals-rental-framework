@@ -34,18 +34,16 @@ enum TransactionType: int
     }
 
     /**
-     * Types allowed for manual creation via API.
+     * Types available to the operator-facing stock adjustment workflow.
      *
      * @return list<int>
      */
-    public static function manualCreationValues(): array
+    public static function adjustmentValues(): array
     {
         return [
-            self::Buy->value,
-            self::Find->value,
+            self::Increase->value,
+            self::Decrease->value,
             self::WriteOff->value,
-            self::Sell->value,
-            self::Make->value,
         ];
     }
 

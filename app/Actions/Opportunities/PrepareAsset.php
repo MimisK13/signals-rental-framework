@@ -18,7 +18,7 @@ class PrepareAsset
 
     public function __invoke(OpportunityItemAsset $asset): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
 
         $stateId = $asset->state_id;
         $preparedAt = Carbon::now('UTC')->toIso8601String();

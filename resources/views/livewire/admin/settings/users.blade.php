@@ -149,7 +149,7 @@ new #[Layout('components.layouts.app')] #[Title('Users')] class extends Componen
                     @foreach($users as $user)
                         <tr wire:key="user-{{ $user->id }}">
                             <td class="font-medium">
-                                <a href="{{ route('admin.settings.users.edit', $user) }}" wire:navigate class="hover:underline">
+                                <a href="{{ route('admin.settings.users.edit', $user) }}" wire:navigate.hover class="hover:underline">
                                     {{ $user->name }}
                                 </a>
                                 @if($user->is_owner)
@@ -176,7 +176,7 @@ new #[Layout('components.layouts.app')] #[Title('Users')] class extends Componen
                             </td>
                             <td>
                                 <div class="flex items-center gap-1">
-                                    <a href="{{ route('admin.settings.users.edit', $user) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.users.edit', $user) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     @if(! $user->is_owner)
@@ -186,7 +186,7 @@ new #[Layout('components.layouts.app')] #[Title('Users')] class extends Componen
                                             </button>
                                             <div x-show="open" @click.away="open = false" x-cloak
                                                  class="s-dropdown" style="right: 0; top: 100%;">
-                                                <a class="s-dropdown-item" href="{{ route('admin.settings.users.edit', $user) }}" wire:navigate>
+                                                <a class="s-dropdown-item" href="{{ route('admin.settings.users.edit', $user) }}" wire:navigate.hover>
                                                     Edit
                                                 </a>
                                                 @if($user->invited_at && ! $user->invitation_accepted_at)

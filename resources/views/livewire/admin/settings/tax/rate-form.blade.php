@@ -67,7 +67,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Rate')] class extends Compo
             ]" />
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="ghost" href="{{ route('admin.settings.tax.rates') }}" wire:navigate>
+            <flux:button variant="ghost" href="{{ route('admin.settings.tax.rates') }}" wire:navigate.hover>
                 Back to Tax Rates
             </flux:button>
         </x-slot:actions>
@@ -92,7 +92,7 @@ new #[Layout('components.layouts.app')] #[Title('Tax Rate')] class extends Compo
                 <flux:button variant="primary" type="submit">
                     {{ $isEditing ? 'Update Tax Rate' : 'Create Tax Rate' }}
                 </flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.tax.rates') }}" wire:navigate>
+                <flux:button variant="ghost" href="{{ route('admin.settings.tax.rates') }}" wire:navigate.hover>
                     Cancel
                 </flux:button>
             </div>

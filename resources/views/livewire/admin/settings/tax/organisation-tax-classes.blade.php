@@ -54,7 +54,7 @@ new #[Layout('components.layouts.app')] #[Title('Organisation Tax Classes')] cla
 <section class="w-full">
     <x-admin.layout group="tax" title="Organisation Tax Classes" description="Manage organisation tax classifications.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.tax.organisation-tax-classes.create') }}" wire:navigate>
+            <flux:button variant="primary" href="{{ route('admin.settings.tax.organisation-tax-classes.create') }}" wire:navigate.hover>
                 Add Organisation Tax Class
             </flux:button>
         </x-slot:actions>
@@ -90,7 +90,7 @@ new #[Layout('components.layouts.app')] #[Title('Organisation Tax Classes')] cla
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('admin.settings.tax.organisation-tax-classes.edit', $taxClass) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                <a href="{{ route('admin.settings.tax.organisation-tax-classes.edit', $taxClass) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                     <flux:icon.pencil-square class="w-4 h-4" />
                                 </a>
                                 @unless($taxClass->is_default)

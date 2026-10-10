@@ -28,6 +28,9 @@ class ItemDatesChanged extends Event
         public int $opportunity_item_id,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
+        public ?string $planning_starts_at = null,
+        public ?string $planning_ends_at = null,
+        public bool $planning_period_provided = false,
     ) {}
 
     public function validate(OpportunityItemState $state): void
@@ -39,6 +42,10 @@ class ItemDatesChanged extends Event
     {
         $state->starts_at = $this->starts_at !== null ? CarbonImmutable::parse($this->starts_at) : null;
         $state->ends_at = $this->ends_at !== null ? CarbonImmutable::parse($this->ends_at) : null;
+        if ($this->planning_period_provided) {
+            $state->planning_starts_at = $this->planning_starts_at !== null ? CarbonImmutable::parse($this->planning_starts_at) : null;
+            $state->planning_ends_at = $this->planning_ends_at !== null ? CarbonImmutable::parse($this->planning_ends_at) : null;
+        }
         $state->last_event_at = CarbonImmutable::now();
     }
 
@@ -60,6 +67,13 @@ class ItemDatesChanged extends Event
             'starts_at' => $state->starts_at,
             'ends_at' => $state->ends_at,
         ])->saveQuietly();
+
+        if ($this->planning_period_provided) {
+            $item->forceFill([
+                'planning_starts_at' => $state->planning_starts_at,
+                'planning_ends_at' => $state->planning_ends_at,
+            ])->saveQuietly();
+        }
 
         $this->repriceAndRollUp($item, $state->manual_unit_price);
         $this->syncDemand($item);

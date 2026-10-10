@@ -26,10 +26,10 @@
 @endphp
 <x-signals.page-header :title="$headerTitle">
     <x-slot:breadcrumbs>
-        <a href="{{ route('opportunities.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Opportunities</a>
+        <a href="{{ route('opportunities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Opportunities</a>
         <span class="mx-1 text-[var(--text-muted)]">/</span>
         @if(isset($subpage))
-            <a href="{{ route('opportunities.show', $opportunity) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $opportunity->subject }}</a>
+            <a href="{{ route('opportunities.show', $opportunity) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $opportunity->subject }}</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $subpage }}</span>
         @else
@@ -49,7 +49,7 @@
         @endif
     </x-slot:meta>
     <x-slot:actions>
-        <a href="{{ route('opportunities.edit', $opportunity) }}" wire:navigate class="s-btn s-btn-sm s-btn-accent">
+        <a href="{{ route('opportunities.edit', $opportunity) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-accent">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
             Edit
         </a>

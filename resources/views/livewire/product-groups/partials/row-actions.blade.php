@@ -1,11 +1,17 @@
-<a href="{{ route('products.index', ['filters' => ['product_group_id' => $item->id]]) }}" wire:navigate class="s-dropdown-item">
+<a href="{{ route('products.index', ['filters' => ['product_group_id' => $item->id]]) }}" wire:navigate.hover class="s-dropdown-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
     View products
 </a>
-<a href="{{ route('product-groups.edit', $item->id) }}" wire:navigate class="s-dropdown-item" style="text-decoration: none;">
+<button
+    type="button"
+    wire:click="$parent.editQuickGroup({{ $item->id }})"
+    x-on:click="open = false; $dispatch('open-product-group-quick-edit')"
+    class="s-dropdown-item"
+    style="width: 100%;"
+>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
     Edit
-</a>
+</button>
 <div style="height: 1px; background: var(--card-border); margin: 4px 0;"></div>
 <button
     x-on:click="open = false; $dispatch('open-modal', 'delete-group-{{ $item->id }}')"

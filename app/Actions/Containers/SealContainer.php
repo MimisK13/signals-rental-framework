@@ -2,6 +2,7 @@
 
 namespace App\Actions\Containers;
 
+use App\Concerns\LocksModelsForMutation;
 use App\Data\Containers\ContainerData;
 use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
@@ -27,6 +28,8 @@ use Illuminate\Validation\ValidationException;
  */
 class SealContainer
 {
+    use LocksModelsForMutation;
+
     public function __invoke(Container $container): ContainerData
     {
         Gate::authorize('seal', $container);
@@ -53,23 +56,51 @@ class SealContainer
             }
         }
 
-        BeforeContainerSealed::dispatch($container);
+        $result = DB::transaction(function () use ($container): ContainerData {
+            $locked = $this->lockModelForMutation($container);
 
-        return DB::transaction(function () use ($container): ContainerData {
-            $itemCount = $container->activeItems()->count();
+            if ($locked->status !== ContainerStatus::Open) {
+                throw ValidationException::withMessages([
+                    'container' => __('Only open containers can be sealed.'),
+                ]);
+            }
 
-            $container->update([
+            if ($locked->activeItems()->count() < 1) {
+                throw ValidationException::withMessages([
+                    'container' => __('A container must contain at least one item to be sealed.'),
+                ]);
+            }
+
+            app(ContainerManifestService::class)->guardNestedContainersSealed($locked);
+
+            if ($locked->scan_mode === ContainerScanMode::Strict) {
+                $violations = app(ContainerManifestService::class)->strictTemplateViolations($locked);
+
+                if ($violations !== []) {
+                    throw ValidationException::withMessages($violations);
+                }
+            }
+
+            BeforeContainerSealed::dispatch($locked);
+
+            $itemCount = $locked->activeItems()->count();
+
+            $locked->update([
                 'status' => ContainerStatus::Sealed,
                 'sealed_at' => Carbon::now('UTC'),
                 'sealed_by_user_id' => Auth::id(),
             ]);
 
-            $container->refresh();
+            $locked->refresh();
 
-            ContainerSealed::dispatch($container, $itemCount);
-            app(ContainerEventRecorder::class)->sealed($container, $itemCount);
+            ContainerSealed::dispatch($locked, $itemCount);
+            app(ContainerEventRecorder::class)->sealed($locked, $itemCount);
 
-            return ContainerData::fromModel($container);
+            return ContainerData::fromModel($locked);
         });
+
+        $container->refresh();
+
+        return $result;
     }
 }

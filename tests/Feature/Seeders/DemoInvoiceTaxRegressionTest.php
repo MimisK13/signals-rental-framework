@@ -82,7 +82,7 @@ function assertDemoInvoiceTotalMatchesOpportunity(Opportunity $opportunity): voi
 it('generates a standard invoice from a seeded demo order without penny-invariant mismatch', function () {
     seedFreshInstallDemoPhase4();
 
-    $opportunity = Opportunity::query()->where('reference', 'DEMO-OPP-0001')->firstOrFail();
+    $opportunity = Opportunity::query()->where('reference', 'OPP-0001')->firstOrFail();
 
     expect($opportunity->tax_total)->toBeGreaterThan(0)
         ->and($opportunity->tax_locked)->toBeTrue();
@@ -103,14 +103,14 @@ it('keeps invoice totals aligned for every seeded demo order opportunity', funct
     seedFreshInstallDemoPhase4();
 
     $orderReferences = [
-        'DEMO-OPP-0001',
-        'DEMO-OPP-0002',
-        'DEMO-OPP-0008',
-        'DEMO-OPP-0009',
-        'DEMO-OPP-0010',
-        'DEMO-OPP-0011',
-        'DEMO-OPP-0012',
-        'DEMO-OPP-0013',
+        'OPP-0001',
+        'OPP-0002',
+        'OPP-0008',
+        'OPP-0009',
+        'OPP-0010',
+        'OPP-0011',
+        'OPP-0012',
+        'OPP-0013',
     ];
 
     foreach ($orderReferences as $reference) {
@@ -124,14 +124,14 @@ it('seeds demo invoices through the seeder path without penny-invariant mismatch
     seedFreshInstallDemoPhase4();
     seedDemoInvoices();
 
-    $paid = Invoice::query()->where('reference', 'DEMO-INV-PAID')->firstOrFail();
-    $opportunity = Opportunity::query()->where('reference', 'DEMO-OPP-0002')->firstOrFail();
+    $paid = Invoice::query()->where('reference', 'INV-PAID')->firstOrFail();
+    $opportunity = Opportunity::query()->where('reference', 'OPP-0002')->firstOrFail();
 
     expect($paid->total)->toBe((int) $opportunity->charge_including_tax_total)
         ->and($paid->tax_total)->toBeGreaterThan(0);
 
-    $deposit = Invoice::query()->where('reference', 'DEMO-INV-DEPOSIT')->firstOrFail();
-    $proforma = Invoice::query()->where('reference', 'DEMO-INV-PROFORMA')->firstOrFail();
+    $deposit = Invoice::query()->where('reference', 'INV-DEPOSIT')->firstOrFail();
+    $proforma = Invoice::query()->where('reference', 'INV-PROFORMA')->firstOrFail();
 
     expect($deposit->number)->toStartWith('DEP-')
         ->and($proforma->number)->toStartWith('PRO-');
@@ -140,7 +140,7 @@ it('seeds demo invoices through the seeder path without penny-invariant mismatch
 it('defers reduced sale tax category assignment until after demo invoices are seeded', function () {
     seedFreshInstallDemoPhase4();
 
-    $gaffer = Product::query()->where('sku', 'DEMO-CON-GAF50')->firstOrFail();
+    $gaffer = Product::query()->where('sku', 'CON-GAF50')->firstOrFail();
 
     expect($gaffer->sale_tax_category_id)->toBeNull();
 

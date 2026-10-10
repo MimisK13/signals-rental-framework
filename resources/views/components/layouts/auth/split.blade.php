@@ -17,7 +17,7 @@
         <div class="s-auth-split">
             <div class="s-auth-split-form">
                 <header>
-                    <a href="{{ route('home') }}" wire:navigate class="inline-block">
+                    <a href="{{ route('home') }}" wire:navigate.hover class="inline-block">
                         <span class="s-logo-mark size-sm">Signals</span>
                     </a>
                 </header>

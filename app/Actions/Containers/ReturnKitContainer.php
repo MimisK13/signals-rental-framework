@@ -11,6 +11,7 @@ use App\Enums\AssetAssignmentStatus;
 use App\Enums\ContainerCheckinMode;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
+use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
 use App\Services\Containers\ContainerEventRecorder;
 use App\Services\Containers\ContainerManifestService;
@@ -54,6 +55,7 @@ class ReturnKitContainer
         }
 
         $opportunityId = (int) $container->opportunity_id;
+        Gate::authorize('update', Opportunity::query()->findOrFail($opportunityId));
         $returnedAt = $data->returned_at ?? Carbon::now('UTC')->toIso8601String();
         $stockLevelIds = app(ContainerManifestService::class)->kitStockLevelIds($container);
 

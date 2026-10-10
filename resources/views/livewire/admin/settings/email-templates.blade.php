@@ -102,7 +102,7 @@ new #[Layout('components.layouts.app')] #[Title('Email Templates')] class extend
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.settings.email-templates.edit', $template) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.email-templates.edit', $template) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                 </td>

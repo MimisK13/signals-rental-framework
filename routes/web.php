@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\PublicDocumentController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SignedDocumentDownloadController;
 use App\Http\Middleware\VerifyInboundWebhookSignature;
+use App\Livewire\Planner\Index as PlannerIndex;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -112,6 +113,11 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('products', 'products.index')->name('products.index');
     Volt::route('products/create', 'products.form')->name('products.create');
     Volt::route('products/{product}', 'products.show')->name('products.show');
+    Volt::route('products/{product}/financials', 'products.financials')->name('products.financials');
+    Volt::route('products/{product}/investment', 'products.investment')->name('products.investment');
+    Volt::route('products/{product}/utilization', 'products.utilization')->name('products.utilization');
+    Volt::route('products/{product}/inspections', 'products.inspections')->name('products.inspections');
+    Volt::route('products/{product}/availability', 'products.availability')->name('products.availability');
     Volt::route('products/{product}/edit', 'products.form')->name('products.edit');
     Volt::route('products/{product}/stock', 'products.stock')->name('products.stock');
     Volt::route('products/{product}/accessories', 'products.accessories')->name('products.accessories');
@@ -126,8 +132,9 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
 
     // Product Groups
     Volt::route('product-groups', 'product-groups.index')->name('product-groups.index');
-    Volt::route('product-groups/create', 'product-groups.form')->name('product-groups.create');
-    Volt::route('product-groups/{productGroup}/edit', 'product-groups.form')->name('product-groups.edit');
+    // Legacy full-page routes remain as compatibility redirects; create/edit now use the index panels.
+    Route::redirect('product-groups/create', '/product-groups')->name('product-groups.create');
+    Route::get('product-groups/{productGroup}/edit', fn () => redirect()->route('product-groups.index'))->name('product-groups.edit');
 
     // Stock Levels
     Volt::route('stock-levels', 'stock-levels.index')->name('stock-levels.index');
@@ -135,6 +142,21 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('stock-levels/{stockLevel}', 'stock-levels.show')->name('stock-levels.show');
     Volt::route('stock-levels/{stockLevel}/edit', 'stock-levels.form')->name('stock-levels.edit');
     Volt::route('stock-levels/{stockLevel}/activities', 'stock-levels.activities')->name('stock-levels.activities');
+
+    // Stocktakes record physical observations without mutating inventory.
+    Volt::route('stocktakes', 'stocktakes.index')->name('stocktakes.index');
+    Volt::route('stocktakes/create', 'stocktakes.form')->name('stocktakes.create');
+    Volt::route('stocktakes/{stocktake}', 'stocktakes.show')->name('stocktakes.show');
+
+    // Physical serialized asset detail and financial history.
+    Volt::route('assets/{asset}', 'assets.show')->name('assets.show');
+    Volt::route('assets/{asset}/utilization', 'assets.utilization')->name('assets.utilization');
+    Volt::route('assets/{asset}/investment', 'assets.investment')->name('assets.investment');
+
+    Volt::route('repairs', 'repairs.index')->name('repairs.index');
+    Volt::route('repairs/create', 'repairs.form')->name('repairs.create');
+    Volt::route('repairs/{repair}', 'repairs.show')->name('repairs.show');
+    Volt::route('repairs/{repair}/edit', 'repairs.form')->name('repairs.edit');
 
     // Invoices
     Volt::route('invoices', 'invoices.index')->name('invoices.index');
@@ -155,13 +177,21 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('purchase-orders/{purchaseOrder}', 'purchase-orders.show')->name('purchase-orders.show');
     Volt::route('purchase-orders/{purchaseOrder}/edit', 'purchase-orders.form')->name('purchase-orders.edit');
 
+    // Supplier accounts-payable documents.
+    Volt::route('supplier-bills', 'supplier-bills.index')->name('supplier-bills.index');
+    Volt::route('supplier-bills/create', 'supplier-bills.form')->name('supplier-bills.create');
+    Volt::route('supplier-bills/{supplierBill}', 'supplier-bills.show')->name('supplier-bills.show');
+    Volt::route('supplier-bills/{supplierBill}/edit', 'supplier-bills.form')->name('supplier-bills.edit');
+
     // Virtual stock
     Volt::route('virtual-stock', 'virtual-stock.index')->name('virtual-stock.index');
     Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
     Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
 
     // Containers (P49 scaffold — full warehouse UI in P55)
+    Volt::route('warehouse', 'warehouse.index')->name('warehouse.index');
     Volt::route('containers', 'containers.index')->name('containers.index');
+    Volt::route('containers/create', 'containers.create')->name('containers.create');
     Volt::route('containers/{container}', 'containers.show')->name('containers.show');
     Volt::route('containers/{container}/pack', 'containers.pack')->name('containers.pack');
     Volt::route('containers/{container}/repack/{opportunity}', 'containers.repack')->name('containers.repack');
@@ -226,7 +256,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // status. The Volt component reads the opportunity projection directly and
     // gates on `opportunities.access` (no dedicated planner permission exists yet —
     // it reuses the opportunities area gate, mirroring the Job Planning nav).
-    Volt::route('planner', 'planner.index')->name('planner');
+    Route::get('planner', PlannerIndex::class)->name('planner');
 
     // Activities
     Volt::route('activities', 'activities.index')->name('activities.index');
@@ -236,6 +266,12 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
 
     // Calendar
     Volt::route('calendar', 'calendar.index')->name('calendar.index');
+
+    // Calendar package sandbox
+    Route::view('calendar/sandbox', 'calendar.sandbox')->name('calendar.sandbox');
+
+    // Dense UI foundation sandbox
+    Route::view('dense/sandbox', 'dense.sandbox')->name('dense.sandbox');
 });
 
 /*

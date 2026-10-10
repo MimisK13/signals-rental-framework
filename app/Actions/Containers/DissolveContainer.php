@@ -2,6 +2,7 @@
 
 namespace App\Actions\Containers;
 
+use App\Concerns\LocksModelsForMutation;
 use App\Data\Containers\ContainerData;
 use App\Enums\ContainerDissolveReason;
 use App\Enums\ContainerStatus;
@@ -25,6 +26,8 @@ use Illuminate\Validation\ValidationException;
  */
 class DissolveContainer
 {
+    use LocksModelsForMutation;
+
     public function __invoke(Container $container): ContainerData
     {
         Gate::authorize('dissolve', $container);
@@ -44,12 +47,26 @@ class DissolveContainer
         BeforeContainerDissolved::dispatch($container);
 
         return DB::transaction(function () use ($container): ContainerData {
+            $locked = $this->lockModelForMutation($container);
+
+            if ($locked->status === ContainerStatus::Dissolved) {
+                throw ValidationException::withMessages([
+                    'container' => __('This container is already dissolved.'),
+                ]);
+            }
+
+            if (in_array($locked->status, [ContainerStatus::Dispatched, ContainerStatus::Returned], true)) {
+                throw ValidationException::withMessages([
+                    'container' => __('Dispatched or returned containers cannot be manually dissolved.'),
+                ]);
+            }
+
             $itemCount = app(ContainerDissolveService::class)->dissolveTree(
-                $container,
+                $locked,
                 ContainerDissolveReason::Manual,
             );
 
-            $fresh = $container->fresh() ?? $container;
+            $fresh = $locked->fresh() ?? $locked;
 
             app(ContainerEventRecorder::class)->dissolved(
                 $fresh,

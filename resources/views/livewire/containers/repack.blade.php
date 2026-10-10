@@ -130,9 +130,9 @@ new #[Layout('components.layouts.app')] class extends Component {
 <section class="w-full">
     <x-signals.page-header title="Repack on return">
         <x-slot:meta>
-            <a href="{{ route('opportunities.assets', $opportunity) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $opportunity->subject }}</a>
+            <a href="{{ route('opportunities.assets', $opportunity) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $opportunity->subject }}</a>
             ·
-            <a href="{{ route('containers.show', $container) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $container->name }}</a>
+            <a href="{{ route('containers.show', $container) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $container->name }}</a>
         </x-slot:meta>
         <x-slot:actions>
             @if($canSeal)

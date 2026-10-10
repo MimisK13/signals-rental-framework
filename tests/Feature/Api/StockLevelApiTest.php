@@ -137,18 +137,18 @@ describe('POST /api/v1/stock_levels', function () {
 });
 
 describe('PUT /api/v1/stock_levels/{id}', function () {
-    it('updates a stock level', function () {
+    it('rejects direct physical quantity updates', function () {
         $stockLevel = StockLevel::factory()->create(['quantity_held' => 5]);
         $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
+        $this->withHeader('Authorization', "Bearer {$token}")
             ->putJson("/api/v1/stock_levels/{$stockLevel->id}", [
                 'quantity_held' => 15,
             ])
-            ->assertOk();
+            ->assertUnprocessable();
 
         $stockLevel->refresh();
-        expect((float) $stockLevel->quantity_held)->toBe(15.0);
+        expect((float) $stockLevel->quantity_held)->toBe(5.0);
     });
 });
 

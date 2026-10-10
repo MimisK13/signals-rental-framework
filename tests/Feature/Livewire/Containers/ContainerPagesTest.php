@@ -25,7 +25,10 @@ it('renders the containers index page', function () {
         ->assertOk();
 
     Volt::test('containers.index')
-        ->assertSee('Containers');
+        ->assertSee('Containers')
+        ->assertSee('Physical warehouse units')
+        ->assertSee('Search')
+        ->assertSee('Container actions');
 });
 
 it('renders the container show page with pack affordance', function () {
@@ -57,6 +60,27 @@ it('packs an item from the pack page', function () {
     Volt::test('containers.pack', ['container' => $container])
         ->set('scanInput', 'PACK-ME')
         ->call('scanItem')
+        ->assertHasNoErrors();
+
+    expect(ContainerItem::query()
+        ->where('container_id', $container->id)
+        ->where('serialised_item_id', $asset->id)
+        ->whereNull('unpacked_at')
+        ->exists())->toBeTrue();
+});
+
+it('packs an item from the show page quick pack drawer', function () {
+    $container = Container::factory()->kit()->create(['store_id' => $this->store->id]);
+    $asset = StockLevel::factory()->serialised()->create([
+        'product_id' => Product::factory()->serialised()->create()->id,
+        'store_id' => $this->store->id,
+        'asset_number' => 'QUICK-PACK-001',
+    ]);
+
+    Volt::test('containers.show', ['container' => $container])
+        ->assertSee('Quick pack')
+        ->set('drawerScanInput', 'QUICK-PACK-001')
+        ->call('packFromDrawer')
         ->assertHasNoErrors();
 
     expect(ContainerItem::query()

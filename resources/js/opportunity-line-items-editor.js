@@ -96,6 +96,7 @@ export default function createOpportunityLineItemsEditor(cfg) {
         hasDealPrice: !!resolved.hasDealPrice,
         quickAddSelection: null,
         quickAddQuery: '',
+        mutationPending: false,
 
         get seedPayload() {
             return (window.__lfSeed || {})[this.oppId] || { tree: [], revision: 0, cacheToken: '' };
@@ -364,6 +365,7 @@ export default function createOpportunityLineItemsEditor(cfg) {
                 'charge_total',
                 'charge_total_display',
                 'type_label',
+                'planning',
             ];
 
             return rows.map((row) => {
@@ -2277,6 +2279,10 @@ export default function createOpportunityLineItemsEditor(cfg) {
         },
 
         commitQuickAdd() {
+            if (this.mutationPending) {
+                return false;
+            }
+
             const hit = this.quickAddSelection
                 ?? this.picker.results[this.picker.highlight]
                 ?? this.picker.results[0];
@@ -2290,12 +2296,17 @@ export default function createOpportunityLineItemsEditor(cfg) {
 
             this.clearQuickAddAfterCommit();
 
-            this.$wire.quickAdd(hit.id, qty).then(async () => {
+            this.mutationPending = true;
+            const addAction = hit.is_combination ? 'addCombination' : 'quickAdd';
+
+            this.$wire[addAction](hit.id, qty).then(async () => {
                 await this.refreshBaseRevision();
                 await this.pullFromServer(false, { mutation: true, force: true });
                 await this.syncTotalsFromServer();
                 this.markRowsAddedSince(beforeIds);
                 this.refocusQuickAddInput();
+            }).finally(() => {
+                this.mutationPending = false;
             });
 
             return true;
@@ -2403,11 +2414,20 @@ export default function createOpportunityLineItemsEditor(cfg) {
             const qty = this.picker.quantity || 1;
             const beforeIds = new Set(this.rows.map((r) => Number(r.id)));
 
-            this.$wire.quickAdd(hit.id, qty).then(async () => {
+            if (this.mutationPending) {
+                return;
+            }
+
+            this.mutationPending = true;
+            const addAction = hit.is_combination ? 'addCombination' : 'quickAdd';
+
+            this.$wire[addAction](hit.id, qty).then(async () => {
                 await this.refreshBaseRevision();
                 await this.pullFromServer(false, { mutation: true, force: true });
                 await this.syncTotalsFromServer();
                 this.markRowsAddedSince(beforeIds);
+            }).finally(() => {
+                this.mutationPending = false;
             });
 
             this.picker.open = false;

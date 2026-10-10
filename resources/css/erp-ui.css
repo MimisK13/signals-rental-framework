@@ -1,0 +1,90 @@
+/*
+ * ERP UI foundation
+ *
+ * Package-safe, domain-neutral tokens. Signals components opt into these
+ * values only inside an explicit data-density context.
+ */
+
+:root {
+    /* Deliberate structural scale. Typography and optical corrections remain
+       independent of this scale. */
+    --erp-size-20: 20px;
+    --erp-size-25: 25px;
+    --erp-size-30: 30px;
+    --erp-size-35: 35px;
+    --erp-size-40: 40px;
+    --erp-size-45: 45px;
+    --erp-size-50: 50px;
+    --erp-size-55: 55px;
+    --erp-size-60: 60px;
+
+    /* Comfortable is the default for an opted-in scope. */
+    --erp-control-height: var(--erp-size-40);
+    --erp-row-height: var(--erp-size-40);
+    --erp-action-target: var(--erp-size-40);
+    --erp-toolbar-height: var(--erp-size-50);
+    --erp-header-height: var(--erp-size-50);
+    --erp-inline-gap: 10px;
+    --erp-control-gap: 10px;
+    --erp-cell-padding-x: 15px;
+    --erp-cell-padding-y: 10px;
+    --erp-panel-padding: 20px;
+    --erp-section-gap: 20px;
+}
+
+[data-density='compact'] {
+    --erp-control-height: var(--erp-size-35);
+    --erp-row-height: var(--erp-size-35);
+    --erp-action-target: var(--erp-size-35);
+    --erp-toolbar-height: var(--erp-size-40);
+    --erp-header-height: var(--erp-size-40);
+    --erp-inline-gap: 5px;
+    --erp-control-gap: 5px;
+    --erp-cell-padding-x: 10px;
+    --erp-cell-padding-y: 5px;
+    --erp-panel-padding: 15px;
+    --erp-section-gap: 15px;
+}
+
+[data-density='condensed'] {
+    --erp-control-height: var(--erp-size-30);
+    --erp-row-height: var(--erp-size-30);
+    --erp-action-target: var(--erp-size-30);
+    --erp-toolbar-height: var(--erp-size-35);
+    --erp-header-height: var(--erp-size-35);
+    --erp-inline-gap: 5px;
+    --erp-control-gap: 5px;
+    --erp-cell-padding-x: 5px;
+    --erp-cell-padding-y: 5px;
+    --erp-panel-padding: 10px;
+    --erp-section-gap: 10px;
+}
+
+/* Plain-CSS consumers may opt into the foundation without Tailwind or Flux. */
+.erp-control-height {
+    min-height: var(--erp-control-height);
+}
+
+.erp-row-height {
+    min-height: var(--erp-row-height);
+}
+
+.erp-action-target {
+    min-width: var(--erp-action-target);
+    min-height: var(--erp-action-target);
+}
+
+/* Signals proof integrations. Legacy defaults remain unchanged outside a
+   density context; this keeps adoption incremental and reversible. */
+[data-density] .s-table th,
+[data-density] .s-table td {
+    padding-block: var(--erp-cell-padding-y);
+    padding-inline: var(--erp-cell-padding-x);
+}
+
+[data-density] .s-toolbar {
+    min-height: var(--erp-toolbar-height);
+    padding-block: 0;
+    padding-inline: var(--erp-panel-padding);
+    gap: var(--erp-control-gap);
+}

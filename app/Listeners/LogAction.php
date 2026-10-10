@@ -10,17 +10,19 @@ class LogAction
     /**
      * Persist an audit row for the given auditable event.
      *
-     * Event-sourced audit (identified by a non-null verb_event_id) carries an
-     * EXPLICIT actor resolved from the firing event's persisted Verbs metadata,
-     * so the recorded user survives replay even when no live auth()/request()
-     * context exists; a null actor is therefore a legitimate value and must not
-     * fall back to live auth(). Those rows are written with firstOrCreate keyed
-     * on verb_event_id so replay re-dispatch (handle() re-runs in Phase::Replay)
+     * Explicitly attributed audit carries an actor and/or occurrence time from
+     * the command/event boundary, so the recorded user and time survive replay
+     * even when no live auth()/request() context exists. Event-sourced rows are
+     * written with firstOrCreate keyed on verb_event_id so replay re-dispatch
      * is a no-op rather than a duplicate insert.
      *
-     * Legacy non event-sourced audit (verb_event_id null) keeps the original
-     * behaviour exactly: live auth()->id() plus console-guarded request context,
-     * inserted with create() so no verb_event_id key is set.
+     * Explicit non event-sourced attribution still uses the best-effort legacy
+     * failure handling because those callers do not own an enclosing event-store
+     * transaction. It never falls back to the live actor or insert time.
+     *
+     * Legacy events without explicit attribution keep the original behaviour:
+     * live auth()->id() plus console-guarded request context, inserted with
+     * create() so no verb_event_id key is set.
      *
      * Failure handling differs by branch on purpose. The event-sourced audit
      * runs inside the firing event's handle(), which executes within the
@@ -37,14 +39,40 @@ class LogAction
             // commitVerbs() transaction rolls back the event row AND the
             // projection. No try/catch here — a swallowed failure would break the
             // all-or-nothing guarantee.
+            $attributes = $this->attributes($event) + [
+                'user_id' => $event->userId,
+                'ip_address' => $event->ipAddress,
+                'user_agent' => $event->userAgent,
+            ];
+
             ActionLog::firstOrCreate(
                 ['verb_event_id' => $event->verbEventId],
-                $this->attributes($event) + [
+                $attributes,
+            );
+
+            return;
+        }
+
+        if ($event->occurredAt !== null) {
+            if ($event->failOnAuditFailure) {
+                ActionLog::create($this->attributes($event) + [
                     'user_id' => $event->userId,
                     'ip_address' => $event->ipAddress,
                     'user_agent' => $event->userAgent,
-                ],
-            );
+                ]);
+
+                return;
+            }
+
+            try {
+                ActionLog::create($this->attributes($event) + [
+                    'user_id' => $event->userId,
+                    'ip_address' => $event->ipAddress,
+                    'user_agent' => $event->userAgent,
+                ]);
+            } catch (\Throwable $e) {
+                report($e);
+            }
 
             return;
         }
@@ -72,7 +100,7 @@ class LogAction
      */
     private function attributes(AuditableEvent $event): array
     {
-        return [
+        $attributes = [
             'action' => $event->action,
             'auditable_type' => $event->model->getMorphClass(),
             'auditable_id' => $event->model->getKey(),
@@ -80,5 +108,11 @@ class LogAction
             'new_values' => $event->newValues,
             'metadata' => $event->metadata,
         ];
+
+        if ($event->occurredAt !== null) {
+            $attributes['created_at'] = $event->occurredAt;
+        }
+
+        return $attributes;
     }
 }

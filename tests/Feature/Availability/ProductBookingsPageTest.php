@@ -70,7 +70,7 @@ it('renders the product bookings page for a user with availability.view', functi
         ->assertSee('Available')
         ->assertSeeHtml('s-avail-group-table-scroll')
         ->assertSeeHtml('s-avail-grid-sticky-chrome')
-        ->assertSeeHtml('s-tag-input')
+        ->assertSeeHtml('erp-store-picker')
         ->assertSeeHtml('wire:init="initializeGrid"')
         ->assertSeeHtml('avail-skeleton-row');
 });

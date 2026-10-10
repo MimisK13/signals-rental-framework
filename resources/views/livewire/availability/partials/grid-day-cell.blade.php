@@ -23,7 +23,7 @@
                 : view('livewire.availability.partials.grid-cell-availability', ['cell' => $cell])->render();
         @endphp
         @if(! empty($bookingsUrl))
-            <a href="{{ $bookingsUrl }}" wire:navigate class="s-avail-group-cell-link" title="{{ __('View product bookings') }}">
+            <a href="{{ $bookingsUrl }}" wire:navigate.hover class="s-avail-group-cell-link" title="{{ __('View product bookings') }}">
                 {!! $cellInner !!}
             </a>
         @else

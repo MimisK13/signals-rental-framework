@@ -104,7 +104,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         {{-- Addresses --}}
         <x-signals.panel title="Addresses">
             <x-slot:headerActions>
-                <a href="{{ route('members.addresses.create', $member) }}" wire:navigate class="s-btn s-btn-xs s-btn-primary">Add</a>
+                <a href="{{ route('members.addresses.create', $member) }}" wire:navigate.hover class="s-btn s-btn-xs s-btn-primary">Add</a>
             </x-slot:headerActions>
             @if($addresses->isNotEmpty())
                 <div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
@@ -145,7 +145,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <div class="grid grid-cols-3 gap-4 max-md:grid-cols-1">
             <x-signals.panel title="Emails">
                 <x-slot:headerActions>
-                    <a href="{{ route('members.emails.create', $member) }}" wire:navigate class="s-btn s-btn-xs s-btn-primary">Add</a>
+                    <a href="{{ route('members.emails.create', $member) }}" wire:navigate.hover class="s-btn s-btn-xs s-btn-primary">Add</a>
                 </x-slot:headerActions>
                 @forelse($emails as $email)
                     <div wire:key="email-{{ $email->id }}" class="flex items-center justify-between py-1.5 border-b border-[var(--card-border)] last:border-0">
@@ -165,7 +165,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <x-signals.panel title="Phones">
                 <x-slot:headerActions>
-                    <a href="{{ route('members.phones.create', $member) }}" wire:navigate class="s-btn s-btn-xs s-btn-primary">Add</a>
+                    <a href="{{ route('members.phones.create', $member) }}" wire:navigate.hover class="s-btn s-btn-xs s-btn-primary">Add</a>
                 </x-slot:headerActions>
                 @forelse($phones as $phone)
                     <div wire:key="phone-{{ $phone->id }}" class="flex items-center justify-between py-1.5 border-b border-[var(--card-border)] last:border-0">
@@ -193,7 +193,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <x-signals.panel title="Links">
                 <x-slot:headerActions>
-                    <a href="{{ route('members.links.create', $member) }}" wire:navigate class="s-btn s-btn-xs s-btn-primary">Add</a>
+                    <a href="{{ route('members.links.create', $member) }}" wire:navigate.hover class="s-btn s-btn-xs s-btn-primary">Add</a>
                 </x-slot:headerActions>
                 @forelse($links as $link)
                     <div wire:key="link-{{ $link->id }}" class="flex items-center justify-between py-1.5 border-b border-[var(--card-border)] last:border-0">

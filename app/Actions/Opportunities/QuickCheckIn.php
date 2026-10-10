@@ -10,6 +10,7 @@ use App\Data\Opportunities\QuickCheckInData;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AssetCondition;
 use App\Models\Opportunity;
+use App\Models\StockLevel;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Verbs\Events\Opportunities\AssetChecked;
 use App\Verbs\Events\Opportunities\AssetReturned;
@@ -37,7 +38,10 @@ class QuickCheckIn
 
     public function __invoke(Opportunity $opportunity, QuickCheckInData $data): OpportunityData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $opportunity);
+        if ($data->return_store_id !== null) {
+            Gate::authorize('access', new StockLevel(['store_id' => $data->return_store_id]));
+        }
 
         $returnedAt = $data->returned_at ?? Carbon::now('UTC')->toIso8601String();
 

@@ -54,13 +54,13 @@
         <h2 class="s-panel-title mb-3">Quick Actions</h2>
         <div class="quick-actions">
             @can('opportunities.create')
-            <a class="quick-action" href="{{ route('opportunities.create') }}" wire:navigate>
+            <a class="quick-action" href="{{ route('opportunities.create') }}" wire:navigate.hover>
                 <flux:icon.briefcase class="quick-action-icon" />
                 New Opportunity
             </a>
             @endcan
             @can('members.create')
-            <a class="quick-action" href="{{ route('members.create') }}" wire:navigate>
+            <a class="quick-action" href="{{ route('members.create') }}" wire:navigate.hover>
                 <flux:icon.user-plus class="quick-action-icon" />
                 Add Member
             </a>

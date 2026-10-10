@@ -88,9 +88,15 @@ new #[Layout('components.layouts.app')] class extends Component
 
     public ?string $endsAt = null;
 
+    public ?string $planningStartsAt = null;
+
+    public ?string $planningEndsAt = null;
+
     public ?string $chargeStartsAt = null;
 
     public ?string $chargeEndsAt = null;
+
+    public int $reservationPriority = 0;
 
     // Event-logistics lifecycle dates (C3a).
     public ?string $prepStartsAt = null;
@@ -237,8 +243,11 @@ new #[Layout('components.layouts.app')] class extends Component
             $this->externalDescription = $opportunity->external_description ?? '';
             $this->startsAt = $opportunity->starts_at?->format('Y-m-d H:i');
             $this->endsAt = $opportunity->ends_at?->format('Y-m-d H:i');
+            $this->planningStartsAt = $opportunity->planning_starts_at?->format('Y-m-d H:i');
+            $this->planningEndsAt = $opportunity->planning_ends_at?->format('Y-m-d H:i');
             $this->chargeStartsAt = $opportunity->charge_starts_at?->format('Y-m-d H:i');
             $this->chargeEndsAt = $opportunity->charge_ends_at?->format('Y-m-d H:i');
+            $this->reservationPriority = (int) $opportunity->reservation_priority;
             $this->prepStartsAt = $opportunity->prep_starts_at?->format('Y-m-d H:i');
             $this->prepEndsAt = $opportunity->prep_ends_at?->format('Y-m-d H:i');
             $this->loadStartsAt = $opportunity->load_starts_at?->format('Y-m-d H:i');
@@ -523,8 +532,11 @@ new #[Layout('components.layouts.app')] class extends Component
             'external_description' => $this->externalDescription ?: null,
             'starts_at' => $this->startsAt,
             'ends_at' => $this->endsAt,
+            'planning_starts_at' => $this->planningStartsAt,
+            'planning_ends_at' => $this->planningEndsAt,
             'charge_starts_at' => $this->chargeStartsAt,
             'charge_ends_at' => $this->chargeEndsAt,
+            'reservation_priority' => $this->reservationPriority,
             'currency' => $this->currency,
             'prices_include_tax' => $this->pricesIncludeTax,
             'tag_list' => $this->tags !== [] ? array_values($this->tags) : null,
@@ -592,8 +604,11 @@ new #[Layout('components.layouts.app')] class extends Component
             'external_description' => $this->externalDescription ?: null,
             'starts_at' => $this->startsAt,
             'ends_at' => $this->endsAt,
+            'planning_starts_at' => $this->planningStartsAt,
+            'planning_ends_at' => $this->planningEndsAt,
             'charge_starts_at' => $this->chargeStartsAt,
             'charge_ends_at' => $this->chargeEndsAt,
+            'reservation_priority' => $this->reservationPriority,
             'tag_list' => array_values($this->tags),
             'custom_fields' => $this->customFieldValues,
             ...$this->scheduleAndLogisticsPayload(),
@@ -797,7 +812,7 @@ new #[Layout('components.layouts.app')] class extends Component
     @else
         <x-signals.page-header title="New Opportunity">
             <x-slot:breadcrumbs>
-                <a href="{{ route('opportunities.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Opportunities</a>
+                <a href="{{ route('opportunities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Opportunities</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
@@ -874,6 +889,34 @@ new #[Layout('components.layouts.app')] class extends Component
                                     />
                                 </div>
                             </div>
+                            <div class="rounded-lg border border-zinc-200/70 p-3 dark:border-zinc-700/70">
+                                <div class="mb-3 text-sm font-medium">Planning Period</div>
+                                <p class="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+                                    Capacity is committed for this period. It may be wider than the customer usage period above.
+                                </p>
+                                <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                                    <div>
+                                        <label class="s-field-label mb-1 block">Planning Starts At</label>
+                                        <x-signals.datetime-input
+                                            :value="$planningStartsAt"
+                                            placeholder="Select date & time"
+                                            x-on:input="if (typeof $event.detail === 'string' || $event.detail === null) $wire.set('planningStartsAt', $event.detail)"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="s-field-label mb-1 block">Planning Ends At</label>
+                                        <x-signals.datetime-input
+                                            :value="$planningEndsAt"
+                                            :anchor="$planningStartsAt"
+                                            placeholder="Select date & time"
+                                            x-on:input="if (typeof $event.detail === 'string' || $event.detail === null) $wire.set('planningEndsAt', $event.detail)"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <flux:input wire:model="reservationPriority" type="number" min="0"
+                                label="Reservation Priority"
+                                description="Higher values win deterministic capacity conflicts." />
                         </div>
                     </x-signals.form-section>
 
@@ -1032,7 +1075,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     {{-- Actions --}}
                     <div class="flex items-center gap-4 pt-2">
                         <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Opportunity' }}</flux:button>
-                        <flux:button variant="ghost" href="{{ $isEditing ? route('opportunities.show', $opportunityId) : route('opportunities.index') }}" wire:navigate>Cancel</flux:button>
+                        <flux:button variant="ghost" href="{{ $isEditing ? route('opportunities.show', $opportunityId) : route('opportunities.index') }}" wire:navigate.hover>Cancel</flux:button>
                     </div>
                 </div>
 

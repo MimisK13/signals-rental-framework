@@ -77,7 +77,7 @@ it('writes a bulk demand row with a valid tstzrange period on PostgreSQL', funct
 
     $this->resolver->syncDemands($item);
 
-    $demand = Demand::query()->where('source_id', $item->id)->sole();
+    $demand = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->sole();
 
     $bounds = DB::connection('pgsql_testing')
         ->selectOne(
@@ -115,7 +115,7 @@ it('persists a non-inverted tstzrange when an asset is returned before its plann
 
     $this->resolver->syncDemands($item);
 
-    $demand = Demand::query()->where('source_id', $item->id)->where('asset_id', $asset->id)->sole();
+    $demand = Demand::query()->where('source_type', 'opportunity_item')->where('source_id', $item->id)->where('asset_id', $asset->id)->sole();
 
     $returnedAt = '2026-11-29T09:00:00+00:00';
 
@@ -160,7 +160,7 @@ it('contracts the asset period tstzrange upper bound to the actual return time',
 
     $this->resolver->syncDemands($item);
 
-    $demand = Demand::query()->where('asset_id', $asset->id)->sole();
+    $demand = Demand::query()->where('source_type', 'opportunity_item')->where('asset_id', $asset->id)->sole();
 
     $upper = DB::connection('pgsql_testing')
         ->table('demands')

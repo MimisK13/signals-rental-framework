@@ -8,7 +8,12 @@
     sharp per the brand's global border-radius:0 rule. Pass the clear/remove
     control as the default slot.
 --}}
-<div {{ $attributes->merge(['class' => 'flex w-full items-center gap-2 border border-zinc-200 bg-white px-3 shadow-xs dark:border-white/10 dark:bg-white/10']) }} style="height: 40px;">
-    <span class="flex-1 truncate text-sm text-zinc-700 dark:text-zinc-300">{{ $label }}</span>
+<div {{ $attributes->merge(['class' => 'flex w-full items-center gap-2 border border-zinc-200 bg-white px-3 shadow-xs dark:border-white/10 dark:bg-white/10']) }}
+    style="height: 40px;"
+>
+    <span class="flex-1 truncate text-sm text-zinc-700 dark:text-zinc-300">
+        {{ $label }}
+    </span>
+
     {{ $slot }}
 </div>

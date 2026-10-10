@@ -3,8 +3,11 @@
     Expects selectedStoreTags(), storeNameSuggestions(), syncStoreIdsFromTags() on the host.
 --}}
 <div class="flex flex-col gap-1 overflow-visible">
-    <span class="s-field-label">{{ __('Stores') }}</span>
-    <x-signals.tag-input
+    <x-dense::field-label>
+        {{ __('Stores') }}
+    </x-dense::field-label>
+
+    <x-dense::store-picker
         wire:key="store-tags-{{ md5(json_encode($this->selectedStoreTags())) }}"
         :value="$this->selectedStoreTags()"
         :suggestions="$this->storeNameSuggestions()"

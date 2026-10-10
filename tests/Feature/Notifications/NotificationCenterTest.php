@@ -185,20 +185,22 @@ test('notification link resolves opportunity show route from payload', function 
         ->assertSee(route('opportunities.show', $opportunity, absolute: false));
 });
 
-test('notification pane hides preferences footer markup class for collapsed styling', function () {
+test('notification pane exposes preferences in its header', function () {
     $this->actingAs($this->user);
 
     Volt::test('notifications.pane')
         ->assertSee('app-notifications-mount', false)
-        ->assertSee('app-notifications-footer', false)
-        ->assertSee('Notification preferences');
+        ->assertSee('Notification preferences')
+        ->assertSee('title="Notification preferences"', false)
+        ->assertDontSee('app-notifications-footer', false);
 });
 
-test('notification pane mount fills the app layout height', function () {
+test('notification pane is controlled by the header bell', function () {
     $this->actingAs($this->user);
 
     Volt::test('notifications.pane')
         ->assertSee('app-notifications-mount', false)
         ->assertSee('app-notifications-pane', false)
-        ->assertSee('notifications-toggle', false);
+        ->assertSee('x-show="notificationsOpen"', false)
+        ->assertDontSee('notifications-toggle', false);
 });

@@ -35,7 +35,7 @@ new #[Layout('components.layouts.app')] #[Title('Custom Field Groups')] class ex
 <section class="w-full">
     <x-admin.layout group="data" title="Custom Field Groups" description="Organise custom fields into groups.">
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('admin.settings.custom-field-groups.create') }}" wire:navigate>Add Group</flux:button>
+            <flux:button variant="primary" href="{{ route('admin.settings.custom-field-groups.create') }}" wire:navigate.hover>Add Group</flux:button>
         </x-slot:actions>
 
         <div class="s-table-wrap">
@@ -58,7 +58,7 @@ new #[Layout('components.layouts.app')] #[Title('Custom Field Groups')] class ex
                             <td>{{ $group->custom_fields_count }}</td>
                             <td>
                                 <div class="flex items-center gap-1">
-                                    <a href="{{ route('admin.settings.custom-field-groups.edit', $group) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                    <a href="{{ route('admin.settings.custom-field-groups.edit', $group) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
                                         <flux:icon.pencil-square class="w-4 h-4" />
                                     </a>
                                     <button wire:click="deleteGroup({{ $group->id }})"

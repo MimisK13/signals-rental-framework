@@ -121,12 +121,12 @@ new #[Layout('components.layouts.app')] class extends Component
             @endphp
             <x-signals.panel :title="$relatedPanelTitle">
                 <x-slot:headerActions>
-                    <a href="{{ route('members.relationships.create', $member) }}" wire:navigate class="s-btn s-btn-xs s-btn-primary">Add</a>
+                    <a href="{{ route('members.relationships.create', $member) }}" wire:navigate.hover class="s-btn s-btn-xs s-btn-primary">Add</a>
                 </x-slot:headerActions>
                 @if($relatedMembers->isNotEmpty())
                     <div class="space-y-3">
                         @foreach($relatedMembers->take(5) as $related)
-                            <a href="{{ route('members.show', $related) }}" wire:navigate class="flex items-center gap-3 group" wire:key="related-{{ $related->id }}">
+                            <a href="{{ route('members.show', $related) }}" wire:navigate.hover class="flex items-center gap-3 group" wire:key="related-{{ $related->id }}">
                                 @php
                                     $rWords = preg_split('/\s+/', trim($related->name));
                                     $rInitials = mb_strtoupper(mb_substr($rWords[0] ?? '', 0, 1) . mb_substr($rWords[1] ?? '', 0, 1));
@@ -152,7 +152,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     </div>
                     @if($relatedCount > 5)
                         <div class="mt-3 pt-3 border-t border-[var(--card-border)]">
-                            <a href="{{ route('members.contacts', $member) }}" wire:navigate class="text-xs text-[var(--link)] hover:underline">
+                            <a href="{{ route('members.contacts', $member) }}" wire:navigate.hover class="text-xs text-[var(--link)] hover:underline">
                                 View all {{ $relatedCount }} related members
                             </a>
                         </div>

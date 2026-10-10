@@ -119,7 +119,7 @@ describe('GET stock_transactions (Ransack filtering)', function () {
 });
 
 describe('DELETE stock_transactions/{id}', function () {
-    it('reverses a transaction and removes the ledger row', function () {
+    it('reverses a transaction and preserves the ledger row', function () {
         // Seed held stock then add a buy transaction worth +4.
         $this->stockLevel->update(['quantity_held' => 10]);
         $txn = StockTransaction::factory()->buy()->create([
@@ -130,10 +130,11 @@ describe('DELETE stock_transactions/{id}', function () {
         $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
 
         $this->withHeader('Authorization', "Bearer {$token}")
-            ->deleteJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions/{$txn->id}")
+            ->deleteJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions/{$txn->id}", ['reason' => 'Correction'])
             ->assertNoContent();
 
-        $this->assertDatabaseMissing('stock_transactions', ['id' => $txn->id]);
+        $this->assertDatabaseHas('stock_transactions', ['id' => $txn->id]);
+        $this->assertDatabaseHas('stock_transactions', ['reversal_of_id' => $txn->id]);
 
         // Deleting a +4 buy decrements held stock back to 6.
         $this->stockLevel->refresh();
@@ -209,33 +210,33 @@ describe('GET stock_transactions/{id}', function () {
     });
 });
 
-describe('POST stock_transactions', function () {
-    it('creates a buy transaction', function () {
+describe('POST stock transaction adjustments', function () {
+    it('creates an increase through the compatibility route', function () {
         $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions", [
-                'transaction_type' => 4,
-                'quantity' => '5.0',
-                'transaction_at' => now()->toISOString(),
+                'transaction_type' => 2,
+                'quantity' => '5',
+                'reason' => 'Found stock',
             ])
             ->assertCreated();
 
-        expect($response->json('stock_transaction.transaction_type'))->toBe(4);
-        expect($response->json('stock_transaction.transaction_type_name'))->toBe('Buy');
+        expect($response->json('stock_transaction.transaction_type'))->toBe(2);
+        expect($response->json('stock_transaction.transaction_type_name'))->toBe('Increase');
         expect($response->json('stock_transaction.quantity'))->toBe('5.0');
         expect($response->json('stock_transaction.quantity_move'))->toBe('5.0');
         expect($response->json('stock_transaction.manual'))->toBeTrue();
     });
 
-    it('updates stock level quantity on buy', function () {
+    it('updates stock level quantity on an adjustment', function () {
         $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
 
         $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions", [
-                'transaction_type' => 4,
-                'quantity' => '10.0',
-                'transaction_at' => now()->toISOString(),
+                'transaction_type' => 2,
+                'quantity' => '10',
+                'reason' => 'Stock correction',
             ])
             ->assertCreated();
 
@@ -256,32 +257,25 @@ describe('POST stock_transactions', function () {
             ->assertJsonValidationErrors('transaction_type');
     });
 
-    it('accepts system transaction types via the API (D4)', function () {
+    it('rejects system transaction types via the public adjustment API', function () {
         $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
 
         // Opening (1) is a system type — API-postable (not offered in the UI form).
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
+        $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions", [
                 'transaction_type' => 1,
                 'quantity' => '5.0',
-                'transaction_at' => now()->toISOString(),
+                'reason' => 'Should not be allowed',
             ])
-            ->assertCreated();
-
-        expect($response->json('stock_transaction.transaction_type'))->toBe(1);
-        expect($response->json('stock_transaction.transaction_type_name'))->toBe('Opening Balance');
-        // System types are flagged manual=false (manual flag derived from the type).
-        expect($response->json('stock_transaction.manual'))->toBeFalse();
-
-        $this->stockLevel->refresh();
-        expect((float) $this->stockLevel->quantity_held)->toBe(5.0);
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('transaction_type');
     });
 
     it('requires authentication', function () {
         $this->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions", [
-            'transaction_type' => 4,
+            'transaction_type' => 2,
             'quantity' => '1.0',
-            'transaction_at' => now()->toISOString(),
+            'reason' => 'Stock correction',
         ])->assertUnauthorized();
     });
 
@@ -291,9 +285,9 @@ describe('POST stock_transactions', function () {
 
         $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson("/api/v1/products/{$otherProduct->id}/stock_levels/{$this->stockLevel->id}/stock_transactions", [
-                'transaction_type' => 4,
+                'transaction_type' => 2,
                 'quantity' => '1.0',
-                'transaction_at' => now()->toISOString(),
+                'reason' => 'Stock correction',
             ])
             ->assertNotFound();
     });
@@ -303,10 +297,9 @@ describe('POST stock_transactions', function () {
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/stock_transactions", [
-                'transaction_type' => 5,
-                'quantity' => '2.0',
-                'transaction_at' => '2015-06-28T00:00:00.000Z',
-                'description' => 'Found in warehouse',
+                'transaction_type' => 2,
+                'quantity' => '2',
+                'reason' => 'Found in warehouse',
             ])
             ->assertCreated();
 
@@ -317,5 +310,35 @@ describe('POST stock_transactions', function () {
             'quantity', 'quantity_move', 'description', 'manual',
             'created_at', 'updated_at',
         ]);
+    });
+
+    it('supports the explicit adjustment endpoint', function () {
+        $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
+        $this->stockLevel->update(['quantity_held' => 3]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/adjust", [
+                'type' => 'write_off',
+                'quantity' => 2,
+                'reason' => 'Damaged beyond repair',
+            ])
+            ->assertCreated();
+
+        expect($response->json('stock_transaction.transaction_type_name'))->toBe('Write Off');
+    });
+
+    it('rejects caller-controlled provenance fields', function () {
+        $token = $this->owner->createToken('test', ['stock:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/products/{$this->product->id}/stock_levels/{$this->stockLevel->id}/adjust", [
+                'type' => 'increase',
+                'quantity' => 1,
+                'reason' => 'Stock correction',
+                'store_id' => Store::factory()->create()->id,
+                'transaction_at' => '2000-01-01T00:00:00Z',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['store_id', 'transaction_at']);
     });
 });

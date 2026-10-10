@@ -544,7 +544,7 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
 <section class="w-full">
     <x-admin.layout group="preferences" title="Notifications" description="Configure channel providers, notification types, recipients, and communication templates.">
         <x-slot:actions>
-            <a href="{{ route('admin.settings.communication-log') }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm">{{ __('Communication log') }}</a>
+            <a href="{{ route('admin.settings.communication-log') }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm">{{ __('Communication log') }}</a>
         </x-slot:actions>
         {{-- Channel Providers --}}
         <x-signals.card>
@@ -712,7 +712,7 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
                                         <div class="flex flex-wrap items-center gap-2 text-sm">
                                             <span class="text-zinc-500 dark:text-zinc-400">Templates:</span>
                                             @forelse ($this->templatesForType($type, 'mail') as $template)
-                                                <a href="{{ route('admin.settings.communication-templates.edit', $template) }}" wire:navigate class="s-btn s-btn-ghost s-btn-sm" wire:key="tpl-{{ $template->id }}">
+                                                <a href="{{ route('admin.settings.communication-templates.edit', $template) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" wire:key="tpl-{{ $template->id }}">
                                                     {{ $template->name }}
                                                 </a>
                                             @empty

@@ -22,7 +22,7 @@
 @endphp
 
 <div class="pointer-events-none absolute left-0 right-0 z-[1]" style="top: {{ $top }}px; height: {{ $height }}px;" wire:key="job-{{ $row['id'] }}">
-    <a href="{{ $showUrl }}" wire:navigate
+    <a href="{{ $showUrl }}" wire:navigate.hover
        class="pointer-events-auto absolute inset-y-0 block overflow-hidden rounded-none border-y border-black/10 shadow-sm no-underline text-white transition-[filter] duration-150 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
        style="left: calc({{ $barLeft }}% + {{ $gapLeft }}px); width: calc({{ $barWidth }}% - {{ $gapLeft + $gapRight }}px); background: {{ $colour }};"
        title="{{ $tooltip }}"

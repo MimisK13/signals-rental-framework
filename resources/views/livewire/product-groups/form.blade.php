@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * ARCHIVED: Product Group create/edit is now handled by the index side panel.
+ * This implementation is retained for reference and rollback, but is no longer routed.
+ */
+
 use App\Actions\Products\CreateProductGroup;
 use App\Actions\Products\UpdateProductGroup;
 use App\Data\Products\CreateProductGroupData;
@@ -9,20 +14,25 @@ use App\Livewire\Concerns\ReKeysCustomFieldErrors;
 use App\Models\CustomField;
 use App\Models\ProductGroup;
 use App\Services\FileService;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
 
-new #[Layout('components.layouts.app')] class extends Component {
+new #[Layout('components.layouts.app')] class extends Component
+{
     use LoadsCustomFieldValues;
     use ReKeysCustomFieldErrors;
     use WithFileUploads;
 
     public ?int $groupId = null;
+
     public string $name = '';
+
     public string $description = '';
+
     public ?int $parentId = null;
 
     /** @var array<string, mixed> */
@@ -30,6 +40,8 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     #[Validate('nullable|image|max:2048|mimes:jpeg,jpg,png,webp,gif')]
     public mixed $photo = null;
+
+    public ?string $imageUrl = null;
 
     public function mount(?ProductGroup $productGroup = null): void
     {
@@ -39,6 +51,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             $this->description = $productGroup->description ?? '';
             $this->parentId = $productGroup->parent_id;
             $this->customFieldValues = $this->loadCustomFieldValuesFrom($productGroup);
+            $this->imageUrl = app(FileService::class)->signedUrlOrNull(
+                $productGroup->icon_thumb_url ?: $productGroup->icon_url
+            );
         }
     }
 
@@ -46,6 +61,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'parentId' => ['nullable', 'integer', 'exists:product_groups,id'],
+            'photo' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,jpg,png,webp,gif'],
         ]);
 
         try {
@@ -70,30 +88,58 @@ new #[Layout('components.layouts.app')] class extends Component {
                     ])
                 );
 
-                if ($this->photo) {
-                    $group = ProductGroup::findOrFail($result->id);
+            }
 
-                    try {
-                        $upload = app(FileService::class)->uploadIcon($this->photo, $group);
-                        $group->update([
-                            'icon_url' => $upload['icon_url'],
-                            'icon_thumb_url' => $upload['icon_thumb_url'],
-                        ]);
-                    } catch (\Throwable $e) {
-                        report($e);
-                        $this->addError('photo', 'Failed to upload image. You can add one from the edit screen.');
-
-                        $this->redirect(route('product-groups.index'), navigate: true);
-
-                        return;
-                    }
-                }
+            if ($this->photo) {
+                $group = ProductGroup::findOrFail($result->id);
+                $upload = app(FileService::class)->uploadIcon($this->photo, $group);
+                $group->update([
+                    'icon_url' => $upload['icon_url'],
+                    'icon_thumb_url' => $upload['icon_thumb_url'],
+                ]);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->reKeyCustomFieldErrors($e, $this->referenceData->pluck('name')->all());
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('photo', 'Failed to upload image. Please try again.');
+
+            return;
         }
 
         $this->redirect(route('product-groups.index'), navigate: true);
+    }
+
+    public function removeImage(): void
+    {
+        if ($this->photo instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+            $this->photo = null;
+
+            return;
+        }
+
+        if ($this->groupId === null) {
+            $this->imageUrl = null;
+
+            return;
+        }
+
+        $group = ProductGroup::findOrFail($this->groupId);
+        $storageDisk = config('filesystems.default', 'local') === 'local'
+            ? 'public'
+            : config('filesystems.default');
+
+        foreach ([$group->icon_url, $group->icon_thumb_url] as $path) {
+            if ($path) {
+                Storage::disk($storageDisk)->delete($path);
+            }
+        }
+
+        $group->update([
+            'icon_url' => null,
+            'icon_thumb_url' => null,
+        ]);
+        $this->imageUrl = null;
     }
 
     /**
@@ -135,9 +181,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     @if($isEditing)
         <x-signals.page-header title="Edit Product Group">
             <x-slot:breadcrumbs>
-                <a href="{{ route('product-groups.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Product Groups</a>
+                <a href="{{ route('product-groups.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Product Groups</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
-                <a href="{{ route('products.index', ['filters' => ['product_group_id' => $groupId]]) }}" wire:navigate class="text-[var(--link)] hover:underline">{{ $name }}</a>
+                <a href="{{ route('products.index', ['filters' => ['product_group_id' => $groupId]]) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $name }}</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Edit</span>
             </x-slot:breadcrumbs>
@@ -145,7 +191,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     @else
         <x-signals.page-header title="Create Product Group">
             <x-slot:breadcrumbs>
-                <a href="{{ route('product-groups.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Product Groups</a>
+                <a href="{{ route('product-groups.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Product Groups</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
@@ -153,55 +199,96 @@ new #[Layout('components.layouts.app')] class extends Component {
     @endif
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
-        <form wire:submit="save" style="max-width: 480px;">
-            <div class="space-y-6">
-                @if($isEditing && $group)
-                    <x-signals.form-section title="Group Image">
-                        <livewire:components.icon-upload :model="$group" :key="'icon-'.$group->id" />
-                    </x-signals.form-section>
-                @else
-                    <x-signals.form-section title="Group Image">
-                        <div class="flex items-center gap-4">
-                            <div class="flex shrink-0 items-center justify-center size-16 overflow-hidden rounded" style="background: var(--s-subtle);">
-                                @if($photo)
-                                    <img src="{{ $photo->temporaryUrl() }}" alt="" class="size-full object-cover" />
-                                @else
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" class="size-7"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                                @endif
-                            </div>
-                            <div class="space-y-1">
-                                <input type="file" wire:model="photo" accept="image/*" class="s-input text-sm" />
-                                <p class="text-xs" style="color: var(--text-muted);">PNG, JPG, WEBP or GIF. Max 2MB.</p>
-                                @error('photo')
-                                    <p class="text-xs" style="color: var(--red);">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </x-signals.form-section>
-                @endif
+        <form wire:submit="save" class="max-w-[560px] space-y-4">
+            <x-dense::field
+                label="Group Image"
+                for="product-group-photo"
+                :error="$errors->first('photo')"
+                error-id="product-group-photo-error"
+            >
+                <x-dense::dropzone
+                    id="product-group-photo"
+                    model="photo"
+                    clear-method="removeImage"
+                    :preview="$photo ? $photo->temporaryUrl() : $imageUrl"
+                    accept="image/*"
+                    placeholder="Drag an image here or click to browse."
+                />
+            </x-dense::field>
 
-                <x-signals.form-section title="Group Details">
-                    <div class="space-y-3">
-                        <flux:input wire:model="name" label="Name" required />
-                        <flux:textarea wire:model="description" label="Description" rows="3" />
-                        <flux:select wire:model="parentId" label="Parent Group">
-                            <option value="">None</option>
-                            @foreach($parentOptions as $opt)
-                                <option value="{{ $opt->id }}">{{ $opt->name }}</option>
-                            @endforeach
-                        </flux:select>
-                    </div>
-                </x-signals.form-section>
+            <x-dense::field
+                label="Name"
+                for="product-group-name"
+                required
+                :error="$errors->first('name')"
+                error-id="product-group-name-error"
+            >
+                <x-dense::input
+                    id="product-group-name"
+                    wire:model="name"
+                    required
+                    :invalid="$errors->has('name')"
+                    :aria-describedby="$errors->has('name') ? 'product-group-name-error' : null"
+                    autofocus
+                    autocomplete="off"
+                />
+            </x-dense::field>
+
+            <x-dense::field
+                label="Description"
+                for="product-group-description"
+                :error="$errors->first('description')"
+                error-id="product-group-description-error"
+            >
+                <x-dense::textarea
+                    id="product-group-description"
+                    wire:model="description"
+                    :invalid="$errors->has('description')"
+                    :aria-describedby="$errors->has('description') ? 'product-group-description-error' : null"
+                    rows="3"
+                />
+            </x-dense::field>
+
+            <x-dense::field
+                label="Parent Group"
+                for="product-group-parent"
+                :error="$errors->first('parentId')"
+                error-id="product-group-parent-error"
+            >
+                <x-dense::combobox
+                    id="product-group-parent"
+                    model="parentId"
+                    :selected="$parentId"
+                    :options="collect($parentOptions)->map(fn ($option) => ['id' => (int) $option->id, 'name' => $option->name])->values()->all()"
+                    :limit="5"
+                    :invalid="$errors->has('parentId')"
+                    :aria-describedby="$errors->has('parentId') ? 'product-group-parent-error' : null"
+                    placeholder="Select parent group"
+                />
+            </x-dense::field>
 
                 @if($groupedCustomFields->isNotEmpty())
-                    <x-signals.custom-fields-editor :groupedCustomFields="$groupedCustomFields" />
+                    <x-signals.custom-fields-editor
+                        :groupedCustomFields="$groupedCustomFields"
+                        prefix="customFieldValues"
+                        :nativeRequired="false"
+                        dense
+                    />
                 @endif
 
-                <div class="flex items-center gap-4">
-                    <flux:button variant="primary" type="submit">{{ $isEditing ? 'Save Changes' : 'Create Group' }}</flux:button>
-                    <flux:button variant="ghost" href="{{ route('product-groups.index') }}" wire:navigate>Cancel</flux:button>
+                <div class="flex items-center gap-2 pt-2">
+                    <x-dense::button type="submit" variant="accent">
+                        {{ $isEditing ? 'Save Changes' : 'Create Group' }}
+                    </x-dense::button>
+                    <x-dense::button
+                        type="button"
+                        variant="ghost"
+                        href="{{ route('product-groups.index') }}"
+                        wire:navigate.hover
+                    >
+                        Cancel
+                    </x-dense::button>
                 </div>
-            </div>
         </form>
     </div>
 </section>

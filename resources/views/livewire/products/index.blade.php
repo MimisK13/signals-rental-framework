@@ -147,7 +147,9 @@ new #[Layout('components.layouts.app')] #[Title('Products')] class extends Compo
 <section class="w-full">
     <x-signals.page-header title="Products">
         <x-slot:meta>
-            <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Catalogue</span>
+            <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">
+                Catalogue
+            </span>
         </x-slot:meta>
     </x-signals.page-header>
 

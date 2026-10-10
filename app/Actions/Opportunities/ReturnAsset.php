@@ -7,6 +7,7 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Opportunities\ReturnAssetData;
 use App\Models\OpportunityItemAsset;
+use App\Models\StockLevel;
 use App\Services\Containers\KitContainerReturnCompletion;
 use App\Verbs\Events\Opportunities\AssetReturned;
 use Illuminate\Support\Carbon;
@@ -24,13 +25,21 @@ class ReturnAsset
 
     public function __invoke(OpportunityItemAsset $asset, ReturnAssetData $data): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
+        if ($data->return_store_id !== null) {
+            Gate::authorize('access', new StockLevel(['store_id' => $data->return_store_id]));
+        }
 
         $returnedAt = $data->returned_at ?? Carbon::now('UTC')->toIso8601String();
 
         $this->commitVerbs(function () use ($asset, $data, $returnedAt): void {
+            $locked = OpportunityItemAsset::query()
+                ->whereKey($asset->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             AssetReturned::fire(
-                state_id: $asset->state_id,
+                state_id: $locked->state_id,
                 received_by: $data->received_by,
                 return_store_id: $data->return_store_id,
                 returned_at: $returnedAt,

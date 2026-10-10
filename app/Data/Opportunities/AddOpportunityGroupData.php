@@ -17,6 +17,7 @@ class AddOpportunityGroupData extends Data
 {
     public function __construct(
         public string $name,
+        public string $quantity = '1',
         /**
          * The existing group path under which to nest this group (e.g. '0001').
          * Null adds the group at the top level.
@@ -38,6 +39,7 @@ class AddOpportunityGroupData extends Data
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'quantity' => ['sometimes', 'numeric', 'min:0'],
             'parent_path' => ['sometimes', 'nullable', 'string'],
             'custom_fields' => ['sometimes', 'nullable', 'array'],
         ];

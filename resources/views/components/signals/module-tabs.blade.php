@@ -5,7 +5,7 @@
         @foreach($tabs as $tab)
             <a href="{{ $tab['route'] }}"
                class="subnav-link {{ $active === $tab['name'] ? 'active' : '' }}"
-               wire:navigate>
+               wire:navigate.hover>
                 {{ $tab['label'] }}
                 @if(isset($tab['count']))
                     <span class="ml-1 text-[10px] text-[var(--text-muted)]">({{ $tab['count'] }})</span>

@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Contracts\HasSchema;
 use App\Enums\RateTransactionType;
 use App\Models\Traits\FormatsMoney;
-use App\Services\RateEngine\RateResolver;
+use App\Observers\ProductRateObserver;
 use App\Services\SchemaBuilder;
 use Carbon\CarbonInterface;
 use Database\Factories\ProductRateFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,20 +19,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface|null $valid_to
  * @property int|null $price_category_id
  */
+#[ObservedBy(ProductRateObserver::class)]
 class ProductRate extends Model implements HasSchema
 {
     /** @use HasFactory<ProductRateFactory> */
     use FormatsMoney, HasFactory;
-
-    protected static function booted(): void
-    {
-        $flush = static function (ProductRate $rate): void {
-            RateResolver::flushProduct($rate->product_id);
-        };
-
-        static::saved($flush);
-        static::deleted($flush);
-    }
 
     /** @var list<string> */
     protected $fillable = [

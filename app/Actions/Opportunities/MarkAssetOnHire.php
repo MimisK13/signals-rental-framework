@@ -18,7 +18,7 @@ class MarkAssetOnHire
 
     public function __invoke(OpportunityItemAsset $asset): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
 
         $this->commitVerbs(function () use ($asset): void {
             AssetOnHire::fire(state_id: $asset->state_id);

@@ -35,12 +35,17 @@ class DispatchAsset
 
     public function __invoke(OpportunityItemAsset $asset, DispatchAssetData $data): OpportunityItemAssetData
     {
-        Gate::authorize('opportunities.edit');
+        Gate::authorize('update', $asset->item->opportunity);
 
         $dispatchedAt = $data->dispatched_at ?? Carbon::now('UTC')->toIso8601String();
 
         $this->commitVerbs(function () use ($asset, $data, $dispatchedAt): void {
-            $item = $asset->item()->first();
+            $locked = OpportunityItemAsset::query()
+                ->whereKey($asset->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $item = $locked->item()->first();
 
             if ($item !== null) {
                 // §7.4 dispatch gate — Block throws (rolling back the commit);
@@ -49,7 +54,7 @@ class DispatchAsset
             }
 
             AssetDispatched::fire(
-                state_id: $asset->state_id,
+                state_id: $locked->state_id,
                 dispatched_by: $data->dispatched_by,
                 vehicle_id: $data->vehicle_id,
                 notes: $data->notes,

@@ -80,7 +80,7 @@ describe('enum label coverage batch 1', function () {
 
     it('labels ContainerUnsealReason cases', function () {
         expect(ContainerUnsealReason::Manual->label())->toBe('Manual')
-            ->and(ContainerUnsealReason::TransferTriggered->label())->toBe('Transfer triggered');
+            ->and(ContainerUnsealReason::Transfer->label())->toBe('Transfer');
     });
 
     it('labels ContainerItemUnpackReason cases', function () {

@@ -58,7 +58,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             <h3 class="text-sm font-semibold text-[var(--text-secondary)]" style="font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em;">
                 Rates ({{ $product->rates_count ?? $rates->count() }})
             </h3>
-            <a href="{{ route('products.rates.create', $product) }}" wire:navigate class="s-btn s-btn-sm s-btn-accent">
+            <a href="{{ route('products.rates.create', $product) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-accent">
                 <flux:icon.plus class="w-4 h-4" />
                 Assign Rate
             </a>
@@ -147,7 +147,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                                 }
                                             })"
                                         >
-                                            <a href="{{ route('products.rates.edit', [$product, $rate]) }}" wire:navigate class="s-dropdown-item">
+                                            <a href="{{ route('products.rates.edit', [$product, $rate]) }}" wire:navigate.hover class="s-dropdown-item">
                                                 <flux:icon.pencil-square class="w-3.5 h-3.5" />
                                                 Edit
                                             </a>

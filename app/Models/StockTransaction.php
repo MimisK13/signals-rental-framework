@@ -9,7 +9,9 @@ use Database\Factories\StockTransactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use LogicException;
 
 class StockTransaction extends Model implements HasSchema
 {
@@ -27,6 +29,10 @@ class StockTransaction extends Model implements HasSchema
         'quantity',
         'description',
         'manual',
+        'actor_user_id',
+        'quantity_before',
+        'quantity_after',
+        'reversal_of_id',
     ];
 
     /**
@@ -38,6 +44,8 @@ class StockTransaction extends Model implements HasSchema
             'transaction_type' => TransactionType::class,
             'transaction_at' => 'datetime',
             'quantity' => 'decimal:2',
+            'quantity_before' => 'decimal:2',
+            'quantity_after' => 'decimal:2',
             'manual' => 'boolean',
         ];
     }
@@ -50,6 +58,9 @@ class StockTransaction extends Model implements HasSchema
         $builder->relation('store_id')->label('Store')
             ->relation('store', 'belongsTo', Store::class, 'name')
             ->required()->filterable()->sortable();
+        $builder->relation('actor_user_id')->label('Actor')
+            ->relation('actor', 'belongsTo', User::class, 'name')
+            ->filterable();
         $builder->relation('source_id')->label('Source')
             ->relation('source', 'morphTo', Model::class)
             ->filterable();
@@ -57,6 +68,11 @@ class StockTransaction extends Model implements HasSchema
         $builder->integer('transaction_type')->label('Transaction Type')->filterable()->sortable()->groupable();
         $builder->datetime('transaction_at')->label('Transaction At')->filterable()->sortable();
         $builder->decimal('quantity')->label('Quantity')->sortable();
+        $builder->decimal('quantity_before')->label('Quantity Before');
+        $builder->decimal('quantity_after')->label('Quantity After');
+        $builder->relation('reversal_of_id')->label('Reversal Of')
+            ->relation('reversalOf', 'belongsTo', self::class, 'id')
+            ->filterable();
         $builder->text('description')->label('Description')->searchable();
         $builder->boolean('manual')->label('Manual')->filterable()->groupable();
         $builder->datetime('created_at')->label('Created')->sortable()->filterable();
@@ -85,6 +101,41 @@ class StockTransaction extends Model implements HasSchema
     public function source(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(static function (): void {
+            throw new LogicException('Committed stock transactions are immutable.');
+        });
+
+        static::deleting(static function (): void {
+            throw new LogicException('Committed stock transactions cannot be deleted; reverse them instead.');
+        });
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /**
+     * @return BelongsTo<self, $this>
+     */
+    public function reversalOf(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'reversal_of_id');
+    }
+
+    /**
+     * @return HasOne<self, $this>
+     */
+    public function reversal(): HasOne
+    {
+        return $this->hasOne(self::class, 'reversal_of_id');
     }
 
     /**

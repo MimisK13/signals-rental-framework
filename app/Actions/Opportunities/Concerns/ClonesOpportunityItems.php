@@ -44,6 +44,8 @@ trait ClonesOpportunityItems
             'charge_period' => $item->charge_period->value,
             'starts_at' => $this->toIso($item->starts_at),
             'ends_at' => $this->toIso($item->ends_at),
+            'planning_starts_at' => $this->toIso($item->planning_starts_at),
+            'planning_ends_at' => $this->toIso($item->planning_ends_at),
             'is_optional' => $item->is_optional,
             'discount_percent' => $item->discount_percent,
             'notes' => $item->notes,

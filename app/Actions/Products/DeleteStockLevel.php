@@ -6,6 +6,7 @@ use App\Enums\StockMethod;
 use App\Events\AuditableEvent;
 use App\Models\StockLevel;
 use App\Services\Api\WebhookService;
+use App\Services\Availability\ProductStoreCapacityLock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -15,6 +16,13 @@ class DeleteStockLevel
     public function __invoke(StockLevel $stockLevel): void
     {
         Gate::authorize('stock.adjust');
+        Gate::authorize('access', $stockLevel);
+
+        if ($stockLevel->stockTransactions()->exists()) {
+            throw ValidationException::withMessages([
+                'stock_level' => 'A Stock Level with transaction history cannot be deleted.',
+            ]);
+        }
 
         // A bulk product must always retain at least one stock level.
         $isBulk = $stockLevel->product?->stock_method !== StockMethod::Serialised;
@@ -25,6 +33,15 @@ class DeleteStockLevel
         }
 
         DB::transaction(function () use ($stockLevel): void {
+            app(ProductStoreCapacityLock::class)->acquire($stockLevel->product_id, $stockLevel->store_id);
+            $stockLevel->refresh();
+
+            if ($stockLevel->stockTransactions()->exists()) {
+                throw ValidationException::withMessages([
+                    'stock_level' => 'A Stock Level with transaction history cannot be deleted.',
+                ]);
+            }
+
             event(new AuditableEvent($stockLevel, 'stock_level.deleted'));
 
             // Delete webhooks send only the ID as the resource no longer exists.

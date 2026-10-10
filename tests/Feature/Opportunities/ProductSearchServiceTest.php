@@ -5,6 +5,7 @@ use App\Models\Accessory;
 use App\Models\Product;
 use App\Models\ProductRate;
 use App\Models\RateDefinition;
+use App\Models\SerialisedComponent;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Opportunities\ProductSearchService;
@@ -28,6 +29,24 @@ it('returns a collection of result DTOs for a matching query', function (): void
         ->and($results->first())->toBeInstanceOf(ProductSearchResultData::class)
         ->and($results->first()->name)->toBe('Spiider Light')
         ->and($results->first()->sku)->toBe('SPD-001');
+});
+
+it('marks products with an expandable composition in search and catalogue results', function (): void {
+    $package = Product::factory()->kit()->create(['name' => 'Small PA Package']);
+    $speaker = Product::factory()->create(['name' => 'Speaker']);
+    SerialisedComponent::factory()->pool()->create([
+        'product_id' => $package->id,
+        'component_product_id' => $speaker->id,
+        'quantity' => '2',
+    ]);
+    $ordinary = Product::factory()->create(['name' => 'Ordinary Speaker']);
+
+    $result = $this->service->search('small pa package')->first();
+    $catalogue = collect($this->service->catalogueIndex())->keyBy('id');
+
+    expect($result->is_combination)->toBeTrue()
+        ->and($catalogue[$package->id]['is_combination'])->toBeTrue()
+        ->and($catalogue[$ordinary->id]['is_combination'])->toBeFalse();
 });
 
 it('matches on sku as well as name', function (): void {

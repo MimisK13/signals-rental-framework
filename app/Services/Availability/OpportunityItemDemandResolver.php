@@ -17,6 +17,7 @@ use App\Models\Product;
 use App\Models\SerialisedComponent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 /**
@@ -56,6 +57,13 @@ use InvalidArgumentException;
  */
 class OpportunityItemDemandResolver implements DemandResolverContract
 {
+    private readonly OpportunityItemPeriodResolver $periodResolver;
+
+    public function __construct(?OpportunityItemPeriodResolver $periodResolver = null)
+    {
+        $this->periodResolver = $periodResolver ?? new OpportunityItemPeriodResolver;
+    }
+
     public function sourceType(): string
     {
         return 'opportunity_item';
@@ -65,19 +73,19 @@ class OpportunityItemDemandResolver implements DemandResolverContract
      * The resolved availability context for a line item: the product it claims
      * against, the store (its `dispatch_store_id` override or the opportunity's
      * store), the effective demand window (date-source-aware, pre-buffer), and the
-     * requested whole-unit quantity.
+     * requested and effective owned-claim whole-unit quantities.
      *
      * Shared by the demand-writing path ({@see syncDemands()}) and the read path
      * ({@see App\Services\AvailabilityService::getOpportunityContext()}) so both
      * agree on which product/store/window/quantity a line resolves to. `productId`
      * / `storeId` are null when the line references no product or has no store.
      *
-     * @return array{product_id: int|null, store_id: int|null, from: Carbon, to: Carbon, quantity: int}
+     * @return array{product_id: int|null, store_id: int|null, from: Carbon, to: Carbon, quantity: int, claim_quantity: int}
      */
     public function resolveContext(OpportunityItem $item): array
     {
         $product = $this->resolveProduct($item);
-        [$from, $to] = $this->resolveDates($item);
+        [$from, $to] = $this->periodResolver->planningPeriod($item);
 
         return [
             'product_id' => $product?->id,
@@ -85,7 +93,29 @@ class OpportunityItemDemandResolver implements DemandResolverContract
             'from' => $from,
             'to' => $to,
             'quantity' => max(1, (int) round((float) $item->quantity)),
+            'claim_quantity' => $this->effectiveClaimQuantity($item),
         ];
+    }
+
+    /**
+     * Resolve the single authoritative owned-capacity claim for a line.
+     *
+     * A null reservation is the legacy mode and retains the historical minimum
+     * one-unit claim. An explicit reservation, including zero, is authoritative
+     * and is never replaced by the requested quantity.
+     */
+    public function effectiveClaimQuantity(OpportunityItem $item): int
+    {
+        return $this->effectiveClaimQuantityFor($item, $item->reserved_quantity);
+    }
+
+    public function effectiveClaimQuantityFor(OpportunityItem $item, ?string $reservedQuantity): int
+    {
+        if ($reservedQuantity !== null) {
+            return max(0, (int) round((float) $reservedQuantity));
+        }
+
+        return max(1, (int) round((float) $item->quantity));
     }
 
     /**
@@ -142,21 +172,35 @@ class OpportunityItemDemandResolver implements DemandResolverContract
     {
         $item = $this->asItem($source);
 
+        // Release the separate inspection hold before writing the rental demand.
+        // The hold is rebuilt after the rental projection has been replaced. This
+        // ordering is required by PostgreSQL's per-asset active-demand exclusion
+        // constraint when a returned asset's rental demand is being closed.
+        $inspectionHoldResolver = app(InspectionHoldDemandResolver::class);
+        $inspectionHoldResolver->releaseDemandsForItem($item);
+
         $product = $this->resolveProduct($item);
         $storeId = $this->resolveStoreId($item);
+        $phase = $this->resolvePhase($item);
+
+        if ($product !== null && $storeId === null && $phase->isActive()) {
+            throw ValidationException::withMessages([
+                'store_id' => ['A committed product line must have an operational Store.'],
+            ]);
+        }
 
         // Without a product or store there is nothing to claim against — clear
         // any stale demands and stop.
         if ($product === null || $storeId === null) {
             $this->releaseDemands($item);
+            $inspectionHoldResolver->syncDemandsForItem($item);
 
             return;
         }
 
-        $phase = $this->resolvePhase($item);
         $metadata = $this->buildMetadata($item);
 
-        [$startsAt, $endsAt] = $this->resolveDates($item);
+        [$startsAt, $endsAt] = $this->periodResolver->planningPeriod($item);
 
         // Turnaround/prep buffers only widen the window for phases that
         // physically occupy (or have just occupied) a unit; Draft/Void release
@@ -173,7 +217,7 @@ class OpportunityItemDemandResolver implements DemandResolverContract
         $allocatedAssets = $this->allocatedAssets($item);
         $isSerialised = $product->stock_method === StockMethod::Serialised && $allocatedAssets !== [];
 
-        $quantity = max(1, (int) round((float) $item->quantity));
+        $quantity = $this->effectiveClaimQuantity($item);
 
         // Replace the item's demands wholesale so the resolver is idempotent and
         // converges (handles quantity changes, allocation changes, etc.).
@@ -209,6 +253,7 @@ class OpportunityItemDemandResolver implements DemandResolverContract
                 $phase,
                 $metadata,
             );
+            $inspectionHoldResolver->syncDemandsForItem($item);
 
             return;
         }
@@ -274,14 +319,16 @@ class OpportunityItemDemandResolver implements DemandResolverContract
                 $assetMetadata = $metadata;
                 $assetMetadata['pending_checkin'] = $this->isPendingCheckin($asset);
 
-                $this->persist($product->id, $storeId, (int) $asset->stock_level_id, 1, $assetStart, $assetEnd, $assetBufferedStart, $assetBufferedEnd, $assetPhase, $assetMetadata, $item->id);
+                $this->persist($product->id, $storeId, (int) $asset->stock_level_id, 1, $assetStart, $assetEnd, $assetBufferedStart, $assetBufferedEnd, $assetPhase, $assetMetadata, $item->id, (int) $item->opportunity->reservation_priority);
             }
 
-            $remainder = $quantity - count($allocatedAssets);
+            $remainder = max(0, $quantity - count($allocatedAssets));
 
             if ($remainder > 0) {
-                $this->persist($product->id, $storeId, null, $remainder, $startsAt, $endsAt, $bufferedStart, $bufferedEnd, $phase, $metadata, $item->id);
+                $this->persist($product->id, $storeId, null, $remainder, $startsAt, $endsAt, $bufferedStart, $bufferedEnd, $phase, $metadata, $item->id, (int) $item->opportunity->reservation_priority);
             }
+
+            $inspectionHoldResolver->syncDemandsForItem($item);
 
             return;
         }
@@ -293,16 +340,19 @@ class OpportunityItemDemandResolver implements DemandResolverContract
         $effectiveQuantity = max(0, $quantity - (int) round((float) ($item->returned_quantity ?? '0')));
 
         if ($effectiveQuantity <= 0) {
+            $inspectionHoldResolver->syncDemandsForItem($item);
+
             return;
         }
 
-        $this->persist($product->id, $storeId, null, $effectiveQuantity, $startsAt, $endsAt, $bufferedStart, $bufferedEnd, $phase, $metadata, $item->id);
+        $this->persist($product->id, $storeId, null, $effectiveQuantity, $startsAt, $endsAt, $bufferedStart, $bufferedEnd, $phase, $metadata, $item->id, (int) $item->opportunity->reservation_priority);
+        $inspectionHoldResolver->syncDemandsForItem($item);
     }
 
     /**
      * Explode a catalogue (pool) kit line into one demand per pool component.
      *
-     * Each pool component claims (line_qty × component.quantity) units of the
+     * Each pool component claims (effective_claim_qty × component.quantity) units of the
      * COMPONENT product (rounded up to whole units — demands are integer), at the
      * line's window with the COMPONENT's own before/after buffers baked in (the kit
      * parent carries no meaningful buffers of its own). All demands share the line
@@ -411,6 +461,7 @@ class OpportunityItemDemandResolver implements DemandResolverContract
                 $phase,
                 $metadata,
                 $item->id,
+                (int) $item->opportunity->reservation_priority,
             );
         }
     }
@@ -476,6 +527,8 @@ class OpportunityItemDemandResolver implements DemandResolverContract
     {
         $item = $this->asItem($source);
 
+        app(InspectionHoldDemandResolver::class)->releaseDemandsForItem($item);
+
         Demand::query()
             ->where('source_type', $this->sourceType())
             ->where('source_id', $item->id)
@@ -514,6 +567,7 @@ class OpportunityItemDemandResolver implements DemandResolverContract
         DemandPhase $phase,
         array $metadata,
         int $sourceId,
+        int $priority = 0,
     ): void {
         $attributes = [
             'product_id' => $productId,
@@ -532,7 +586,7 @@ class OpportunityItemDemandResolver implements DemandResolverContract
             'source_id' => $sourceId,
             'phase' => $phase->value,
             'is_active' => $phase->isActive(),
-            'priority' => 0,
+            'priority' => $priority,
             'metadata' => $metadata,
         ];
 
@@ -572,6 +626,18 @@ class OpportunityItemDemandResolver implements DemandResolverContract
      * @return array{0: Carbon, 1: Carbon} [startsAt, endsAt]
      */
     protected function resolveDates(OpportunityItem $item): array
+    {
+        return $this->periodResolver->planningPeriod($item);
+
+    }
+
+    /**
+     * Retained for legacy subclass compatibility; new demand writes use the
+     * explicit planning-period resolver above.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    protected function legacyResolveDates(OpportunityItem $item): array
     {
         $opportunity = $item->opportunity;
 
@@ -720,6 +786,14 @@ class OpportunityItemDemandResolver implements DemandResolverContract
     {
         if (! $item->isProductBacked()) {
             return null;
+        }
+
+        if ($item->relationLoaded('itemable') && $item->getRelation('itemable') instanceof Product) {
+            return $item->getRelation('itemable');
+        }
+
+        if ($item->relationLoaded('item') && $item->item instanceof Product) {
+            return $item->item;
         }
 
         return Product::query()->find($item->itemable_id);

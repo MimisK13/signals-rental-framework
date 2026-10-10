@@ -27,10 +27,12 @@ use App\Services\Api\UsageRecorder;
 use App\Services\Api\WebhookEventRegistry;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\Availability\DatabaseAvailabilityDataPresence;
+use App\Services\Availability\InspectionHoldDemandResolver;
 use App\Services\Availability\KitAvailabilityCalculator;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Availability\PassThroughAvailabilityStrategy;
 use App\Services\Availability\RecalculationPipeline;
+use App\Services\Availability\RepairDemandResolver;
 use App\Services\Availability\SettingsAvailabilityResolutionProvider;
 use App\Services\Availability\SlotCalculator;
 use App\Services\Availability\VirtualStockDemandResolver;
@@ -344,6 +346,22 @@ class AppServiceProvider extends ServiceProvider
                 resolverClass: VirtualStockDemandResolver::class,
                 colour: '#8B5CF6',
                 icon: 'arrow-down-circle',
+            ));
+
+            $registry->register(new DemandSourceDefinition(
+                type: 'repair',
+                displayName: 'Repairs',
+                resolverClass: RepairDemandResolver::class,
+                colour: '#F59E0B',
+                icon: 'wrench',
+            ));
+
+            $registry->register(new DemandSourceDefinition(
+                type: 'inspection_hold',
+                displayName: 'Return inspection holds',
+                resolverClass: InspectionHoldDemandResolver::class,
+                colour: '#64748B',
+                icon: 'clipboard-check',
             ));
 
             return $registry;

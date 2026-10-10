@@ -23,6 +23,8 @@ class CreateOpportunityData extends Data
         public ?string $external_description = null,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
+        public ?string $planning_starts_at = null,
+        public ?string $planning_ends_at = null,
         public ?string $charge_starts_at = null,
         public ?string $charge_ends_at = null,
         // Event-logistics lifecycle dates (C3a).
@@ -60,6 +62,7 @@ class CreateOpportunityData extends Data
         public ?int $collection_address_id = null,
         // Sales priority/quality rating 0–5 (C3i).
         public ?int $rating = null,
+        public int $reservation_priority = 0,
         public string $currency = 'GBP',
         public ?bool $prices_include_tax = null,
         /**
@@ -113,6 +116,8 @@ class CreateOpportunityData extends Data
             'external_description' => ['sometimes', 'nullable', 'string'],
             'starts_at' => ['sometimes', 'nullable', 'date'],
             'ends_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:starts_at'],
+            'planning_starts_at' => ['sometimes', 'nullable', 'date'],
+            'planning_ends_at' => ['sometimes', 'nullable', 'date', 'after:planning_starts_at'],
             'charge_starts_at' => ['sometimes', 'nullable', 'date'],
             'charge_ends_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:charge_starts_at'],
             'prep_starts_at' => ['sometimes', 'nullable', 'date'],
@@ -145,6 +150,7 @@ class CreateOpportunityData extends Data
             'delivery_address_id' => ['sometimes', 'nullable', 'integer', $memberAddressExists],
             'collection_address_id' => ['sometimes', 'nullable', 'integer', $memberAddressExists],
             'rating' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:5'],
+            'reservation_priority' => ['sometimes', 'integer', 'min:0'],
             'currency' => ['sometimes', 'string', 'size:3'],
             'prices_include_tax' => ['sometimes', 'boolean'],
             'charge_total' => ['sometimes', 'numeric'],

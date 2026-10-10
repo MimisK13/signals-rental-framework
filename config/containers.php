@@ -21,14 +21,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | Config-driven allow-list for POST /api/v1/containers/{uuid}/unseal.
-    | `transfer_triggered` is reserved for the Phase-4 transfer workflow (P51).
+    | `transfer` is reserved for the transfer workflow.
     |
     | @var list<string>
     */
 
     'unseal_reasons' => [
         'manual',
-        'transfer_triggered',
+        'transfer',
     ],
 
     /*

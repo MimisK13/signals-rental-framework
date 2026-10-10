@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Martian+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+@denseStyles
+@denseScripts
 @fluxAppearance
 @php
     use App\Support\BrandColour;

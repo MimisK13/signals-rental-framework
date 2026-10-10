@@ -24,7 +24,9 @@
     <x-signals.empty
         title="{{ __('No jobs in this window') }}"
         description="{{ __('No quotes or orders fall within the selected dates and filters.') }}">
-        <x-slot:icon><flux:icon.calendar-days class="!size-7" /></x-slot:icon>
+        <x-slot:icon>
+            <flux:icon.calendar-days class="!size-7" />
+        </x-slot:icon>
     </x-signals.empty>
 @else
     @php

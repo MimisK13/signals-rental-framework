@@ -44,7 +44,7 @@ if (file_exists($envBackup)) {
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', '../packages/calendar/tests');
 
 pest()->beforeEach(function (): void {
     if (Store::query()->where('is_default', true)->doesntExist()) {

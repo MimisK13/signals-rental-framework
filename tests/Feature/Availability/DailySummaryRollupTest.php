@@ -29,6 +29,8 @@ function useResolution(AvailabilityResolution $resolution): void
 }
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-01T00:00:00Z'));
+
     // These tests drive the RecalculationPipeline DIRECTLY over a narrow window
     // to assert the daily-summary rollup. Fake the queue so the demand observer's
     // async RecalculateAvailabilityJob (which would recompute the whole rolling
@@ -36,6 +38,10 @@ beforeEach(function () {
     Queue::fake();
 
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 describe('daily summary rollup', function () {

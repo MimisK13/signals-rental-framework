@@ -84,7 +84,7 @@ class AvailabilityDemoSeeder extends Seeder
             return;
         }
 
-        /** @var Collection<int, Product> $products */
+        /** @var Collection<string, Product> $products */
         $products = Product::query()
             ->whereIn('name', array_keys(self::PRODUCT_STOCK))
             ->get()

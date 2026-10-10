@@ -69,6 +69,7 @@ new class extends Component
             class="header-icon-btn"
             title="{{ __('Notifications') }}"
             aria-label="{{ __('Notifications') }}"
+            :aria-expanded="notificationsOpen"
             x-on:click="notificationsOpen = !notificationsOpen"
             :class="{ 'active': notificationsOpen }"
             type="button"

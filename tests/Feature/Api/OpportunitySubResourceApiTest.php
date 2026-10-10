@@ -232,6 +232,35 @@ describe('GET /api/v1/opportunities/{id}/availability', function () {
     });
 });
 
+describe('GET /api/v1/opportunities/{id}/planning', function () {
+    it('returns the canonical read-only planning state', function () {
+        $opportunity = Opportunity::factory()->create([
+            'store_id' => $this->store->id,
+            'starts_at' => '2026-09-01T09:00:00Z',
+            'ends_at' => '2026-09-05T17:00:00Z',
+        ]);
+        $token = subResourceReadToken($this->owner);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/opportunities/'.$opportunity->id.'/planning')
+            ->assertOk()
+            ->assertJsonStructure([
+                'planning',
+                'meta' => ['total', 'per_page', 'page'],
+            ])
+            ->assertJsonPath('meta.total', 0);
+    });
+
+    it('requires the opportunities:read ability', function () {
+        $opportunity = Opportunity::factory()->create();
+        $token = $this->owner->createToken('test', ['settings:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/opportunities/'.$opportunity->id.'/planning')
+            ->assertForbidden();
+    });
+});
+
 // ---------------------------------------------------------------------------
 // GET /opportunities/{id}/activity
 // ---------------------------------------------------------------------------

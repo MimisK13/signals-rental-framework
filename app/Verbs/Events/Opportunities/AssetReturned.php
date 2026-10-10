@@ -3,7 +3,9 @@
 namespace App\Verbs\Events\Opportunities;
 
 use App\Enums\AssetAssignmentStatus;
+use App\Models\AssetUsage;
 use App\Models\OpportunityItemAsset;
+use App\Models\StockLevel;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
@@ -11,7 +13,6 @@ use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\Events\Opportunities\Concerns\SyncsAssetDemands;
 use App\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Carbon;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;
 
@@ -54,7 +55,9 @@ class AssetReturned extends Event
     public function apply(AssetAssignmentState $state): void
     {
         $state->status = AssetAssignmentStatus::CheckedIn->value;
-        $state->returned_at = $this->returnedAt();
+        $state->returned_at = $this->returned_at !== null
+            ? CarbonImmutable::parse($this->returned_at)
+            : null;
         $state->last_event_at = CarbonImmutable::now();
     }
 
@@ -72,6 +75,24 @@ class AssetReturned extends Event
             'status' => AssetAssignmentStatus::CheckedIn->value,
             'returned_at' => $state->returned_at,
         ])->saveQuietly();
+
+        if ($state->returned_at !== null) {
+            $stockLevel = StockLevel::query()->find($state->stock_level_id);
+
+            if ($stockLevel !== null
+                && $stockLevel->asset_id !== null
+                && $stockLevel->isSerialised()
+                && ! $stockLevel->isVirtualAsset()) {
+                $usage = AssetUsage::query()
+                    ->where('asset_id', $stockLevel->asset_id)
+                    ->where('opportunity_item_id', $state->opportunity_item_id)
+                    ->whereNull('returned_at')
+                    ->lockForUpdate()
+                    ->first();
+
+                $usage?->update(['returned_at' => $state->returned_at]);
+            }
+        }
 
         // Persist a per-line return-store override when supplied (consumed for
         // reporting / future return-store routing).
@@ -102,7 +123,7 @@ class AssetReturned extends Event
                     'assignment_id' => $state->assignment_id,
                     'received_by' => $this->received_by,
                     'return_store_id' => $this->return_store_id,
-                    'returned_at' => Carbon::parse($state->returned_at)->toIso8601String(),
+                    'returned_at' => $state->returned_at?->toIso8601String(),
                 ],
                 oldValues: ['status' => $previousStatus],
             );
@@ -115,12 +136,5 @@ class AssetReturned extends Event
             $this->opportunityForAssignment($state->assignment_id),
             $this->singleAssetOverlay($state->assignment_id, AssetAssignmentStatus::CheckedIn),
         );
-    }
-
-    private function returnedAt(): CarbonImmutable
-    {
-        return $this->returned_at !== null
-            ? CarbonImmutable::parse($this->returned_at)
-            : CarbonImmutable::now();
     }
 }

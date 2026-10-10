@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Actions\Products\CreateStockTransaction;
-use App\Actions\Products\DeleteStockTransaction;
-use App\Data\Products\CreateStockTransactionData;
+use App\Actions\Products\AdjustStockLevel;
+use App\Actions\Products\ReverseStockTransaction;
+use App\Data\Products\AdjustStockLevelData;
 use App\Data\Products\StockTransactionData;
+use App\Enums\TransactionType;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Models\StockLevel;
@@ -13,6 +14,7 @@ use App\Models\StockTransaction;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class StockTransactionController extends Controller
@@ -103,22 +105,34 @@ class StockTransactionController extends Controller
     }
 
     /**
-     * Create a stock transaction.
+     * Create an operator stock adjustment through the legacy transaction route.
      *
-     * Allowed transaction types: buy (4), find (5), write_off (6), sell (7), make (9).
+     * The route remains for compatibility, but only D2 adjustment types are
+     * accepted. Business and system transaction types use dedicated workflows.
      */
-    #[ApiResponse(201, 'Stock transaction created')]
+    #[ApiResponse(201, 'Stock adjustment created')]
     public function store(Request $request, int $productId, int $stockLevelId): JsonResponse
     {
         $this->authorizeApi('stock.adjust', 'stock:write');
 
-        $this->resolveStockLevel($productId, $stockLevelId);
+        $result = $this->createAdjustment($request, $this->resolveStockLevel($productId, $stockLevelId));
 
-        $request->merge(['stock_level_id' => $stockLevelId]);
-        $validated = $request->validate(CreateStockTransactionData::rules());
-        $dto = CreateStockTransactionData::from($validated);
+        return $this->respondWith(
+            $result->toArray(),
+            'stock_transaction',
+            Response::HTTP_CREATED,
+        );
+    }
 
-        $result = (new CreateStockTransaction)($dto);
+    /**
+     * Create an explicit operator stock adjustment.
+     */
+    #[ApiResponse(201, 'Stock adjustment created')]
+    public function adjust(Request $request, int $productId, int $stockLevelId): JsonResponse
+    {
+        $this->authorizeApi('stock.adjust', 'stock:write');
+
+        $result = $this->createAdjustment($request, $this->resolveStockLevel($productId, $stockLevelId));
 
         return $this->respondWith(
             $result->toArray(),
@@ -130,10 +144,10 @@ class StockTransactionController extends Controller
     /**
      * Delete (reverse) a stock transaction.
      *
-     * Reverses the transaction's effect on held stock and removes the ledger row.
+     * Reverses the transaction's effect on held stock while preserving the ledger row.
      */
     #[ApiResponse(204, 'Stock transaction deleted')]
-    public function destroy(int $productId, int $stockLevelId, StockTransaction $stockTransaction): JsonResponse
+    public function destroy(Request $request, int $productId, int $stockLevelId, StockTransaction $stockTransaction): JsonResponse
     {
         $this->authorizeApi('stock.adjust', 'stock:write');
 
@@ -141,9 +155,36 @@ class StockTransactionController extends Controller
 
         abort_unless($stockTransaction->stock_level_id === (int) $stockLevelId, 404);
 
-        (new DeleteStockTransaction)($stockTransaction);
+        $reason = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ])['reason'];
+
+        (new ReverseStockTransaction)($stockTransaction, $reason);
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Create a compensating transaction while preserving the original fact.
+     */
+    #[ApiResponse(201, 'Stock transaction reversed')]
+    public function reverse(Request $request, int $productId, int $stockLevelId, StockTransaction $stockTransaction): JsonResponse
+    {
+        $this->authorizeApi('stock.adjust', 'stock:write');
+        $this->resolveStockLevel($productId, $stockLevelId);
+        abort_unless($stockTransaction->stock_level_id === (int) $stockLevelId, 404);
+
+        $reason = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ])['reason'];
+
+        $result = (new ReverseStockTransaction)($stockTransaction, $reason);
+
+        return $this->respondWith(
+            $result->toArray(),
+            'stock_transaction',
+            Response::HTTP_CREATED,
+        );
     }
 
     /**
@@ -155,5 +196,21 @@ class StockTransactionController extends Controller
             ->where('id', $stockLevelId)
             ->where('product_id', $productId)
             ->firstOrFail();
+    }
+
+    private function createAdjustment(Request $request, StockLevel $stockLevel): StockTransactionData
+    {
+        if (! $request->has('transaction_type') && $request->has('type')) {
+            $type = strtolower((string) $request->input('type'));
+            $transactionType = collect(TransactionType::cases())
+                ->first(fn (TransactionType $candidate): bool => Str::snake($candidate->name) === $type);
+
+            $request->merge(['transaction_type' => $transactionType?->value]);
+        }
+
+        $validated = $request->validate(AdjustStockLevelData::rules());
+        unset($validated['type']);
+
+        return (new AdjustStockLevel)($stockLevel, AdjustStockLevelData::from($validated));
     }
 }

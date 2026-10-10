@@ -139,7 +139,7 @@ new #[Layout('components.layouts.app')] #[Title('Zone Tax Rule')] class extends 
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit">{{ $isEditing ? 'Update' : 'Create' }}</flux:button>
-                <flux:button variant="ghost" href="{{ route('admin.settings.tax.rules') }}" wire:navigate>Cancel</flux:button>
+                <flux:button variant="ghost" href="{{ route('admin.settings.tax.rules') }}" wire:navigate.hover>Cancel</flux:button>
             </div>
         </form>
     </x-admin.layout>

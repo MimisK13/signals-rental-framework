@@ -53,6 +53,11 @@ beforeEach(function () {
 
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
     $this->detector = app(ShortageDetector::class);
+    Carbon::setTestNow(Carbon::parse('2026-07-01T00:00:00Z'));
+});
+
+afterEach(function (): void {
+    Carbon::setTestNow();
 });
 
 it('detects a shortage from a tstzrange-overlapping competing demand', function () {
