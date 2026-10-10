@@ -24,7 +24,7 @@ return new class extends Migration
             $table->bigInteger('file_size');
             $table->string('category', 50)->nullable();
             $table->text('description')->nullable();
-            $table->string('scan_status', 20)->default('clean');
+            $table->string('scan_status', 20)->default('pending');
             $table->timestamp('scanned_at')->nullable();
             $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

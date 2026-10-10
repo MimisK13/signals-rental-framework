@@ -57,6 +57,8 @@ return new class extends Migration
             $table->integer('version_type')->default(VersionType::Revision->value);
 
             $table->string('label')->nullable();
+            $table->string('dispatch_status')->nullable();
+            $table->timestampTz('dispatched_at')->nullable();
 
             // Exactly one version per opportunity is active; the opportunity's
             // totals mirror the active version's totals.
@@ -96,7 +98,10 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
 
             $table->timestampTz('sent_at')->nullable();
+            $table->foreignId('sent_to')->nullable()->constrained('members')->nullOnDelete();
+            $table->string('sent_via')->nullable();
             $table->timestampTz('accepted_at')->nullable();
+            $table->foreignId('accepted_by')->nullable()->constrained('members')->nullOnDelete();
             $table->timestampTz('declined_at')->nullable();
 
             $table->timestampsTz();
@@ -113,6 +118,8 @@ return new class extends Migration
             // Serves the alternative-cap count in VersionCreated::validate and the
             // accepted-version lookup in ConvertToOrder::resolveConfirmedVersion.
             $table->index(['opportunity_id', 'status'], 'idx_opportunity_versions_status');
+            $table->index('sent_to', 'idx_opportunity_versions_sent_to');
+            $table->index('accepted_by', 'idx_opportunity_versions_accepted_by');
         });
 
         // The self-referential FKs are added after the table (and its PK) exist so
@@ -121,10 +128,18 @@ return new class extends Migration
             $table->foreign('parent_version_id')->references('id')->on('opportunity_versions')->nullOnDelete();
             $table->foreign('superseded_by_version_id')->references('id')->on('opportunity_versions')->nullOnDelete();
         });
+
+        Schema::table('opportunity_items', function (Blueprint $table): void {
+            $table->foreign('version_id')->references('id')->on('opportunity_versions')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('opportunity_items', function (Blueprint $table): void {
+            $table->dropForeign(['version_id']);
+        });
+
         Schema::dropIfExists('opportunity_versions');
     }
 };

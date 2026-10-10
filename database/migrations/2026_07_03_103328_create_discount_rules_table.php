@@ -17,6 +17,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->decimal('discount_percent', 5, 2);
             $table->jsonb('criteria')->nullable();
+            $table->string('rule_scope', 32)->default('per_line');
             $table->timestamp('valid_from')->nullable();
             $table->timestamp('valid_to')->nullable();
             $table->unsignedInteger('sort_order')->default(0);
@@ -24,6 +25,7 @@ return new class extends Migration
 
             $table->index('discount_category_id');
             $table->index(['discount_category_id', 'sort_order']);
+            $table->index(['discount_category_id', 'rule_scope']);
         });
 
         $connection = Schema::getConnection();

@@ -24,6 +24,9 @@ return new class extends Migration
             $table->decimal('quantity_allocated', 10, 2)->default(0);
             $table->decimal('quantity_unavailable', 10, 2)->default(0);
             $table->decimal('quantity_on_order', 10, 2)->default(0);
+            $table->boolean('is_virtual')->default(false);
+            $table->unsignedBigInteger('virtual_stock_intake_id')->nullable();
+            $table->string('virtual_asset_status', 30)->nullable();
             $table->foreignId('container_stock_level_id')->nullable()->constrained('stock_levels')->nullOnDelete();
             $table->string('container_mode')->nullable();
             $table->timestamp('starts_at')->nullable();

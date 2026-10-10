@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('county')->nullable();
             $table->string('postcode')->nullable();
+            $table->string('what3words')->nullable();
             $table->foreignId('country_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('type_id')->nullable()->constrained('list_values')->nullOnDelete();
             $table->boolean('is_primary')->default(false);

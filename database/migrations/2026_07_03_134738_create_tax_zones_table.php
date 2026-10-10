@@ -19,10 +19,36 @@ return new class extends Migration
 
             $table->index('is_active');
         });
+
+        Schema::table('members', function (Blueprint $table): void {
+            $table->foreign('tax_zone_id')->references('id')->on('tax_zones')->nullOnDelete();
+        });
+
+        Schema::table('stores', function (Blueprint $table): void {
+            $table->foreign('tax_zone_id')->references('id')->on('tax_zones')->nullOnDelete();
+        });
+
+        Schema::table('tax_rules', function (Blueprint $table): void {
+            $table->foreign('seller_zone_id')->references('id')->on('tax_zones')->nullOnDelete();
+            $table->foreign('buyer_zone_id')->references('id')->on('tax_zones')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('tax_rules', function (Blueprint $table): void {
+            $table->dropForeign(['seller_zone_id']);
+            $table->dropForeign(['buyer_zone_id']);
+        });
+
+        Schema::table('members', function (Blueprint $table): void {
+            $table->dropForeign(['tax_zone_id']);
+        });
+
+        Schema::table('stores', function (Blueprint $table): void {
+            $table->dropForeign(['tax_zone_id']);
+        });
+
         Schema::dropIfExists('tax_zones');
     }
 };

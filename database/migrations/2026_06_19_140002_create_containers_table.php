@@ -83,6 +83,7 @@ return new class extends Migration
             $table->string('dissolved_reason', 20)->nullable();
             $table->timestampTz('dispatched_at')->nullable();
             $table->timestampTz('returned_at')->nullable();
+            $table->timestampTz('checkin_verification_required_at')->nullable();
 
             $table->foreignId('opportunity_id')
                 ->nullable()

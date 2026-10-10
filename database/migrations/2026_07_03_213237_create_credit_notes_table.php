@@ -20,6 +20,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('invoice_id');
             $table->foreign('invoice_id')->references('id')->on('invoices')->cascadeOnDelete();
+            $table->foreignId('store_id')->nullable()->constrained('stores')->cascadeOnDelete();
 
             $table->string('number', 50);
             $table->string('status', 30);
@@ -42,6 +43,7 @@ return new class extends Migration
             $table->index('number');
             $table->index('status');
             $table->index('invoice_id');
+            $table->unique(['store_id', 'number'], 'credit_notes_store_id_number_unique');
         });
     }
 

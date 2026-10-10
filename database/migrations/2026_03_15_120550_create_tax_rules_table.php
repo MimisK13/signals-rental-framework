@@ -10,10 +10,21 @@ return new class extends Migration
     {
         Schema::create('tax_rules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('organisation_tax_class_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_tax_class_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('tax_rate_id')->constrained()->cascadeOnDelete();
+            $table->string('name')->nullable();
+            $table->text('description')->nullable();
+            $table->foreignId('organisation_tax_class_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('product_tax_class_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('tax_rate_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('seller_zone_id')->nullable();
+            $table->unsignedBigInteger('buyer_zone_id')->nullable();
             $table->integer('priority')->default(0);
+            $table->string('buyer_type', 16)->nullable();
+            $table->boolean('has_tax_id')->nullable();
+            $table->unsignedBigInteger('tax_category_id')->nullable();
+            $table->string('result_type', 32)->nullable();
+            $table->text('legal_text')->nullable();
+            $table->date('effective_from')->nullable();
+            $table->date('effective_to')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
@@ -21,6 +32,7 @@ return new class extends Migration
                 ['organisation_tax_class_id', 'product_tax_class_id', 'tax_rate_id'],
                 'tax_rules_class_rate_unique'
             );
+            $table->index(['seller_zone_id', 'buyer_zone_id', 'is_active']);
         });
     }
 

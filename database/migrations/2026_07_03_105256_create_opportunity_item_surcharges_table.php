@@ -14,8 +14,13 @@ return new class extends Migration
                 ->constrained('opportunity_items')
                 ->cascadeOnDelete();
             $table->foreignId('surcharge_id')
+                ->nullable()
                 ->constrained('surcharges')
-                ->cascadeOnDelete();
+                ->nullOnDelete();
+            $table->string('name')->nullable();
+            $table->string('surcharge_type', 16)->nullable();
+            $table->decimal('percent_value', 5, 2)->nullable();
+            $table->integer('fixed_value_minor')->nullable();
             $table->integer('amount');
             $table->foreignId('product_tax_class_id')
                 ->nullable()

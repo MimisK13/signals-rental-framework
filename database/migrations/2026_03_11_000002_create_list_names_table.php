@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->boolean('is_system')->default(false);
             $table->boolean('is_hierarchical')->default(false);
+            $table->string('plugin_name')->nullable();
             $table->timestamps();
         });
     }

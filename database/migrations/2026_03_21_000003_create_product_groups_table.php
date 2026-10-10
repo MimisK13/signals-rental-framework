@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->string('icon_url', 500)->nullable();
+            $table->string('icon_thumb_url', 500)->nullable();
             $table->foreignId('parent_id')->nullable()->constrained('product_groups')->nullOnDelete();
             $table->integer('sort_order')->default(0);
             $table->timestamps();

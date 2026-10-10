@@ -38,10 +38,14 @@ return new class extends Migration
             $table->timestampTz('confirmed_at')->nullable();
             $table->timestampTz('received_at')->nullable();
             $table->timestampTz('returned_at')->nullable();
+            $table->dateTime('overrun_notified_at')->nullable();
             $table->timestampTz('cancelled_at')->nullable();
 
             $table->integer('unit_cost');
             $table->string('currency_code', 3);
+            $table->string('cost_apportionment_strategy', 50)->nullable();
+            $table->unsignedBigInteger('primary_opportunity_id')->nullable();
+            $table->foreign('primary_opportunity_id')->references('id')->on('opportunities')->nullOnDelete();
 
             $table->text('notes')->nullable();
 
@@ -57,12 +61,38 @@ return new class extends Migration
             $table->index('status');
             $table->index('product_id');
             $table->index(['store_id', 'status']);
+            $table->unique(['store_id', 'number'], 'virtual_stock_intakes_store_id_number_unique');
             $table->index(['available_from', 'available_until']);
+            $table->index('primary_opportunity_id');
+        });
+
+        Schema::table('stock_levels', function (Blueprint $table): void {
+            $table->foreign('virtual_stock_intake_id')->references('id')->on('virtual_stock_intakes')->nullOnDelete();
+        });
+
+        Schema::table('shortage_resolutions', function (Blueprint $table): void {
+            $table->foreign('virtual_stock_intake_id')->references('id')->on('virtual_stock_intakes')->nullOnDelete();
+        });
+
+        Schema::table('opportunity_costs', function (Blueprint $table): void {
+            $table->foreign('virtual_stock_intake_id')->references('id')->on('virtual_stock_intakes')->nullOnDelete();
         });
     }
 
     public function down(): void
     {
+        Schema::table('stock_levels', function (Blueprint $table): void {
+            $table->dropForeign(['virtual_stock_intake_id']);
+        });
+
+        Schema::table('shortage_resolutions', function (Blueprint $table): void {
+            $table->dropForeign(['virtual_stock_intake_id']);
+        });
+
+        Schema::table('opportunity_costs', function (Blueprint $table): void {
+            $table->dropForeign(['virtual_stock_intake_id']);
+        });
+
         Schema::dropIfExists('virtual_stock_intakes');
     }
 };

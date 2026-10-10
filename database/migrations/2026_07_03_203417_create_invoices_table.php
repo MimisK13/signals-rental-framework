@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('number', 50);
             $table->string('type', 20);
             $table->string('status', 30);
+            $table->boolean('is_posting')->default(true);
+            $table->boolean('is_locked')->default(false);
 
             $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
             $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
@@ -30,6 +32,7 @@ return new class extends Migration
 
             $table->dateTime('issued_at')->nullable();
             $table->dateTime('due_at')->nullable();
+            $table->dateTime('overdue_notified_at')->nullable();
             $table->dateTime('paid_at')->nullable();
 
             $table->integer('subtotal')->default(0);
@@ -37,6 +40,7 @@ return new class extends Migration
             $table->integer('total')->default(0);
             $table->integer('amount_paid')->default(0);
             $table->integer('amount_outstanding')->default(0);
+            $table->integer('credited_total')->default(0);
 
             $table->string('currency_code', 3);
             $table->string('exchange_rate', 32)->default('1');
@@ -54,6 +58,7 @@ return new class extends Migration
             $table->index('status');
             $table->index('opportunity_id');
             $table->index(['store_id', 'type']);
+            $table->unique(['store_id', 'type', 'number'], 'invoices_store_id_type_number_unique');
         });
     }
 

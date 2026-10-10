@@ -18,6 +18,8 @@ return new class extends Migration
             $table->integer('attempts')->default(0);
             $table->timestamp('delivered_at')->nullable();
             $table->timestamp('next_retry_at')->nullable();
+            $table->integer('price_weight')->default(0);
+            $table->integer('weighted_units')->default(0);
             $table->timestamps();
 
             $table->index(['webhook_id', 'created_at']);

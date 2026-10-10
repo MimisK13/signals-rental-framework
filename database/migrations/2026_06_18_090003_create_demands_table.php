@@ -45,6 +45,8 @@ return new class extends Migration
             // `period` (tstzrange) is added below on PostgreSQL only.
             $table->timestampTz('starts_at');
             $table->timestampTz('ends_at');
+            $table->timestampTz('buffered_starts_at')->nullable();
+            $table->timestampTz('buffered_ends_at')->nullable();
             $table->string('source_type', 255);
             $table->unsignedBigInteger('source_id');
             $table->string('phase', 20);

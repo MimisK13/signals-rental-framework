@@ -36,6 +36,7 @@ return new class extends Migration
             $table->timestampTz('cancelled_at')->nullable();
             $table->string('cancellation_reason')->nullable();
             $table->text('notes')->nullable();
+            $table->unsignedBigInteger('virtual_stock_intake_id')->nullable();
             $table->timestampsTz();
             $table->softDeletesTz();
 

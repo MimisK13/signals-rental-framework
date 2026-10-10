@@ -44,6 +44,7 @@ return new class extends Migration
 
             // Parent opportunity (the projection's small int id).
             $table->foreignId('opportunity_id')->constrained('opportunities')->cascadeOnDelete();
+            $table->unsignedBigInteger('virtual_stock_intake_id')->nullable();
 
             $table->string('description');
 

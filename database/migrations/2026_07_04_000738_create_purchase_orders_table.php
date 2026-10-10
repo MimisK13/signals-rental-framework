@@ -61,6 +61,7 @@ return new class extends Migration
             $table->index('supplier_id');
             $table->index('opportunity_id');
             $table->index(['store_id', 'status']);
+            $table->unique(['store_id', 'number'], 'purchase_orders_store_id_number_unique');
         });
     }
 

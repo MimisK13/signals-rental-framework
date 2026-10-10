@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('action', 100);
+            $table->string('verb_event_id')->nullable();
             $table->string('auditable_type');
             $table->integer('auditable_id');
             $table->jsonb('old_values')->nullable();

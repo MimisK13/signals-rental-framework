@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products');
             $table->foreignId('rate_definition_id')->constrained('rate_definitions');
             $table->foreignId('store_id')->nullable()->constrained('stores')->nullOnDelete();
+            $table->unsignedBigInteger('price_category_id')->nullable();
             $table->string('transaction_type');
             $table->integer('price');
             $table->string('currency', 3);
@@ -23,7 +24,7 @@ return new class extends Migration
 
             // Overlaps are intentional; resolution is priority-based at the app layer
             // (no unique constraint). These indexes back the resolver lookups.
-            $table->index(['product_id', 'store_id', 'transaction_type', 'priority']);
+            $table->index(['product_id', 'store_id', 'price_category_id', 'transaction_type', 'priority'], 'product_rates_resolution_index');
             $table->index(['product_id', 'valid_from', 'valid_to']);
         });
     }

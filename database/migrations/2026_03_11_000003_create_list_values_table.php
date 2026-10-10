@@ -17,6 +17,7 @@ return new class extends Migration
             $table->boolean('is_system')->default(false);
             $table->boolean('is_active')->default(true);
             $table->jsonb('metadata')->nullable();
+            $table->string('plugin_name')->nullable();
             $table->timestamps();
 
             $table->unique(['list_name_id', 'name']);

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('custom_views', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
+            $table->text('description')->nullable();
             $table->string('entity_type', 100);
             $table->string('visibility', 20)->default('personal');
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();

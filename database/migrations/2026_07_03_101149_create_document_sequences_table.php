@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
             $table->string('document_type');
+            $table->boolean('is_entity_number')->default(false);
             $table->string('prefix')->default('');
             $table->string('suffix')->default('');
             $table->boolean('include_year')->default(true);

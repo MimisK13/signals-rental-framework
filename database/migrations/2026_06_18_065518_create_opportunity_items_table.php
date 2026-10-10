@@ -47,8 +47,8 @@ return new class extends Migration
 
             // Catalogued item reference — polymorphic (products today, services and
             // other catalogue types later), so no single-table FK constraint.
-            $table->unsignedBigInteger('item_id')->nullable();
-            $table->string('item_type')->nullable();
+            $table->unsignedBigInteger('itemable_id')->nullable();
+            $table->string('itemable_type')->nullable();
 
             // Snapshot of the item identity at the time it was added.
             $table->string('name');
@@ -59,7 +59,14 @@ return new class extends Migration
             $table->integer('unit_price')->default(0);
             $table->smallInteger('charge_period')->default(1);
             $table->integer('total')->default(0);
+            $table->string('currency_code', 3)->nullable();
+            $table->decimal('invoiced_quantity', 10, 2)->default(0);
             $table->decimal('discount_percent', 5, 2)->nullable();
+            $table->boolean('is_discount_manual')->default(false);
+            $table->decimal('deal_price_discount_percent', 18, 10)->nullable();
+            $table->integer('deal_price')->nullable();
+            $table->integer('deal_price_original_total')->nullable();
+            $table->integer('surcharge_total')->default(0);
             $table->decimal('tax_rate', 5, 2)->nullable();
 
             // Commercial nature of the line (rental/sale/service/sub-rental).
@@ -69,9 +76,18 @@ return new class extends Migration
             // differs from the opportunity's charge_starts_at / charge_ends_at.
             $table->dateTime('starts_at')->nullable();
             $table->dateTime('ends_at')->nullable();
+            $table->foreignId('dispatch_store_id')->nullable()->constrained('stores')->nullOnDelete();
+            $table->foreignId('return_store_id')->nullable()->constrained('stores')->nullOnDelete();
+            $table->decimal('dispatched_quantity', 10, 2)->default(0);
+            $table->decimal('returned_quantity', 10, 2)->default(0);
+            $table->dateTime('shortage_escalated_at')->nullable();
+            $table->string('item_type', 255)->default('product');
+            $table->string('path')->default('');
+            $table->unsignedBigInteger('revenue_group_id')->nullable();
+            $table->unsignedBigInteger('price_category_tier_id')->nullable();
+            $table->decimal('price_category_tier_multiplier', 10, 4)->nullable();
 
             // Display ordering + flags.
-            $table->integer('sort_order')->default(0);
             $table->boolean('is_optional')->default(false);
 
             // Flexible per-item config + freeform notes.
@@ -82,9 +98,11 @@ return new class extends Migration
 
             $table->index('opportunity_id');
             $table->index('version_id');
-            $table->index(['item_type', 'item_id']);
+            $table->index(['itemable_type', 'itemable_id']);
             $table->index('transaction_type');
-            $table->index(['opportunity_id', 'sort_order']);
+            $table->index(['opportunity_id', 'path']);
+            $table->index('revenue_group_id');
+            $table->foreign('revenue_group_id')->references('id')->on('revenue_groups')->nullOnDelete();
         });
     }
 

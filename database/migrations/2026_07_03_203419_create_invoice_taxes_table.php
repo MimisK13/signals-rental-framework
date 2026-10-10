@@ -23,6 +23,10 @@ return new class extends Migration
 
             $table->integer('taxable_amount')->default(0);
             $table->integer('tax_amount')->default(0);
+            $table->string('rate_percentage', 16)->nullable();
+            $table->string('tax_rate_name')->nullable();
+            $table->string('result_type', 32)->nullable();
+            $table->text('legal_text')->nullable();
 
             $table->timestamp('created_at')->useCurrent();
 

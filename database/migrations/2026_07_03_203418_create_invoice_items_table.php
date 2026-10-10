@@ -27,6 +27,7 @@ return new class extends Migration
 
             $table->string('description', 500);
             $table->decimal('quantity', 10, 2)->default(1);
+            $table->decimal('invoiced_quantity', 10, 2)->nullable();
             $table->integer('unit_price')->default(0);
             $table->integer('discount')->default(0);
             $table->integer('tax')->default(0);

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->morphs('phoneable');
             $table->string('number');
+            $table->string('country_code', 2)->nullable();
             $table->foreignId('type_id')->nullable()->constrained('list_values')->nullOnDelete();
             $table->boolean('is_primary')->default(false);
             $table->timestamps();

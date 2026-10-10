@@ -18,10 +18,18 @@ return new class extends Migration
 
             $table->index('name');
         });
+
+        Schema::table('members', function (Blueprint $table): void {
+            $table->foreign('discount_category_id')->references('id')->on('discount_categories')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('members', function (Blueprint $table): void {
+            $table->dropForeign(['discount_category_id']);
+        });
+
         Schema::dropIfExists('discount_categories');
     }
 };

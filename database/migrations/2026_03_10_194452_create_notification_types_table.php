@@ -14,8 +14,12 @@ return new class extends Migration
             $table->string('category');
             $table->string('name');
             $table->string('description')->nullable();
+            $table->boolean('is_system')->default(false);
+            $table->string('audience')->default('internal');
             $table->jsonb('available_channels');
             $table->jsonb('default_channels');
+            $table->jsonb('default_recipients')->nullable();
+            $table->jsonb('data_schema')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('source', 50)->default('core');
             $table->timestamps();
@@ -25,6 +29,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('notification_type_id')->unique()->constrained()->cascadeOnDelete();
             $table->jsonb('channels')->nullable();
+            $table->jsonb('channel_config')->nullable();
+            $table->jsonb('recipient_rules')->nullable();
             $table->boolean('is_enabled')->default(true);
             $table->timestamps();
         });

@@ -14,7 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('invoice_payments', function (Blueprint $table): void {
-            $table->id();
+            $table->unsignedBigInteger('id')->primary();
+            $table->string('number', 50)->nullable()->index();
 
             $table->unsignedBigInteger('invoice_id');
             $table->foreign('invoice_id')->references('id')->on('invoices')->cascadeOnDelete();

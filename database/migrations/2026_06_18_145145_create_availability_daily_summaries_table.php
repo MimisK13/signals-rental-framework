@@ -49,6 +49,7 @@ return new class extends Migration
             // (i.e. min_available < 0). Denormalised so a shortage calendar can be
             // served from this column alone.
             $table->boolean('has_shortage')->default(false);
+            $table->integer('pending_checkin_quantity')->default(0);
             $table->timestampTz('calculated_at');
             $table->timestampsTz();
 

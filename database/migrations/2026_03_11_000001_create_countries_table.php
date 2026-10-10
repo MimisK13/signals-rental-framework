@@ -22,10 +22,18 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
+
+        Schema::table('stores', function (Blueprint $table): void {
+            $table->foreign('country_id')->references('id')->on('countries')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('stores', function (Blueprint $table): void {
+            $table->dropForeign(['country_id']);
+        });
+
         Schema::dropIfExists('countries');
     }
 };

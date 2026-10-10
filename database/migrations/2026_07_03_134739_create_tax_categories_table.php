@@ -21,10 +21,32 @@ return new class extends Migration
             $table->index('type');
             $table->index('is_active');
         });
+
+        Schema::table('products', function (Blueprint $table): void {
+            $table->foreign('sale_tax_category_id')->references('id')->on('tax_categories')->nullOnDelete();
+            $table->foreign('purchase_tax_category_id')->references('id')->on('tax_categories')->nullOnDelete();
+            $table->index('sale_tax_category_id');
+            $table->index('purchase_tax_category_id');
+        });
+
+        Schema::table('tax_rules', function (Blueprint $table): void {
+            $table->foreign('tax_category_id')->references('id')->on('tax_categories')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('tax_rules', function (Blueprint $table): void {
+            $table->dropForeign(['tax_category_id']);
+        });
+
+        Schema::table('products', function (Blueprint $table): void {
+            $table->dropForeign(['sale_tax_category_id']);
+            $table->dropForeign(['purchase_tax_category_id']);
+            $table->dropIndex(['sale_tax_category_id']);
+            $table->dropIndex(['purchase_tax_category_id']);
+        });
+
         Schema::dropIfExists('tax_categories');
     }
 };
