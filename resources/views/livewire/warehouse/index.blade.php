@@ -343,7 +343,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                 >
 
                     @if ($section['rows'] === [])
-                        <x-signals.empty title="Nothing in this queue" description="No orders match the current filters." />
+                        <x-dense::empty-state title="Nothing in this queue" description="No orders match the current filters." />
                     @else
                         <table class="s-table s-table-compact w-full">
                                 <thead>
