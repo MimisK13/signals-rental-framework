@@ -5,6 +5,7 @@ use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -26,6 +27,12 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
     #[Url]
     public string $search = '';
 
+    /** @var array<string, array<string, mixed>>|null */
+    private ?array $sectionsCache = null;
+
+    /** @var Collection<int, Store>|null */
+    private ?Collection $storesCache = null;
+
     public function mount(): void
     {
         Gate::authorize('opportunities.view');
@@ -45,8 +52,8 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
     public function with(): array
     {
         return [
-            'sections' => $this->sections(),
-            'stores' => $this->stores(),
+            'sections' => $this->sectionsCache ??= $this->sections(),
+            'stores' => $this->storesCache ??= $this->stores(),
         ];
     }
 
@@ -123,7 +130,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                 static fn (OpportunityStatus $status): int => $status->statusValue(),
                 $statuses,
             ))
-            ->with(['member:id,name', 'store:id,name'])
+            ->with(['member:id,name'])
             ->withCount('items')
             ->orderBy('planning_starts_at')
             ->orderBy('starts_at');
@@ -184,7 +191,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
             'reference' => $opportunity->reference,
             'subject' => $opportunity->subject,
             'customer' => $opportunity->member?->name ?: 'No customer',
-            'store' => $opportunity->store?->name ?: 'No store',
+            'store' => $this->stores()->firstWhere('id', (int) $opportunity->store_id)?->name ?: 'No store',
             'items_count' => $opportunity->items_count,
             'period' => $this->periodLabel($opportunity),
             'status' => $status->label(),
@@ -234,7 +241,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
     /**
      * @return \Illuminate\Support\Collection<int, Store>
      */
-    private function stores()
+    private function stores(): Collection
     {
         $query = Store::query()->orderBy('name');
         $accessibleStoreIds = auth()->user()->accessibleStoreIds();
