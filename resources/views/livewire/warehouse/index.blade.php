@@ -243,6 +243,10 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
      */
     private function stores(): Collection
     {
+        if ($this->storesCache !== null) {
+            return $this->storesCache;
+        }
+
         $query = Store::query()->orderBy('name');
         $accessibleStoreIds = auth()->user()->accessibleStoreIds();
 
@@ -250,7 +254,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
             $query->whereIn('id', $accessibleStoreIds);
         }
 
-        return $query->get(['id', 'name']);
+        return $this->storesCache = $query->get(['id', 'name']);
     }
 }; ?>
 
