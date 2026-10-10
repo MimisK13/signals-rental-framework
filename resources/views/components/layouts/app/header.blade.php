@@ -447,11 +447,11 @@
                 @endphp
                 <div class="nav-dropdown-wrapper">
                     <button class="header-avatar-btn" type="button" aria-label="{{ __('User menu') }}">
-                        <x-signals.avatar :src="$userAvatarSrc" :initials="auth()->user()->initials()" size="sm" :class="'h-7 w-7 '.$userAvatarInitialsClass" />
+                        <x-dense::avatar :src="$userAvatarSrc" :initials="auth()->user()->initials()" size="sm" :class="'h-7 w-7 '.$userAvatarInitialsClass" />
                     </button>
                     <div class="mega-dropdown mega-dropdown-end">
                         <div class="flex items-center gap-3 pb-4">
-                            <x-signals.avatar :src="$userAvatarSrc" :initials="auth()->user()->initials()" size="md" :class="$userAvatarInitialsClass" />
+                            <x-dense::avatar :src="$userAvatarSrc" :initials="auth()->user()->initials()" size="md" :class="$userAvatarInitialsClass" />
                             <div class="grid flex-1 text-left leading-tight">
                                 <span class="truncate text-[12px] font-semibold text-[var(--text-primary)]">{{ auth()->user()->name }}</span>
                                 <span class="truncate text-[11px] text-[var(--text-muted)]">{{ auth()->user()->email }}</span>
@@ -839,7 +839,7 @@
 
         <x-signals.command-palette x-on:open-command-palette.window="toggle()" />
 
-        <x-signals.confirm-modal />
+        <x-dense::confirm-modal />
 
         {{-- ============================================================ --}}
         {{--  LIVE TOAST STACK                                            --}}

@@ -170,7 +170,7 @@ new class extends Component
 
                 @if($activity->owner)
                     <div class="flex items-center gap-2">
-                        <x-signals.avatar
+                        <x-dense::avatar
                             :initials="\Illuminate\Support\Str::of($activity->owner->name)->explode(' ')->take(2)->map(fn ($w) => \Illuminate\Support\Str::substr($w, 0, 1))->implode('')"
                             :src="$ownerSrc"
                             :color="str_replace('s-avatar-', '', app(\App\Services\Calendar\OwnerColorResolver::class)->for($activity->owner->id))"
@@ -199,7 +199,7 @@ new class extends Component
                         @if($regardingMember)
                             <a href="{{ $regardingMember['url'] }}" target="_blank" rel="noopener"
                                class="group flex w-fit items-center gap-2">
-                                <x-signals.avatar size="sm" :initials="$regardingMember['initials']" :src="$regardingMember['src']" color="zinc" />
+                                <x-dense::avatar size="sm" :initials="$regardingMember['initials']" :src="$regardingMember['src']" color="zinc" />
                                 <span class="text-sm text-[var(--link)] group-hover:underline">{{ $regardingMember['name'] }}</span>
                                 <svg class="h-3.5 w-3.5 text-[var(--link)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M14 5h5v5" />
@@ -222,7 +222,7 @@ new class extends Component
                         <div class="flex flex-wrap gap-x-4 gap-y-2">
                             @foreach($participantNames as $participant)
                                 <div class="flex items-center gap-1.5">
-                                    <x-signals.avatar size="xs" :initials="$participant['initials']" :src="$participant['src']" :color="$participant['color']" />
+                                    <x-dense::avatar size="xs" :initials="$participant['initials']" :src="$participant['src']" :color="$participant['color']" />
                                     <span class="text-sm text-[var(--text-secondary)]">{{ $participant['name'] }}</span>
                                 </div>
                             @endforeach

@@ -39,7 +39,7 @@
                     @foreach($this->staff->reject(fn ($m) => $m->id === auth()->id()) as $member)
                         @php $staffUrl = URL::signedRoute('calendar.feed.user', ['user' => $member->id]); @endphp
                         <div class="flex items-center gap-2" wire:key="feed-staff-{{ $member->id }}">
-                            <x-signals.avatar size="xs" :initials="$member->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', app(\App\Services\Calendar\OwnerColorResolver::class)->for($member->id))" />
+                            <x-dense::avatar size="xs" :initials="$member->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', app(\App\Services\Calendar\OwnerColorResolver::class)->for($member->id))" />
                             <span class="text-sm flex-1 truncate">{{ $member->name }}</span>
                             <x-signals.copy-btn :text="$staffUrl" class="shrink-0" />
                         </div>

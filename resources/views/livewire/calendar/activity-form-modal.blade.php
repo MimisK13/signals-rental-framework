@@ -365,7 +365,7 @@ new class extends Component
                 @php $selectedOwner = $staff->firstWhere('id', $ownedBy); @endphp
                 <button type="button" class="s-input flex items-center gap-2 text-left w-full" x-on:click="open = !open">
                     @if($selectedOwner)
-                        <x-signals.avatar size="xs" :initials="$selectedOwner->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($selectedOwner->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', $colorResolver->for($selectedOwner->id))" />
+                        <x-dense::avatar size="xs" :initials="$selectedOwner->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($selectedOwner->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', $colorResolver->for($selectedOwner->id))" />
                         <span>{{ $selectedOwner->name }}</span>
                     @else
                         <span style="color: var(--text-muted);">Unassigned</span>
@@ -375,7 +375,7 @@ new class extends Component
                     @foreach($staff as $member)
                         <div class="s-dropdown-item" wire:key="owner-opt-{{ $member->id }}"
                              x-on:click="open = false" wire:click="$set('ownedBy', {{ $member->id }})">
-                            <x-signals.avatar size="xs" :initials="$member->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', $colorResolver->for($member->id))" />
+                            <x-dense::avatar size="xs" :initials="$member->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', $colorResolver->for($member->id))" />
                             <span>{{ $member->name }}</span>
                         </div>
                     @endforeach
@@ -400,7 +400,7 @@ new class extends Component
                             <input type="checkbox" value="{{ $member->member_id }}"
                                    wire:click="toggleParticipant({{ $member->member_id }})"
                                    @checked(in_array($member->member_id, $participantIds, true))>
-                            <x-signals.avatar size="xs" :initials="$member->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', $colorResolver->for($member->id))" />
+                            <x-dense::avatar size="xs" :initials="$member->initials()" :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)" :color="str_replace('s-avatar-', '', $colorResolver->for($member->id))" />
                             <span>{{ $member->name }}</span>
                         </label>
                     @endforeach

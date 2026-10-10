@@ -427,7 +427,7 @@ new #[Layout('components.layouts.app')] #[Title('Calendar')] class extends Compo
                         <input type="checkbox" value="{{ $member->id }}"
                                wire:click="toggleOwner({{ $member->id }})"
                                @checked($ownerIds === [] || in_array($member->id, $ownerIds, true))>
-                        <x-signals.avatar
+                        <x-dense::avatar
                             size="xs"
                             :initials="$member->initials()"
                             :src="app(\App\Services\FileService::class)->signedUrlOrNull($member->member?->icon_thumb_url)"

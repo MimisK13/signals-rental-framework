@@ -1,11 +1,12 @@
 /**
  * Replaces Livewire's native `confirm()` dialog for `wire:confirm` with the
- * global Flux confirmation modal (`signals-confirm`). Call sites keep
+ * global Dense confirmation modal. Call sites keep
  * `wire:confirm="message"` unchanged; this hook overwrites `el.__livewire_confirm`
  * after Livewire's built-in directive runs.
  */
 
 const DANGER_MESSAGE_PATTERN = /\b(delete|void|dissolve|remove|revoke|reset|cancel|orphan|destroy|discard|uninstall|inaccessible|will be lost|removed\.)\b/i;
+let confirmResolutionListenerRegistered = false;
 
 function normalizeConfirmMessage(expression) {
     let message = expression ?? '';
@@ -50,7 +51,7 @@ function registerConfirmApi() {
             return new Promise((resolve) => {
                 pending = { resolve };
 
-                window.dispatchEvent(new CustomEvent('signals:confirm:open', {
+                window.dispatchEvent(new CustomEvent('dense:confirm:open', {
                     detail: { message, danger },
                 }));
             });
@@ -66,74 +67,12 @@ function registerConfirmApi() {
             pending = null;
         },
     };
-}
 
-function registerConfirmModalAlpine() {
-    const register = () => {
-        Alpine.data('signalsConfirmModal', () => ({
-            message: '',
-            danger: false,
-            settled: false,
-            _onOpen: null,
-
-            init() {
-                this._onOpen = (event) => {
-                    this.message = event.detail?.message ?? 'Are you sure?';
-                    this.danger = Boolean(event.detail?.danger);
-                    this.settled = false;
-
-                    this.$nextTick(() => {
-                        if (window.Flux?.modal) {
-                            window.Flux.modal('signals-confirm').show();
-                        }
-
-                        this.$nextTick(() => {
-                            this.$refs.confirmButton?.focus?.();
-                        });
-                    });
-                };
-
-                window.addEventListener('signals:confirm:open', this._onOpen);
-            },
-
-            destroy() {
-                if (this._onOpen) {
-                    window.removeEventListener('signals:confirm:open', this._onOpen);
-                }
-            },
-
-            closeModal() {
-                if (window.Flux?.modal) {
-                    window.Flux.modal('signals-confirm').close();
-                }
-            },
-
-            confirm() {
-                if (this.settled) {
-                    return;
-                }
-
-                this.settled = true;
-                this.closeModal();
-                window.signals?.confirm?.resolve(true);
-            },
-
-            cancel() {
-                if (this.settled) {
-                    return;
-                }
-
-                this.settled = true;
-                this.closeModal();
-                window.signals?.confirm?.resolve(false);
-            },
-        }));
-    };
-
-    if (window.Alpine) {
-        register();
-    } else {
-        document.addEventListener('alpine:init', register);
+    if (! confirmResolutionListenerRegistered) {
+        window.addEventListener('dense:confirm:resolved', (event) => {
+            window.signals.confirm.resolve(Boolean(event.detail?.confirmed));
+        });
+        confirmResolutionListenerRegistered = true;
     }
 }
 
@@ -184,6 +123,5 @@ function registerLivewireConfirmHook() {
 
 export default function registerLivewireConfirm() {
     registerConfirmApi();
-    registerConfirmModalAlpine();
     registerLivewireConfirmHook();
 }

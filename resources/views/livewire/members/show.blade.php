@@ -140,7 +140,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                         }
                                     }
                                 @endphp
-                                <x-signals.avatar size="sm" :src="$rIconSrc" :initials="$rInitials" :color="$rColor" />
+                                <x-dense::avatar size="sm" :src="$rIconSrc" :initials="$rInitials" :color="$rColor" />
                                 <div>
                                     <div class="text-sm font-medium text-[var(--link)] group-hover:underline" style="font-family: var(--font-display);">{{ $related->name }}</div>
                                     @if($related->pivot->relationship_type)

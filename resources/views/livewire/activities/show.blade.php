@@ -195,7 +195,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     @if($regardingMember)
                         <a href="{{ $regardingMember['url'] }}" target="_blank" rel="noopener"
                            class="group flex w-fit items-center gap-2">
-                            <x-signals.avatar size="sm" :initials="$regardingMember['initials']" :src="$regardingMember['src']" color="zinc" />
+                            <x-dense::avatar size="sm" :initials="$regardingMember['initials']" :src="$regardingMember['src']" color="zinc" />
                             <span class="text-sm font-medium text-[var(--link)] group-hover:underline">{{ $regardingMember['name'] }}</span>
                             <svg class="h-3.5 w-3.5 text-[var(--link)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 5h5v5" />
@@ -223,7 +223,7 @@ new #[Layout('components.layouts.app')] class extends Component
                         @endphp
                         <div class="flex items-center justify-between" wire:key="person-owner-{{ $activity->owner->id }}">
                             <div class="flex items-center gap-2">
-                                <x-signals.avatar size="sm" :initials="$ownerInitials" :src="app(\App\Services\FileService::class)->signedUrlOrNull($activity->owner->member?->icon_thumb_url)" :color="$ownerColor" />
+                                <x-dense::avatar size="sm" :initials="$ownerInitials" :src="app(\App\Services\FileService::class)->signedUrlOrNull($activity->owner->member?->icon_thumb_url)" :color="$ownerColor" />
                                 <span class="text-sm font-medium">{{ $ownerName }}</span>
                             </div>
                             <span class="s-badge s-badge-blue">Owner</span>
@@ -238,7 +238,7 @@ new #[Layout('components.layouts.app')] class extends Component
                         @endphp
                         <div class="flex items-center justify-between" wire:key="participant-{{ $participant->id }}">
                             <div class="flex items-center gap-2">
-                                <x-signals.avatar size="sm" :initials="$pInitials" :src="app(\App\Services\FileService::class)->signedUrlOrNull($participant->member?->icon_thumb_url)" :color="$pColor" />
+                                <x-dense::avatar size="sm" :initials="$pInitials" :src="app(\App\Services\FileService::class)->signedUrlOrNull($participant->member?->icon_thumb_url)" :color="$pColor" />
                                 <span class="text-sm">{{ $pName }}</span>
                             </div>
                             @if($participant->mute)

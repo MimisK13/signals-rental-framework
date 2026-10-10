@@ -115,7 +115,7 @@
             @endphp
             <div class="s-cal-col" wire:key="day-col-{{ $member->id }}">
                 <div class="s-cal-colhead">
-                    <x-signals.avatar size="xs" :initials="$member->initials()" :src="$staffPhotos[$member->id] ?? null" :color="str_replace('s-avatar-', '', app(\App\Services\Calendar\OwnerColorResolver::class)->for($member->id))" />
+                    <x-dense::avatar size="xs" :initials="$member->initials()" :src="$staffPhotos[$member->id] ?? null" :color="str_replace('s-avatar-', '', app(\App\Services\Calendar\OwnerColorResolver::class)->for($member->id))" />
                     <div class="text-left leading-tight">
                         <div>{{ $member->name }}</div>
                         @if($member->member?->department)
@@ -171,7 +171,7 @@
                                 $avatarOverflow = (count($extraParticipants) + 1) - 4;
                             @endphp
                             <div class="s-cal-event-avatars">
-                                <x-signals.avatar size="xs" :initials="$event->owner_initials" :src="$staffPhotos[$event->owner_id] ?? null" :color="str_replace('s-avatar-', '', $event->owner_color)" />
+                                <x-dense::avatar size="xs" :initials="$event->owner_initials" :src="$staffPhotos[$event->owner_id] ?? null" :color="str_replace('s-avatar-', '', $event->owner_color)" />
                                 @foreach($visibleParticipants as $p)
                                     @php
                                         $pInitials = \Illuminate\Support\Str::of($p['name'])->explode(' ')->take(2)->map(fn ($w) => \Illuminate\Support\Str::substr($w, 0, 1))->implode('');
@@ -179,7 +179,7 @@
                                             ? str_replace('s-avatar-', '', app(\App\Services\Calendar\OwnerColorResolver::class)->for($p['user_id']))
                                             : 'zinc';
                                     @endphp
-                                    <x-signals.avatar size="xs" :initials="$pInitials" :src="$staffPhotos[$p['user_id']] ?? null" :color="$pColor" wire:key="day-avatar-{{ $event->id }}-{{ $p['member_id'] }}" />
+                                    <x-dense::avatar size="xs" :initials="$pInitials" :src="$staffPhotos[$p['user_id']] ?? null" :color="$pColor" wire:key="day-avatar-{{ $event->id }}-{{ $p['member_id'] }}" />
                                 @endforeach
                                 @if($avatarOverflow > 0)
                                     <span class="s-cal-event-avatars-more">+{{ $avatarOverflow }}</span>
