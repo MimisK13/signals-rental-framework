@@ -76,6 +76,12 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     /** Whether the grid body has completed its deferred first paint. */
     public bool $gridReady = false;
 
+    /** @var list<array{id: int, name: string}> */
+    public array $storeFilterStores = [];
+
+    /** @var list<array{id: int, name: string}> */
+    public array $productGroupOptions = [];
+
     public function mount(): void
     {
         Gate::authorize('availability.view');
@@ -87,6 +93,26 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
         if (! in_array($this->daysPeriod, self::PERIOD_OPTIONS, true)) {
             $this->daysPeriod = 30;
         }
+
+        $this->storeFilterStores = app(PlanningStoreFilter::class)
+            ->storesForFilter()
+            ->map(static fn ($store): array => [
+                'id' => (int) $store->id,
+                'name' => (string) $store->name,
+            ])
+            ->values()
+            ->all();
+
+        $this->productGroupOptions = ProductGroup::query()
+            ->ordered()
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(static fn (ProductGroup $group): array => [
+                'id' => (int) $group->id,
+                'name' => (string) $group->name,
+            ])
+            ->values()
+            ->all();
     }
 
     /** Flip the grid-ready flag after the initial skeleton paint (wire:init). */
@@ -108,27 +134,49 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
 
     public function syncStoreIdsFromTags(array $tagNames): void
     {
-        $this->storeIds = app(PlanningStoreFilter::class)->storeIdsFromTags($tagNames);
+        $namesById = collect($this->storeFilterStores)->pluck('id', 'name');
+
+        $this->storeIds = collect($tagNames)
+            ->map(static fn (string $name): ?int => $namesById->get($name))
+            ->filter(static fn (?int $id): bool => $id !== null)
+            ->map(static fn (int $id): int => $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function selectedStoreTags(): array
     {
-        return app(PlanningStoreFilter::class)->selectedStoreTags($this->storeIds);
+        if ($this->storeIds === []) {
+            return [];
+        }
+
+        $namesById = collect($this->storeFilterStores)->pluck('name', 'id');
+
+        return collect($this->storeIds)
+            ->map(static fn (int $id): ?string => $namesById->get($id))
+            ->filter(static fn (?string $name): bool => $name !== null && $name !== '')
+            ->values()
+            ->all();
     }
 
     public function storeNameSuggestions(): array
     {
-        return app(PlanningStoreFilter::class)->storeNameSuggestions();
+        return collect($this->storeFilterStores)->pluck('name')->all();
     }
 
     public function resolvedStoreIds(): array
     {
-        return app(PlanningStoreFilter::class)->resolvedStoreIds($this->storeIds);
+        if ($this->storeIds !== []) {
+            return array_values(array_unique(array_map(intval(...), $this->storeIds)));
+        }
+
+        return collect($this->storeFilterStores)->pluck('id')->map(intval(...))->all();
     }
 
     public function primaryStoreId(): int
     {
-        return app(PlanningStoreFilter::class)->primaryStoreId($this->storeIds);
+        return $this->resolvedStoreIds()[0] ?? 0;
     }
 
     /**
@@ -343,7 +391,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
     public function with(): array
     {
         return [
-            'productGroups' => ProductGroup::query()->ordered()->orderBy('name')->get(['id', 'name']),
+            'productGroups' => $this->productGroupOptions,
             'productTypeOptions' => [
                 ProductType::Rental->value => ProductType::Rental->label(),
                 ProductType::Sale->value => ProductType::Sale->label(),
@@ -376,7 +424,7 @@ new #[Layout('components.layouts.app')] #[Title('Equipment Availability')] class
                         <select wire:model.live="groupId" class="s-select min-w-52" aria-label="{{ __('Product group') }}">
                             <option value="">{{ __('Select a group…') }}</option>
                             @foreach($productGroups as $group)
-                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                <option value="{{ $group['id'] }}">{{ $group['name'] }}</option>
                             @endforeach
                         </select>
                     </div>

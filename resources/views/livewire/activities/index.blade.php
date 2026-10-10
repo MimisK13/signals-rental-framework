@@ -25,6 +25,9 @@ new #[Layout('components.layouts.app')] #[Title('Activities')] class extends Com
 
     public int $totalCount = 0;
 
+    /** @var Collection<int, ListValue>|null */
+    private ?Collection $activityTypeValuesCache = null;
+
     public function mount(): void
     {
         $this->refreshCounts();
@@ -46,7 +49,11 @@ new #[Layout('components.layouts.app')] #[Title('Activities')] class extends Com
      */
     private function activityTypeValues(): Collection
     {
-        return ListName::query()->where('name', 'Activity Type')->first()
+        if ($this->activityTypeValuesCache !== null) {
+            return $this->activityTypeValuesCache;
+        }
+
+        return $this->activityTypeValuesCache = ListName::query()->where('name', 'Activity Type')->first()
             ?->values()->where('is_active', true)->orderBy('sort_order')->get()
             ?? collect();
     }
