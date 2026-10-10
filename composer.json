@@ -51,10 +51,12 @@
         "socialiteproviders/microsoft": "^4.9",
         "spatie/laravel-data": "^4.20",
         "spatie/laravel-permission": "^7.2",
+        "calendar/calendar": "@dev",
         "symfony/yaml": "^8.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "fruitcake/laravel-debugbar": "^4.4",
         "larastan/larastan": "*",
         "laravel/boost": "^2.1",
         "laravel/pail": "^1.2.2",
@@ -74,7 +76,8 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "Ui\\Dense\\": "packages/ui/dense/src/"
         }
     },
     "autoload-dev": {
@@ -153,6 +156,15 @@
             "dont-discover": []
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/calendar",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

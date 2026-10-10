@@ -1,16 +1,23 @@
 {
     "agents": [
-        "claude_code"
+        "claude_code",
+        "codex",
+        "opencode"
     ],
     "cloud": false,
     "guidelines": true,
-    "herd_mcp": true,
     "mcp": true,
-    "nightwatch_mcp": true,
+    "nightwatch": true,
+    "packages": [
+        "dedoc/scramble",
+        "spatie/laravel-permission"
+    ],
     "sail": false,
     "skills": [
+        "infer-conventions",
         "ai-sdk-development",
         "laravel-best-practices",
+        "testing-best-practices",
         "configuring-horizon",
         "configure-nightwatch",
         "octane-development",
@@ -20,8 +27,10 @@
         "fluxui-development",
         "livewire-development",
         "volt-development",
-        "pest-testing",
         "tailwindcss-development",
-        "echo-development"
+        "echo-development",
+        "scramble-development",
+        "laravel-permission-development",
+        "dense-ui"
     ]
 }

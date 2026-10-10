@@ -4,10 +4,13 @@
 /public/build
 /public/hot
 /public/storage
+/dist
+/packages
 /storage/*.key
 /storage/pail
 /vendor
 .env
+.env.testing
 .env.backup
 .env.production
 .env.test-backup
@@ -25,7 +28,6 @@ yarn-error.log
 /.zed
 /storage/phpstan
 /framework-plans
-/.claude/
 /.cursor/
 /.worktrees
 .DS_Store
