@@ -334,7 +334,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
 
         <div class="space-y-4">
             @foreach ($sections as $key => $section)
-                <x-signals.table-card
+                <x-dense::table-card
                     id="warehouse-{{ \Illuminate\Support\Str::slug($section['label']) }}"
                     :title="$section['label']"
                     :count="$section['count']"
@@ -461,7 +461,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                             </x-slot:footer>
                         @endif
                     @endif
-                </x-signals.table-card>
+                </x-dense::table-card>
             @endforeach
         </div>
     </div>

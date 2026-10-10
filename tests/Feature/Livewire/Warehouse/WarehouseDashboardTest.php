@@ -32,7 +32,7 @@ it('renders an independent collapse control for each warehouse queue card', func
 it('renders each warehouse queue as a full-bleed table card', function (): void {
     $html = Volt::test('warehouse.index')->html();
 
-    expect(substr_count($html, 'class="s-card s-table-card"'))->toBe(4)
+    expect(substr_count($html, 'class="card table-card"'))->toBe(4)
         ->and(substr_count($html, 's-table-wrap'))->toBe(0);
 });
 
