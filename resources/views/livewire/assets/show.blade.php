@@ -250,7 +250,7 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full" x-data="{ tab: 'overview' }">
-    <x-signals.page-header :title="$asset->product?->name ?? 'Asset'">
+    <x-dense::page-header :title="$asset->product?->name ?? 'Asset'">
         <x-slot:breadcrumbs>
             @if($asset->product)
                 <a href="{{ route('products.show', $asset->product) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $asset->product->name }}</a>
@@ -273,7 +273,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <a href="{{ route('stock-levels.show', $stockLevel) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-ghost">View Stock Level</a>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <nav class="app-subnav">
         <div class="flex h-full items-center gap-0 overflow-x-auto">
@@ -324,7 +324,7 @@ new #[Layout('components.layouts.app')] class extends Component
     <div x-show="tab === 'inspections'" x-cloak class="space-y-6 px-6 py-4 max-md:px-5 max-sm:px-3">
         <x-signals.panel title="Inspection Compliance">
             @if($inspectionPolicies->isEmpty())
-                <x-signals.empty title="No inspection policies" description="This Product has no active inspection policies." />
+                <x-dense::empty-state title="No inspection policies" description="This Product has no active inspection policies." />
             @else
                 <div class="mb-4 flex flex-wrap items-end gap-3">
                     <flux:input wire:model="firstDueDate" type="date" label="First due date" />
@@ -357,7 +357,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
         <x-signals.panel title="Inspection History">
             @if($asset->inspections->isEmpty())
-                <x-signals.empty title="No inspection history" description="This Asset has not been enrolled in an inspection policy." />
+                <x-dense::empty-state title="No inspection history" description="This Asset has not been enrolled in an inspection policy." />
             @else
                 <div class="s-table-wrap">
                     <table class="s-table w-full">
@@ -424,7 +424,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 </div>
             @endif
             @if($lifecycleEvents->isEmpty())
-                <x-signals.empty title="No lifecycle history" description="Lifecycle history begins when a transition is recorded." />
+                <x-dense::empty-state title="No lifecycle history" description="Lifecycle history begins when a transition is recorded." />
             @else
                 <div class="s-table-wrap">
                     <table class="s-table w-full">
@@ -447,7 +447,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
         <x-signals.panel title="Actual Usage History">
             @if($asset->usages->isEmpty())
-                <x-signals.empty title="No usage history" description="This asset has not been recorded as physically dispatched yet." />
+                <x-dense::empty-state title="No usage history" description="This asset has not been recorded as physically dispatched yet." />
             @else
                 <div class="s-table-wrap">
                     <table class="s-table w-full">
@@ -489,7 +489,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 @endcan
             </div>
             @if($asset->repairs->isEmpty())
-                <x-signals.empty title="No repairs" description="This asset has no repair history." />
+                <x-dense::empty-state title="No repairs" description="This asset has no repair history." />
             @else
                 <div class="s-table-wrap">
                     <table class="s-table w-full">

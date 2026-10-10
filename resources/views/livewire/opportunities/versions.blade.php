@@ -578,11 +578,11 @@ new #[Layout('components.layouts.app')] class extends Component
 
             <div>
                 @if($versions->isEmpty())
-                    <x-signals.empty
+                    <x-dense::empty-state
                         title="{{ __('No versions yet') }}"
                         description="{{ __('This opportunity has not been split into quote versions. Create a revision or alternative to start tracking versions.') }}">
                         <x-slot:icon><flux:icon.document-duplicate class="!size-7" /></x-slot:icon>
-                    </x-signals.empty>
+                    </x-dense::empty-state>
                 @else
                     <x-signals.version-tree>
                         @foreach($versions as $version)
@@ -762,11 +762,11 @@ new #[Layout('components.layouts.app')] class extends Component
         {{-- ============================================================ --}}
         <x-signals.panel title="{{ __('Timeline') }}">
             @if($timeline->isEmpty())
-                <x-signals.empty
+                <x-dense::empty-state
                     :title="__('No history yet')"
                     :description="__('The opportunity\'s lifecycle events — status changes, line items, dispatch and returns — appear here as they happen.')">
                     <x-slot:icon><flux:icon.clock class="!size-7" /></x-slot:icon>
-                </x-signals.empty>
+                </x-dense::empty-state>
             @else
                 <x-signals.timeline>
                     @foreach($timeline as $event)

@@ -128,7 +128,7 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full" x-data="{ tab: 'details' }">
-    <x-signals.page-header :title="$activity->subject">
+    <x-dense::page-header :title="$activity->subject">
         <x-slot:breadcrumbs>
             <a href="{{ route('activities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Activities</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -157,7 +157,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <button wire:click="deleteActivity" wire:confirm="Are you sure you want to delete this activity?" class="s-btn s-btn-sm s-btn-danger">Delete</button>
             </div>
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     {{-- Tabs --}}
     <nav class="app-subnav">

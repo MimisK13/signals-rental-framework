@@ -364,7 +364,7 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
     <x-api.layout :wide="true" title="API Explorer" description="Interactive Request Builder">
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        <x-signals.card title="Request" class="s-explorer-panel-card">
+        <x-dense::card title="Request" class="s-explorer-panel-card">
             <x-slot:headerActions>
                 <div class="s-explorer-panel-header-actions">
                     <button
@@ -384,13 +384,13 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
                 <div>
                     <div class="s-section-label mb-3">API operation</div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <x-signals.field label="API">
+                        <x-dense::field label="API">
                             <select class="s-input" wire:model.live="selectedApi">
                                 <option value="signals">Signals API</option>
                             </select>
-                        </x-signals.field>
+                        </x-dense::field
 
-                        <x-signals.field label="Endpoint">
+                        <x-dense::field label="Endpoint">
                             <select class="s-input" wire:model.live="selectedResource">
                                 @foreach ($this->resources as $resource)
                                     <option wire:key="resource-{{ $resource }}" value="{{ $resource }}">
@@ -398,9 +398,9 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
                                     </option>
                                 @endforeach
                             </select>
-                        </x-signals.field>
+                        </x-dense::field
 
-                        <x-signals.field label="Operation">
+                        <x-dense::field label="Operation">
                             <select class="s-input" wire:model.live="selectedRouteName">
                                 @foreach ($this->operationsForSelectedResource as $operation)
                                     <option wire:key="operation-{{ $operation['route_name'] }}" value="{{ $operation['route_name'] }}">
@@ -408,7 +408,7 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
                                     </option>
                                 @endforeach
                             </select>
-                        </x-signals.field>
+                        </x-dense::field
                     </div>
                 </div>
 
@@ -502,18 +502,18 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
                 <div>
                     <div class="s-section-label mb-3">Auth</div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-signals.field label="Token abilities to emulate">
+                        <x-dense::field label="Token abilities to emulate">
                             <select class="s-input" wire:model.live="selectedTokenId">
                                 <option value="">Select a token…</option>
                                 @foreach ($this->userTokens as $token)
                                     <option wire:key="token-{{ $token->id }}" value="{{ $token->id }}">{{ $token->name }}</option>
                                 @endforeach
                             </select>
-                        </x-signals.field>
+                        </x-dense::field
 
-                        <x-signals.field label="Or paste a raw token" :error="$errors->first('auth')">
+                        <x-dense::field label="Or paste a raw token" :error="$errors->first('auth')">
                             <input type="password" class="s-input font-mono text-xs" placeholder="Paste bearer token" wire:model.live="rawToken" autocomplete="off">
-                        </x-signals.field>
+                        </x-dense::field
                     </div>
                 </div>
 
@@ -521,9 +521,9 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
                     <div class="s-alert s-alert-danger">{{ $message }}</div>
                 @enderror
             </div>
-        </x-signals.card>
+        </x-dense::card>
 
-        <x-signals.card title="Response" class="s-explorer-panel-card">
+        <x-dense::card title="Response" class="s-explorer-panel-card">
             <x-slot:headerActions>
                 <div class="s-explorer-panel-header-actions">
                     @if ($response)
@@ -575,7 +575,7 @@ new #[Layout('components.layouts.app')] #[Title('API Explorer')] class extends C
                     </div>
                 @endif
             </div>
-        </x-signals.card>
+        </x-dense::card>
     </div>
     </x-api.layout>
 </section>

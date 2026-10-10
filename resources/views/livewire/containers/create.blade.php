@@ -252,7 +252,7 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full" data-density="compact">
-    <x-signals.page-header title="New Durable Container">
+    <x-dense::page-header title="New Durable Container">
         <x-slot:breadcrumbs>
             <a href="{{ route('containers.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Containers</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -261,7 +261,7 @@ new #[Layout('components.layouts.app')] class extends Component
         <x-slot:meta>
             <span>Register a reusable physical Container in inventory</span>
         </x-slot:meta>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="w-full px-6 py-4 max-md:px-5 max-sm:px-3">
         @if($errors->any())
@@ -374,7 +374,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 </div>
             </form>
 
-            <x-signals.card title="Workflow" class="shadow-none">
+            <x-dense::card title="Workflow" class="shadow-none">
                 <div class="flex flex-col">
                     <p class="mb-4 text-justify text-xs leading-5 text-[var(--text-secondary)]">
                         Register the reusable physical Container here. Add its contents afterward from the Pack workspace.
@@ -415,7 +415,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     </div>
 
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         </div>
     </div>
 </section>

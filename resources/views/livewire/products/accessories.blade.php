@@ -244,11 +244,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </table>
             </div>
         @else
-            <x-signals.empty title="No Accessories" description="No accessories have been linked to this product. Click 'Add Accessory' above to link one.">
+            <x-dense::empty-state title="No Accessories" description="No accessories have been linked to this product. Click 'Add Accessory' above to link one.">
                 <x-slot:icon>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-10 opacity-30"><path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.735-3.684-1.757 1.757a4.5 4.5 0 0 1-6.364 0 4.5 4.5 0 0 1 0-6.364l4.5-4.5a4.5 4.5 0 0 1 6.364 6.364l-1.757 1.757"/></svg>
                 </x-slot:icon>
-            </x-signals.empty>
+            </x-dense::empty-state>
         @endif
     </div>
 </section>

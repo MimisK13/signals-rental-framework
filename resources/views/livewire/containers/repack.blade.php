@@ -128,7 +128,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="Repack on return">
+    <x-dense::page-header title="Repack on return">
         <x-slot:meta>
             <a href="{{ route('opportunities.assets', $opportunity) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $opportunity->subject }}</a>
             ·
@@ -139,10 +139,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <flux:button wire:click="seal" wire:loading.attr="disabled" variant="primary">Seal container</flux:button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3 space-y-4">
-        <x-signals.card>
+        <x-dense::card>
             <form wire:submit="scanReturnItem" class="flex flex-wrap items-end gap-3">
                 <flux:field class="min-w-[16rem] flex-1">
                     <flux:label>Scan return item</flux:label>
@@ -154,10 +154,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             @error('scanInput')
                 <p class="mt-2 text-sm text-[var(--danger)]">{{ $message }}</p>
             @enderror
-        </x-signals.card>
+        </x-dense::card>
 
         <div class="grid gap-4 lg:grid-cols-2">
-            <x-signals.card>
+            <x-dense::card>
                 <h2 class="text-sm font-semibold mb-3">Outstanding on opportunity</h2>
                 <ul class="space-y-2 text-sm">
                     @forelse($outstanding as $asset)
@@ -169,9 +169,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <li class="text-[var(--muted)] py-4 text-center">All items returned.</li>
                     @endforelse
                 </ul>
-            </x-signals.card>
+            </x-dense::card>
 
-            <x-signals.card>
+            <x-dense::card>
                 <h2 class="text-sm font-semibold mb-3">Rebuilt container</h2>
                 @if($isStrict)
                     <div class="grid gap-2">
@@ -203,7 +203,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <li class="text-[var(--muted)]">Scan items to rebuild the container.</li>
                     @endforelse
                 </ul>
-            </x-signals.card>
+            </x-dense::card>
         </div>
     </div>
 </section>

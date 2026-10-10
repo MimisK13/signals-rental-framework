@@ -533,7 +533,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
 <section class="w-full s-avail-grid-page s-avail-grid-page--bookings">
     <div class="s-avail-grid-sticky-chrome sticky top-0 bg-[var(--content-bg)] shadow-sm">
-        <x-signals.page-header title="{{ __('Product Bookings') }}">
+        <x-dense::page-header title="{{ __('Product Bookings') }}">
             <x-slot:meta>
                 <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">{{ __('Job Planning') }}</span>
             </x-slot:meta>
@@ -542,7 +542,7 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
                     {{ __('Equipment Availability') }}
                 </flux:button>
             </x-slot:actions>
-        </x-signals.page-header>
+        </x-dense::page-header>
 
         <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
             <div class="s-panel s-planning-filter-panel">
@@ -590,11 +590,11 @@ new #[Layout('components.layouts.app')] #[Title('Product Bookings')] class exten
 
     @if($this->resolvedStoreIds() === [])
         <div class="px-6 max-md:px-5 max-sm:px-3">
-            <x-signals.empty
+            <x-dense::empty-state
                 title="{{ __('No stores available') }}"
                 description="{{ __('Add a store to view bookings.') }}">
                 <x-slot:icon><flux:icon.building-storefront class="!size-7" /></x-slot:icon>
-            </x-signals.empty>
+            </x-dense::empty-state>
         </div>
     @else
         <div class="px-6 pt-4 pb-4 max-md:px-5 max-sm:px-3">

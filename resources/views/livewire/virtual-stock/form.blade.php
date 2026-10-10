@@ -63,11 +63,11 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full max-w-2xl">
-    <x-signals.page-header title="New Virtual Stock Intake">
+    <x-dense::page-header title="New Virtual Stock Intake">
         <x-slot:breadcrumbs>
             <a href="{{ route('virtual-stock.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Virtual Stock</a>
         </x-slot:breadcrumbs>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <form wire:submit="save" class="flex-1 px-6 py-4 space-y-4">
         <flux:select wire:model="product_id" label="Product" required>

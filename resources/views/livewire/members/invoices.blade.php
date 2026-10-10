@@ -92,7 +92,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         </div>
 
         @if($invoices->isEmpty())
-            <x-signals.empty title="No invoices" description="This member has no invoices yet." />
+            <x-dense::empty-state title="No invoices" description="This member has no invoices yet." />
         @else
             <x-signals.table-wrap>
                 <table class="s-table">

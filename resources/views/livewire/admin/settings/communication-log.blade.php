@@ -231,7 +231,7 @@ new #[Layout('components.layouts.app')] #[Title('Communication Log')] class exte
             <button type="button" class="s-btn s-btn-ghost s-btn-sm" wire:click="clearFilters">{{ __('Clear filters') }}</button>
         </div>
 
-        <x-signals.card>
+        <x-dense::card>
             <div class="overflow-x-auto">
                 <table class="s-table w-full">
                     <thead>
@@ -280,7 +280,7 @@ new #[Layout('components.layouts.app')] #[Title('Communication Log')] class exte
             </div>
 
             <div class="mt-4">{{ $logs->links() }}</div>
-        </x-signals.card>
+        </x-dense::card>
     </x-admin.layout>
 
     @if($showDetailModal && $selectedLog)

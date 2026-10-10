@@ -130,7 +130,7 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$stockLevel->item_name ?? $stockLevel->product?->name ?? 'Stock Level'">
+    <x-dense::page-header :title="$stockLevel->item_name ?? $stockLevel->product?->name ?? 'Stock Level'">
         <x-slot:icon>
             <x-signals.entity-icon :model="$stockLevel->product ?? $stockLevel" :size="44" />
         </x-slot:icon>
@@ -181,7 +181,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 @endif
             @endif
         </x-slot:meta>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex flex-1 flex-col gap-6 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="grid grid-cols-3 gap-6 max-md:grid-cols-1 order-2">

@@ -186,7 +186,7 @@ new #[Layout('components.layouts.app')] #[Title('API Usage')] class extends Comp
         <button type="button" wire:click="setChannel('webhook_received')" class="s-chip {{ $channel === 'webhook_received' ? 'on' : '' }}">Webhook received</button>
     </div>
 
-    <x-signals.card>
+    <x-dense::card>
         <div class="space-y-4">
             <div>
                 <div class="s-section-label mb-3">Date range</div>
@@ -199,29 +199,29 @@ new #[Layout('components.layouts.app')] #[Title('API Usage')] class extends Comp
 
                 @if ($filterDatePreset === 'custom')
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-signals.field label="From">
+                        <x-dense::field label="From">
                             <x-signals.datepicker
                                 wire:key="usage-filter-from-{{ $filterDateFrom }}"
                                 :value="$filterDateFrom ?: null"
                                 placeholder="Select date"
                                 x-on:input="$wire.set('filterDateFrom', $event.detail ?? '')"
                             />
-                        </x-signals.field>
-                        <x-signals.field label="To">
+                        </x-dense::field
+                        <x-dense::field label="To">
                             <x-signals.datepicker
                                 wire:key="usage-filter-to-{{ $filterDateTo }}"
                                 :value="$filterDateTo ?: null"
                                 placeholder="Select date"
                                 x-on:input="$wire.set('filterDateTo', $event.detail ?? '')"
                             />
-                        </x-signals.field>
+                        </x-dense::field
                     </div>
                 @endif
             </div>
         </div>
-    </x-signals.card>
+    </x-dense::card>
 
-    <x-signals.card class="s-usage-overview">
+    <x-dense::card class="s-usage-overview">
         <div class="s-usage-overview-grid">
             <div class="s-usage-overview-top">
                 <div class="s-usage-metric">
@@ -284,10 +284,10 @@ new #[Layout('components.layouts.app')] #[Title('API Usage')] class extends Comp
                 @endif
             </div>
         </div>
-    </x-signals.card>
+    </x-dense::card>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <x-signals.card title="By token" class="s-usage-table-card">
+        <x-dense::card title="By token" class="s-usage-table-card">
             @if ($tokenRows === [])
                 <p class="text-sm text-[var(--text-muted)] text-center py-6">No token usage in this window.</p>
             @else
@@ -317,9 +317,9 @@ new #[Layout('components.layouts.app')] #[Title('API Usage')] class extends Comp
                     </table>
                 </x-signals.table-wrap>
             @endif
-        </x-signals.card>
+        </x-dense::card>
 
-        <x-signals.card title="By endpoint" class="s-usage-table-card">
+        <x-dense::card title="By endpoint" class="s-usage-table-card">
             @if ($endpointRows === [])
                 <p class="text-sm text-[var(--text-muted)] text-center py-6">No endpoint usage in this window.</p>
             @else
@@ -344,9 +344,9 @@ new #[Layout('components.layouts.app')] #[Title('API Usage')] class extends Comp
                     </table>
                 </x-signals.table-wrap>
             @endif
-        </x-signals.card>
+        </x-dense::card>
 
-        <x-signals.card title="By resource" class="s-usage-table-card xl:col-span-2">
+        <x-dense::card title="By resource" class="s-usage-table-card xl:col-span-2">
             @if ($resourceRows === [])
                 <p class="text-sm text-[var(--text-muted)] text-center py-6">No resource usage in this window.</p>
             @else
@@ -371,7 +371,7 @@ new #[Layout('components.layouts.app')] #[Title('API Usage')] class extends Comp
                     </table>
                 </x-signals.table-wrap>
             @endif
-        </x-signals.card>
+        </x-dense::card>
     </div>
     </x-api.layout>
 </section>

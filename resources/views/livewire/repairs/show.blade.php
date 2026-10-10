@@ -47,7 +47,7 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$repair->product?->name ?? 'Repair'">
+    <x-dense::page-header :title="$repair->product?->name ?? 'Repair'">
         <x-slot:breadcrumbs><a href="{{ route('repairs.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Repairs</a></x-slot:breadcrumbs>
         <x-slot:meta><span class="text-sm text-[var(--text-muted)]">{{ $repair->status->label() }}</span></x-slot:meta>
         <x-slot:actions>
@@ -58,7 +58,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 @if($repair->status->value !== 'completed' && $repair->status->value !== 'unrepairable') <flux:button wire:click="markUnrepairable" size="sm">Mark unrepairable</flux:button> @endif
             @endcan
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="grid gap-6 px-6 py-4 lg:grid-cols-2 max-md:px-5 max-sm:px-3">
         <x-signals.panel title="Repair">

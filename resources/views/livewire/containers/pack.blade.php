@@ -137,7 +137,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full" data-density="compact">
-    <x-signals.page-header :title="'Pack — '.$container->name">
+    <x-dense::page-header :title="'Pack — '.$container->name">
         <x-slot:meta>
             <a href="{{ route('containers.show', $container) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $container->name }}</a>
         </x-slot:meta>
@@ -146,14 +146,14 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <x-dense::button wire:click="seal" wire:loading.attr="disabled" wire:target="seal" variant="primary" size="sm">Seal container</x-dense::button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="px-6 py-4 max-md:px-5 max-sm:px-3 space-y-4">
         @if(session('container_status'))
             <x-signals.alert type="success">{{ session('container_status') }}</x-signals.alert>
         @endif
 
-        <x-signals.card title="Scan Item" class="shadow-none">
+        <x-dense::card title="Scan Item" class="shadow-none">
             <form wire:submit="scanItem" class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                 <div>
                     <x-dense::field-label for="container-scan-input">Asset number, serial number, or ID</x-dense::field-label>
@@ -170,10 +170,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             @error('scanInput')
                 <p id="container-scan-input-error" class="dense-field-error mt-1" role="alert">{{ $message }}</p>
             @enderror
-        </x-signals.card>
+        </x-dense::card>
 
         @if($packConflict)
-            <x-signals.card title="Packing Conflict" class="shadow-none">
+            <x-dense::card title="Packing Conflict" class="shadow-none">
                 <p class="text-sm text-[var(--muted)]">{{ str($packConflict['conflict'] ?? '')->headline() }}</p>
                 <dl class="mt-3 space-y-1 text-sm">
                     @foreach($packConflict['details'] ?? [] as $key => $value)
@@ -193,11 +193,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endforeach
                     <x-dense::button wire:click="dismissPackConflict" wire:loading.attr="disabled" wire:target="dismissPackConflict" variant="ghost" size="sm">Dismiss</x-dense::button>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @if($isStrict)
-            <x-signals.card title="Template Checklist" class="shadow-none">
+            <x-dense::card title="Template Checklist" class="shadow-none">
                 <div class="grid gap-2 sm:grid-cols-2">
                     @foreach($compliance->slots as $slot)
                         <div wire:key="slot-{{ $slot->product_id }}" class="flex items-center justify-between rounded-md border border-[var(--border)] px-3 py-2">
@@ -216,9 +216,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                         </div>
                     @endforeach
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @else
-            <x-signals.card title="Packed Items" class="shadow-none">
+            <x-dense::card title="Packed Items" class="shadow-none">
                 @if($compliance->slots !== [])
                     <p class="text-xs text-[var(--muted)] mb-3">Template reference (non-blocking)</p>
                     <div class="mb-4 grid gap-2 sm:grid-cols-2">
@@ -255,17 +255,17 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3"><x-signals.empty title="No items packed" description="Scan an item to add it to this Container." /></td>
+                                    <td colspan="3"><x-dense::empty-state title="No items packed" description="Scan an item to add it to this Container." /></td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </x-signals.table-wrap>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @if($isStrict && $container->activeItems->isNotEmpty())
-            <x-signals.card title="Packed Items" class="shadow-none">
+            <x-dense::card title="Packed Items" class="shadow-none">
                 <ul class="space-y-1 text-sm">
                     @foreach($container->activeItems as $item)
                         <li wire:key="strict-item-{{ $item->id }}" class="flex items-center justify-between gap-2">
@@ -282,7 +282,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         </li>
                     @endforeach
                 </ul>
-            </x-signals.card>
+            </x-dense::card>
         @endif
     </div>
 </section>

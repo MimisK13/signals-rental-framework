@@ -5,7 +5,7 @@
     </div>
 
     {{-- Company --}}
-    <x-signals.card>
+    <x-dense::card>
         <x-slot:headerActions>
             <div class="flex items-center justify-between w-full">
                 <span class="s-auth-label">Company</span>
@@ -21,10 +21,10 @@
             ['label' => 'Tax', 'value' => $taxRate . '% (' . $taxLabel . ')'],
             ['label' => 'Date / Time', 'value' => $dateFormat . ' · ' . $timeFormat],
         ]" />
-    </x-signals.card>
+    </x-dense::card>
 
     {{-- Stores --}}
-    <x-signals.card>
+    <x-dense::card>
         <x-slot:headerActions>
             <div class="flex items-center justify-between w-full">
                 <span class="s-auth-label">Stores</span>
@@ -45,10 +45,10 @@
                 </div>
             @endforeach
         </div>
-    </x-signals.card>
+    </x-dense::card>
 
     {{-- Profile --}}
-    <x-signals.card>
+    <x-dense::card>
         <x-slot:headerActions>
             <div class="flex items-center justify-between w-full">
                 <span class="s-auth-label">Profile</span>
@@ -61,10 +61,10 @@
             <p class="font-medium">{{ $profileEnum->label() }}</p>
             <p class="mt-1 text-zinc-500 dark:text-zinc-400">{{ $profileEnum->description() }}</p>
         </div>
-    </x-signals.card>
+    </x-dense::card>
 
     {{-- Branding --}}
-    <x-signals.card>
+    <x-dense::card>
         <x-slot:headerActions>
             <div class="flex items-center justify-between w-full">
                 <span class="s-auth-label">Branding</span>
@@ -81,10 +81,10 @@
                 {{ $logo ? 'Logo uploaded' : 'No logo uploaded' }}
             </span>
         </div>
-    </x-signals.card>
+    </x-dense::card>
 
     {{-- Admin --}}
-    <x-signals.card>
+    <x-dense::card>
         <x-slot:headerActions>
             <div class="flex items-center justify-between w-full">
                 <span class="s-auth-label">Admin Account</span>
@@ -96,5 +96,5 @@
             ['label' => 'Name', 'value' => $adminName],
             ['label' => 'Email', 'value' => $adminEmail],
         ]" />
-    </x-signals.card>
+    </x-dense::card>
 </div>

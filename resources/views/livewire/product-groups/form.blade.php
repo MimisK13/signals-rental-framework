@@ -179,7 +179,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
 <section class="w-full">
     @if($isEditing)
-        <x-signals.page-header title="Edit Product Group">
+        <x-dense::page-header title="Edit Product Group">
             <x-slot:breadcrumbs>
                 <a href="{{ route('product-groups.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Product Groups</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -187,15 +187,15 @@ new #[Layout('components.layouts.app')] class extends Component
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Edit</span>
             </x-slot:breadcrumbs>
-        </x-signals.page-header>
+        </x-dense::page-header>
     @else
-        <x-signals.page-header title="Create Product Group">
+        <x-dense::page-header title="Create Product Group">
             <x-slot:breadcrumbs>
                 <a href="{{ route('product-groups.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Product Groups</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
-        </x-signals.page-header>
+        </x-dense::page-header>
     @endif
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">

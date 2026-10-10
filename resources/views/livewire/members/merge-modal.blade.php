@@ -13,7 +13,7 @@
             </p>
 
             @if($canPickSecondary)
-                <x-signals.field label="Member to merge" required>
+                <x-dense::field label="Member to merge" required>
                     <div class="relative">
                         <flux:input wire:model.live.debounce.300ms="mergeSearch" placeholder="Search members..." />
                         @if(count($mergeSearchResults) > 0)
@@ -28,7 +28,7 @@
                             <p class="mt-3 text-sm text-[var(--text-muted)]">No matching members of the same type were found.</p>
                         @endif
                     </div>
-                </x-signals.field>
+                </x-dense::field
             @else
                 <p class="mt-3 text-sm text-[var(--text-muted)]">No other members of the same type are available to merge.</p>
             @endif

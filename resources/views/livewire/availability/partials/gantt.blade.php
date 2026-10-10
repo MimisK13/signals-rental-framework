@@ -46,11 +46,11 @@
 </div>
 
 @if($gantt === null || (count($gantt->demands) === 0 && count($gantt->shortages) === 0))
-    <x-signals.empty
+    <x-dense::empty-state
         title="{{ __('No demand in this window') }}"
         description="{{ __('This product has no active bookings or shortages over the selected dates.') }}">
         <x-slot:icon><flux:icon.chart-bar-square class="!size-7" /></x-slot:icon>
-    </x-signals.empty>
+    </x-dense::empty-state>
 @else
     <div class="s-panel" wire:loading.class="opacity-60">
         <div class="s-panel-body">

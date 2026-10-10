@@ -306,7 +306,7 @@ new #[Layout('components.layouts.app')] #[Title('Request Logs')] class extends C
         <button type="button" wire:click="setChannel('webhook_received')" class="s-chip {{ $channel === 'webhook_received' ? 'on' : '' }}">Webhook received</button>
     </div>
 
-    <x-signals.card>
+    <x-dense::card>
         <div class="space-y-4">
             <div>
                 <div class="s-section-label mb-3">Date range</div>
@@ -319,54 +319,54 @@ new #[Layout('components.layouts.app')] #[Title('Request Logs')] class extends C
 
                 @if ($filterDatePreset === 'custom')
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-signals.field label="From">
+                        <x-dense::field label="From">
                             <x-signals.datepicker
                                 wire:key="logs-filter-from-{{ $filterDateFrom }}"
                                 :value="$filterDateFrom ?: null"
                                 placeholder="Select date"
                                 x-on:input="$wire.set('filterDateFrom', $event.detail ?? '')"
                             />
-                        </x-signals.field>
-                        <x-signals.field label="To">
+                        </x-dense::field
+                        <x-dense::field label="To">
                             <x-signals.datepicker
                                 wire:key="logs-filter-to-{{ $filterDateTo }}"
                                 :value="$filterDateTo ?: null"
                                 placeholder="Select date"
                                 x-on:input="$wire.set('filterDateTo', $event.detail ?? '')"
                             />
-                        </x-signals.field>
+                        </x-dense::field
                     </div>
                 @endif
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-{{ $channel === 'api' ? '3' : '1' }} gap-4">
-                <x-signals.field label="Status class">
+                <x-dense::field label="Status class">
                     <select class="s-input" wire:model.live="filterStatusClass">
                         <option value="">All statuses</option>
                         <option value="2xx">2xx</option>
                         <option value="4xx">4xx</option>
                         <option value="5xx">5xx</option>
                     </select>
-                </x-signals.field>
+                </x-dense::field
 
                 @if ($channel === 'api')
-                    <x-signals.field label="Method">
+                    <x-dense::field label="Method">
                         <select class="s-input" wire:model.live="filterMethod">
                             <option value="">All methods</option>
                             @foreach ($methods as $method)
                                 <option wire:key="method-{{ $method }}" value="{{ $method }}">{{ $method }}</option>
                             @endforeach
                         </select>
-                    </x-signals.field>
+                    </x-dense::field
 
-                    <x-signals.field label="Token">
+                    <x-dense::field label="Token">
                         <select class="s-input" wire:model.live="filterToken">
                             <option value="">All tokens</option>
                             @foreach ($tokens as $token)
                                 <option wire:key="token-{{ $token->id }}" value="{{ $token->id }}">{{ $token->name }}</option>
                             @endforeach
                         </select>
-                    </x-signals.field>
+                    </x-dense::field
                 @endif
             </div>
 
@@ -376,12 +376,12 @@ new #[Layout('components.layouts.app')] #[Title('Request Logs')] class extends C
                 </div>
             @endif
         </div>
-    </x-signals.card>
+    </x-dense::card>
 
     @if ($logs->isEmpty())
-        <x-signals.card>
+        <x-dense::card>
             <p class="text-sm text-[var(--text-muted)] text-center py-8">No log entries found for the current filters.</p>
-        </x-signals.card>
+        </x-dense::card>
     @else
         <div class="s-card overflow-hidden">
             <table class="s-table">

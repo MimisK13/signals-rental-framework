@@ -27,12 +27,12 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="Stocktakes">
+    <x-dense::page-header title="Stocktakes">
         <x-slot:meta><span class="s-badge s-badge-zinc">Physical observations</span></x-slot:meta>
         <x-slot:actions>
             <a href="{{ route('stocktakes.create') }}" wire:navigate class="s-btn s-btn-sm s-btn-primary">New Stocktake</a>
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="px-6 py-4 max-md:px-5 max-sm:px-3">
         <x-signals.panel title="Stocktake history">
@@ -54,7 +54,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </table>
                 </div>
             @else
-                <x-signals.empty title="No stocktakes yet" description="Start a bulk physical count for an accessible Store." />
+                <x-dense::empty-state title="No stocktakes yet" description="Start a bulk physical count for an accessible Store." />
             @endif
         </x-signals.panel>
     </div>

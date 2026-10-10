@@ -547,7 +547,7 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
             <a href="{{ route('admin.settings.communication-log') }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm">{{ __('Communication log') }}</a>
         </x-slot:actions>
         {{-- Channel Providers --}}
-        <x-signals.card>
+        <x-dense::card>
             <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Channel Providers</h3>
@@ -589,10 +589,10 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
                     @endforeach
                 </div>
             </div>
-        </x-signals.card>
+        </x-dense::card>
 
         {{-- Communication log & unsubscribe settings --}}
-        <x-signals.card>
+        <x-dense::card>
             <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
                 <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Communication log &amp; unsubscribe</h3>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">Retention for delivery history and signed unsubscribe link lifetime.</p>
@@ -629,7 +629,7 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
                     <x-action-message on="notification-settings-saved">Saved.</x-action-message>
                 </div>
             </form>
-        </x-signals.card>
+        </x-dense::card>
 
         {{-- Notification Types --}}
         @if ($grouped->isEmpty())

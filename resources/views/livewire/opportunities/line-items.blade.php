@@ -1484,7 +1484,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
     @endif
 
     {{-- Alpine-owned table — Livewire must not morph this subtree --}}
-    <x-signals.card class="[&_.s-card-body]:!p-0">
+    <x-dense::card class="[&_.s-card-body]:!p-0">
         <div class="overflow-x-auto" wire:ignore>
             <table class="s-table lf-table w-full text-sm select-none">
                 <thead>
@@ -1705,7 +1705,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                 </button>
             </div>
         @endif
-    </x-signals.card>
+    </x-dense::card>
 
     <div x-ref="ghost" class="lf-ghost" x-show="dragId" x-cloak></div>
 

@@ -124,9 +124,9 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full max-w-3xl">
-    <x-signals.page-header :title="$repair?->exists ? 'Edit Repair' : 'New Repair'">
+    <x-dense::page-header :title="$repair?->exists ? 'Edit Repair' : 'New Repair'">
         <x-slot:breadcrumbs><a href="{{ route('repairs.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Repairs</a></x-slot:breadcrumbs>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <form wire:submit="save" class="space-y-4 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="grid gap-4 sm:grid-cols-2">

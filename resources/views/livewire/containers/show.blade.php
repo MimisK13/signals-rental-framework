@@ -478,7 +478,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full" data-density="compact">
-    <x-signals.page-header :title="$container->name">
+    <x-dense::page-header :title="$container->name">
         <x-slot:meta>
             <a href="{{ route('containers.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Containers</a>
         </x-slot:meta>
@@ -487,7 +487,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <x-dense::button href="{{ route('containers.repack', ['container' => $container, 'opportunity' => $repackOpportunityId]) }}" wire:navigate.hover variant="ghost" size="sm">Repack session</x-dense::button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     @if(session('container_status'))
         <div class="px-6 pt-4 max-md:px-5 max-sm:px-3">
@@ -498,7 +498,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     <div class="px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="min-w-0 space-y-4">
-        <x-signals.card title="Physical Identity" class="shadow-none">
+        <x-dense::card title="Physical Identity" class="shadow-none">
             <x-signals.data-list layout="grid" :dividers="false" :items="array_filter([
                 ['label' => 'Barcode', 'value' => $container->barcode ?? '—', 'mono' => true],
                 ['label' => 'Store', 'value' => $container->store?->name ?? '—'],
@@ -518,7 +518,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </div>
             @endif
 
-        </x-signals.card>
+        </x-dense::card>
 
         {{-- Legacy Details markup retained as a reference during the Physical Identity card migration. --}}
         {{--
@@ -574,7 +574,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         --}}
 
         @if($dispatchPrompt)
-            <x-signals.card class="shadow-none">
+            <x-dense::card class="shadow-none">
                 <h2 class="text-sm font-semibold mb-2">Dispatch requires opportunity amendments</h2>
                 <p class="text-sm text-[var(--muted)] mb-3">{{ $dispatchPrompt['message'] ?? '' }}</p>
                 <div class="space-y-2 mb-4">
@@ -615,21 +615,21 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endif
                     <x-dense::button wire:click="dismissDispatchPrompt" wire:loading.attr="disabled" wire:target="dismissDispatchPrompt" size="sm">Dismiss</x-dense::button>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @if($canReturn)
-            <x-signals.card class="shadow-none">
+            <x-dense::card class="shadow-none">
                 <h2 class="text-sm font-semibold mb-3">Return kit</h2>
                         <x-dense::button wire:click="returnKit" wire:loading.attr="disabled" wire:target="returnKit" variant="primary" size="sm">Return kit</x-dense::button>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @if($canVerifyCheckin)
-            <x-signals.card class="shadow-none">
+            <x-dense::card class="shadow-none">
                 <h2 class="text-sm font-semibold mb-3">Check-in verification</h2>
                 <x-dense::button wire:click="verifyCheckin" wire:loading.attr="disabled" wire:target="verifyCheckin" variant="primary" size="sm">Mark verified</x-dense::button>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @if($canPack && $container->status->acceptsPacking())
@@ -639,9 +639,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
         @endif
 
-        <x-signals.table-card title="Contents" class="shadow-none">
+        <x-dense::table-card title="Contents" class="shadow-none">
             @if($this->contentsTree() === [])
-                <x-signals.empty title="No items packed" description="Pack items to build this Container's contents." />
+                <x-dense::empty-state title="No items packed" description="Pack items to build this Container's contents." />
             @else
                 <table class="s-table s-table-compact w-full">
                     <thead>
@@ -658,13 +658,13 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </tbody>
                 </table>
             @endif
-        </x-signals.table-card>
+        </x-dense::table-card>
 
         {{-- TODO: This is a legacy execution hook. The future planning entry
              point is Quotation/Order, where Containers and Kits are selected
              before warehouse dispatch. --}}
         @if($canDispatch)
-            <x-signals.card class="shadow-none">
+            <x-dense::card class="shadow-none">
                 <div class="mb-3 flex items-center gap-2">
                     <h2 class="text-sm font-semibold">Dispatch to opportunity</h2>
                     <span class="s-badge s-badge-amber">TODO</span>
@@ -676,7 +676,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </div>
                     <x-dense::button wire:click="dispatchContainer" wire:loading.attr="disabled" wire:target="dispatchContainer" variant="primary" size="sm">Dispatch</x-dense::button>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
             </div>
@@ -735,7 +735,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
         @endif
 
-        <x-signals.card title="Lifecycle" class="shadow-none">
+        <x-dense::card title="Lifecycle" class="shadow-none">
             @if($timeline->isEmpty())
                 <p class="text-sm text-[var(--muted)]">No audit events recorded yet.</p>
             @else
@@ -754,7 +754,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endforeach
                 </x-signals.timeline>
             @endif
-        </x-signals.card>
+        </x-dense::card>
             </aside>
         </div>
     </div>

@@ -42,7 +42,7 @@ new #[Layout('components.layouts.app')] #[Title('Rate Definitions')] class exten
         </x-slot:actions>
 
         @if($definitions->isEmpty())
-            <x-signals.empty
+            <x-dense::empty-state
                 icon="calculator"
                 title="No rate definitions yet"
                 description="Create a rate definition from a preset or from scratch to start pricing products."

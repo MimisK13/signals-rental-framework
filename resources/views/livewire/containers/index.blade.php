@@ -222,7 +222,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
 }; ?>
 
 <section class="w-full" data-density="compact">
-    <x-signals.page-header title="Containers">
+    <x-dense::page-header title="Containers">
         <x-slot:meta>
             <span>Physical warehouse units</span>
         </x-slot:meta>
@@ -233,10 +233,10 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
                 </flux:button>
             @endcan
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 space-y-4 px-6 py-4 max-md:px-5 max-sm:px-3">
-        <x-signals.toolbar class="w-full flex-wrap items-end !gap-3 !px-0 !py-0" data-density="comfortable">
+        <x-dense::toolbar class="w-full flex-wrap items-end !gap-3 !px-0 !py-0" data-density="comfortable">
             <form wire:submit="submitScan" class="flex w-full items-end gap-3">
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-col gap-1">
@@ -249,7 +249,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
             @error('scanBarcode')
                 <p class="w-full text-sm text-[var(--danger)]">{{ $message }}</p>
             @enderror
-        </x-signals.toolbar>
+        </x-dense::toolbar>
 
         <x-signals.modal name="repack-opportunity-picker" title="{{ __('Start repack from return') }}" size="md" :teleport="false">
             <p class="text-sm text-[var(--muted)] mb-4">{{ __('This housing is checked out on multiple opportunities. Choose which return to process.') }}</p>
@@ -269,7 +269,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
             </div>
         </x-signals.modal>
 
-        <x-signals.toolbar class="w-full flex-wrap items-end justify-between !gap-3 !px-0 !py-0">
+        <x-dense::toolbar class="w-full flex-wrap items-end justify-between !gap-3 !px-0 !py-0">
             <div class="min-w-52 flex-1 sm:max-w-80">
                 <div class="flex flex-col gap-1">
                     <x-dense::field-label for="container-search">{{ __('Search') }}</x-dense::field-label>
@@ -290,7 +290,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
                     />
                 </div>
             </div>
-        </x-signals.toolbar>
+        </x-dense::toolbar>
 
         <div class="flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)]">
             <nav class="flex flex-wrap items-center gap-1" aria-label="Container status">
@@ -310,9 +310,9 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
         </div>
 
         @php($containers = $this->containers())
-        <x-signals.table-card title="Containers" :count="$containers->total()" count-class="s-badge-blue">
+        <x-dense::table-card title="Containers" :count="$containers->total()" count-class="s-badge-blue">
             @if($containers->isEmpty())
-                <x-signals.empty title="No containers found" description="No containers match the current filters." />
+                <x-dense::empty-state title="No containers found" description="No containers match the current filters." />
             @else
                 <table class="s-table s-table-compact w-full">
                     <thead>
@@ -391,6 +391,6 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
             <x-slot:footer>
                 {{ $containers->links() }}
             </x-slot:footer>
-        </x-signals.table-card>
+        </x-dense::table-card>
     </div>
 </section>

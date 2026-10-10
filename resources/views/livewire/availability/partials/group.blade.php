@@ -14,17 +14,17 @@
 @endphp
 
 @if($groupId === null)
-    <x-signals.empty
+    <x-dense::empty-state
         title="{{ __('Select a product group') }}"
         description="{{ __('Choose a product group to view the availability of its products over the period.') }}">
         <x-slot:icon><flux:icon.squares-2x2 class="!size-7" /></x-slot:icon>
-    </x-signals.empty>
+    </x-dense::empty-state>
 @elseif(empty($rows))
-    <x-signals.empty
+    <x-dense::empty-state
         title="{{ __('No matching products') }}"
         description="{{ __('No products in this group match the current filters, or none have availability data at this store for the chosen period.') }}">
         <x-slot:icon><flux:icon.calendar class="!size-7" /></x-slot:icon>
-    </x-signals.empty>
+    </x-dense::empty-state>
 @else
     @include('livewire.availability.partials.grid-shell-open')
         @include('livewire.availability.partials.grid-header', [

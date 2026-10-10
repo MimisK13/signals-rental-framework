@@ -307,7 +307,7 @@ new #[Layout('components.layouts.app')] #[Title('Communication Template')] class
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {{-- Editor + field browser --}}
             <div class="xl:col-span-2 space-y-4">
-                <x-signals.card>
+                <x-dense::card>
                     <div class="p-4 space-y-4">
                         @if ($template->channel === 'email')
                             <flux:input wire:model.live.debounce.400ms="subject" label="Subject" :disabled="$template->is_system" />
@@ -331,9 +331,9 @@ new #[Layout('components.layouts.app')] #[Title('Communication Template')] class
                             <p class="text-sm text-amber-600 dark:text-amber-400">System templates are read-only. Duplicate to create an editable copy.</p>
                         @endif
                     </div>
-                </x-signals.card>
+                </x-dense::card>
 
-                <x-signals.card>
+                <x-dense::card>
                     <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
                         <h3 class="text-sm font-semibold">Merge field browser</h3>
                     </div>
@@ -360,10 +360,10 @@ new #[Layout('components.layouts.app')] #[Title('Communication Template')] class
                             <p class="text-sm text-zinc-500">No merge fields defined for this notification type.</p>
                         @endforelse
                     </div>
-                </x-signals.card>
+                </x-dense::card>
 
                 @if ($versions->isNotEmpty())
-                    <x-signals.card>
+                    <x-dense::card>
                         <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
                             <h3 class="text-sm font-semibold">Version history</h3>
                         </div>
@@ -382,13 +382,13 @@ new #[Layout('components.layouts.app')] #[Title('Communication Template')] class
                                 </div>
                             @endforeach
                         </div>
-                    </x-signals.card>
+                    </x-dense::card>
                 @endif
             </div>
 
             {{-- Live preview --}}
             <div class="space-y-4">
-                <x-signals.card>
+                <x-dense::card>
                     <div class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
                         <h3 class="text-sm font-semibold">Live preview</h3>
                     </div>
@@ -419,7 +419,7 @@ new #[Layout('components.layouts.app')] #[Title('Communication Template')] class
                             @endif
                         </div>
                     </div>
-                </x-signals.card>
+                </x-dense::card>
             </div>
         </div>
     </x-admin.layout>

@@ -37,7 +37,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$stockLevel->item_name ?? ('Asset #' . $stockLevel->asset_number)">
+    <x-dense::page-header :title="$stockLevel->item_name ?? ('Asset #' . $stockLevel->asset_number)">
         <x-slot:breadcrumbs>
             <a href="{{ route('stock-levels.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Stock Levels</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -45,7 +45,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>Activities</span>
         </x-slot:breadcrumbs>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="mb-4 flex justify-end">

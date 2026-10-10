@@ -810,13 +810,13 @@ new #[Layout('components.layouts.app')] class extends Component
         @include('livewire.opportunities.partials.opportunity-header', ['opportunity' => $opportunity, 'subpage' => 'Edit'])
         @include('livewire.opportunities.partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => ''])
     @else
-        <x-signals.page-header title="New Opportunity">
+        <x-dense::page-header title="New Opportunity">
             <x-slot:breadcrumbs>
                 <a href="{{ route('opportunities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Opportunities</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
-        </x-signals.page-header>
+        </x-dense::page-header>
     @endif
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">

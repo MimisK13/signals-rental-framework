@@ -356,7 +356,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         };
     @endphp
 
-    <x-signals.page-header :title="$invoice->number">
+    <x-dense::page-header :title="$invoice->number">
         <x-slot:breadcrumbs>
             <a href="{{ route('invoices.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Invoices</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -396,7 +396,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <button type="button" wire:click="deleteDraft" wire:confirm="Delete this draft invoice?" class="s-btn s-btn-sm s-btn-ghost">Delete</button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     @include('livewire.invoices.partials.invoice-tabs', ['invoice' => $invoice, 'activeTab' => 'overview'])
 

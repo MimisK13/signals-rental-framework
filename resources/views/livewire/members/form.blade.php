@@ -359,13 +359,13 @@ new #[Layout('components.layouts.app')] class extends Component
         @include('livewire.members.partials.member-header', ['member' => $member, 'subpage' => 'Edit'])
         @include('livewire.members.partials.member-tabs', ['member' => $member, 'activeTab' => ''])
     @else
-        <x-signals.page-header :title="'Create ' . (\App\Enums\MembershipType::tryFrom($membershipType)?->label() ?? 'Member')">
+        <x-dense::page-header :title="'Create ' . (\App\Enums\MembershipType::tryFrom($membershipType)?->label() ?? 'Member')">
             <x-slot:breadcrumbs>
                 <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
-        </x-signals.page-header>
+        </x-dense::page-header>
     @endif
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">

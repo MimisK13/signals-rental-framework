@@ -191,7 +191,7 @@ new #[Layout('components.layouts.app')] #[Title('Discount Category')] class exte
 
 <section class="w-full">
     <x-admin.layout group="pricing" :title="$isEditing ? 'Edit Discount Category' : 'Create Discount Category'">
-        <x-signals.card>
+        <x-dense::card>
             <form wire:submit="save" class="space-y-6">
                 <div class="space-y-4">
                     <flux:input wire:model="name" label="Name" required />
@@ -261,6 +261,6 @@ new #[Layout('components.layouts.app')] #[Title('Discount Category')] class exte
                     <flux:button href="{{ route('admin.settings.pricing.discount-categories') }}" wire:navigate.hover variant="ghost">Cancel</flux:button>
                 </div>
             </form>
-        </x-signals.card>
+        </x-dense::card>
     </x-admin.layout>
 </section>

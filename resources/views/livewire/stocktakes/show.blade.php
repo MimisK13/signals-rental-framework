@@ -170,7 +170,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="Stocktake #{{ $stocktake->id }}">
+    <x-dense::page-header title="Stocktake #{{ $stocktake->id }}">
         <x-slot:breadcrumbs><a href="{{ route('stocktakes.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Stocktakes</a></x-slot:breadcrumbs>
         <x-slot:meta><span class="s-badge s-badge-zinc">{{ $stocktake->status->label() }}</span></x-slot:meta>
         <x-slot:actions>
@@ -181,7 +181,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <button type="button" wire:click="cancel" wire:confirm="Cancel this Stocktake? Existing evidence will be retained." class="s-btn s-btn-sm s-btn-ghost text-[var(--red)]">Cancel</button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex flex-col gap-6 px-6 py-4 max-md:px-5 max-sm:px-3">
         <x-signals.panel title="Evidence summary">

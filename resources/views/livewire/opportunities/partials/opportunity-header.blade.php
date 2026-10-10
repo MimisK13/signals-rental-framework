@@ -24,7 +24,7 @@
     $activeVersionNumber = $opportunity->activeVersion?->version_number ?? max((int) $opportunity->version_count, 1);
     $headerTitle = $opportunity->subject.' — v'.$activeVersionNumber;
 @endphp
-<x-signals.page-header :title="$headerTitle">
+<x-dense::page-header :title="$headerTitle">
     <x-slot:breadcrumbs>
         <a href="{{ route('opportunities.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Opportunities</a>
         <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -151,4 +151,4 @@
             </x-signals.split-button>
         @endif
     </x-slot:actions>
-</x-signals.page-header>
+</x-dense::page-header>

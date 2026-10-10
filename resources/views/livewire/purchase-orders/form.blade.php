@@ -151,13 +151,13 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$isEditing ? 'Edit Draft Purchase Order' : 'New Draft Purchase Order'">
+    <x-dense::page-header :title="$isEditing ? 'Edit Draft Purchase Order' : 'New Draft Purchase Order'">
         <x-slot:breadcrumbs>
             <a href="{{ route('purchase-orders.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Purchase Orders</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $isEditing ? 'Edit' : 'Create' }}</span>
         </x-slot:breadcrumbs>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3 max-w-4xl">
         <form wire:submit="save" class="space-y-6">
@@ -203,7 +203,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <flux:textarea wire:model="notes" rows="3" />
             </flux:field>
 
-            <x-signals.card title="Line items">
+            <x-dense::card title="Line items">
                 <p class="mb-3 text-xs text-[var(--text-muted)]">Leave unit cost blank on product lines to pre-fill from the preferred per-unit supplier cost.</p>
                 <x-signals.table-wrap>
                     <table class="s-table">
@@ -239,7 +239,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </table>
                 </x-signals.table-wrap>
                 <button type="button" wire:click="addLine" class="s-btn s-btn-sm s-btn-secondary mt-3">Add line</button>
-            </x-signals.card>
+            </x-dense::card>
 
             <div class="flex gap-2">
                 <flux:button type="submit" variant="primary">Save draft</flux:button>

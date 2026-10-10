@@ -1,6 +1,6 @@
 <x-layouts.auth>
     <div class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-        <x-signals.card>
+        <x-dense::card>
             <h1 class="text-lg font-semibold text-[var(--text-primary)]" style="font-family: var(--font-display);">
                 {{ __('Enter PIN') }}
             </h1>
@@ -30,6 +30,6 @@
                     {{ __('View document') }}
                 </button>
             </form>
-        </x-signals.card>
+        </x-dense::card>
     </div>
 </x-layouts.auth>

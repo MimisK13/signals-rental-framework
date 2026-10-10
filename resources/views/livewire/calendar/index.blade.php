@@ -368,7 +368,7 @@ new #[Layout('components.layouts.app')] #[Title('Calendar')] class extends Compo
 }; ?>
 
 <section class="w-full flex flex-col" style="min-height: 0;">
-    <x-signals.page-header title="Calendar">
+    <x-dense::page-header title="Calendar">
         <x-slot:meta>
             @if($loaded)
                 <span>USERS: {{ $this->stats['staff'] }}</span>
@@ -391,9 +391,9 @@ new #[Layout('components.layouts.app')] #[Title('Calendar')] class extends Compo
                 Add Activity
             </button>
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
-    <x-signals.toolbar>
+    <x-dense::toolbar>
         <x-signals.datepicker wire:key="cal-datepicker-{{ $startDate }}" :value="$startDate" wire:model.live="startDate" x-on:input="$wire.set('startDate', $event.detail)" />
 
         <div class="flex items-center gap-1">
@@ -453,7 +453,7 @@ new #[Layout('components.layouts.app')] #[Title('Calendar')] class extends Compo
                 </button>
             </div>
         </x-slot:right>
-    </x-signals.toolbar>
+    </x-dense::toolbar>
 
     <div class="min-h-0 px-6 pb-4 max-md:px-5 max-sm:px-3 flex flex-col gap-4" wire:init="load">
         <div class="flex flex-col min-h-0" style="height: 72vh;">

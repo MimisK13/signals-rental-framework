@@ -91,7 +91,7 @@ new #[Layout('components.layouts.app')] #[Title('Bundle Rule')] class extends Co
 
 <section class="w-full">
     <x-admin.layout group="pricing" :title="$isEditing ? 'Edit Bundle Rule' : 'Create Bundle Rule'">
-        <x-signals.card>
+        <x-dense::card>
             <form wire:submit="save" class="space-y-6">
                 <div class="space-y-4">
                     <flux:input wire:model="name" label="Name" required />
@@ -124,6 +124,6 @@ new #[Layout('components.layouts.app')] #[Title('Bundle Rule')] class extends Co
                     <flux:button href="{{ route('admin.settings.pricing.bundle-rules') }}" wire:navigate.hover variant="ghost">Cancel</flux:button>
                 </div>
             </form>
-        </x-signals.card>
+        </x-dense::card>
     </x-admin.layout>
 </section>

@@ -1,4 +1,4 @@
-<x-signals.page-header :title="$member->name">
+<x-dense::page-header :title="$member->name">
     <x-slot:icon>
         <x-signals.entity-icon :model="$member" :size="44" />
     </x-slot:icon>
@@ -102,7 +102,7 @@
             </a>
         </x-signals.split-button>
     </x-slot:actions>
-</x-signals.page-header>
+</x-dense::page-header>
 
 {{-- Keyboard shortcuts: e = edit, n = new dropdown --}}
 <div x-data x-on:keydown.window="

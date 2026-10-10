@@ -325,11 +325,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </table>
             </div>
         @else
-            <x-signals.empty title="No Supplier Costs" description="Add supplier costs to track sub-hire purchase pricing for this product.">
+            <x-dense::empty-state title="No Supplier Costs" description="Add supplier costs to track sub-hire purchase pricing for this product.">
                 @if($canManage)
                     <button type="button" wire:click="openCreateModal" class="s-btn s-btn-sm s-btn-accent">Add Supplier Cost</button>
                 @endif
-            </x-signals.empty>
+            </x-dense::empty-state>
         @endif
     </div>
 

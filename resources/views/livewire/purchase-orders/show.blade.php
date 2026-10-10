@@ -185,7 +185,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         $statusClass = $statusMeta['badge_class'] ?? 's-badge-zinc';
     @endphp
 
-    <x-signals.page-header :title="$purchaseOrder->number">
+    <x-dense::page-header :title="$purchaseOrder->number">
         <x-slot:breadcrumbs>
             <a href="{{ route('purchase-orders.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Purchase Orders</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -211,7 +211,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <button type="button" wire:click="deleteDraft" wire:confirm="Delete this draft purchase order?" class="s-btn s-btn-sm s-btn-danger">Delete</button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3 space-y-6">
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -235,7 +235,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             </x-signals.panel>
         @endif
 
-        <x-signals.card title="Line items">
+        <x-dense::card title="Line items">
             @if($purchaseOrder->items->isEmpty())
                 <p class="text-sm text-[var(--text-muted)]">No line items.</p>
             @else
@@ -287,10 +287,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </table>
                 </x-signals.table-wrap>
             @endif
-        </x-signals.card>
+        </x-dense::card>
 
         @if($purchaseOrder->po_type === 'sub_hire' && $purchaseOrder->virtualStockIntakes->isNotEmpty())
-            <x-signals.card title="Virtual stock intakes">
+            <x-dense::card title="Virtual stock intakes">
                 <x-signals.table-wrap>
                     <table class="s-table">
                         <thead>
@@ -327,11 +327,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                         </tbody>
                     </table>
                 </x-signals.table-wrap>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @can('supplier_bills.view')
-            <x-signals.card title="Supplier bills">
+            <x-dense::card title="Supplier bills">
                 @if($purchaseOrder->supplierBills->isEmpty())
                     <p class="text-sm text-[var(--text-muted)]">No supplier bills linked to this purchase order.</p>
                 @else
@@ -341,7 +341,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endforeach
                     </tbody></table></x-signals.table-wrap>
                 @endif
-            </x-signals.card>
+            </x-dense::card>
         @endcan
 
         @costs

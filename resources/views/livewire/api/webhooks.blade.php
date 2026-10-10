@@ -630,13 +630,13 @@ new #[Layout('components.layouts.app')] #[Title('Webhooks')] class extends Compo
                 </table>
             </div>
         @else
-            <x-signals.card>
+            <x-dense::card>
                 <div class="py-8 text-center">
                     <flux:icon.signal class="mx-auto h-10 w-10 text-zinc-400" />
                     <p class="mt-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">No webhooks</p>
                     <p class="mt-1 text-sm text-zinc-500">Create a webhook to receive event notifications at an external URL.</p>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         <x-action-message on="webhook-created">Webhook created successfully.</x-action-message>
@@ -746,13 +746,13 @@ new #[Layout('components.layouts.app')] #[Title('Webhooks')] class extends Compo
                 </table>
             </div>
         @else
-            <x-signals.card>
+            <x-dense::card>
                 <div class="py-8 text-center">
                     <flux:icon.arrow-down-tray class="mx-auto h-10 w-10 text-zinc-400" />
                     <p class="mt-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">No inbound sources</p>
                     <p class="mt-1 text-sm text-zinc-500">Create a source to receive signed webhooks from external systems.</p>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         <x-action-message on="inbound-source-created">Inbound source created successfully.</x-action-message>

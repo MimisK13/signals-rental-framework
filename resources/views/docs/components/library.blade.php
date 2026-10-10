@@ -2368,16 +2368,16 @@
         {{-- Standard inputs --}}
         <div style="flex: 1; min-width: 280px; max-width: 360px;">
           <div style="font-family: var(--font-display); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 12px;">Standard Inputs</div>
-          <x-signals.field label="Full Name" :required="true">
+          <x-dense::field label="Full Name" :required="true">
             <input type="text" class="s-input" placeholder="Jane Smith">
-          </x-signals.field>
-          <x-signals.field label="Email Address" help="We'll never share your email." :required="true">
+          </x-dense::field
+          <x-dense::field label="Email Address" help="We'll never share your email." :required="true">
             <input type="email" class="s-input" placeholder="user@example.com">
-          </x-signals.field>
-          <x-signals.field label="Password">
+          </x-dense::field
+          <x-dense::field label="Password">
             <input type="password" class="s-input" placeholder="Enter password">
-          </x-signals.field>
-          <x-signals.field label="Category" :required="true">
+          </x-dense::field
+          <x-dense::field label="Category" :required="true">
             <select class="s-input">
               <option value="">Select a category...</option>
               <option>Lighting</option>
@@ -2385,15 +2385,15 @@
               <option>Staging</option>
               <option>Power</option>
             </select>
-          </x-signals.field>
-          <x-signals.field label="Notes">
+          </x-dense::field
+          <x-dense::field label="Notes">
             <textarea class="s-textarea" placeholder="Additional notes..." rows="3"></textarea>
-          </x-signals.field>
+          </x-dense::field
         </div>
         {{-- Checkbox, radio, toggle --}}
         <div style="flex: 1; min-width: 280px; max-width: 360px;">
           <div style="font-family: var(--font-display); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 12px;">Checkbox, Radio &amp; Toggle</div>
-          <x-signals.field label="Store">
+          <x-dense::field label="Store">
             <div class="s-field-options" x-data="{ store: 'main' }">
               <label class="s-field-option" x-on:click="store = 'main'">
                 <div class="s-radio" x-bind:class="store === 'main' && 'checked'"></div>
@@ -2408,8 +2408,8 @@
                 South Depot
               </label>
             </div>
-          </x-signals.field>
-          <x-signals.field label="Options">
+          </x-dense::field
+          <x-dense::field label="Options">
             <div class="s-field-options" x-data="{ delivery: true, signature: false }">
               <label class="s-field-option" x-on:click="delivery = !delivery">
                 <div class="s-checkbox" x-bind:class="delivery && 'checked'">
@@ -2424,8 +2424,8 @@
                 Require signature
               </label>
             </div>
-          </x-signals.field>
-          <x-signals.field label="Notifications" help="Choose which notifications to receive.">
+          </x-dense::field
+          <x-dense::field label="Notifications" help="Choose which notifications to receive.">
             <div class="s-field-options" x-data="{ email: true, sms: false, inapp: true }">
               <label class="s-field-option" x-on:click="email = !email">
                 <div class="s-checkbox" x-bind:class="email && 'checked'">
@@ -2446,39 +2446,39 @@
                 In-app
               </label>
             </div>
-          </x-signals.field>
-          <x-signals.field label="Company Name" error="This field is required." :required="true">
+          </x-dense::field
+          <x-dense::field label="Company Name" error="This field is required." :required="true">
             <input type="text" class="s-input">
-          </x-signals.field>
-          <x-signals.field label="Disabled Field">
+          </x-dense::field
+          <x-dense::field label="Disabled Field">
             <input type="text" class="s-input" disabled value="Read only value">
-          </x-signals.field>
+          </x-dense::field
         </div>
         {{-- Input groups --}}
         <div style="flex: 1; min-width: 280px; max-width: 360px;">
           <div style="font-family: var(--font-display); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 12px;">Input Groups</div>
-          <x-signals.field label="Website">
+          <x-dense::field label="Website">
             <div class="s-input-group">
               <span class="s-input-prefix">https://</span>
               <input type="text" class="s-input" placeholder="example.com">
             </div>
-          </x-signals.field>
-          <x-signals.field label="Price">
+          </x-dense::field
+          <x-dense::field label="Price">
             <div class="s-input-group">
               <span class="s-input-prefix">&pound;</span>
               <input type="number" class="s-input" placeholder="0.00" step="0.01">
               <span class="s-input-suffix">GBP</span>
             </div>
-          </x-signals.field>
-          <x-signals.field label="Weight">
+          </x-dense::field
+          <x-dense::field label="Weight">
             <div class="s-input-group">
               <input type="number" class="s-input" placeholder="0">
               <span class="s-input-suffix">kg</span>
             </div>
-          </x-signals.field>
-          <x-signals.field label="Quantity">
+          </x-dense::field
+          <x-dense::field label="Quantity">
             <input type="number" class="s-input" placeholder="0" min="0" step="1">
-          </x-signals.field>
+          </x-dense::field
         </div>
       </div>
     </div>
@@ -2514,16 +2514,16 @@
       {{-- Medium modal --}}
       <x-signals.modal name="ref-modal-md" title="Edit Opportunity" size="md">
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <x-signals.field label="Subject" :required="true">
+          <x-dense::field label="Subject" :required="true">
             <input type="text" class="s-input" value="Summer Festival 2026">
-          </x-signals.field>
-          <x-signals.field label="Status">
+          </x-dense::field
+          <x-dense::field label="Status">
             <select class="s-input">
               <option>Quotation</option>
               <option selected>Confirmed</option>
               <option>Cancelled</option>
             </select>
-          </x-signals.field>
+          </x-dense::field
         </div>
         <x-slot:footer>
           <button class="s-btn s-btn-sm" x-on:click="$dispatch('close-modal', 'ref-modal-md')">Cancel</button>
@@ -2673,12 +2673,12 @@
       </x-signals.drawer>
       <x-signals.drawer name="ref-drawer-left" title="Filters" side="left" size="sm">
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <x-signals.field label="Status">
+          <x-dense::field label="Status">
             <select class="s-input"><option>All</option><option>Active</option><option>Archived</option></select>
-          </x-signals.field>
-          <x-signals.field label="Date Range">
+          </x-dense::field
+          <x-dense::field label="Date Range">
             <input type="text" class="s-input" value="Last 30 days">
-          </x-signals.field>
+          </x-dense::field
         </div>
         <x-slot:footer>
           <button class="s-btn s-btn-sm" x-on:click="$dispatch('close-drawer', 'ref-drawer-left')">Reset</button>

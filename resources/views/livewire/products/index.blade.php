@@ -151,13 +151,13 @@ new #[Layout('components.layouts.app')] #[Title('Products')] class extends Compo
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="Products">
+    <x-dense::page-header title="Products">
         <x-slot:meta>
             <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">
                 Catalogue
             </span>
         </x-slot:meta>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         {{-- Type filter chips --}}

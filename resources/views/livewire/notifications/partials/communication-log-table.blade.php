@@ -4,7 +4,7 @@
     'emptyMessage' => 'No communications recorded for this record yet.',
 ])
 
-<x-signals.card>
+<x-dense::card>
     <div class="overflow-x-auto">
         <table class="s-table w-full">
             <thead>
@@ -39,4 +39,4 @@
             </tbody>
         </table>
     </div>
-</x-signals.card>
+</x-dense::card>

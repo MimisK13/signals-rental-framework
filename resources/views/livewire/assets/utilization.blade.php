@@ -97,11 +97,11 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$asset->product?->name ?? 'Asset'" :subtitle="'Utilization'">
+    <x-dense::page-header :title="$asset->product?->name ?? 'Asset'" :subtitle="'Utilization'">
         <x-slot:meta>
             <span class="text-sm text-[var(--text-muted)]">{{ $asset->currentStockLevel?->asset_number ?? 'Serialized Asset' }}</span>
         </x-slot:meta>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="space-y-6 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="s-panel">

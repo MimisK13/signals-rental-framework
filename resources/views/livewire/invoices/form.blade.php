@@ -94,13 +94,13 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$isEditing ? 'Edit Draft Invoice' : 'New Draft Invoice'">
+    <x-dense::page-header :title="$isEditing ? 'Edit Draft Invoice' : 'New Draft Invoice'">
         <x-slot:breadcrumbs>
             <a href="{{ route('invoices.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Invoices</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>{{ $isEditing ? 'Edit' : 'Create' }}</span>
         </x-slot:breadcrumbs>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3 max-w-2xl">
         <form wire:submit="save" class="space-y-4">

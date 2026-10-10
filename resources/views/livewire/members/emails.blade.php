@@ -29,7 +29,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$member->name">
+    <x-dense::page-header :title="$member->name">
         <x-slot:breadcrumbs>
             <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -40,7 +40,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <x-slot:actions>
             <flux:button variant="primary" href="{{ route('members.emails.create', $member) }}" wire:navigate.hover>Add Email</flux:button>
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     @include('livewire.members.partials.member-tabs', ['member' => $member, 'activeTab' => 'emails'])
 

@@ -94,7 +94,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <form wire:submit="save" class="max-w-2xl space-y-8">
             <x-signals.form-section title="Relationship Details">
                 <div class="space-y-4">
-                    <x-signals.field :label="$isContact ? 'Related Member' : 'Contact'" required>
+                    <x-dense::field :label="$isContact ? 'Related Member' : 'Contact'" required>
                         {{-- Brand-accent highlight: the shared .s-combobox CSS uses the
                              hardcoded --green; re-point this instance to the themeable
                              brand accent (--blue) used by other inputs. --}}
@@ -107,7 +107,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 x-on:combobox-selected.window="if ($event.detail.name === 'relatedMemberId') $wire.set('relatedMemberId', $event.detail.value)"
                             />
                         </div>
-                    </x-signals.field>
+                    </x-dense::field
                     <flux:input wire:model="relationshipType" label="Relationship Type" placeholder="e.g. Employee, Contractor, Director" />
                     @if($isContact)
                         <flux:checkbox wire:model="isPrimary" label="Primary organisation" />

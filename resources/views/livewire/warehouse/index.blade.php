@@ -259,14 +259,14 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
 }; ?>
 
 <section class="w-full" data-density="compact">
-    <x-signals.page-header title="Warehouse">
+    <x-dense::page-header title="Warehouse">
         <x-slot:meta>
             <span>Operational work queue</span>
         </x-slot:meta>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 space-y-4 px-6 py-4 max-md:px-5 max-sm:px-3">
-        <x-signals.toolbar class="w-full flex-wrap items-end justify-between !gap-3 !px-0 !py-0">
+        <x-dense::toolbar class="w-full flex-wrap items-end justify-between !gap-3 !px-0 !py-0">
             <div class="min-w-44 flex-1 sm:max-w-72">
                 <div class="flex flex-col gap-1">
                     <x-dense::field-label>{{ __('Search') }}</x-dense::field-label>
@@ -312,7 +312,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                     </div>
                 </div>
             </div>
-        </x-signals.toolbar>
+        </x-dense::toolbar>
 
         <nav
             class="flex flex-wrap items-center gap-1 text-xs text-[var(--text-muted)]"

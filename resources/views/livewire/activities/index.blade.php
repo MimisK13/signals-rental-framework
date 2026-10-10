@@ -186,7 +186,7 @@ new #[Layout('components.layouts.app')] #[Title('Activities')] class extends Com
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="Activities" />
+    <x-dense::page-header title="Activities" />
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         {{-- Type filter chips --}}

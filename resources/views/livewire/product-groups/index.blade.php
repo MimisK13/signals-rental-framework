@@ -275,11 +275,11 @@ new #[Layout('components.layouts.app')] #[Title('Product Groups')] class extends
     x-on:open-product-group-quick-edit.window="quickCreateOpen = true; quickEditLoading = true"
     x-on:product-group-quick-edit-loaded.window="quickCreateOpen = true; quickEditLoading = false"
 >
-    <x-signals.page-header title="Product Groups">
+    <x-dense::page-header title="Product Groups">
         <x-slot:meta>
             <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Catalogue</span>
         </x-slot:meta>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex min-w-0 flex-1 items-stretch max-md:flex-col" :class="{ 'pr-[360px] max-md:pr-0': quickCreateOpen }">
         <div class="min-w-0 flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">

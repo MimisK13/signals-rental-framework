@@ -172,7 +172,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         $statusMeta = $statuses[$virtualStockIntake->status] ?? [];
     @endphp
 
-    <x-signals.page-header :title="$virtualStockIntake->number">
+    <x-dense::page-header :title="$virtualStockIntake->number">
         <x-slot:breadcrumbs>
             <a href="{{ route('virtual-stock.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Virtual Stock</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -201,7 +201,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <button type="button" wire:click="deleteDraft" wire:confirm="Delete this draft intake?" class="s-btn s-btn-sm s-btn-danger">Delete</button>
             @endif
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3 space-y-6">
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

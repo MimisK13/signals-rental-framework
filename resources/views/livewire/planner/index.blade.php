@@ -1,11 +1,11 @@
 <section class="w-full s-avail-grid-page">
     <div class="s-avail-grid-sticky-chrome pointer-events-none sticky top-0 bg-[var(--content-bg)] shadow-sm">
         <div class="pointer-events-auto">
-            <x-signals.page-header title="Job Planner">
+            <x-dense::page-header title="Job Planner">
                 <x-slot:meta>
                     <span style="font-family: var(--font-display); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--blue);">Job Planning</span>
                 </x-slot:meta>
-            </x-signals.page-header>
+            </x-dense::page-header>
 
             <div class="px-6 pb-4 max-md:px-5 max-sm:px-3">
                 <div class="s-panel s-planning-filter-panel mb-3">

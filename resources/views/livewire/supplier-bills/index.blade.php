@@ -20,16 +20,16 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="Supplier Bills">
+    <x-dense::page-header title="Supplier Bills">
         <x-slot:actions>
             @can('create', App\Models\SupplierBill::class)
                 <a href="{{ route('supplier-bills.create') }}" wire:navigate.hover class="s-btn s-btn-primary">New Supplier Bill</a>
             @endcan
         </x-slot:actions>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="px-6 py-4 max-md:px-5 max-sm:px-3">
-        <x-signals.card>
+        <x-dense::card>
             <x-signals.table-wrap>
                 <table class="s-table w-full">
                     <thead><tr><th>Document</th><th>Supplier</th><th>Status</th><th>Issued</th><th>Total</th><th>Purchase Order</th></tr></thead>
@@ -50,6 +50,6 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </table>
             </x-signals.table-wrap>
             <div class="mt-4">{{ $bills->links() }}</div>
-        </x-signals.card>
+        </x-dense::card>
     </div>
 </section>

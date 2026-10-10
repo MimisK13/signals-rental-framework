@@ -194,7 +194,7 @@ new #[Layout('components.layouts.app')] #[Title('Surcharge Group')] class extend
 
 <section class="w-full">
     <x-admin.layout group="pricing" :title="$isEditing ? 'Edit Surcharge Group' : 'Create Surcharge Group'">
-        <x-signals.card>
+        <x-dense::card>
             <form wire:submit="save" class="space-y-6">
                 <div class="space-y-4">
                     <flux:input wire:model="name" label="Name" required />
@@ -238,6 +238,6 @@ new #[Layout('components.layouts.app')] #[Title('Surcharge Group')] class extend
                     <flux:button type="submit" variant="primary">Save</flux:button>
                 </div>
             </form>
-        </x-signals.card>
+        </x-dense::card>
     </x-admin.layout>
 </section>

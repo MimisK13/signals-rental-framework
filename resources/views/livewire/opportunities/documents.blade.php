@@ -205,7 +205,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
     <div class="flex-1 space-y-6 px-6 py-4 max-md:px-5 max-sm:px-3">
         @if($canCreate)
-            <x-signals.card>
+            <x-dense::card>
                 <h3 class="text-sm font-semibold text-[var(--text-secondary)]" style="font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em;">
                     {{ __('Generate document') }}
                 </h3>
@@ -236,7 +236,7 @@ new #[Layout('components.layouts.app')] class extends Component
                         <span wire:loading wire:target="generateDocument">{{ __('Generating…') }}</span>
                     </button>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         @if($documents->isNotEmpty())
@@ -321,7 +321,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 </table>
             </x-signals.table-wrap>
         @else
-            <x-signals.empty
+            <x-dense::empty-state
                 title="{{ __('No documents') }}"
                 description="{{ __('Generate a document from a template to share or download it.') }}"
             />
@@ -336,7 +336,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 : null;
         @endphp
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-            <x-signals.card class="w-full max-w-md">
+            <x-dense::card class="w-full max-w-md">
                 <h3 class="text-base font-semibold text-[var(--text-primary)]">{{ __('Public link settings') }}</h3>
                 @if($sharePublicUrl)
                     <div class="mt-4 flex flex-col items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] p-4 sm:flex-row sm:items-start">
@@ -375,7 +375,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     <button type="button" wire:click="cancelShareModal" class="s-btn s-btn-outline">{{ __('Cancel') }}</button>
                     <button type="button" wire:click="saveShareLink" class="s-btn s-btn-primary">{{ __('Save link') }}</button>
                 </div>
-            </x-signals.card>
+            </x-dense::card>
         </div>
     @endif
 

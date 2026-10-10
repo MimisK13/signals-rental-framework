@@ -48,9 +48,9 @@ new #[Layout('components.layouts.app')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header title="New Stocktake">
+    <x-dense::page-header title="New Stocktake">
         <x-slot:breadcrumbs><a href="{{ route('stocktakes.index') }}" wire:navigate class="text-[var(--link)] hover:underline">Stocktakes</a></x-slot:breadcrumbs>
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     <div class="px-6 py-4 max-w-2xl max-md:px-5 max-sm:px-3">
         <x-signals.panel title="Bulk physical count">

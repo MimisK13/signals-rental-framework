@@ -50,7 +50,7 @@ new #[Layout('components.layouts.app')] class extends Component
 }; ?>
 
 <section class="w-full">
-    <x-signals.page-header :title="$invoice->number">
+    <x-dense::page-header :title="$invoice->number">
         <x-slot:breadcrumbs>
             <a href="{{ route('invoices.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Invoices</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
@@ -61,7 +61,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 <a href="{{ route('members.show', $invoice->member) }}" wire:navigate.hover class="s-chip">{{ $invoice->member->name }}</a>
             </x-slot:meta>
         @endif
-    </x-signals.page-header>
+    </x-dense::page-header>
 
     @include('livewire.invoices.partials.invoice-tabs', ['invoice' => $invoice, 'activeTab' => 'communications'])
 

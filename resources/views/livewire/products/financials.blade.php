@@ -194,7 +194,7 @@ new #[Layout('components.layouts.app')] class extends Component
 
         <x-signals.panel title="Asset Breakdown">
             @if($financials->assetResults === [])
-                <x-signals.empty title="No eligible owned Assets" description="This Product has no company-owned serialized Assets with financial data." />
+                <x-dense::empty-state title="No eligible owned Assets" description="This Product has no company-owned serialized Assets with financial data." />
             @else
                 <div class="s-table-wrap">
                     <table class="s-table w-full">

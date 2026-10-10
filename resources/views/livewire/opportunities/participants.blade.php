@@ -320,7 +320,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 </table>
             </x-signals.table-wrap>
         @else
-            <x-signals.empty
+            <x-dense::empty-state
                 title="No participants"
                 description="No members are associated with this opportunity yet."
             />

@@ -24,11 +24,11 @@
 @endphp
 
 @if($rows->isEmpty())
-    <x-signals.empty
+    <x-dense::empty-state
         title="{{ __('No availability data') }}"
         description="{{ __('No products have availability snapshots at this store for the chosen window. Recalculation runs as demand is placed.') }}">
         <x-slot:icon><flux:icon.calendar class="!size-7" /></x-slot:icon>
-    </x-signals.empty>
+    </x-dense::empty-state>
 @else
     <div class="s-table-wrap overflow-x-auto" wire:loading.class="opacity-60">
         <table class="s-table s-table-compact s-table-bordered min-w-max">

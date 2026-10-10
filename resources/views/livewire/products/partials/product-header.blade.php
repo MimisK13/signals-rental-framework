@@ -1,4 +1,4 @@
-<x-signals.page-header :title="$product->name">
+<x-dense::page-header :title="$product->name">
     <x-slot:icon>
         <x-signals.entity-icon :model="$product" :size="44" />
     </x-slot:icon>
@@ -74,7 +74,7 @@
             </button>
         </x-signals.split-button>
     </x-slot:actions>
-</x-signals.page-header>
+</x-dense::page-header>
 
 {{-- Rendered alongside the header so the "Merge with…" action works on every product tab, not just Overview --}}
 <livewire:products.merge-modal />

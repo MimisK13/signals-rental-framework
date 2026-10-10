@@ -91,7 +91,7 @@ new #[Layout('components.layouts.app')] class extends Component
                 </table>
             </x-signals.table-wrap>
         @else
-            <x-signals.empty
+            <x-dense::empty-state
                 title="No costs"
                 description="This opportunity has no additional costs recorded."
             />

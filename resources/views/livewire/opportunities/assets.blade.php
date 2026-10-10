@@ -1906,7 +1906,7 @@ new #[Layout('components.layouts.app')] class extends Component
             </x-signals.alert>
         @endunless
 
-        <x-signals.card>
+        <x-dense::card>
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex min-w-0 items-center gap-3">
                     <div class="min-w-0">
@@ -1921,7 +1921,7 @@ new #[Layout('components.layouts.app')] class extends Component
                     <span><strong class="font-medium text-[var(--text)]">{{ __('Lines') }}:</strong> {{ count($groups) }}</span>
                 </div>
             </div>
-        </x-signals.card>
+        </x-dense::card>
 
         {{-- Internal sub-tabs (Livewire, not routes) --}}
         <div class="flex flex-wrap items-center gap-1 border-b border-[var(--border)] pb-px">
@@ -2091,7 +2091,7 @@ new #[Layout('components.layouts.app')] class extends Component
         @endif
 
         @if($containers !== [])
-            <x-signals.card
+            <x-dense::card
                 title="{{ __('Containers') }}"
                 data-density="compact"
             >
@@ -2191,18 +2191,18 @@ new #[Layout('components.layouts.app')] class extends Component
                         </tbody>
                     </table>
                 </x-signals.table-wrap>
-            </x-signals.card>
+            </x-dense::card>
         @endif
 
         {{-- ============================================================ --}}
         {{--  SHARED GROUPED ASSET TABLE (all sub-tabs)                    --}}
         {{-- ============================================================ --}}
         @if(empty($groups))
-            <x-signals.empty
+            <x-dense::empty-state
                 title="{{ __('No line items') }}"
                 description="{{ __('Add line items on the Overview tab before allocating and dispatching assets.') }}">
                 <x-slot:icon><flux:icon.cube class="!size-7" /></x-slot:icon>
-            </x-signals.empty>
+            </x-dense::empty-state>
         @else
             <x-signals.table-wrap>
                 <table class="s-table" x-data="assetTable()">

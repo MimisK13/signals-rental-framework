@@ -399,13 +399,13 @@ new #[Layout('components.layouts.app')] class extends Component
         @include('livewire.products.partials.product-header', ['product' => $product, 'subpage' => 'Edit'])
         @include('livewire.products.partials.product-tabs', ['product' => $product, 'activeTab' => ''])
     @else
-        <x-signals.page-header title="Create Product">
+        <x-dense::page-header title="Create Product">
             <x-slot:breadcrumbs>
                 <a href="{{ route('products.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Products</a>
                 <span class="mx-1 text-[var(--text-muted)]">/</span>
                 <span>Create</span>
             </x-slot:breadcrumbs>
-        </x-signals.page-header>
+        </x-dense::page-header>
     @endif
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
@@ -764,11 +764,11 @@ new #[Layout('components.layouts.app')] class extends Component
                                         </div>
                                     </div>
 
-                                    <x-signals.field label="Tags" :error="$errors->first('tags')">
+                                    <x-dense::field label="Tags" :error="$errors->first('tags')">
                                         <div wire:ignore>
                                             <x-signals.tag-input :value="$tags" :suggestions="$tagSuggestions" placeholder="Add tag..." x-on:tags-changed="$wire.set('tags', $event.detail)" />
                                         </div>
-                                    </x-signals.field>
+                                    </x-dense::field
                                 </div>
                             </x-signals.form-section>
 

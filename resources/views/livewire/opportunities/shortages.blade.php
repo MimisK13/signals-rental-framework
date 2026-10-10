@@ -635,11 +635,11 @@ new #[Layout('components.layouts.app')] class extends Component
         {{-- ============================================================ --}}
         <x-signals.panel title="Detected Shortages">
             @if(empty($shortageRows))
-                <x-signals.empty
+                <x-dense::empty-state
                     title="{{ __('No shortages') }}"
                     description="{{ __('Every line item on this opportunity is fully serviceable for its booking window.') }}">
                     <x-slot:icon><flux:icon.check-circle class="!size-7" /></x-slot:icon>
-                </x-signals.empty>
+                </x-dense::empty-state>
             @else
                 <div class="space-y-4">
                     @foreach($shortageRows as $row)
