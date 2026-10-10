@@ -7,7 +7,7 @@
     "cloud": false,
     "guidelines": true,
     "mcp": true,
-    "nightwatch": true,
+    "nightwatch": false,
     "packages": [
         "dedoc/scramble",
         "spatie/laravel-permission"
