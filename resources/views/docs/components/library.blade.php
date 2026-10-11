@@ -2370,13 +2370,13 @@
           <div style="font-family: var(--font-display); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 12px;">Standard Inputs</div>
           <x-dense::field label="Full Name" :required="true">
             <input type="text" class="s-input" placeholder="Jane Smith">
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Email Address" help="We'll never share your email." :required="true">
             <input type="email" class="s-input" placeholder="user@example.com">
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Password">
             <input type="password" class="s-input" placeholder="Enter password">
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Category" :required="true">
             <select class="s-input">
               <option value="">Select a category...</option>
@@ -2385,10 +2385,10 @@
               <option>Staging</option>
               <option>Power</option>
             </select>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Notes">
             <textarea class="s-textarea" placeholder="Additional notes..." rows="3"></textarea>
-          </x-dense::field
+          </x-dense::field>
         </div>
         {{-- Checkbox, radio, toggle --}}
         <div style="flex: 1; min-width: 280px; max-width: 360px;">
@@ -2408,7 +2408,7 @@
                 South Depot
               </label>
             </div>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Options">
             <div class="s-field-options" x-data="{ delivery: true, signature: false }">
               <label class="s-field-option" x-on:click="delivery = !delivery">
@@ -2424,7 +2424,7 @@
                 Require signature
               </label>
             </div>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Notifications" help="Choose which notifications to receive.">
             <div class="s-field-options" x-data="{ email: true, sms: false, inapp: true }">
               <label class="s-field-option" x-on:click="email = !email">
@@ -2446,13 +2446,13 @@
                 In-app
               </label>
             </div>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Company Name" error="This field is required." :required="true">
             <input type="text" class="s-input">
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Disabled Field">
             <input type="text" class="s-input" disabled value="Read only value">
-          </x-dense::field
+          </x-dense::field>
         </div>
         {{-- Input groups --}}
         <div style="flex: 1; min-width: 280px; max-width: 360px;">
@@ -2462,23 +2462,23 @@
               <span class="s-input-prefix">https://</span>
               <input type="text" class="s-input" placeholder="example.com">
             </div>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Price">
             <div class="s-input-group">
               <span class="s-input-prefix">&pound;</span>
               <input type="number" class="s-input" placeholder="0.00" step="0.01">
               <span class="s-input-suffix">GBP</span>
             </div>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Weight">
             <div class="s-input-group">
               <input type="number" class="s-input" placeholder="0">
               <span class="s-input-suffix">kg</span>
             </div>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Quantity">
             <input type="number" class="s-input" placeholder="0" min="0" step="1">
-          </x-dense::field
+          </x-dense::field>
         </div>
       </div>
     </div>
@@ -2516,14 +2516,14 @@
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <x-dense::field label="Subject" :required="true">
             <input type="text" class="s-input" value="Summer Festival 2026">
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Status">
             <select class="s-input">
               <option>Quotation</option>
               <option selected>Confirmed</option>
               <option>Cancelled</option>
             </select>
-          </x-dense::field
+          </x-dense::field>
         </div>
         <x-slot:footer>
           <button class="s-btn s-btn-sm" x-on:click="$dispatch('close-modal', 'ref-modal-md')">Cancel</button>
@@ -2675,10 +2675,10 @@
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <x-dense::field label="Status">
             <select class="s-input"><option>All</option><option>Active</option><option>Archived</option></select>
-          </x-dense::field
+          </x-dense::field>
           <x-dense::field label="Date Range">
             <input type="text" class="s-input" value="Last 30 days">
-          </x-dense::field
+          </x-dense::field>
         </div>
         <x-slot:footer>
           <button class="s-btn s-btn-sm" x-on:click="$dispatch('close-drawer', 'ref-drawer-left')">Reset</button>

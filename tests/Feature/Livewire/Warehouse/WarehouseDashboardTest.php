@@ -15,25 +15,17 @@ beforeEach(function (): void {
     $this->actingAs(User::factory()->owner()->create());
 });
 
-it('renders the warehouse work queues', function (): void {
+it('renders the warehouse DataTable', function (): void {
     Volt::test('warehouse.index')
-        ->assertSee('Needs preparation')
-        ->assertSee('Ready / going out')
-        ->assertSee('On hire')
-        ->assertSee('Returns / checking');
+        ->assertSee('Order')
+        ->assertSee('Planning period')
+        ->assertSee('Attention');
 });
 
-it('renders an independent collapse control for each warehouse queue card', function (): void {
+it('preserves the former queue UI as a future TODO snippet', function (): void {
     $html = Volt::test('warehouse.index')->html();
 
-    expect(substr_count($html, 'aria-label="Toggle card"'))->toBe(4);
-});
-
-it('renders each warehouse queue as a full-bleed table card', function (): void {
-    $html = Volt::test('warehouse.index')->html();
-
-    expect(substr_count($html, 'class="card table-card"'))->toBe(4)
-        ->and(substr_count($html, 's-table-wrap'))->toBe(0);
+    expect($html)->toContain('Snipe this preserved queue-based Warehouse UI');
 });
 
 it('shows order work in the matching queue and links to execution', function (): void {

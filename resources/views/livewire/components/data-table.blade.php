@@ -118,8 +118,21 @@
                             @elseif(($col['type'] ?? null) === 'actions')
                                 <td class="text-right">
                                     @if($actionsView)
-                                        <div x-data="{ open: false }" class="relative inline-flex">
-                                            <button x-on:click.stop="open = !open" class="s-btn-ghost s-btn-xs s-btn-icon">
+                                        <div
+                                            x-data="{ open: false }"
+                                            x-on:keydown.escape.window="if (open) { open = false; $nextTick(() => $refs.trigger.focus()) }"
+                                            class="relative inline-flex"
+                                        >
+                                            <button
+                                                type="button"
+                                                x-ref="trigger"
+                                                x-on:click.stop="open = !open"
+                                                :aria-expanded="open"
+                                                :aria-controls="$id('datatable-menu')"
+                                                aria-haspopup="menu"
+                                                aria-label="Actions"
+                                                class="s-btn-ghost s-btn-xs s-btn-icon"
+                                            >
                                                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
                                             </button>
                                             <div
@@ -133,6 +146,8 @@
                                                 x-transition:leave-end="opacity-0 scale-95"
                                                 x-cloak
                                                 class="s-dropdown"
+                                                role="menu"
+                                                :id="$id('datatable-menu')"
                                                 style="position: fixed; z-index: 9999;"
                                                 x-ref="dropdown"
                                                 x-init="$watch('open', value => {

@@ -1,12 +1,7 @@
 <?php
 
-use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
 use App\Models\Store;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -26,9 +21,6 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
 
     #[Url]
     public string $search = '';
-
-    /** @var array<string, array<string, mixed>>|null */
-    private ?array $sectionsCache = null;
 
     /** @var Collection<int, Store>|null */
     private ?Collection $storesCache = null;
@@ -52,190 +44,27 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
     public function with(): array
     {
         return [
-            'sections' => $this->sectionsCache ??= $this->sections(),
             'stores' => $this->storesCache ??= $this->stores(),
+            'columns' => [
+                ['key' => 'number', 'label' => 'Order', 'sortable' => true, 'view' => 'livewire.warehouse.partials.column-order'],
+                ['key' => 'member_id', 'label' => 'Customer', 'view' => 'livewire.warehouse.partials.column-customer'],
+                ['key' => 'store_id', 'label' => 'Store', 'view' => 'livewire.warehouse.partials.column-store'],
+                ['key' => 'planning_starts_at', 'label' => 'Planning period', 'sortable' => true, 'view' => 'livewire.warehouse.partials.column-period'],
+                ['key' => 'items_count', 'label' => 'Lines', 'sortable' => true, 'view' => 'livewire.warehouse.partials.column-lines'],
+                ['key' => 'status', 'label' => 'Status', 'view' => 'livewire.warehouse.partials.column-status'],
+                ['key' => 'has_shortage', 'label' => 'Attention', 'view' => 'livewire.warehouse.partials.column-attention'],
+                ['key' => 'actions', 'type' => 'actions'],
+            ],
+            'scopes' => [
+                'warehouseQueue' => [
+                    'accessible_store_ids' => auth()->user()->accessibleStoreIds(),
+                    'store' => $this->storeFilter,
+                    'from' => $this->from,
+                    'until' => $this->until,
+                    'search' => $this->search,
+                ],
+            ],
         ];
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function sections(): array
-    {
-        return [
-            'preparation' => $this->section(
-                'Needs preparation',
-                'Confirmed orders waiting for warehouse preparation.',
-                [OpportunityStatus::OrderActive],
-                'Prepare',
-                's-badge-amber',
-            ),
-            'going_out' => $this->section(
-                'Ready / going out',
-                'Orders that have entered dispatch.',
-                [OpportunityStatus::OrderDispatched],
-                'Open execution',
-                's-badge-blue',
-            ),
-            'on_hire' => $this->section(
-                'On hire',
-                'Orders currently out with the customer or on site.',
-                [OpportunityStatus::OrderOnHire],
-                'Check in',
-                's-badge-violet',
-            ),
-            'returns' => $this->section(
-                'Returns / checking',
-                'Returned orders waiting for checking or finalisation.',
-                [OpportunityStatus::OrderReturned, OpportunityStatus::OrderChecked],
-                'Open',
-                's-badge-green',
-            ),
-        ];
-    }
-
-    /**
-     * @param  list<OpportunityStatus>  $statuses
-     * @return array<string, mixed>
-     */
-    private function section(
-        string $label,
-        string $description,
-        array $statuses,
-        string $actionLabel,
-        string $badgeClass,
-    ): array {
-        $query = $this->opportunitiesQuery($statuses);
-        $count = (clone $query)->count();
-        $opportunities = $query->limit(25)->get();
-
-        return [
-            'label' => $label,
-            'description' => $description,
-            'count' => $count,
-            'badge_class' => $badgeClass,
-            'action_label' => $actionLabel,
-            'rows' => $opportunities->map(fn (Opportunity $opportunity): array => $this->row($opportunity))->all(),
-        ];
-    }
-
-    /**
-     * @param  list<OpportunityStatus>  $statuses
-     */
-    private function opportunitiesQuery(array $statuses): Builder
-    {
-        $query = Opportunity::query()
-            ->where('state', OpportunityState::Order->value)
-            ->whereIn('status', array_map(
-                static fn (OpportunityStatus $status): int => $status->statusValue(),
-                $statuses,
-            ))
-            ->with(['member:id,name'])
-            ->withCount('items')
-            ->orderBy('planning_starts_at')
-            ->orderBy('starts_at');
-
-        $accessibleStoreIds = auth()->user()->accessibleStoreIds();
-
-        if ($accessibleStoreIds !== null) {
-            $query->whereIn('store_id', $accessibleStoreIds);
-        }
-
-        if ($this->storeFilter !== '') {
-            $query->where('store_id', (int) $this->storeFilter);
-        }
-
-        $from = $this->dateFilter($this->from);
-        $until = $this->dateFilter($this->until);
-
-        if ($from !== null) {
-            $query->where(function (Builder $inner) use ($from): void {
-                $inner->whereNull('planning_ends_at')
-                    ->orWhereDate('planning_ends_at', '>=', $from->toDateString());
-            });
-        }
-
-        if ($until !== null) {
-            $query->where(function (Builder $inner) use ($until): void {
-                $inner->whereNull('planning_starts_at')
-                    ->orWhereDate('planning_starts_at', '<=', $until->toDateString());
-            });
-        }
-
-        $term = trim($this->search);
-
-        if ($term !== '') {
-            $like = '%'.$term.'%';
-
-            $query->where(function (Builder $inner) use ($like): void {
-                $inner->where('number', 'like', $like)
-                    ->orWhere('reference', 'like', $like)
-                    ->orWhere('subject', 'like', $like)
-                    ->orWhereHas('member', fn (Builder $member): Builder => $member->where('name', 'like', $like));
-            });
-        }
-
-        return $query;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function row(Opportunity $opportunity): array
-    {
-        $status = $opportunity->statusEnum();
-
-        return [
-            'id' => $opportunity->id,
-            'number' => $opportunity->number ?: '#'.$opportunity->id,
-            'reference' => $opportunity->reference,
-            'subject' => $opportunity->subject,
-            'customer' => $opportunity->member?->name ?: 'No customer',
-            'store' => $this->stores()->firstWhere('id', (int) $opportunity->store_id)?->name ?: 'No store',
-            'items_count' => $opportunity->items_count,
-            'period' => $this->periodLabel($opportunity),
-            'status' => $status->label(),
-            'status_class' => match ($status) {
-                OpportunityStatus::OrderActive => 's-badge-amber',
-                OpportunityStatus::OrderDispatched => 's-badge-blue',
-                OpportunityStatus::OrderOnHire => 's-badge-violet',
-                default => 's-badge-green',
-            },
-            'has_shortage' => (bool) $opportunity->has_shortage,
-            'assets_url' => route('opportunities.assets', $opportunity),
-            'show_url' => route('opportunities.show', $opportunity),
-        ];
-    }
-
-    private function periodLabel(Opportunity $opportunity): string
-    {
-        $start = $opportunity->planning_starts_at ?? $opportunity->starts_at;
-        $end = $opportunity->planning_ends_at ?? $opportunity->ends_at;
-
-        if ($start === null && $end === null) {
-            return 'No period';
-        }
-
-        if ($start === null) {
-            return 'Until '.$end->format('d M Y');
-        }
-
-        if ($end === null || $start->isSameDay($end)) {
-            return $start->format('d M Y');
-        }
-
-        return $start->format('d M').' – '.$end->format('d M Y');
-    }
-
-    private function dateFilter(string $value): ?Carbon
-    {
-        if ($value === '') {
-            return null;
-        }
-
-        $date = Carbon::createFromFormat('!Y-m-d', $value);
-
-        return $date !== false ? $date : null;
     }
 
     /**
@@ -314,6 +143,10 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
             </div>
         </x-dense::toolbar>
 
+        <!-- TODO: Snipe this preserved queue-based Warehouse UI back into the
+             DataTable workflow if the operational queue presentation is needed again.
+             It is intentionally retained below while DataTable is the active listing. -->
+        @if (false)
         <nav
             class="flex flex-wrap items-center gap-1 text-xs text-[var(--text-muted)]"
             aria-label="Warehouse queues"
@@ -345,7 +178,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                     @if ($section['rows'] === [])
                         <x-dense::empty-state title="Nothing in this queue" description="No orders match the current filters." />
                     @else
-                        <table class="s-table s-table-compact w-full">
+                        <x-dense::table compact class="w-full">
                                 <thead>
                                     <tr>
                                         <th>Order</th>
@@ -454,7 +287,7 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                                         </tr>
                                     @endforeach
                                 </tbody>
-                        </table>
+                        </x-dense::table>
                         @if ($section['count'] > count($section['rows']))
                             <x-slot:footer>
                                 <span class="text-xs text-[var(--text-muted)]">Showing {{ count($section['rows']) }} of {{ $section['count'] }} orders.</span>
@@ -464,5 +297,20 @@ new #[Layout('components.layouts.app')] #[Title('Warehouse')] class extends Comp
                 </x-dense::table-card>
             @endforeach
         </div>
+        @endif
+
+        <livewire:components.data-table
+            :columns="$columns"
+            :model="\App\Models\Opportunity::class"
+            :searchable="[]"
+            :with="['member', 'store']"
+            :with-counts="['items']"
+            :scopes="$scopes"
+            default-sort="planning_starts_at"
+            default-direction="asc"
+            empty-message="No orders match the current warehouse filters."
+            actions-view="livewire.warehouse.partials.row-actions"
+            :key="'warehouse-table-'.$storeFilter.'-'.$from.'-'.$until.'-'.md5($search)"
+        />
     </div>
 </section>

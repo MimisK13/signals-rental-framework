@@ -28,7 +28,7 @@
                             <p class="mt-3 text-sm text-[var(--text-muted)]">No matching members of the same type were found.</p>
                         @endif
                     </div>
-                </x-dense::field
+                </x-dense::field>
             @else
                 <p class="mt-3 text-sm text-[var(--text-muted)]">No other members of the same type are available to merge.</p>
             @endif
