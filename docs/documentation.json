@@ -77,6 +77,12 @@
                     "urlSection": "platform"
                 },
                 {
+                    "title": "Projects",
+                    "slug": "projects",
+                    "description": "Group related Opportunities across Stores under a planning and commercial Project.",
+                    "urlSection": "platform"
+                },
+                {
                     "title": "Equipment Availability",
                     "slug": "availability",
                     "description": "Read equipment availability over time with a by-product-group grid, multi-store aggregation, and a per-product bookings drill-down with opportunity and asset rows.",

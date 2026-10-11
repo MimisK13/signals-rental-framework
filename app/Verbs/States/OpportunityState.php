@@ -48,6 +48,9 @@ class OpportunityState extends State
 
     public ?int $owned_by = null;
 
+    /** Optional planning grouping; it does not scope inventory or availability. */
+    public ?int $project_id = null;
+
     public ?string $reference = null;
 
     public ?string $description = null;

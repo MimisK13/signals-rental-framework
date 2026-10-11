@@ -47,6 +47,7 @@ use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\ProductRateController;
 use App\Http\Controllers\Api\V1\ProductSupplierCostController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
+use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\RateCalculationController;
 use App\Http\Controllers\Api\V1\RateDefinitionController;
@@ -247,6 +248,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     // Product Groups
     Route::apiResource('product_groups', ProductGroupController::class)->names('api.v1.product_groups');
+    Route::apiResource('projects', ProjectController::class)->names('api.v1.projects');
+    Route::post('projects/{project}/opportunities/{opportunity}/attach', [ProjectController::class, 'attach'])->name('api.v1.projects.opportunities.attach');
+    Route::delete('projects/{project}/opportunities/{opportunity}', [ProjectController::class, 'detach'])->name('api.v1.projects.opportunities.detach');
+    Route::post('projects/{project}/opportunities/{opportunity}/move', [ProjectController::class, 'move'])->name('api.v1.projects.opportunities.move');
 
     // Stock Levels
     Route::apiResource('stock_levels', StockLevelController::class)->names('api.v1.stock_levels');

@@ -204,6 +204,14 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // names are stable. 'create' is registered before the '{opportunity}' show
     // route so /opportunities/create is never matched as an opportunity id.
     Volt::route('opportunities', 'opportunities.index')->name('opportunities.index');
+
+    // Projects are cross-Store planning groupings for Opportunities.
+    Volt::route('projects', 'projects.index')->name('projects.index');
+    Route::get('projects/create', fn () => redirect()->route('projects.index', ['panel' => 'create']))->name('projects.create');
+    Volt::route('projects/{project}', 'projects.show')->name('projects.show');
+    Route::get('projects/{project}/edit', fn (string $project) => response()->redirectTo(
+        url('/projects?panel=edit&project='.$project),
+    ))->name('projects.edit');
     Volt::route('opportunities/create', 'opportunities.form')->name('opportunities.create');
     // The Show page + all of its sub-tabs/edit resolve the {opportunity} binding
     // with ->withTrashed() so ARCHIVED (soft-deleted) opportunities remain viewable

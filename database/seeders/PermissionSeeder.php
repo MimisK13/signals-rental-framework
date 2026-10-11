@@ -51,6 +51,13 @@ class PermissionSeeder extends Seeder
             'opportunities.unlock_rates' => ['label' => 'Unlock Order Rates', 'description' => 'Release the FX/tax locks set when an order is confirmed, to re-price or re-tax it', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
             'opportunities.dispatch_add_items' => ['label' => 'Add Items at Dispatch', 'description' => 'Add or increase opportunity line items during container dispatch validation', 'group' => 'Opportunities', 'sub_group' => 'Dispatch', 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
 
+            // Projects (planning/commercial groupings; not Store or inventory scope)
+            'projects.access' => ['label' => 'Access Projects', 'description' => 'Access the projects area', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'projects.view' => ['label' => 'View Projects', 'description' => 'View project records and grouped opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.access']],
+            'projects.create' => ['label' => 'Create Projects', 'description' => 'Create project records', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.view']],
+            'projects.edit' => ['label' => 'Edit Projects', 'description' => 'Edit projects and attach or detach opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.view']],
+            'projects.delete' => ['label' => 'Delete Projects', 'description' => 'Archive project records without deleting opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.edit']],
+
             // Shortages (detection, resolution, and the confirmation-gate override)
             'shortages.view' => ['label' => 'View Shortages', 'description' => 'View detected shortages and their resolutions', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['opportunities.view']],
             'shortages.resolve' => ['label' => 'Resolve Shortages', 'description' => 'Apply resolutions and acknowledge shortages', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['shortages.view']],

@@ -170,6 +170,7 @@ class OpportunityCreated extends Event
                 'member_id' => $state->member_id,
                 'store_id' => $state->store_id,
                 'owned_by' => $state->owned_by,
+                'project_id' => $state->project_id,
                 'venue_id' => $state->venue_id,
                 'reference' => $state->reference,
                 'description' => $state->description,

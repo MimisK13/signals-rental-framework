@@ -128,6 +128,7 @@ class Opportunity extends Model implements HasSchema
         'venue_id',
         'store_id',
         'owned_by',
+        'project_id',
         'starts_at',
         'ends_at',
         'planning_starts_at',
@@ -359,6 +360,17 @@ class Opportunity extends Model implements HasSchema
     }
 
     /**
+     * The optional planning Project grouping. The Opportunity retains its own
+     * Store, dates, availability, and financial authority.
+     *
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    /**
      * The opportunity this one was cloned from (clone lineage), or null when it
      * was created directly rather than cloned.
      *
@@ -586,6 +598,65 @@ class Opportunity extends Model implements HasSchema
     public function scopeWithShortage(Builder $query): Builder
     {
         return $query->where('has_shortage', true);
+    }
+
+    /**
+     * Scope the order projection to the records used by the Warehouse DataTable.
+     *
+     * The filters are view-independent query inputs; eager loading and
+     * pagination remain the responsibility of the DataTable component.
+     *
+     * @param  Builder<Opportunity>  $query
+     * @param  array{accessible_store_ids: array<int, int>|null, store: string, from: string, until: string, search: string}  $filters
+     * @return Builder<Opportunity>
+     */
+    public function scopeWarehouseQueue(Builder $query, array $filters): Builder
+    {
+        $query->where('state', OpportunityState::Order->value)
+            ->whereIn('status', [
+                OpportunityStatus::OrderActive->statusValue(),
+                OpportunityStatus::OrderDispatched->statusValue(),
+                OpportunityStatus::OrderOnHire->statusValue(),
+                OpportunityStatus::OrderReturned->statusValue(),
+                OpportunityStatus::OrderChecked->statusValue(),
+            ]);
+
+        if ($filters['accessible_store_ids'] !== null) {
+            $query->whereIn('store_id', $filters['accessible_store_ids']);
+        }
+
+        if ($filters['store'] !== '') {
+            $query->where('store_id', (int) $filters['store']);
+        }
+
+        if ($filters['from'] !== '') {
+            $query->where(function (Builder $inner) use ($filters): void {
+                $inner->whereNull('planning_ends_at')
+                    ->orWhereDate('planning_ends_at', '>=', $filters['from']);
+            });
+        }
+
+        if ($filters['until'] !== '') {
+            $query->where(function (Builder $inner) use ($filters): void {
+                $inner->whereNull('planning_starts_at')
+                    ->orWhereDate('planning_starts_at', '<=', $filters['until']);
+            });
+        }
+
+        $term = trim($filters['search']);
+
+        if ($term !== '') {
+            $like = '%'.$term.'%';
+
+            $query->where(function (Builder $inner) use ($like): void {
+                $inner->where('number', 'like', $like)
+                    ->orWhere('reference', 'like', $like)
+                    ->orWhere('subject', 'like', $like)
+                    ->orWhereHas('member', fn (Builder $member): Builder => $member->where('name', 'like', $like));
+            });
+        }
+
+        return $query;
     }
 
     /**

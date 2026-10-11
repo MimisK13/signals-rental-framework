@@ -32,6 +32,8 @@ final class CoreAbilityDefinitions
             'activities:write' => ['label' => 'Write activities', 'description' => 'Write activities'],
             'opportunities:read' => ['label' => 'Read opportunities', 'description' => 'Read opportunities'],
             'opportunities:write' => ['label' => 'Write opportunities', 'description' => 'Write opportunities'],
+            'projects:read' => ['label' => 'Read projects', 'description' => 'Read projects and grouped opportunities'],
+            'projects:write' => ['label' => 'Write projects', 'description' => 'Create, update, assign, move, and delete projects'],
             'shortages:read' => ['label' => 'Read shortages & resolutions', 'description' => 'Read shortages & resolutions'],
             'shortages:write' => ['label' => 'Write shortage resolutions', 'description' => 'Write shortage resolutions'],
             'rates:read' => ['label' => 'Read rate definitions & product rates', 'description' => 'Read rate definitions & product rates'],

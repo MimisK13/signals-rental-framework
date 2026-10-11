@@ -1,0 +1,1 @@
+{{ $item->opportunities_count }}

@@ -16,8 +16,10 @@ use App\Guards\Opportunities\Rules\FxTaxLockRule;
 use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\Stages\AutoApprovalGate;
 use App\Listeners\RecordCustomerCommunicationDelivery;
+use App\Models\Project;
 use App\Models\User;
 use App\Policies\NumberingPolicy;
+use App\Policies\ProjectPolicy;
 use App\Services\Activities\ActivityTypeList;
 use App\Services\Api\AbilityRegistry;
 use App\Services\Api\ApiEndpointCatalogue;
@@ -610,6 +612,7 @@ class AppServiceProvider extends ServiceProvider
     protected function configureAuthorization(): void
     {
         Gate::policy(NumberingAccess::class, NumberingPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
 
         Gate::before(function (User $user, string $ability, array $arguments): ?bool {
             if (! $user->isOwner()) {
