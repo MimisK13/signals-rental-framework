@@ -28,7 +28,6 @@
         "livewire-development",
         "volt-development",
         "tailwindcss-development",
-        "echo-development",
         "scramble-development",
         "laravel-permission-development",
         "dense-ui"

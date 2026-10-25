@@ -26,6 +26,7 @@
         "bacon/bacon-qr-code": "^3.0",
         "barryvdh/laravel-dompdf": "^3.1",
         "brick/money": "^0.11.2",
+        "calendar/calendar": "@dev",
         "dedoc/scramble": "^0.13.14",
         "finller/laravel-money": "^2.3",
         "hirethunk/verbs": "^0.8.0",
@@ -45,13 +46,13 @@
         "league/commonmark": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.0",
         "livewire/flux": "^2.0",
+        "livewire/flux-pro": "^2.20",
         "livewire/livewire": "^4.0",
         "livewire/volt": "^1.6",
         "pragmarx/google2fa-laravel": "^3.0",
         "socialiteproviders/microsoft": "^4.9",
         "spatie/laravel-data": "^4.20",
         "spatie/laravel-permission": "^7.2",
-        "calendar/calendar": "@dev",
         "symfony/yaml": "^8.0"
     },
     "require-dev": {
@@ -157,6 +158,11 @@
         }
     },
     "repositories": [
+        {
+            "name": "flux-pro",
+            "type": "composer",
+            "url": "https://composer.fluxui.dev"
+        },
         {
             "type": "path",
             "url": "packages/calendar",

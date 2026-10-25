@@ -39,61 +39,6 @@ V2 defines what the interface looks like. V3 defines how it behaves: classify th
 11. Compare relevant official evidence in `references/enterprise-references.md`; label new claims FACT, OBSERVATION, INTERPRETATION, or RULE.
 12. Run `references/review-checklist.md` and the operational-efficiency audit in `references/operational-efficiency.md`.
 
-## Form and workflow selection
-
-For small, bounded Create/Edit workflows, prefer an in-context side panel or
-drawer when the operator does not need a large dedicated workspace. This
-preserves list/detail context, reduces navigation distance, and makes repeated
-CRUD faster. Do not use a numeric field-count threshold: choose a side panel
-based on interaction complexity, relationship depth, validation flow, screen
-width, and task risk.
-
-Use a dedicated page when the workflow is large, multi-section, relationship-
-heavy, planning-oriented, or requires substantial horizontal space. The
-Product Group side-panel pattern is an application precedent for this shape,
-not a domain-specific Dense rule.
-
-## Testing and failure states
-
-Every meaningful feature or interaction that receives tests must include the
-relevant unhappy paths, not only a successful submission. Cover the failure
-modes that protect the workflow and its invariants, such as invalid input,
-unauthorized access, invalid state transitions, missing relations, conflicts,
-unavailable options, server-side validation errors, disabled actions, and
-preservation of existing state after failure.
-
-For UI workflows, verify server validation and domain failures remain visible
-near the affected control or operation and leave the form usable for recovery.
-Do not add meaningless tests solely to satisfy this rule; choose the failure
-cases that could cause operator error or data loss.
-
-## Documentation is part of implementation
-
-When work changes application behavior, workflows, routes, permissions,
-public component APIs, domain interactions, or operator UX, update the
-corresponding existing documentation in the same task. Inspect documentation
-before editing it, update the existing source of truth rather than creating a
-duplicate, keep CURRENT and FUTURE/DEFERRED behavior distinct, and update
-examples or workflow diagrams when their semantics change.
-
-Purely visual spacing changes do not require new documentation unless an
-existing document explicitly defines that layout contract.
-
-## UI and API parity
-
-When a first-class domain capability is exposed through the UI, inspect its
-API surface in the same task. If an API already exists, keep CRUD, assignment,
-lifecycle, validation, permission, relation, filter, sort, and include
-semantics aligned with the UI. If no API exists and adding one would be a
-significant scope expansion, explicitly document `API: DEFERRED`.
-
-The UI and API may have different transport and presentation code, but they
-must converge on the same canonical Actions and domain rules wherever
-possible. Avoid separate Livewire and API implementations that validate or
-mutate the model differently. Livewire owns form state and feedback; the API
-owns request/response concerns; canonical application Actions own business
-semantics.
-
 ```mermaid
 flowchart TD
   A[Identify operator and goal] --> B[Classify workflow]
