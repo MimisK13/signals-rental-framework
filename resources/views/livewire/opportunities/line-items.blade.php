@@ -35,6 +35,10 @@ use App\Data\Opportunities\SetItemDiscountData;
 use App\Data\Opportunities\SubstituteItemData;
 use App\Data\Opportunities\ToggleItemOptionalData;
 use App\Data\Opportunities\UpdateOpportunityItemDetailsData;
+use App\Data\Opportunities\OpportunityItemReadContext;
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStockInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
 use App\Enums\DealPriceMode;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
@@ -45,11 +49,16 @@ use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use App\Services\Opportunities\OpportunityLineItemTreeRevision;
 use App\Services\Opportunities\ProductSearchService;
+use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\RecalculationPipeline;
+use App\Models\Demand;
 use App\Services\Planning\OpportunityItemPlanningReader;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
 use Livewire\Volt\Component;
 
@@ -77,6 +86,11 @@ new class extends Component implements OpportunityLineItemsEditorContract
 
     public string $newTextLineName = '';
 
+    private ?Opportunity $itemsReadOpportunity = null;
+
+    /** @var EloquentCollection<int, OpportunityItem>|null */
+    private ?EloquentCollection $itemsRead = null;
+
     public function mount(Opportunity $opportunity): void
     {
         Gate::authorize('opportunities.view');
@@ -87,17 +101,32 @@ new class extends Component implements OpportunityLineItemsEditorContract
         $this->catalogue = app(ProductSearchService::class)->catalogueIndex($opportunity->store_id);
     }
 
+    #[On('echo-private:availability.opportunity.{opportunity.id},.availability.changed')]
+    public function onAvailabilityChanged(): void
+    {
+        $this->opportunity = $this->opportunity->fresh() ?? $this->opportunity;
+        $this->invalidateItemsRead();
+        unset($this->tree, $this->destinations, $this->sectionOptions, $this->parentGroupOptions, $this->duplicateLineIds);
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */
     #[Computed]
     public function tree(): array
     {
-        $opportunity = $this->opportunity->fresh(['items']) ?? $this->opportunity;
-        $tree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
+        [$opportunity, $items] = $this->sharedItemsRead();
+        [$contexts, $products, $preparedStock, $preparedDemand] = $this->prepareLineItemsRead($opportunity, $items);
+        $tree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity, $items, $contexts, $products, $preparedStock, $preparedDemand);
         $planning = app(OpportunityItemPlanningReader::class)
-            ->forOpportunity($opportunity)
+            ->forOpportunity($opportunity, $items, $contexts, $products, $preparedStock, $preparedDemand)
             ->keyBy('opportunity_item_id');
+
+        $this->dispatch(
+            'opportunity-shortage-summary-updated',
+            opportunityId: $opportunity->id,
+            unresolvedCount: $planning->where('has_shortage', true)->count(),
+        );
 
         return array_map(function (array $row) use ($planning): array {
             $row['planning'] = $planning->get((int) $row['id'])?->toArray();
@@ -123,7 +152,9 @@ new class extends Component implements OpportunityLineItemsEditorContract
     #[Computed]
     public function destinations(): array
     {
-        return app(OpportunityLineItemsTreeBuilder::class)->destinations($this->opportunity);
+        [$opportunity, $items] = $this->sharedItemsRead();
+
+        return app(OpportunityLineItemsTreeBuilder::class)->destinations($opportunity, $items);
     }
 
     /**
@@ -132,7 +163,9 @@ new class extends Component implements OpportunityLineItemsEditorContract
     #[Computed]
     public function sectionOptions(): array
     {
-        return app(OpportunityLineItemsTreeBuilder::class)->parentGroupOptions($this->opportunity);
+        [$opportunity, $items] = $this->sharedItemsRead();
+
+        return app(OpportunityLineItemsTreeBuilder::class)->parentGroupOptions($opportunity, $items);
     }
 
     /** @return array<int, array{value: string, label: string}> */
@@ -528,10 +561,11 @@ new class extends Component implements OpportunityLineItemsEditorContract
     public function removeItem(int $itemId): void
     {
         $this->guardEditable();
-        $this->guardPricingFrozenForRemoval();
+        $item = $this->findItem($itemId);
+        $this->guardPricingFrozenForRemoval($item);
 
-        $this->runMutation(function () use ($itemId): void {
-            (new RemoveOpportunityItem)($this->findItem($itemId));
+        $this->runMutation(function () use ($item): void {
+            (new RemoveOpportunityItem)($item);
 
             $this->refreshOpportunity();
         }, 'Item removed');
@@ -890,6 +924,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
     public function refreshEditorContext(): void
     {
         $this->opportunity = $this->opportunity->fresh() ?? $this->opportunity;
+        $this->invalidateItemsRead();
         unset($this->tree, $this->destinations, $this->sectionOptions, $this->parentGroupOptions, $this->duplicateLineIds);
     }
 
@@ -1188,9 +1223,9 @@ new class extends Component implements OpportunityLineItemsEditorContract
         }
     }
 
-    private function guardPricingFrozenForRemoval(): void
+    private function guardPricingFrozenForRemoval(OpportunityItem $item): void
     {
-        if ($this->opportunity->pricingFrozen()) {
+        if ($this->opportunity->pricingFrozen() && ! (new RemoveOpportunityItem)->canRemoveWhenPricingFrozen($item)) {
             throw ValidationException::withMessages([
                 'opportunity' => 'Line items cannot be removed while pricing is frozen.',
             ]);
@@ -1224,12 +1259,140 @@ new class extends Component implements OpportunityLineItemsEditorContract
         $this->opportunity = $this->opportunity->fresh() ?? $this->opportunity;
         $this->fieldsEditable = $this->editable && ! $this->opportunity->pricingFrozen();
 
+        $this->invalidateItemsRead();
         unset($this->tree, $this->destinations, $this->sectionOptions, $this->parentGroupOptions, $this->duplicateLineIds);
 
         $this->dispatch(
             'opportunity-totals-updated',
             chargeTotalMinor: (int) ($this->opportunity->charge_total ?? 0),
         );
+    }
+
+    /**
+     * @return array{0: Opportunity, 1: EloquentCollection<int, OpportunityItem>}
+     */
+    private function sharedItemsRead(): array
+    {
+        if ($this->itemsReadOpportunity !== null && $this->itemsRead !== null) {
+            return [$this->itemsReadOpportunity, $this->itemsRead];
+        }
+
+        $opportunity = $this->opportunity->fresh() ?? $this->opportunity;
+        $opportunity->load([
+            'store',
+            'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
+            'items.item',
+            'items.dispatchStore',
+        ]);
+        $opportunity->items->each(
+            fn (OpportunityItem $item): OpportunityItem => $item->setRelation('opportunity', $opportunity),
+        );
+
+        $this->itemsReadOpportunity = $opportunity;
+        $this->itemsRead = $opportunity->items;
+
+        return [$this->itemsReadOpportunity, $this->itemsRead];
+    }
+
+    /**
+     * Resolve item contexts once at the nested line-items read boundary and
+     * pass the already-loaded Product rows explicitly to downstream readers.
+     * Missing prepared inputs must not trigger hidden Product I/O.
+     *
+     * @param  EloquentCollection<int, OpportunityItem>  $items
+     * @return array{0: array<int, OpportunityItemReadContext>, 1: PreparedProductInputs, 2: PreparedStockInputs, 3: PreparedStandardDemandInputs}
+     */
+    private function prepareLineItemsRead(Opportunity $opportunity, EloquentCollection $items): array
+    {
+        $resolver = app(OpportunityItemDemandResolver::class);
+        $contexts = [];
+        $productIds = $items
+            ->filter(static fn (OpportunityItem $item): bool => $item->isProductBacked())
+            ->pluck('itemable_id')
+            ->filter()
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->values();
+        $products = Product::query()
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($items as $item) {
+            $item->setRelation('opportunity', $opportunity);
+            $preparedProduct = $item->isProductBacked()
+                ? $products->get((int) $item->itemable_id)
+                : null;
+            $item->setRelation('item', $preparedProduct);
+            $contexts[$item->id] = OpportunityItemReadContext::fromResolved(
+                (int) $item->id,
+                $resolver->resolveContext($item, $preparedProduct),
+            );
+
+            if ($preparedProduct !== null) {
+                $products->put($preparedProduct->id, $preparedProduct);
+            }
+        }
+
+        $preparedProducts = PreparedProductInputs::fromCollection($products);
+        $stockByKey = [];
+        $pipeline = app(RecalculationPipeline::class);
+
+        foreach ($contexts as $context) {
+            if ($context->productId === null || $context->storeId === null) {
+                continue;
+            }
+
+            $key = PreparedStockInputs::key($context->productId, $context->storeId);
+
+            if (array_key_exists($key, $stockByKey)) {
+                continue;
+            }
+
+            $stockByKey[$key] = $pipeline->totalStock(
+                $preparedProducts->required($context->productId),
+                $context->storeId,
+            );
+        }
+
+        $demandByKey = [];
+
+        foreach ($contexts as $context) {
+            if ($context->productId === null || $context->storeId === null) {
+                continue;
+            }
+
+            $key = PreparedStandardDemandInputs::key(
+                $context->productId,
+                $context->storeId,
+                $context->from,
+                $context->to,
+            );
+
+            if (array_key_exists($key, $demandByKey)) {
+                continue;
+            }
+
+            $demandByKey[$key] = Demand::query()
+                ->where('product_id', $context->productId)
+                ->where('store_id', $context->storeId)
+                ->active()
+                ->overlapping($context->from, $context->to)
+                ->get();
+        }
+
+        return [
+            $contexts,
+            $preparedProducts,
+            new PreparedStockInputs($stockByKey),
+            new PreparedStandardDemandInputs($demandByKey),
+        ];
+    }
+
+    private function invalidateItemsRead(): void
+    {
+        $this->itemsReadOpportunity = null;
+        $this->itemsRead = null;
     }
 
     /**
@@ -1476,7 +1639,10 @@ new class extends Component implements OpportunityLineItemsEditorContract
     @if($opp->pricingFrozen() && ! $editable)
         <p class="text-sm text-[var(--text-muted)] mb-3">
             @if($opp->deal_total !== null)
-                Deal price: <strong class="font-mono">{{ $formatter->money($opp->deal_total, $opp->currency_code ?? settings('company.base_currency', 'GBP')) }}</strong>
+                Deal price:
+                <strong class="font-mono">
+                    {{ $formatter->money($opp->deal_total, $opp->currency_code ?? settings('company.base_currency', 'GBP')) }}
+                </strong>
             @elseif($opp->hasLocks())
                 Pricing is frozen — rates and tax are locked on this opportunity.
             @endif
@@ -1534,6 +1700,12 @@ new class extends Component implements OpportunityLineItemsEditorContract
                                 <div class="flex items-center gap-1" :style="`padding-left:${(row.depth - 1) * 22}px`">
                                     <span
                                         x-show="editable"
+                                        class="lf-handle"
+                                        title="Drag to move / re-nest"
+                                        @pointerdown="onHandleDown($event, row.id)"
+                                    ><x-dense::icons.drag-handle size="4" aria-hidden="true" /></span>
+                                    <span
+                                        x-show="false"
                                         class="lf-handle"
                                         title="Drag to move / re-nest"
                                         @pointerdown="onHandleDown($event, row.id)"
@@ -1685,7 +1857,7 @@ new class extends Component implements OpportunityLineItemsEditorContract
                                     title="Pricing is locked — click to unlock"
                                     @click="openLockPriceModal()"
                                 >
-                                    <flux:icon.lock-closed class="!size-4" />
+                                    <flux:icon.lock-closed class="size-4!" />
                                 </button>
                                 <span x-text="displayGrandTotal"></span>
                             </span>
@@ -1796,15 +1968,17 @@ new class extends Component implements OpportunityLineItemsEditorContract
                         </button>
                     </template>
                     <template x-if="editable && groupMoveOptions(menuRow).length">
-                        <div style="height: 1px; background: var(--card-border); margin: 4px 0;"></div>
-                        <template x-for="g in groupMoveOptions(menuRow)" :key="g.id">
-                            <button type="button" class="s-dropdown-item w-full text-left" @click="assignRowToGroup(menuRow, g.id); closeRowMenu()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                                <span x-text="'Move to ' + g.name"></span>
-                            </button>
-                        </template>
+                        <div>
+                            <div style="height: 1px; background: var(--card-border); margin: 4px 0;"></div>
+                            <template x-for="g in groupMoveOptions(menuRow)" :key="g.id">
+                                <button type="button" class="s-dropdown-item w-full text-left" @click="assignRowToGroup(menuRow, g.id); closeRowMenu()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                    <span x-text="'Move to ' + g.name"></span>
+                                </button>
+                            </template>
+                        </div>
                     </template>
-                    <template x-if="editable && !pricingFrozen">
+                    <template x-if="editable && (!pricingFrozen || (menuRow.item_type === 'group' && !menuRow.has_children) || (menuRow.item_type === 'text' && !String(menuRow.name || '').trim()))">
                         <button
                             type="button"
                             class="s-dropdown-item w-full text-left"

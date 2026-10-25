@@ -793,7 +793,11 @@ class RecalculationPipeline
      */
     public function storeTimezone(int $storeId): ?string
     {
-        return $this->storeTimezones[$storeId] ??= Store::query()->whereKey($storeId)->value('timezone');
+        if (array_key_exists($storeId, $this->storeTimezones)) {
+            return $this->storeTimezones[$storeId];
+        }
+
+        return $this->storeTimezones[$storeId] = Store::query()->whereKey($storeId)->value('timezone');
     }
 
     /**

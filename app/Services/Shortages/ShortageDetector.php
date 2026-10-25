@@ -2,6 +2,9 @@
 
 namespace App\Services\Shortages;
 
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Data\Opportunities\PreparedStockInputs;
 use App\Enums\OpportunityState;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
@@ -11,7 +14,9 @@ use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\ShortageResolutionItem;
+use App\Services\Availability\DemandReadContext;
 use App\Services\Availability\OpportunityItemDemandResolver;
+use App\Services\Availability\StockReadContext;
 use App\Services\AvailabilityService;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageCollection;
@@ -25,6 +30,9 @@ use Illuminate\Support\Collection;
  */
 class ShortageDetector
 {
+    /** @var array<int, ShortageCollection> */
+    private array $opportunityCache = [];
+
     public function __construct(
         private readonly AvailabilityService $availability,
         private readonly OpportunityItemDemandResolver $demandResolver,
@@ -33,16 +41,28 @@ class ShortageDetector
     /**
      * @return ShortageCollection<int, Shortage>
      */
-    public function forOpportunity(Opportunity $opportunity): ShortageCollection
-    {
+    public function forOpportunity(
+        Opportunity $opportunity,
+        ?StockReadContext $stockContext = null,
+        ?DemandReadContext $demandContext = null,
+    ): ShortageCollection {
+        if (array_key_exists($opportunity->id, $this->opportunityCache)) {
+            return $this->opportunityCache[$opportunity->id];
+        }
+
         $opportunity->loadMissing('items.item');
         $shortages = new ShortageCollection;
 
-        foreach ($this->forItems($opportunity->items, $opportunity) as $shortage) {
+        foreach ($this->forItems(
+            $opportunity->items,
+            $opportunity,
+            stockContext: $stockContext,
+            demandContext: $demandContext,
+        ) as $shortage) {
             $shortages->push($shortage);
         }
 
-        return $shortages;
+        return $this->opportunityCache[$opportunity->id] = $shortages;
     }
 
     public function forItem(OpportunityItem $item, ?Opportunity $opportunity = null): ?Shortage
@@ -71,26 +91,72 @@ class ShortageDetector
         array $availableByItem = [],
         array $productsByItem = [],
         array $allocatedByItem = [],
+        ?StockReadContext $stockContext = null,
+        ?DemandReadContext $demandContext = null,
+        ?PreparedProductInputs $preparedProducts = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
     ): array {
+        $preparedPath = $preparedProducts !== null || $preparedStock !== null || $preparedDemand !== null;
+
+        if ($preparedPath && ($preparedProducts === null || $preparedStock === null || $preparedDemand === null)) {
+            throw new \LogicException('Complete prepared Product, stock, and Demand inputs are required for the prepared shortage path.');
+        }
+
         $itemIds = $items->map(static fn (OpportunityItem $item): int => $item->id)->all();
         $resolvedContexts = [];
-        $productIds = [];
 
         foreach ($items as $item) {
+            // The caller already knows the parent Opportunity. Bind it to each
+            // line before resolving dates/store so the resolver does not issue
+            // one identical Opportunity query per line item.
+            $item->setRelation('opportunity', $opportunity);
+
             $context = $contexts[$item->id] ?? $this->demandResolver->resolveContext($item);
             $resolvedContexts[$item->id] = $context;
+        }
 
-            if ($context['product_id'] !== null) {
-                $productIds[] = $context['product_id'];
+        $products = $productsByItem === [] ? collect() : collect($productsByItem)->unique('id')->keyBy('id');
+
+        if ($preparedProducts !== null) {
+            foreach ($resolvedContexts as $context) {
+                if ($context['product_id'] !== null) {
+                    $productId = (int) $context['product_id'];
+                    $products->put($productId, $preparedProducts->required($productId));
+                }
             }
         }
 
-        $products = $productsByItem === []
-            ? Product::query()
-                ->whereIn('id', array_values(array_unique($productIds)))
-                ->get()
-                ->keyBy('id')
-            : collect($productsByItem)->unique('id')->keyBy('id');
+        if ($productsByItem === [] && ! $preparedPath) {
+            $missingProductIds = [];
+
+            foreach ($items as $item) {
+                if (($resolvedContexts[$item->id]['product_id'] ?? null) === null) {
+                    continue;
+                }
+
+                $loadedProduct = $item->relationLoaded('item') && $item->item instanceof Product
+                    ? $item->item
+                    : ($item->relationLoaded('itemable') && $item->getRelation('itemable') instanceof Product
+                        ? $item->getRelation('itemable')
+                        : null);
+
+                if ($loadedProduct instanceof Product) {
+                    $products->put($loadedProduct->id, $loadedProduct);
+                } else {
+                    $missingProductIds[] = $resolvedContexts[$item->id]['product_id'];
+                }
+            }
+
+            $missingProductIds = array_values(array_unique(array_filter($missingProductIds)));
+
+            if ($missingProductIds !== []) {
+                $products = $products->union(
+                    Product::query()->whereIn('id', $missingProductIds)->get()->keyBy('id'),
+                );
+            }
+        }
+
         $productsByItem = $productsByItem + $items->mapWithKeys(function (OpportunityItem $item) use ($products): array {
             $product = $item->relationLoaded('itemable') && $item->getRelation('itemable') instanceof Product
                 ? $item->getRelation('itemable')
@@ -124,6 +190,56 @@ class ShortageDetector
             ->map(static fn ($quantity): int => (int) $quantity)
             ->all();
 
+        $availabilityRequests = [];
+        $availabilityRequestItems = [];
+        $computedAvailableByItem = [];
+
+        foreach ($items as $item) {
+            if (array_key_exists($item->id, $availableByItem)) {
+                continue;
+            }
+
+            $context = $resolvedContexts[$item->id];
+            $product = $productsByItem[$item->id] ?? null;
+            $storeId = $context['store_id'];
+
+            if ($product === null || $storeId === null || ! $product->track_availability) {
+                continue;
+            }
+
+            $allocated = $allocatedByItem[$item->id] ?? 0;
+            $requested = $allocated > 0
+                ? $allocated
+                : max(0, (int) round((float) $item->quantity));
+
+            if ($requested <= 0) {
+                continue;
+            }
+
+            $availabilityRequestItems[] = $item->id;
+            $availabilityRequests[] = [
+                'product_id' => $context['product_id'],
+                'store_id' => $storeId,
+                'from' => $context['from'],
+                'to' => $context['to'],
+                'exclude_source_type' => $this->demandResolver->sourceType(),
+                'exclude_source_id' => $item->id,
+            ];
+        }
+
+        if ($availabilityRequests !== []) {
+            foreach ($this->availability->availableForItems(
+                $availabilityRequests,
+                $stockContext,
+                $demandContext,
+                products: $preparedProducts,
+                preparedStock: $preparedStock,
+                preparedDemand: $preparedDemand,
+            ) as $index => $available) {
+                $computedAvailableByItem[$availabilityRequestItems[$index]] = $available;
+            }
+        }
+
         $shortages = [];
 
         foreach ($items as $item) {
@@ -144,14 +260,9 @@ class ShortageDetector
                 continue;
             }
 
-            $available = $availableByItem[$item->id] ?? $this->availability->availableForItem(
-                $context['product_id'],
-                $storeId,
-                $context['from'],
-                $context['to'],
-                $this->demandResolver->sourceType(),
-                $item->id,
-            );
+            $available = $availableByItem[$item->id]
+                ?? $computedAvailableByItem[$item->id]
+                ?? 0;
             $shortfall = $requested - $available;
 
             if ($shortfall <= 0) {

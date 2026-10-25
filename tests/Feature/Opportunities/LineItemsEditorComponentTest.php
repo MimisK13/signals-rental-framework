@@ -40,6 +40,7 @@ it('exposes tree and revision for the frozen seed island', function () {
 
     Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
         ->assertOk()
+        ->assertDispatched('opportunity-shortage-summary-updated', opportunityId: $opportunity->id, unresolvedCount: 0)
         ->assertSeeHtml('data-lf-seed')
         ->assertSeeHtml('window.__lfSeed')
         ->assertSeeHtml('window.__lfEditorConfig')

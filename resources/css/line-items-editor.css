@@ -43,7 +43,6 @@
     top: 0;
     z-index: 25;
     background: var(--surface, #fff);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     padding: 6px 12px 6px 0;
     margin-bottom: 12px;
 }
@@ -55,8 +54,8 @@
 .lf-quick-add-bar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex: 1 1 auto;
+    flex: 0 1 800px;
+    max-width: 800px;
     min-width: 320px;
     padding: 0;
     margin: 0;
@@ -137,16 +136,6 @@
 .lf-col-qty {
     width: 44px;
     max-width: 44px;
-}
-
-.lf-quick-add-qty {
-    box-sizing: border-box;
-    flex: 0 0 5rem;
-    width: 5rem;
-    min-width: 5rem;
-    max-width: 5rem;
-    padding-left: 6px;
-    padding-right: 6px;
 }
 
 .lf-add-text-row {
@@ -274,10 +263,6 @@
     pointer-events: auto;
 }
 
-.lf-footer-charge-total {
-    border-top: 2px solid var(--card-border);
-}
-
 .lf-ghost {
     position: fixed;
     top: 0;
@@ -362,12 +347,13 @@
     max-width: 72px;
     padding: 2px 4px;
     box-sizing: border-box;
-    border: 1px solid var(--link, #2563eb);
-    border-radius: 4px;
+    border: 1px solid var(--card-border);
+    border-radius: 0;
     background: var(--surface, #fff);
     color: var(--text);
     text-align: right;
     font: inherit;
+    outline: none;
 }
 
 .lf-edit-input.lf-edit-text {

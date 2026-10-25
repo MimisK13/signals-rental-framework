@@ -11,10 +11,12 @@ final class RateDefinitionObserver implements ShouldHandleEventsAfterCommit
     public function updated(RateDefinition $definition): void
     {
         RateResolver::flushAll();
+        app(RateResolver::class)->flushRequestCache();
     }
 
     public function deleted(RateDefinition $definition): void
     {
         RateResolver::flushAll();
+        app(RateResolver::class)->flushRequestCache();
     }
 }

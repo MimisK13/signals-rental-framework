@@ -15,6 +15,8 @@ use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
@@ -120,6 +122,29 @@ it('lists quick-add destinations and parent group options from the display tree'
 
     expect(collect($destinations)->pluck('label')->all())->toContain('— Auto group —', 'Section · Rig', 'Section · Child rig')
         ->and(collect($parents)->pluck('label')->all())->toContain('— Top level —', 'Rig', '— Child rig');
+});
+
+it('reuses a supplied opportunity item collection for derived reads', function () {
+    $opportunity = treeBuilderOpportunity();
+    $queryCount = 0;
+
+    DB::listen(function (QueryExecuted $query) use (&$queryCount): void {
+        if (str_contains($query->sql, 'from "opportunity_items"')
+            && str_contains($query->sql, 'order by "path" asc, "path" asc, "id" asc')) {
+            $queryCount++;
+        }
+    });
+
+    $items = $opportunity->load([
+        'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
+    ])->items;
+    $builder = app(OpportunityLineItemsTreeBuilder::class);
+
+    $builder->tree($opportunity, $items);
+    $builder->destinations($opportunity, $items);
+    $builder->parentGroupOptions($opportunity, $items);
+
+    expect($queryCount)->toBe(1);
 });
 
 it('builds display groups with subtotals and an ungrouped fallback bucket', function () {

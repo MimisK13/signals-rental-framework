@@ -89,6 +89,27 @@ it('shows tag_list chips in the page header next to state and status badges', fu
         ->assertSeeHtml('class="s-chip"');
 });
 
+it('updates the shortage badge from a matching child summary event', function () {
+    $opportunity = Opportunity::factory()->order()->create();
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+        ->dispatch('opportunity-shortage-summary-updated', opportunityId: $opportunity->id, unresolvedCount: 3)
+        ->assertSet('shortageCount', 3)
+        ->assertSee('(3)');
+});
+
+it('ignores shortage summary events for another opportunity', function () {
+    $opportunity = Opportunity::factory()->order()->create();
+
+    $this->actingAs($this->owner);
+
+    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+        ->dispatch('opportunity-shortage-summary-updated', opportunityId: $opportunity->id + 1, unresolvedCount: 3)
+        ->assertSet('shortageCount', null);
+});
+
 it('forbids the show page for a user without opportunities.view', function () {
     $opportunity = Opportunity::factory()->create();
 

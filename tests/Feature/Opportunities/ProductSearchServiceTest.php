@@ -9,8 +9,10 @@ use App\Models\SerialisedComponent;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Opportunities\ProductSearchService;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -203,6 +205,32 @@ it('builds a lightweight catalogue index payload for the client tier', function 
         // Availability is omitted from the client index (store/date specific).
         ->and($catalogue[0]['availability'])->toBeNull()
         ->and($catalogue[0]['initials'])->toBe('IS');
+});
+
+it('batch loads product rates for the catalogue index', function (): void {
+    $store = Store::factory()->create();
+    $definition = RateDefinition::factory()->create();
+    $products = Product::factory()->count(5)->create();
+
+    foreach ($products as $product) {
+        ProductRate::factory()->create([
+            'product_id' => $product->id,
+            'rate_definition_id' => $definition->id,
+        ]);
+    }
+
+    $productRateQueries = 0;
+
+    DB::listen(function (QueryExecuted $query) use (&$productRateQueries): void {
+        if (str_contains($query->sql, 'from "product_rates"')) {
+            $productRateQueries++;
+        }
+    });
+
+    $catalogue = $this->service->catalogueIndex($store->id);
+
+    expect($catalogue)->toHaveCount(5)
+        ->and($productRateQueries)->toBe(1);
 });
 
 it('includes a signed image url and initials fallback for picker rows', function (): void {

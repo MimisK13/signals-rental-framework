@@ -168,6 +168,9 @@ new #[Layout('components.layouts.app')] class extends Component
     /** Allocate sub-tab: chain {@see PrepareAsset} immediately after allocating. */
     public bool $markPrepared = false;
 
+    /** @var array<string, mixed>|null */
+    private ?array $renderDataCache = null;
+
     public function mount(Opportunity $opportunity): void
     {
         Gate::authorize('view', $opportunity);
@@ -1587,13 +1590,15 @@ new #[Layout('components.layouts.app')] class extends Component
      */
     public function with(): array
     {
-        $this->opportunity->load([
+        // Keep relationship loading idempotent when Livewire evaluates the view
+        // data more than once during a render/morph cycle.
+        $this->opportunity->loadMissing([
             'items' => fn ($q) => $q->orderBy('path')->orderBy('id'),
             'items.assets' => fn ($q) => $q->with(['stockLevel.asset', 'container'])->orderBy('id'),
         ]);
         $containers = $this->opportunityContainers();
 
-        return [
+        return $this->renderDataCache = [
             ...$this->opportunityActionData(),
 
             'groups' => $this->buildGroups(),

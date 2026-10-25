@@ -9,6 +9,7 @@ use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->app->bind(AvailabilityResolutionProvider::class, fn () => new class implements AvailabilityResolutionProvider
@@ -67,6 +68,21 @@ it('memoises store timezones within one pipeline instance', function () {
 
     expect($this->pipeline->storeTimezone($this->store->id))->toBe('Europe/London')
         ->and($this->pipeline->storeTimezone($this->store->id))->toBe('Europe/London');
+});
+
+it('memoises a null store timezone within one pipeline instance', function () {
+    $this->store->update(['timezone' => null]);
+    $queries = 0;
+
+    DB::listen(function ($query) use (&$queries): void {
+        if (str_contains(strtolower($query->sql), 'from "stores"')) {
+            $queries++;
+        }
+    });
+
+    expect($this->pipeline->storeTimezone($this->store->id))->toBeNull()
+        ->and($this->pipeline->storeTimezone($this->store->id))->toBeNull()
+        ->and($queries)->toBe(1);
 });
 
 it('sums mixed bulk and serialised stock in totalStock', function () {

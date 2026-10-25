@@ -12,6 +12,9 @@ use App\Data\Availability\GanttDemandBarData;
 use App\Data\Availability\GanttShortageData;
 use App\Data\Availability\OpportunityItemAvailabilityData;
 use App\Data\Availability\StoreShortageData;
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Data\Opportunities\PreparedStockInputs;
 use App\Models\AvailabilityDailySummary;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
@@ -20,10 +23,12 @@ use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Models\Store;
+use App\Services\Availability\DemandReadContext;
 use App\Services\Availability\KitAvailabilityCalculator;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Availability\RecalculationPipeline;
 use App\Services\Availability\SlotCalculator;
+use App\Services\Availability\StockReadContext;
 use App\Services\Shortages\ShortageDetector;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -47,6 +52,12 @@ use Illuminate\Support\Collection as SupportCollection;
  */
 class AvailabilityService
 {
+    /** @var array<int, string|null> */
+    private array $storeTimezones = [];
+
+    /** @var array<int, Product|null> */
+    private array $products = [];
+
     public function __construct(
         private readonly SlotCalculator $slotCalculator,
         private readonly RecalculationPipeline $pipeline,
@@ -60,7 +71,7 @@ class AvailabilityService
      */
     public function getAvailability(int $productId, int $storeId, Carbon $date): AvailabilityData
     {
-        $product = Product::query()->find($productId);
+        $product = $this->findProduct($productId);
 
         if ($product === null) {
             return AvailabilityData::make($productId, $storeId, $date, 0, 0, []);
@@ -189,10 +200,71 @@ class AvailabilityService
      * Returns an empty collection for an unknown opportunity. Computed live from
      * `demands` (no snapshot dependency), so it always reflects the current state.
      *
+     * @param  Collection<int, OpportunityItem>|null  $preparedItems
+     * @param  array<int, array{product_id: int|null, store_id: int|null, from: Carbon, to: Carbon, quantity: int, claim_quantity: int}>  $preparedContexts
      * @return SupportCollection<int, OpportunityItemAvailabilityData>
      */
-    public function getOpportunityContext(int $opportunityId): SupportCollection
-    {
+    public function getOpportunityContext(
+        int $opportunityId,
+        ?Collection $preparedItems = null,
+        array $preparedContexts = [],
+        ?PreparedProductInputs $preparedProducts = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): SupportCollection {
+        if ($preparedItems !== null) {
+            if ($preparedProducts === null || $preparedStock === null || $preparedDemand === null || count($preparedContexts) !== $preparedItems->count()) {
+                throw new \LogicException('Complete prepared line-item inputs are required for the prepared availability path.');
+            }
+
+            $requests = [];
+            $requestItems = [];
+
+            foreach ($preparedItems as $item) {
+                $context = $preparedContexts[$item->id] ?? null;
+
+                if ($context === null) {
+                    throw new \LogicException("Prepared context for OpportunityItem {$item->id} is missing.");
+                }
+
+                if ($context['product_id'] === null || $context['store_id'] === null) {
+                    continue;
+                }
+
+                $requests[] = [
+                    'product_id' => $context['product_id'],
+                    'store_id' => $context['store_id'],
+                    'from' => $context['from'],
+                    'to' => $context['to'],
+                    'exclude_source_type' => $this->opportunityItemResolver->sourceType(),
+                    'exclude_source_id' => $item->id,
+                ];
+                $requestItems[] = [$item, $context];
+            }
+
+            $available = $this->availableForItems(
+                $requests,
+                products: $preparedProducts,
+                preparedStock: $preparedStock,
+                preparedDemand: $preparedDemand,
+            );
+            $context = new SupportCollection;
+
+            foreach ($requestItems as $index => [$item, $itemContext]) {
+                $context->push(OpportunityItemAvailabilityData::make(
+                    opportunityItemId: (int) $item->id,
+                    productId: $itemContext['product_id'],
+                    storeId: $itemContext['store_id'],
+                    requestedQuantity: $itemContext['quantity'],
+                    availableForItem: $available[$index] ?? 0,
+                    from: $itemContext['from'],
+                    to: $itemContext['to'],
+                ));
+            }
+
+            return $context;
+        }
+
         $opportunity = Opportunity::query()->with('items')->find($opportunityId);
 
         if ($opportunity === null) {
@@ -244,7 +316,7 @@ class AvailabilityService
      */
     public function checkAvailability(int $productId, int $storeId, Carbon $from, Carbon $to, int $quantity): bool
     {
-        $product = Product::query()->find($productId);
+        $product = $this->findProduct($productId);
 
         if ($product === null) {
             return false;
@@ -523,10 +595,17 @@ class AvailabilityService
      * }>  $requests
      * @return array<int, int>
      */
-    public function availableForItems(array $requests): array
-    {
+    public function availableForItems(
+        array $requests,
+        ?StockReadContext $stockContext = null,
+        ?DemandReadContext $demandContext = null,
+        ?PreparedProductInputs $products = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): array {
         $results = [];
         $groups = [];
+        $stockGroups = [];
 
         foreach ($requests as $index => $request) {
             $from = $request['from'];
@@ -538,6 +617,13 @@ class AvailabilityService
 
             $requests[$index]['from'] = $from;
             $requests[$index]['to'] = $to;
+
+            $stockKey = implode('|', [
+                $request['product_id'],
+                $request['store_id'],
+            ]);
+            $stockGroups[$stockKey][] = $index;
+
             $key = implode('|', [
                 $request['product_id'],
                 $request['store_id'],
@@ -547,9 +633,37 @@ class AvailabilityService
             $groups[$key][] = $index;
         }
 
+        $stockByKey = [];
+        $productsByStockKey = [];
+
+        // Stock is keyed by product/store and is intentionally evaluated outside
+        // booking-window grouping. Demand remains window-specific below.
+        foreach ($stockGroups as $stockKey => $indexes) {
+            $first = $requests[$indexes[0]];
+            $product = $products?->required((int) $first['product_id']) ?? $this->findProduct($first['product_id']);
+
+            if ($product === null) {
+                continue;
+            }
+
+            $productsByStockKey[$stockKey] = $product;
+            $stockByKey[$stockKey] = $preparedStock?->required(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+            ) ?? $stockContext?->resolve(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+                fn (): int => $this->pipeline->totalStock($product, $first['store_id']),
+            ) ?? $this->pipeline->totalStock($product, $first['store_id']);
+        }
+
         foreach ($groups as $indexes) {
             $first = $requests[$indexes[0]];
-            $product = Product::query()->find($first['product_id']);
+            $stockKey = implode('|', [
+                $first['product_id'],
+                $first['store_id'],
+            ]);
+            $product = $productsByStockKey[$stockKey] ?? null;
 
             if ($product === null) {
                 foreach ($indexes as $index) {
@@ -561,15 +675,30 @@ class AvailabilityService
 
             [$slotFrom, $slotTo] = $this->clampToHorizon($first['from'], $first['to']);
             $timezone = $this->storeTimezone($first['store_id']);
-            $totalStock = $this->pipeline->totalStock($product, $first['store_id']);
+            $totalStock = $stockByKey[$stockKey];
 
             /** @var Collection<int, Demand> $demands */
-            $demands = Demand::query()
+            $loadDemands = fn (): Collection => Demand::query()
                 ->where('product_id', $first['product_id'])
                 ->where('store_id', $first['store_id'])
                 ->active()
                 ->overlapping($first['from'], $first['to'])
                 ->get();
+            $demands = $preparedDemand?->required(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+                $first['from'],
+                $first['to'],
+            ) ?? $demandContext?->resolve(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+                $first['from'],
+                $first['to'],
+                $loadDemands,
+            ) ?? $loadDemands();
+
+            // Only the raw demand set is shared. Item-specific self-demand
+            // exclusion is applied independently by each availability result.
 
             foreach ($indexes as $index) {
                 $request = $requests[$index];
@@ -866,7 +995,7 @@ class AvailabilityService
      */
     public function getGantt(int $productId, int $storeId, Carbon $from, Carbon $to, array $assetIds = []): GanttData
     {
-        $product = Product::query()->find($productId);
+        $product = $this->findProduct($productId);
 
         $totalStock = $product === null ? 0 : $this->pipeline->totalStock($product, $storeId);
 
@@ -1112,7 +1241,7 @@ class AvailabilityService
      */
     private function isComposedProductId(int $productId): bool
     {
-        $product = Product::query()->find($productId);
+        $product = $this->findProduct($productId);
 
         return $product !== null && $this->isComposedProduct($product);
     }
@@ -1189,6 +1318,26 @@ class AvailabilityService
      */
     private function storeTimezone(int $storeId): ?string
     {
-        return $this->pipeline->storeTimezone($storeId);
+        if (array_key_exists($storeId, $this->storeTimezones)) {
+            return $this->storeTimezones[$storeId];
+        }
+
+        return $this->storeTimezones[$storeId] = $this->pipeline->storeTimezone($storeId);
+    }
+
+    /**
+     * Find a product once per scoped AvailabilityService instance.
+     *
+     * The query intentionally remains the original Eloquent lookup so global
+     * scopes and soft-delete behavior are unchanged. This is request/job scoped
+     * state only; it is not a persistent cache.
+     */
+    private function findProduct(int $productId): ?Product
+    {
+        if (array_key_exists($productId, $this->products)) {
+            return $this->products[$productId];
+        }
+
+        return $this->products[$productId] = Product::query()->find($productId);
     }
 }

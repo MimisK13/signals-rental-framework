@@ -104,9 +104,16 @@ class ProductSearchService
             ->get();
 
         $this->eagerLoadAccessories($products);
+        $defaultRates = $this->rateResolver->resolveMany($products, RateTransactionType::Rental, $storeId);
 
         return $products
-            ->map(fn (Product $product): array => $this->toResult($product, $storeId, withAvailability: false)->toArray())
+            ->map(fn (Product $product): array => $this->toResult(
+                $product,
+                $storeId,
+                withAvailability: false,
+                resolvedRate: $defaultRates[$product->id] ?? null,
+                rateResolved: true,
+            )->toArray())
             ->all();
     }
 
@@ -213,13 +220,18 @@ class ProductSearchService
      * Build a result DTO for a single product, resolving its default rate and
      * (optionally) point availability for the store.
      */
-    private function toResult(Product $product, ?int $storeId, bool $withAvailability = true): ProductSearchResultData
-    {
+    private function toResult(
+        Product $product,
+        ?int $storeId,
+        bool $withAvailability = true,
+        ?ProductRate $resolvedRate = null,
+        bool $rateResolved = false,
+    ): ProductSearchResultData {
         return new ProductSearchResultData(
             id: $product->id,
             name: $product->name,
             sku: $product->sku,
-            default_rate: $this->defaultRate($product, $storeId),
+            default_rate: $this->defaultRate($product, $storeId, $resolvedRate, $rateResolved),
             accessories: $this->accessories($product),
             is_combination: $this->isCombination($product),
             availability: $withAvailability ? $this->availabilityStatus($product, $storeId) : null,
@@ -251,9 +263,15 @@ class ProductSearchService
      * through the rate engine so duration/period strategies are honoured;
      * gracefully falls back to the raw rate price, then to null.
      */
-    private function defaultRate(Product $product, ?int $storeId): ?string
-    {
-        $rate = $this->rateResolver->resolve($product, RateTransactionType::Rental, $storeId);
+    private function defaultRate(
+        Product $product,
+        ?int $storeId,
+        ?ProductRate $resolvedRate = null,
+        bool $rateResolved = false,
+    ): ?string {
+        $rate = $rateResolved
+            ? $resolvedRate
+            : $this->rateResolver->resolve($product, RateTransactionType::Rental, $storeId);
 
         if ($rate === null) {
             return null;

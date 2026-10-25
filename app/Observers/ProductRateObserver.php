@@ -11,10 +11,12 @@ final class ProductRateObserver implements ShouldHandleEventsAfterCommit
     public function saved(ProductRate $rate): void
     {
         RateResolver::flushProduct((int) $rate->product_id);
+        app(RateResolver::class)->flushRequestCache();
     }
 
     public function deleted(ProductRate $rate): void
     {
         RateResolver::flushProduct((int) $rate->product_id);
+        app(RateResolver::class)->flushRequestCache();
     }
 }

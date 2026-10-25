@@ -156,6 +156,30 @@
                     </div>
                 </div>
 
+                {{-- Experimental workspace. It uses canonical Opportunities and actions. --}}
+                @can('opportunities.access')
+                <div class="nav-dropdown-wrapper">
+                    <button class="header-nav-item {{ ActiveRoute::is('experimental.*') ? 'active' : '' }}" type="button">
+                        Experimental
+                        <svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+                    </button>
+                    <div class="mega-dropdown mega-dropdown-cols-2">
+                        <div class="mega-grid grid gap-x-8 gap-y-5">
+                            <div>
+                                <div class="mega-group-label">Workspaces</div>
+                                <a href="{{ route('experimental.quotations.index') }}" class="mega-item {{ ActiveRoute::is('experimental.quotations.*') ? 'active' : '' }}" wire:navigate.hover>
+                                    <flux:icon.document-text class="mega-item-icon" />
+                                    <div class="flex flex-col gap-px">
+                                        <span class="mega-item-label">Quotations</span>
+                                        <span class="mega-item-desc">Alternative quotation workflow</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endcan
+
                 {{-- Resources mega dropdown --}}
                 <div class="nav-dropdown-wrapper">
                     <button class="header-nav-item {{ ActiveRoute::is('products.*', 'product-groups.*', 'stock-levels.*', 'virtual-stock.*') ? 'active' : '' }}" type="button">
@@ -600,6 +624,13 @@
                 @can('projects.view')
                     <a class="sidebar-item {{ ActiveRoute::is('projects.*') ? 'active' : '' }}" href="{{ route('projects.index') }}" wire:navigate.hover x-on:click="mobileNav = false">
                         <flux:icon.folder class="!size-[15px]" /> Projects
+                    </a>
+                @endcan
+
+                @can('opportunities.access')
+                    <div class="sidebar-group-label">Experimental</div>
+                    <a class="sidebar-item {{ ActiveRoute::is('experimental.quotations.*') ? 'active' : '' }}" href="{{ route('experimental.quotations.index') }}" wire:navigate.hover x-on:click="mobileNav = false">
+                        <flux:icon.document-text class="!size-[15px]" /> Quotations
                     </a>
                 @endcan
 

@@ -17,6 +17,7 @@ use App\ValueObjects\Shortage;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->app->bind(AvailabilityResolutionProvider::class, fn () => new class implements AvailabilityResolutionProvider
@@ -151,6 +152,37 @@ it('offers forward and backward shift options when stock is free', function () {
             ->and($option->autoExecutable)->toBeFalse()
             ->and($option->metadata)->toHaveKeys(['shifted_starts_at', 'shifted_ends_at', 'offset_days']);
     }
+});
+
+it('batches shifted availability while keeping demand windows distinct', function () {
+    $start = Carbon::parse('2026-07-10T09:00:00Z');
+    $end = Carbon::parse('2026-07-12T17:00:00Z');
+    $shortage = dateShiftShortage($this->store, $start, $end);
+    $queries = [
+        'stock' => 0,
+        'demand' => 0,
+    ];
+
+    DB::listen(function ($query) use (&$queries): void {
+        $sql = strtolower($query->sql);
+
+        if (str_contains($sql, 'stock_category as category') && str_contains($sql, 'from "stock_levels"')) {
+            $queries['stock']++;
+        }
+
+        if (str_contains($sql, 'from "demands"')
+            && str_contains($sql, 'product_id')
+            && str_contains($sql, 'store_id')
+            && str_contains($sql, 'is_active')) {
+            $queries['demand']++;
+        }
+    });
+
+    $options = $this->resolver->getOptions($shortage);
+
+    expect($options)->toHaveCount(6)
+        ->and($queries['stock'])->toBe(1)
+        ->and($queries['demand'])->toBe(6);
 });
 
 it('records a confirmed date-shift proposal with original and shifted windows', function () {

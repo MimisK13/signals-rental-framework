@@ -29,6 +29,8 @@ new #[Layout('components.layouts.app')] class extends Component
 
     public Opportunity $opportunity;
 
+    public ?int $shortageCount = null;
+
     public function mount(Opportunity $opportunity): void
     {
         Gate::authorize('opportunities.view');
@@ -75,6 +77,16 @@ new #[Layout('components.layouts.app')] class extends Component
         }
 
         $this->opportunity->refresh();
+    }
+
+    #[On('opportunity-shortage-summary-updated')]
+    public function onShortageSummaryUpdated(int $opportunityId, int $unresolvedCount): void
+    {
+        if ($opportunityId !== $this->opportunity->id) {
+            return;
+        }
+
+        $this->shortageCount = max(0, $unresolvedCount);
     }
 
     #[On('open-opportunity-lock-price-modal')]

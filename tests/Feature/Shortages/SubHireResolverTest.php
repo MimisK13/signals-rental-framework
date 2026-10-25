@@ -26,12 +26,14 @@ use App\Models\VirtualStockIntake;
 use App\Services\Shortages\Resolvers\SubHireResolver;
 use App\Services\Shortages\ShortageAutoResolver;
 use App\Services\Shortages\ShortageBatchGrouper;
+use App\Services\Shortages\SubHireSupplierCostQuery;
 use App\Services\VirtualStock\VirtualStockNumberGenerator;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageCollection;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Volt\Volt;
 
 beforeEach(function () {
@@ -144,6 +146,38 @@ it('returns false from canResolve when no supplier cost exists', function () {
 
     expect($this->resolver->canResolve($shortage))->toBeFalse()
         ->and($this->resolver->getOptions($shortage))->toBe([]);
+});
+
+it('memoises supplier-cost existence per product and store key', function () {
+    $shortage = subHireShortage($this->store, $this->product);
+    $queries = 0;
+
+    DB::listen(function ($query) use (&$queries): void {
+        if (str_contains(strtolower($query->sql), 'from "product_supplier_costs"')) {
+            $queries++;
+        }
+    });
+
+    expect($this->resolver->canResolve($shortage))->toBeFalse()
+        ->and($this->resolver->canResolve($shortage))->toBeFalse()
+        ->and($queries)->toBe(1);
+});
+
+it('does not leak supplier-cost candidates across product and store keys', function () {
+    $otherProduct = Product::factory()->rental()->bulk()->create(['track_availability' => true]);
+    $otherStore = Store::factory()->create(['timezone' => 'UTC']);
+
+    ProductSupplierCost::factory()->create([
+        'product_id' => $this->product->id,
+        'supplier_id' => $this->supplier->id,
+        'store_id' => $this->store->id,
+    ]);
+
+    $query = app(SubHireSupplierCostQuery::class);
+
+    expect($query->hasCandidatesFor($this->product->id, $this->store->id))->toBeTrue()
+        ->and($query->hasCandidatesFor($otherProduct->id, $this->store->id))->toBeFalse()
+        ->and($query->hasCandidatesFor($this->product->id, $otherStore->id))->toBeFalse();
 });
 
 it('orders options preferred first then ascending cost', function () {

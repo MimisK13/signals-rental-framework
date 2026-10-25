@@ -3,6 +3,10 @@
 namespace App\Services\Opportunities;
 
 use App\Data\Availability\OpportunityItemAvailabilityData;
+use App\Data\Opportunities\OpportunityItemReadContext;
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Data\Opportunities\PreparedStockInputs;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
 use App\Enums\OpportunityState;
@@ -26,20 +30,24 @@ class OpportunityLineItemsTreeBuilder
     ) {}
 
     /**
+     * @param  Collection<int, OpportunityItem>|null  $items
+     * @param  array<int, OpportunityItemReadContext>  $contexts
      * @return array<int, array<string, mixed>>
      */
-    public function tree(Opportunity $opportunity): array
-    {
-        $opportunity->load([
-            'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
-        ]);
-
-        $items = $opportunity->items;
+    public function tree(
+        Opportunity $opportunity,
+        ?Collection $items = null,
+        array $contexts = [],
+        ?PreparedProductInputs $products = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): array {
+        $items = $this->itemsFor($opportunity, $items);
         $paths = $items->pluck('path')->all();
         $groupsByPath = $items
             ->filter(fn (OpportunityItem $item): bool => $item->item_type === OpportunityItemType::Group)
             ->keyBy('path');
-        $availability = $this->availabilityMap($opportunity->id);
+        $availability = $this->availabilityMap($opportunity->id, $items, $contexts, $products, $preparedStock, $preparedDemand);
         $duplicateIds = $this->duplicateLineIds($items);
         $currencyCode = $opportunity->currency_code ?? settings('company.base_currency', 'GBP');
         $showShortageIndicators = $this->shortageIndicatorsVisible($opportunity);
@@ -62,17 +70,14 @@ class OpportunityLineItemsTreeBuilder
     /**
      * Destination options for the quick-add bar.
      *
+     * @param  Collection<int, OpportunityItem>|null  $items
      * @return array<int, array{value: string, label: string}>
      */
-    public function destinations(Opportunity $opportunity): array
+    public function destinations(Opportunity $opportunity, ?Collection $items = null): array
     {
         $options = [['value' => '', 'label' => '— Auto group —']];
 
-        $opportunity->load([
-            'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
-        ]);
-
-        foreach ($this->treeService->buildDisplayGroups($opportunity->items, fn (): array => []) as $group) {
+        foreach ($this->treeService->buildDisplayGroups($this->itemsFor($opportunity, $items), fn (): array => []) as $group) {
             $prefix = match ($group['kind']) {
                 'group' => 'Section · ',
                 'auto' => 'Group · ',
@@ -91,15 +96,28 @@ class OpportunityLineItemsTreeBuilder
     /**
      * Parent-group options for the "New section" modal.
      *
+     * @param  Collection<int, OpportunityItem>|null  $items
      * @return array<int, array{value: string, label: string}>
      */
-    public function parentGroupOptions(Opportunity $opportunity): array
+    public function parentGroupOptions(Opportunity $opportunity, ?Collection $items = null): array
     {
-        $opportunity->load([
-            'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
-        ]);
+        return $this->treeService->parentGroupOptions($this->itemsFor($opportunity, $items));
+    }
 
-        return $this->treeService->parentGroupOptions($opportunity->items);
+    /**
+     * @param  Collection<int, OpportunityItem>|null  $items
+     * @return Collection<int, OpportunityItem>
+     */
+    private function itemsFor(Opportunity $opportunity, ?Collection $items): Collection
+    {
+        if ($items === null) {
+            $opportunity->load([
+                'items' => fn ($query) => $query->orderBy('path')->orderBy('id'),
+            ]);
+            $items = $opportunity->items;
+        }
+
+        return $items;
     }
 
     /**
@@ -219,10 +237,31 @@ class OpportunityLineItemsTreeBuilder
     }
 
     /**
+     * @param  Collection<int, OpportunityItem>|null  $items
+     * @param  array<int, OpportunityItemReadContext>  $contexts
+     * @return array<int, OpportunityItemAvailabilityData>
      * @return array<int, OpportunityItemAvailabilityData>
      */
-    private function availabilityMap(int $opportunityId): array
-    {
+    private function availabilityMap(
+        int $opportunityId,
+        ?Collection $items = null,
+        array $contexts = [],
+        ?PreparedProductInputs $products = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): array {
+        if ($items !== null && $products !== null && $preparedStock !== null && $preparedDemand !== null) {
+            $resolvedContexts = array_map(
+                static fn (OpportunityItemReadContext $context): array => $context->toResolvedArray(),
+                $contexts,
+            );
+
+            return $this->availability
+                ->getOpportunityContext($opportunityId, $items, $resolvedContexts, $products, $preparedStock, $preparedDemand)
+                ->keyBy('opportunity_item_id')
+                ->all();
+        }
+
         return $this->availability
             ->getOpportunityContext($opportunityId)
             ->keyBy('opportunity_item_id')

@@ -170,6 +170,7 @@ it('applies a resolver option and persists a resolution', function () {
 
     Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
         ->call('selectResolution', $item->id, 'partial', 0)
+        ->assertDispatched('open-modal', 'apply-resolution')
         ->call('applyResolution');
 
     expect(ShortageResolution::query()->forOpportunity($opportunity->id)->count())->toBeGreaterThan(0);

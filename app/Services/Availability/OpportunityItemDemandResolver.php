@@ -82,9 +82,9 @@ class OpportunityItemDemandResolver implements DemandResolverContract
      *
      * @return array{product_id: int|null, store_id: int|null, from: Carbon, to: Carbon, quantity: int, claim_quantity: int}
      */
-    public function resolveContext(OpportunityItem $item): array
+    public function resolveContext(OpportunityItem $item, ?Product $preparedProduct = null): array
     {
-        $product = $this->resolveProduct($item);
+        $product = $preparedProduct ?? $this->resolveProduct($item);
         [$from, $to] = $this->periodResolver->planningPeriod($item);
 
         return [

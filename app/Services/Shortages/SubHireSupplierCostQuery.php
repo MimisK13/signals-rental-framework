@@ -13,12 +13,24 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class SubHireSupplierCostQuery
 {
+    /** @var array<string, bool> */
+    private array $candidateExistence = [];
+
+    /** @var array<string, Collection<int, ProductSupplierCost>> */
+    private array $candidateLists = [];
+
     /**
      * @return Collection<int, ProductSupplierCost>
      */
     public function candidatesFor(int $productId, int $storeId): Collection
     {
-        return ProductSupplierCost::query()
+        $key = $this->key($productId, $storeId);
+
+        if (array_key_exists($key, $this->candidateLists)) {
+            return $this->candidateLists[$key];
+        }
+
+        return $this->candidateLists[$key] = ProductSupplierCost::query()
             ->forProduct($productId)
             ->where(function ($query) use ($storeId): void {
                 $query->where('store_id', $storeId)
@@ -34,12 +46,23 @@ class SubHireSupplierCostQuery
 
     public function hasCandidatesFor(int $productId, int $storeId): bool
     {
-        return ProductSupplierCost::query()
+        $key = $this->key($productId, $storeId);
+
+        if (array_key_exists($key, $this->candidateExistence)) {
+            return $this->candidateExistence[$key];
+        }
+
+        return $this->candidateExistence[$key] = ProductSupplierCost::query()
             ->forProduct($productId)
             ->where(function ($query) use ($storeId): void {
                 $query->where('store_id', $storeId)
                     ->orWhereNull('store_id');
             })
             ->exists();
+    }
+
+    private function key(int $productId, int $storeId): string
+    {
+        return $productId.':'.$storeId;
     }
 }

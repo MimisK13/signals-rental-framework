@@ -7,6 +7,7 @@ use App\Actions\Opportunities\RemoveOpportunityItem;
 use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Store;
@@ -56,6 +57,25 @@ it('removes a single product line without touching siblings', function () {
     expect(OpportunityItem::query()->where('opportunity_id', $opportunity->id)->count())->toBe(1)
         ->and(OpportunityItem::query()->whereKey($survivor->id)->exists())->toBeTrue()
         ->and(OpportunityItem::query()->whereKey($target->id)->exists())->toBeFalse();
+});
+
+it('identifies empty groups and text rows as removable while pricing is frozen', function () {
+    $opportunity = removeTestOpportunity($this->store);
+
+    $group = OpportunityItem::factory()->for($opportunity)->create([
+        'item_type' => OpportunityItemType::Group->value,
+        'path' => '0001',
+        'name' => '',
+    ]);
+    $text = OpportunityItem::factory()->for($opportunity)->create([
+        'item_type' => OpportunityItemType::Text->value,
+        'path' => '0002',
+        'name' => '',
+    ]);
+    $action = new RemoveOpportunityItem;
+
+    expect($action->canRemoveWhenPricingFrozen($group))->toBeTrue()
+        ->and($action->canRemoveWhenPricingFrozen($text))->toBeTrue();
 });
 
 it('cascades removal of a group and its entire subtree deepest-first', function () {

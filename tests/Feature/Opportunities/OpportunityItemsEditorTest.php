@@ -1658,6 +1658,7 @@ describe('pricing freeze', function () {
 
         expect(OpportunityItem::query()->whereKey($item->id)->exists())->toBeTrue();
     });
+
 });
 
 describe('inline add (text and section)', function () {

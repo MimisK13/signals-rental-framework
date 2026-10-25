@@ -22,6 +22,7 @@ use App\Services\Shortages\Resolvers\PartialFulfilmentResolver;
 use App\Services\Shortages\Resolvers\QuoteReallocationResolver;
 use App\Services\Shortages\Resolvers\SubstitutionResolver;
 use App\Services\Shortages\Resolvers\WaitlistResolver;
+use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
 use App\Services\Shortages\ShortageAutoResolver;
 use App\Services\Shortages\ShortageDetector;
 use App\Services\Shortages\ShortageResolverDefinition;
@@ -85,6 +86,15 @@ it('exposes the human-readable name of every built-in resolver', function () {
         ->and(app(QuoteReallocationResolver::class)->name())->toBe('Reallocate from quote')
         ->and(app(SubstitutionResolver::class)->name())->toBe('Substitute product')
         ->and(app(WaitlistResolver::class)->name())->toBe('Waitlist');
+});
+
+it('scopes memoized shortage resolvers to the current application lifecycle', function () {
+    expect(app(QuoteReallocationResolver::class))
+        ->toBe(app(QuoteReallocationResolver::class))
+        ->and(app(SubstitutionResolver::class))
+        ->toBe(app(SubstitutionResolver::class))
+        ->and(app(WarehouseTransferResolver::class))
+        ->toBe(app(WarehouseTransferResolver::class));
 });
 
 it('returns no partial-fulfilment option when none of the requested quantity is available', function () {

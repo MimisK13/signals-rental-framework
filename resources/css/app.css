@@ -2205,3 +2205,20 @@ select:focus[data-flux-control] {
         display: none;
     }
 }
+
+/* FLUX CUSTOMIZE */
+
+[data-flux-control],
+[data-flux-group-target],
+[data-flux-input],
+[data-flux-select],
+[data-flux-dropdown],
+[data-flux-button],
+[data-flux-card] {
+    @apply rounded-none shadow-none!;
+}
+
+[data-flux-label] {
+    /*@apply mb-1 block text-xs font-semibold leading-tight text-(--erp-color-muted);*/
+    @apply text-xs font-semibold uppercase text-(--erp-color-muted);
+}

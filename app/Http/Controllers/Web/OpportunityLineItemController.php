@@ -29,7 +29,7 @@ class OpportunityLineItemController extends Controller
             ]);
         }
 
-        if ($opportunity->pricingFrozen()) {
+        if ($opportunity->pricingFrozen() && ! (new RemoveOpportunityItem)->canRemoveWhenPricingFrozen($item)) {
             throw ValidationException::withMessages([
                 'opportunity' => 'Line items cannot be removed while pricing is frozen.',
             ]);

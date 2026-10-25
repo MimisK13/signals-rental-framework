@@ -1472,7 +1472,12 @@ export default function createOpportunityLineItemsEditor(cfg) {
         },
 
         deleteNode(id) {
-            if (this.pricingFrozen) {
+            const row = this.rows.find((candidate) => sameRowId(candidate.id, id));
+            const canRemoveWhilePricingFrozen = row
+                && ((row.item_type === 'group' && ! row.has_children)
+                    || (row.item_type === 'text' && ! String(row.name || '').trim()));
+
+            if (this.pricingFrozen && ! canRemoveWhilePricingFrozen) {
                 this.toastError('Line items cannot be removed while pricing is frozen.');
 
                 return;

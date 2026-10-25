@@ -6,7 +6,6 @@ use App\Enums\AssetAssignmentStatus;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
-use App\Models\OpportunityItemAsset;
 use Closure;
 use Illuminate\Support\Facades\Gate;
 
@@ -97,16 +96,21 @@ class OpportunityActionDescriber
             return ['Only an open order can be reverted to a quotation.', 'invalid_state'];
         }
 
-        $dispatched = OpportunityItemAsset::query()
-            ->whereIn('opportunity_item_id', $opportunity->allItems()->select('opportunity_items.id'))
-            ->where('status', '>=', AssetAssignmentStatus::Dispatched->value)
+        $dispatched = $opportunity->allItems()
+            ->where(function ($query): void {
+                $query
+                    ->where('dispatched_quantity', '>', 0)
+                    ->orWhereExists(function ($subquery): void {
+                        $subquery
+                            ->selectRaw('1')
+                            ->from('opportunity_item_assets')
+                            ->whereColumn('opportunity_item_assets.opportunity_item_id', 'opportunity_items.id')
+                            ->where('status', '>=', AssetAssignmentStatus::Dispatched->value);
+                    });
+            })
             ->exists();
 
-        $bulkDispatched = $opportunity->allItems()
-            ->where('dispatched_quantity', '>', 0)
-            ->exists();
-
-        return $dispatched || $bulkDispatched
+        return $dispatched
             ? ['An order with dispatched assets cannot be reverted to a quotation.', 'dispatched']
             : null;
     }

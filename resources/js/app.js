@@ -11,13 +11,28 @@ import createProductSearch, {
     merge,
     parseQuickAdd,
 } from './opportunity-product-search';
+import alpineSort from '@alpinejs/sort';
 import createOpportunityLineItemsEditor from './opportunity-line-items-editor';
+import createQuotationEditor from './experimental/quotation-editor';
 import createDocumentTemplateEditor from './document-template-editor';
 import registerLivewireConfirm from './livewire-confirm';
 
 registerLivewireConfirm();
 
+function registerAlpineSort() {
+    if (!window.Alpine || window.__signalsAlpineSortRegistered) {
+        return;
+    }
+
+    window.Alpine.plugin(alpineSort);
+    window.__signalsAlpineSortRegistered = true;
+}
+
+document.addEventListener('alpine:init', registerAlpineSort, { once: true });
+registerAlpineSort();
+
 window.signals = window.signals || {};
 window.signals.productSearch = { createProductSearch, buildIndex, merge, parseQuickAdd };
 window.signals.lineItemsEditor = createOpportunityLineItemsEditor;
+window.signals.quotationEditor = createQuotationEditor;
 window.signals.documentTemplateEditor = createDocumentTemplateEditor;

@@ -6,8 +6,10 @@ use App\Models\ProductRate;
 use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Services\RateEngine\RateResolver;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 function resolver(): RateResolver
 {
@@ -40,6 +42,51 @@ it('returns null when no rate matches (caller falls back to default pricing)', f
     $product = Product::factory()->create();
 
     expect(resolver()->resolve($product, RateTransactionType::Rental))->toBeNull();
+});
+
+it('resolves multiple products in one rate read while preserving precedence', function () {
+    $store = Store::factory()->create();
+    $definition = RateDefinition::factory()->create();
+    $globalProduct = Product::factory()->create();
+    $storeProduct = Product::factory()->create();
+    $unpricedProduct = Product::factory()->create();
+
+    $globalRate = ProductRate::factory()->create([
+        'product_id' => $globalProduct->id,
+        'rate_definition_id' => $definition->id,
+        'price' => 1000,
+    ]);
+    ProductRate::factory()->create([
+        'product_id' => $storeProduct->id,
+        'rate_definition_id' => $definition->id,
+        'price' => 1000,
+        'priority' => 10,
+    ]);
+    $storeRate = ProductRate::factory()->create([
+        'product_id' => $storeProduct->id,
+        'rate_definition_id' => $definition->id,
+        'store_id' => $store->id,
+        'price' => 2000,
+        'priority' => 10,
+    ]);
+    $productRateQueries = 0;
+
+    DB::listen(function (QueryExecuted $query) use (&$productRateQueries): void {
+        if (str_contains($query->sql, 'from "product_rates"')) {
+            $productRateQueries++;
+        }
+    });
+
+    $resolved = resolver()->resolveMany(
+        collect([$globalProduct, $storeProduct, $unpricedProduct]),
+        RateTransactionType::Rental,
+        $store->id,
+    );
+
+    expect($resolved[$globalProduct->id]?->id)->toBe($globalRate->id)
+        ->and($resolved[$storeProduct->id]?->id)->toBe($storeRate->id)
+        ->and($resolved[$unpricedProduct->id])->toBeNull()
+        ->and($productRateQueries)->toBe(1);
 });
 
 it('filters by transaction type', function () {

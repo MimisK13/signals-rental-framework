@@ -21,6 +21,28 @@ class RemoveOpportunityItem
 {
     use CommitsVerbsEvents;
 
+    public function canRemoveWhenPricingFrozen(OpportunityItem $item): bool
+    {
+        if ($item->item_type === OpportunityItemType::Text) {
+            return trim($item->name) === '';
+        }
+
+        if ($item->item_type !== OpportunityItemType::Group) {
+            return false;
+        }
+
+        return ! OpportunityItem::query()
+            ->where('opportunity_id', $item->opportunity_id)
+            ->when(
+                $item->version_id !== null,
+                fn ($query) => $query->where('version_id', $item->version_id),
+                fn ($query) => $query->whereNull('version_id'),
+            )
+            ->where('path', 'like', $item->path.'%')
+            ->whereRaw('LENGTH(path) > ?', [strlen((string) $item->path)])
+            ->exists();
+    }
+
     public function __invoke(OpportunityItem $item): OpportunityData
     {
         Gate::authorize('opportunities.edit');

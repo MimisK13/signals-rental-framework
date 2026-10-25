@@ -23,7 +23,7 @@ class SubstitutionResolver extends AbstractShortageResolver
 {
     /**
      * Memoised existence of the `product_substitutions` table for this resolver
-     * instance's lifetime. The resolver is bound as a singleton (see
+     * instance's lifetime. The resolver is request/job scoped (see
      * AppServiceProvider) so the memo survives across the many `canResolve` calls
      * of a single detection pass — one `information_schema` hit, not one per
      * shortage.
@@ -52,7 +52,7 @@ class SubstitutionResolver extends AbstractShortageResolver
     }
 
     /**
-     * Only applicable once the substitutions data source exists.
+     * Only applicable once the substitution data source exists.
      */
     public function canResolve(Shortage $shortage): bool
     {
@@ -60,9 +60,9 @@ class SubstitutionResolver extends AbstractShortageResolver
     }
 
     /**
-     * Whether the `product_substitutions` table exists, memoised process-wide so a
-     * detection pass performs at most one `information_schema` lookup instead of one
-     * per shortage (see the static field docblock).
+     * Whether the `product_substitutions` table exists, memoised for this
+     * request/job-scoped resolver instance so a detection pass performs at most
+     * one `information_schema` lookup instead of one per shortage.
      */
     private function substitutionsTableExists(): bool
     {
@@ -74,8 +74,8 @@ class SubstitutionResolver extends AbstractShortageResolver
      */
     public function getOptions(Shortage $shortage): array
     {
-        // Without the product_substitutions table there are no candidates to
-        // offer. Populated once the substitutions domain is built.
+        // Without the product_substitutions table, there are no candidates to
+        // offer. Populated once the substitution domain is built.
         return [];
     }
 

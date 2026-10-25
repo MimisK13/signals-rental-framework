@@ -2,14 +2,18 @@
 
 namespace App\Services\Shortages\Resolvers;
 
+use App\Contracts\StockContextAwareShortageResolver;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
 use App\Models\Store;
+use App\Services\Availability\DemandReadContext;
+use App\Services\Availability\StockReadContext;
 use App\Services\AvailabilityService;
 use App\Services\Shortages\ShortageEventRecorder;
 use App\ValueObjects\ResolutionOption;
 use App\ValueObjects\ResolutionResult;
 use App\ValueObjects\Shortage;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Warehouse transfer (shortage-resolution-sub-hires.md §4.3).
@@ -20,7 +24,7 @@ use App\ValueObjects\Shortage;
  * built — so this resolver records the transfer INTENT as pending (capturing the
  * source store) and notes the dependency.
  */
-class WarehouseTransferResolver extends AbstractShortageResolver
+class WarehouseTransferResolver extends AbstractShortageResolver implements StockContextAwareShortageResolver
 {
     /**
      * Memoised "more than one store exists" check for this resolver instance's
@@ -28,6 +32,9 @@ class WarehouseTransferResolver extends AbstractShortageResolver
      * `stores` count rather than one per shortage.
      */
     private ?bool $isMultiWarehouse = null;
+
+    /** @var array<int, Collection<int, Store>> */
+    private array $otherStores = [];
 
     public function __construct(
         ShortageEventRecorder $events,
@@ -80,27 +87,56 @@ class WarehouseTransferResolver extends AbstractShortageResolver
      */
     public function getOptions(Shortage $shortage): array
     {
+        return $this->getOptionsUsingStockContext($shortage, null, null);
+    }
+
+    public function getOptionsWithStockContext(
+        Shortage $shortage,
+        StockReadContext $stockContext,
+        ?DemandReadContext $demandContext = null,
+    ): array {
+        return $this->getOptionsUsingStockContext($shortage, $stockContext, $demandContext);
+    }
+
+    /**
+     * @return list<ResolutionOption>
+     */
+    private function getOptionsUsingStockContext(
+        Shortage $shortage,
+        ?StockReadContext $stockContext,
+        ?DemandReadContext $demandContext,
+    ): array {
         if (! $this->canResolve($shortage)) {
             return [];
         }
 
         $options = [];
 
-        $otherStores = Store::query()
-            ->whereKeyNot($shortage->storeId)
-            ->get();
+        $otherStores = $this->otherStores[$shortage->storeId]
+            ??= Store::query()->whereKeyNot($shortage->storeId)->get();
+
+        $requests = [];
+        foreach ($otherStores as $store) {
+            $requests[$store->id] = [
+                'product_id' => $shortage->productId,
+                'store_id' => $store->id,
+                'from' => $shortage->startsAt,
+                'to' => $shortage->endsAt,
+                // No demand of this item exists at the other store, so the
+                // exclude pair simply never matches there.
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => $shortage->opportunityItemId,
+            ];
+        }
+
+        $availability = $this->availability->availableForItems(array_values($requests), $stockContext, $demandContext);
+        $availableByStore = [];
+        foreach (array_keys($requests) as $index => $storeId) {
+            $availableByStore[$storeId] = $availability[$index] ?? 0;
+        }
 
         foreach ($otherStores as $store) {
-            $available = $this->availability->availableForItem(
-                $shortage->productId,
-                $store->id,
-                $shortage->startsAt,
-                $shortage->endsAt,
-                // No demand of this item exists at the OTHER store, so the exclude
-                // pair simply never matches — full availability is reported.
-                'opportunity_item',
-                $shortage->opportunityItemId,
-            );
+            $available = $availableByStore[$store->id];
 
             if ($available <= 0) {
                 continue;

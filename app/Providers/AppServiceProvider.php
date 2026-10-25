@@ -108,6 +108,7 @@ use App\Services\Pricing\QuantityContextResolver;
 use App\Services\RateEngine\Modifiers\FactorModifier;
 use App\Services\RateEngine\Modifiers\MultiplierModifier;
 use App\Services\RateEngine\RateEngineRegistry;
+use App\Services\RateEngine\RateResolver;
 use App\Services\RateEngine\Strategies\FixedStrategy;
 use App\Services\RateEngine\Strategies\HybridStrategy;
 use App\Services\RateEngine\Strategies\PeriodStrategy;
@@ -122,6 +123,7 @@ use App\Services\Shortages\Resolvers\SubHireResolver;
 use App\Services\Shortages\Resolvers\SubstitutionResolver;
 use App\Services\Shortages\Resolvers\WaitlistResolver;
 use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
+use App\Services\Shortages\ShortageDetector;
 use App\Services\Shortages\ShortageResolverDefinition;
 use App\Services\Shortages\ShortageResolverRegistry;
 use App\Services\Shortages\Strategies\EvenSplitCostApportionmentStrategy;
@@ -129,6 +131,7 @@ use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
+use App\Services\Shortages\SubHireSupplierCostQuery;
 use App\Services\Tax\DefaultVatNumberValidator;
 use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\Tax\TaxZoneRuleResolver;
@@ -142,6 +145,7 @@ use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Blade;
@@ -233,7 +237,9 @@ class AppServiceProvider extends ServiceProvider
         // instance, so under Octane it must be reset each request/job rather than
         // persisting a stale timezone for the worker's lifetime.
         $this->app->scoped(RecalculationPipeline::class);
-        $this->app->singleton(AvailabilityService::class);
+        $this->app->scoped(RateResolver::class);
+        $this->app->scoped(ShortageDetector::class);
+        $this->app->scoped(AvailabilityService::class);
 
         // The kit calculator reads component availability back through the
         // AvailabilityService. Resolve the service lazily (closure) so the
@@ -409,10 +415,13 @@ class AppServiceProvider extends ServiceProvider
             return $registry;
         });
 
-        // The substitution resolver memoises its `product_substitutions` schema
-        // check on the instance; bind it as a singleton so one detection pass
-        // (resolved transiently from the registry) shares a single lookup.
-        $this->app->singleton(SubstitutionResolver::class);
+        // Built-in resolvers memoise read-only facts on their instances. Keep
+        // those instances request/job scoped so one detection pass shares the
+        // lookup without retaining state across Octane requests or jobs.
+        $this->app->scoped(QuoteReallocationResolver::class);
+        $this->app->scoped(SubstitutionResolver::class);
+        $this->app->scoped(WarehouseTransferResolver::class);
+        $this->app->scoped(SubHireSupplierCostQuery::class);
 
         // Shortage resolvers — core registers the built-in non-PO resolvers;
         // plugins register their own (and the sub-hire/external-sourcing
@@ -499,6 +508,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Model::preventLazyLoading();
+        // Model::automaticallyEagerLoadRelationships();
+
         $this->configureDefaults();
         $this->configureAuthorization();
         $this->configureRateLimiting();

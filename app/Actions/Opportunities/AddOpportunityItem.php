@@ -145,6 +145,9 @@ class AddOpportunityItem
             $item = $fresh->items->firstWhere('id', $itemId);
 
             if ($item !== null) {
+                // The action already owns the parent Opportunity; keep the probe
+                // from re-querying it through a disabled lazy-loaded relation.
+                $item->setRelation('opportunity', $fresh);
                 app(ItemShortageProbe::class)->probe($item);
             }
         }

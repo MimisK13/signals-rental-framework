@@ -17,6 +17,7 @@ use App\ValueObjects\Shortage;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->app->bind(AvailabilityResolutionProvider::class, fn () => new class implements AvailabilityResolutionProvider
@@ -137,6 +138,48 @@ it('offers transfer options from warehouses with free stock, skipping empty ones
         ->and($options[0]->label)->toContain('Manchester');
 });
 
+it('batches target store availability while preserving store-specific facts', function () {
+    $home = Store::factory()->create(['timezone' => 'UTC']);
+    $remoteStores = Store::factory()->count(3)->create(['timezone' => 'UTC']);
+    $product = Product::factory()->rental()->bulk()->create(['track_availability' => true]);
+
+    foreach ($remoteStores as $remoteStore) {
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $remoteStore->id,
+            'quantity_held' => 5,
+        ]);
+    }
+
+    $shortage = transferShortage($home, $product, shortfall: 2, availableAtHome: 0);
+    $queries = [
+        'stock' => 0,
+        'demand' => 0,
+    ];
+
+    DB::listen(function ($query) use (&$queries): void {
+        $sql = strtolower($query->sql);
+
+        if (str_contains($sql, 'stock_category as category') && str_contains($sql, 'from "stock_levels"')) {
+            $queries['stock']++;
+        }
+
+        if (str_contains($sql, 'from "demands"')
+            && str_contains($sql, 'product_id')
+            && str_contains($sql, 'store_id')
+            && str_contains($sql, 'is_active')) {
+            $queries['demand']++;
+        }
+    });
+
+    $options = $this->resolver->getOptions($shortage);
+
+    expect($options)->toHaveCount(3)
+        ->and(collect($options)->pluck('metadata.source_store_id')->all())->toBe($remoteStores->pluck('id')->all())
+        ->and($queries['stock'])->toBe(3)
+        ->and($queries['demand'])->toBe(3);
+});
+
 it('marks a partial transfer when the remote store cannot cover the full shortfall', function () {
     $home = Store::factory()->create(['timezone' => 'UTC']);
     $remote = Store::factory()->create(['name' => 'Leeds', 'timezone' => 'UTC']);
@@ -207,4 +250,23 @@ it('memoises the multi-warehouse check within one resolver instance', function (
 
     // Still memoised as multi-warehouse from the first check on this instance.
     expect($this->resolver->canResolve($shortage))->toBeTrue();
+});
+
+it('memoises the other-store list per excluded store', function () {
+    $home = Store::factory()->create();
+    Store::factory()->create();
+    $product = Product::factory()->rental()->bulk()->create(['track_availability' => true]);
+    $shortage = transferShortage($home, $product);
+    $queries = 0;
+
+    DB::listen(function ($query) use (&$queries): void {
+        if (str_contains(strtolower($query->sql), 'from "stores" where "stores"."id" !=')) {
+            $queries++;
+        }
+    });
+
+    $this->resolver->getOptions($shortage);
+    $this->resolver->getOptions($shortage);
+
+    expect($queries)->toBe(1);
 });

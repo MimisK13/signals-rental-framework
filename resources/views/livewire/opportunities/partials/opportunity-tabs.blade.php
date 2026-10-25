@@ -13,12 +13,13 @@
         || ($opportunity->state === \App\Enums\OpportunityState::Quotation
             && $opportunity->statusEnum() === \App\Enums\OpportunityStatus::QuotationReserved);
 
-    // The Shortages tab is additionally gated on `shortages.view`; the live shortage
-    // count (computed, never stored) drives the badge so the tab flags outstanding
-    // shortfall at a glance. Detection only ever runs for users who can see it AND
-    // only when the allocation tabs are visible at all.
-    $shortageTabCount = 0;
-    if ($allocationTabsVisible && \Illuminate\Support\Facades\Gate::allows('shortages.view')) {
+    // Overview receives the derived projection from its nested line-items component.
+    // Other tabs retain their existing local count because they do not mount that
+    // child component and therefore have no projection source.
+    $shortageTabCount = $activeTab === 'overview'
+        ? (isset($shortageCount) ? $shortageCount : null)
+        : 0;
+    if ($activeTab !== 'overview' && $allocationTabsVisible && \Illuminate\Support\Facades\Gate::allows('shortages.view')) {
         $shortageTabCount = app(\App\Services\Shortages\ShortageDetector::class)
             ->forOpportunity($opportunity)
             ->unresolved()
@@ -49,7 +50,12 @@
             ? ['name' => 'activities', 'label' => 'Activities', 'route' => route('opportunities.activities', $opportunity), 'count' => $opportunity->activities_count ?? 0]
             : null,
         $allocationTabsVisible && \Illuminate\Support\Facades\Gate::allows('shortages.view')
-            ? ['name' => 'shortages', 'label' => 'Shortages', 'route' => route('opportunities.shortages', $opportunity), 'count' => $shortageTabCount]
+            ? array_filter([
+                'name' => 'shortages',
+                'label' => 'Shortages',
+                'route' => route('opportunities.shortages', $opportunity),
+                'count' => $shortageTabCount,
+            ], static fn (mixed $value, string|int $key): bool => $key !== 'count' || $value !== null, ARRAY_FILTER_USE_BOTH)
             : null,
         ['name' => 'costs', 'label' => 'Costs', 'route' => route('opportunities.costs', $opportunity), 'count' => $opportunity->costs_count ?? 0],
         \Illuminate\Support\Facades\Gate::allows('invoices.view')

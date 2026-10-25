@@ -2,9 +2,12 @@
 
 namespace App\Services\Shortages\Resolvers;
 
+use App\Contracts\StockContextAwareShortageResolver;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
 use App\Models\Demand;
+use App\Services\Availability\DemandReadContext;
+use App\Services\Availability\StockReadContext;
 use App\Services\AvailabilityService;
 use App\Services\Shortages\ShortageEventRecorder;
 use App\ValueObjects\ResolutionOption;
@@ -21,7 +24,7 @@ use App\ValueObjects\Shortage;
  * through the normal edit flow. Self-contained (it only reads the availability
  * engine) so it records a Confirmed resolution capturing the proposed window.
  */
-class DateShiftResolver extends AbstractShortageResolver
+class DateShiftResolver extends AbstractShortageResolver implements StockContextAwareShortageResolver
 {
     /** Days to search either side of the requested window. */
     private const int SEARCH_DAYS = 3;
@@ -67,6 +70,25 @@ class DateShiftResolver extends AbstractShortageResolver
      */
     public function getOptions(Shortage $shortage): array
     {
+        return $this->getOptionsUsingStockContext($shortage, null, null);
+    }
+
+    public function getOptionsWithStockContext(
+        Shortage $shortage,
+        StockReadContext $stockContext,
+        ?DemandReadContext $demandContext = null,
+    ): array {
+        return $this->getOptionsUsingStockContext($shortage, $stockContext, $demandContext);
+    }
+
+    /**
+     * @return list<ResolutionOption>
+     */
+    private function getOptionsUsingStockContext(
+        Shortage $shortage,
+        ?StockReadContext $stockContext,
+        ?DemandReadContext $demandContext,
+    ): array {
         if (! $this->canResolve($shortage)) {
             return [];
         }
@@ -75,43 +97,69 @@ class DateShiftResolver extends AbstractShortageResolver
         // window never ends before it starts (which would build an invalid tstzrange).
         $durationSeconds = abs($shortage->startsAt->diffInSeconds($shortage->endsAt));
         $options = [];
+        $candidates = [];
 
         foreach ($this->candidateOffsets() as $offsetDays) {
             $start = $shortage->startsAt->copy()->addDays($offsetDays);
             $end = $start->copy()->addSeconds((int) $durationSeconds);
 
-            $available = $this->availability->availableForItem(
-                $shortage->productId,
-                $shortage->storeId,
-                $start,
-                $end,
-                'opportunity_item',
-                $shortage->opportunityItemId,
-            );
+            $candidateKey = implode('|', [
+                $offsetDays,
+                $start->getTimestamp(),
+                $end->getTimestamp(),
+            ]);
+            $candidates[$candidateKey] = [
+                'offset_days' => $offsetDays,
+                'start' => $start,
+                'end' => $end,
+            ];
+        }
+
+        // Evaluate shifted windows together so stock is shared by product/store
+        // while demand remains specific to each booking window.
+        $availability = $this->availability->availableForItems(array_values(array_map(
+            fn (array $candidate): array => [
+                'product_id' => $shortage->productId,
+                'store_id' => $shortage->storeId,
+                'from' => $candidate['start'],
+                'to' => $candidate['end'],
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => $shortage->opportunityItemId,
+            ],
+            $candidates,
+        )), $stockContext, $demandContext);
+
+        $availableByCandidate = [];
+        foreach (array_keys($candidates) as $index => $candidateKey) {
+            $availableByCandidate[$candidateKey] = $availability[$index] ?? 0;
+        }
+
+        foreach ($candidates as $candidateKey => $candidate) {
+            $available = $availableByCandidate[$candidateKey];
 
             if ($available < $shortage->requestedQuantity) {
                 continue;
             }
 
-            $direction = $offsetDays > 0 ? 'later' : 'earlier';
+            $direction = $candidate['offset_days'] > 0 ? 'later' : 'earlier';
 
             $options[] = new ResolutionOption(
                 resolverKey: $this->key(),
                 type: ShortageResolutionType::DateShift,
-                label: sprintf('Shift %d day(s) %s', abs($offsetDays), $direction),
+                label: sprintf('Shift %d day(s) %s', abs($candidate['offset_days']), $direction),
                 description: sprintf(
                     'Full quantity (%d) is available %s, from %s.',
                     $shortage->requestedQuantity,
-                    $start->toDateString(),
-                    $start->toIso8601String(),
+                    $candidate['start']->toDateString(),
+                    $candidate['start']->toIso8601String(),
                 ),
                 quantityResolved: $shortage->requestedQuantity,
                 isPartial: false,
                 autoExecutable: false,
                 metadata: [
-                    'shifted_starts_at' => $start->utc()->toIso8601String(),
-                    'shifted_ends_at' => $end->utc()->toIso8601String(),
-                    'offset_days' => $offsetDays,
+                    'shifted_starts_at' => $candidate['start']->utc()->toIso8601String(),
+                    'shifted_ends_at' => $candidate['end']->utc()->toIso8601String(),
+                    'offset_days' => $candidate['offset_days'],
                 ],
             );
         }

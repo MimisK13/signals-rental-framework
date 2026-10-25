@@ -10,8 +10,11 @@ use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\StockLevel;
 use App\Models\Store;
+use App\Services\Availability\DemandReadContext;
+use App\Services\Availability\StockReadContext;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     // Pin the resolution to Daily so slot boundaries are deterministic.
@@ -47,6 +50,24 @@ function makeDemand(int $productId, int $storeId, int $quantity, string $start, 
 }
 
 describe('getAvailability (point, on-the-fly)', function () {
+    it('reuses an identical product lookup within one service instance', function () {
+        $product = Product::factory()->bulk()->create();
+        $queries = 0;
+
+        DB::listen(function ($query) use (&$queries): void {
+            if (str_contains(strtolower($query->sql), 'from "products"')) {
+                $queries++;
+            }
+        });
+
+        $date = Carbon::parse('2026-04-11T08:00:00Z');
+
+        $this->service->getAvailability($product->id, $this->store->id, $date);
+        $this->service->getAvailability($product->id, $this->store->id, $date);
+
+        expect($queries)->toBe(1);
+    });
+
     it('subtracts active demand from bulk stock', function () {
         $product = Product::factory()->bulk()->create();
         StockLevel::factory()->bulk()->create([
@@ -54,7 +75,6 @@ describe('getAvailability (point, on-the-fly)', function () {
             'store_id' => $this->store->id,
             'quantity_held' => 10,
         ]);
-
         makeDemand($product->id, $this->store->id, 3, '2026-04-10T09:00:00Z', '2026-04-12T17:00:00Z');
 
         $result = $this->service->getAvailability($product->id, $this->store->id, Carbon::parse('2026-04-11T08:00:00Z'));
@@ -233,6 +253,319 @@ describe('availableForItem reversed-window guard (bug #4)', function () {
         expect(fn () => $this->service->availableForItem(
             $this->product->id, $this->store->id, $to, $from, 'opportunity_item', 999999,
         ))->not->toThrow(Throwable::class);
+    });
+});
+
+describe('availableForItems stock/window orchestration', function () {
+    it('loads stock once per product/store while keeping demand reads window-specific', function () {
+        $secondStore = Store::factory()->create(['timezone' => 'UTC']);
+        $firstProduct = Product::factory()->bulk()->create();
+        $secondProduct = Product::factory()->bulk()->create();
+
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $firstProduct->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $firstProduct->id,
+            'store_id' => $secondStore->id,
+            'quantity_held' => 20,
+        ]);
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $secondProduct->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 30,
+        ]);
+
+        $queries = [
+            'stock' => 0,
+            'demand' => 0,
+        ];
+
+        DB::listen(function ($query) use (&$queries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_contains($sql, 'stock_category as category') && str_contains($sql, 'from "stock_levels"')) {
+                $queries['stock']++;
+            }
+
+            if (str_contains($sql, 'from "demands"')
+                && str_contains($sql, 'product_id')
+                && str_contains($sql, 'store_id')
+                && str_contains($sql, 'is_active')) {
+                $queries['demand']++;
+            }
+        });
+
+        $windowAStart = Carbon::parse('2026-06-01T09:00:00Z');
+        $windowAEnd = Carbon::parse('2026-06-03T17:00:00Z');
+        $windowBStart = Carbon::parse('2026-06-08T09:00:00Z');
+        $windowBEnd = Carbon::parse('2026-06-10T17:00:00Z');
+
+        $results = $this->service->availableForItems([
+            [
+                'product_id' => $firstProduct->id,
+                'store_id' => $this->store->id,
+                'from' => $windowAStart,
+                'to' => $windowAEnd,
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => 101,
+            ],
+            [
+                'product_id' => $firstProduct->id,
+                'store_id' => $this->store->id,
+                'from' => $windowBStart,
+                'to' => $windowBEnd,
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => 102,
+            ],
+            [
+                'product_id' => $firstProduct->id,
+                'store_id' => $secondStore->id,
+                'from' => $windowAStart,
+                'to' => $windowAEnd,
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => 103,
+            ],
+            [
+                'product_id' => $secondProduct->id,
+                'store_id' => $this->store->id,
+                'from' => $windowAStart,
+                'to' => $windowAEnd,
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => 104,
+            ],
+        ]);
+
+        expect($results)->toBe([10, 10, 20, 30])
+            ->and($queries['stock'])->toBe(3)
+            ->and($queries['demand'])->toBe(4);
+    });
+
+    it('preserves per-item self-demand exclusion for shared product/store/windows', function () {
+        $product = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+
+        $from = Carbon::parse('2026-06-15T09:00:00Z');
+        $to = Carbon::parse('2026-06-17T17:00:00Z');
+
+        Demand::factory()->window($from, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 4,
+            'source_type' => 'opportunity_item',
+            'source_id' => 201,
+        ]);
+        Demand::factory()->window($from, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 3,
+            'source_type' => 'opportunity_item',
+            'source_id' => 202,
+        ]);
+
+        $results = $this->service->availableForItems([
+            [
+                'product_id' => $product->id,
+                'store_id' => $this->store->id,
+                'from' => $from,
+                'to' => $to,
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => 201,
+            ],
+            [
+                'product_id' => $product->id,
+                'store_id' => $this->store->id,
+                'from' => $from,
+                'to' => $to,
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => 202,
+            ],
+        ]);
+
+        expect($results)->toBe([7, 6]);
+    });
+
+    it('shares only raw stock across separate window evaluations in one explicit context', function () {
+        $product = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+        $secondStore = Store::factory()->create(['timezone' => 'UTC']);
+        $secondProduct = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $secondProduct->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 8,
+        ]);
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $secondStore->id,
+            'quantity_held' => 7,
+        ]);
+
+        $queries = ['stock' => 0, 'demand' => 0];
+        DB::listen(function ($query) use (&$queries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_contains($sql, 'stock_category as category') && str_contains($sql, 'from "stock_levels"')) {
+                $queries['stock']++;
+            }
+
+            if (str_contains($sql, 'from "demands"') && str_contains($sql, 'is_active')) {
+                $queries['demand']++;
+            }
+        });
+
+        $context = new StockReadContext;
+        $storeId = $this->store->id;
+        $request = static function (Carbon $from, int $excludeSourceId) use ($product, $storeId): array {
+            return [
+                'product_id' => $product->id,
+                'store_id' => $storeId,
+                'from' => $from,
+                'to' => $from->copy()->addDays(2),
+                'exclude_source_type' => 'opportunity_item',
+                'exclude_source_id' => $excludeSourceId,
+            ];
+        };
+
+        $first = $this->service->availableForItems([
+            $request(Carbon::parse('2026-07-01T09:00:00Z'), 301),
+        ], $context);
+        $second = $this->service->availableForItems([
+            $request(Carbon::parse('2026-07-08T09:00:00Z'), 302),
+        ], $context);
+        $otherKeys = $this->service->availableForItems([
+            [
+                ...$request(Carbon::parse('2026-07-15T09:00:00Z'), 304),
+                'product_id' => $secondProduct->id,
+            ],
+            [
+                ...$request(Carbon::parse('2026-07-15T09:00:00Z'), 305),
+                'store_id' => $secondStore->id,
+            ],
+        ], $context);
+
+        expect($first)->toBe([10])
+            ->and($second)->toBe([10])
+            ->and($otherKeys)->toBe([8, 7])
+            ->and($queries)->toBe(['stock' => 3, 'demand' => 4]);
+    });
+
+    it('does not share stock facts between separate contexts or after a stock mutation', function () {
+        $product = Product::factory()->bulk()->create();
+        $stock = StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+        $request = [
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'from' => Carbon::parse('2026-07-01T09:00:00Z'),
+            'to' => Carbon::parse('2026-07-03T17:00:00Z'),
+            'exclude_source_type' => 'opportunity_item',
+            'exclude_source_id' => 303,
+        ];
+
+        $first = $this->service->availableForItems([$request], new StockReadContext);
+        $stock->update(['quantity_held' => 6]);
+        $second = $this->service->availableForItems([$request], new StockReadContext);
+
+        expect($first)->toBe([10])
+            ->and($second)->toBe([6]);
+    });
+
+    it('shares only the raw demand set while applying self-demand exclusion independently', function () {
+        $product = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+        $from = Carbon::parse('2026-08-01T09:00:00Z');
+        $to = Carbon::parse('2026-08-03T17:00:00Z');
+        Demand::factory()->window($from, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 2,
+            'source_type' => 'opportunity_item',
+            'source_id' => 401,
+        ]);
+        Demand::factory()->window($from, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 5,
+            'source_type' => 'opportunity_item',
+            'source_id' => 402,
+        ]);
+
+        $queries = 0;
+        DB::listen(function ($query) use (&$queries): void {
+            if (str_contains(strtolower($query->sql), 'from "demands"')
+                && str_contains(strtolower($query->sql), 'is_active')) {
+                $queries++;
+            }
+        });
+
+        $demandContext = new DemandReadContext;
+        $stockContext = new StockReadContext;
+        $request = fn (int $excludeSourceId): array => [
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'from' => $from,
+            'to' => $to,
+            'exclude_source_type' => 'opportunity_item',
+            'exclude_source_id' => $excludeSourceId,
+        ];
+
+        $first = $this->service->availableForItems([$request(401)], $stockContext, $demandContext);
+        $second = $this->service->availableForItems([$request(402)], $stockContext, $demandContext);
+
+        expect($first)->toBe([5])
+            ->and($second)->toBe([8])
+            ->and($queries)->toBe(1);
+    });
+
+    it('keeps demand contexts isolated and fresh after a demand mutation', function () {
+        $product = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+        $from = Carbon::parse('2026-08-08T09:00:00Z');
+        $to = Carbon::parse('2026-08-10T17:00:00Z');
+        $demand = Demand::factory()->window($from, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 2,
+            'source_type' => 'booking',
+            'source_id' => 403,
+        ]);
+        $request = [
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'from' => $from,
+            'to' => $to,
+            'exclude_source_type' => 'opportunity_item',
+            'exclude_source_id' => 404,
+        ];
+
+        $first = $this->service->availableForItems([$request], new StockReadContext, new DemandReadContext);
+        $demand->update(['quantity' => 6]);
+        $second = $this->service->availableForItems([$request], new StockReadContext, new DemandReadContext);
+
+        expect($first)->toBe([8])
+            ->and($second)->toBe([4]);
     });
 });
 

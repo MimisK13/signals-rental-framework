@@ -47,6 +47,9 @@ use Thunk\Verbs\Exceptions\EventNotValid;
  */
 trait HasOpportunityActions
 {
+    /** @var array<string, mixed>|null */
+    private ?array $opportunityActionDataCache = null;
+
     /** @var 'convert_to_quotation'|'convert_to_order'|null */
     public ?string $pendingConvertKey = null;
 
@@ -369,6 +372,7 @@ trait HasOpportunityActions
         try {
             (new RestoreOpportunity)($this->opportunity);
             $this->opportunity->refresh();
+            $this->opportunityActionDataCache = null;
         } catch (AuthorizationException) {
             session()->flash('error', 'You do not have permission to restore this opportunity.');
         } catch (ValidationException $e) {
@@ -389,6 +393,7 @@ trait HasOpportunityActions
         try {
             $action();
             $this->opportunity->refresh();
+            $this->opportunityActionDataCache = null;
             $this->dispatchOpportunityLifecycleChanged();
         } catch (AuthorizationException) {
             session()->flash('error', 'You do not have permission to perform this action.');
@@ -455,12 +460,16 @@ trait HasOpportunityActions
      */
     protected function opportunityActionData(): array
     {
+        if ($this->opportunityActionDataCache !== null) {
+            return $this->opportunityActionDataCache;
+        }
+
         // An archived (soft-deleted) opportunity is READ-ONLY: the only mutating
         // affordance is Restore. Suppress the transition actions + status picker so
         // the UI matches the action-layer guards.
         $isArchived = $this->opportunity->trashed();
 
-        return [
+        return $this->opportunityActionDataCache = [
             'isArchived' => $isArchived,
             'canRestore' => $isArchived && Gate::allows('opportunities.delete'),
             'availableActions' => $isArchived ? [] : $this->buildAvailableActions(),

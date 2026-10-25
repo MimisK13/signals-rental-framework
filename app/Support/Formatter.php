@@ -114,7 +114,7 @@ class Formatter
     /**
      * Get the symbol for a currency code, cached per request.
      */
-    private function currencySymbol(string $code): string
+    public function currencySymbol(string $code): string
     {
         return $this->loadCurrency($code)['symbol'];
     }
