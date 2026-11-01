@@ -31,7 +31,7 @@ use Thunk\Verbs\Facades\Verbs;
  * event. The computation itself is unchanged from M2; what changed in M3-4 is
  * the *trigger*: the {@see DemandObserver} and {@see StockLevelObserver} now
  * enqueue a debounced {@see RecalculateAvailabilityJob} that invokes
- * this pipeline on a Horizon-managed queue, rather than calling it inline.
+ * this pipeline on a dedicated queue, rather than calling it inline.
  *
  * The pipeline accepts a bounded `(product, store, from, to)` blast radius so a
  * single change never forces a full rebuild, and remains directly callable

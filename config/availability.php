@@ -47,7 +47,7 @@ return [
     | In M3-4 the demand/stock observers no longer recompute snapshots inline.
     | They dispatch a RecalculateAvailabilityJob carrying the affected
     | product/store; the job runs the RecalculationPipeline over the rolling
-    | horizon on a Horizon-managed queue. Point queries
+    | horizon on a dedicated queue. Point queries
     | (AvailabilityService::getAvailability) stay exact — they read `demands`
     | live — so only the snapshot/range/calendar read model becomes
     | eventually-consistent.

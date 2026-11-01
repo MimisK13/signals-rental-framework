@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  *
  * The trigger is **asynchronous/debounced** in M3-4: the job — not the observer —
  * runs the {@see RecalculationPipeline} over the
- * rolling horizon, on a Horizon-managed queue, coalescing a burst of stock
+ * rolling horizon, on a dedicated queue, coalescing a burst of stock
  * writes for the same product/store into a single recompute. A
  * `quantity_held`-only change still enqueues, because the totals shift.
  *

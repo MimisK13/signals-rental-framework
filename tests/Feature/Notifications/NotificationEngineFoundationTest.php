@@ -154,11 +154,3 @@ describe('notification registry sync', function () {
             ->and($setting->is_enabled)->toBeFalse();
     });
 });
-
-describe('horizon notification queues', function () {
-    it('registers notifications and communications queues for horizon workers', function () {
-        $defaults = config('horizon.defaults.supervisor-notifications.queue');
-
-        expect($defaults)->toBe(['notifications', 'communications']);
-    });
-});

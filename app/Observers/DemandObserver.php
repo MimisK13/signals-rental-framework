@@ -19,7 +19,7 @@ use Thunk\Verbs\Facades\Verbs;
  * `demand_released`) and then enqueues a {@see RecalculateAvailabilityJob} for
  * the affected product/store. The job — not the observer — runs the
  * {@see RecalculationPipeline} over the rolling
- * horizon, on a Horizon-managed queue, coalescing a burst of changes for the
+ * horizon, on a dedicated queue, coalescing a burst of changes for the
  * same product/store into a single recompute.
  *
  * Because the job recomputes the *whole* rolling horizon for the product/store

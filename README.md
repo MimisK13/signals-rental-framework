@@ -25,7 +25,7 @@ AGPL-3.0 licensed. Self-hostable. Plugin-extensible. Commercial licences availab
 | Backend | PHP 8.4, Laravel 12 |
 | Frontend | Livewire 4, Tailwind CSS 4 |
 | Database | PostgreSQL 15+ |
-| Queue | Redis + Horizon |
+| Queue | Laravel queues (Redis or database) |
 | Websockets | Laravel Reverb |
 | Testing | Pest 4 |
 
