@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Activities\Models\Activity;
 use App\Enums\AllowedStockType;
 use App\Enums\StockCategory;
-use App\Models\Activity;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\StockLevel;

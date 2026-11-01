@@ -1,6 +1,6 @@
 <?php
 
-use App\Views\ActivityColumnRegistry;
+use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Views\ColumnRegistry;
 use App\Views\ContainerColumnRegistry;
 use App\Views\MemberColumnRegistry;

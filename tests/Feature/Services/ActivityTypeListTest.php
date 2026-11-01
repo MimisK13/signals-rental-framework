@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\ActivityType;
+use App\Domain\Activities\Enums\ActivityType;
+use App\Domain\Activities\Services\ActivityTypeList;
 use App\Models\ListName;
 use App\Models\ListValue;
-use App\Services\Activities\ActivityTypeList;
 use Database\Seeders\ListOfValuesSeeder;
 
 it('resolves the list id and active values for the Activity Type list', function () {

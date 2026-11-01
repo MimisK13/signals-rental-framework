@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ActivityPriority;
+use App\Domain\Activities\Enums\ActivityPriority;
 
 it('has the correct priority values', function () {
     expect(ActivityPriority::Low->value)->toBe(0)

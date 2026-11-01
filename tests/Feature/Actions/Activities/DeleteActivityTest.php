@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Activities\DeleteActivity;
+use App\Domain\Activities\Actions\DeleteActivity;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Models\ActivityParticipant;
 use App\Events\AuditableEvent;
-use App\Models\Activity;
-use App\Models\ActivityParticipant;
 use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -40,7 +40,7 @@ it('records an action_logs row when an activity is deleted', function () {
 
     (new DeleteActivity)($activity);
 
-    assertActionLogged('activity.deleted', Activity::class, $activity->id, $user->id);
+    assertActionLogged('activity.deleted', (new Activity)->getMorphClass(), $activity->id, $user->id);
 });
 
 it('cascades deletion to participants', function () {

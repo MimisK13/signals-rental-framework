@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Domain\Activities\Models\Activity;
 use App\Enums\MembershipType;
 use App\Enums\OpportunityState;
 use App\Enums\ProductType;
-use App\Models\Activity;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;

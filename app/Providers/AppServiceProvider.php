@@ -20,7 +20,6 @@ use App\Models\Project;
 use App\Models\User;
 use App\Policies\NumberingPolicy;
 use App\Policies\ProjectPolicy;
-use App\Services\Activities\ActivityTypeList;
 use App\Services\Api\AbilityRegistry;
 use App\Services\Api\ApiEndpointCatalogue;
 use App\Services\Api\CoreAbilityDefinitions;
@@ -214,7 +213,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TaxResolver::class, ZoneAwareTaxResolver::class);
         $this->app->singleton(VatNumberValidator::class, DefaultVatNumberValidator::class);
         $this->app->singleton(ColumnRegistryResolver::class);
-        $this->app->singleton(ActivityTypeList::class);
 
         // Request-scoped suppression flag for batch auto-promotion (scoped so it is
         // Octane-safe — reset between requests).

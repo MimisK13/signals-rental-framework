@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Activities\Models\Activity;
 use App\Enums\MembershipType;
 use App\Enums\TaxBuyerType;
 use App\Models\Traits\FormatsMoney;

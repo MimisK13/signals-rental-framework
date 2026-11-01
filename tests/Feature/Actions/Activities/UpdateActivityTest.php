@@ -1,11 +1,11 @@
 <?php
 
-use App\Actions\Activities\UpdateActivity;
-use App\Data\Activities\UpdateActivityData;
-use App\Enums\ActivityType;
+use App\Domain\Activities\Actions\UpdateActivity;
+use App\Domain\Activities\Data\UpdateActivityData;
+use App\Domain\Activities\Enums\ActivityType;
+use App\Domain\Activities\Models\Activity;
 use App\Enums\CustomFieldType;
 use App\Events\AuditableEvent;
-use App\Models\Activity;
 use App\Models\CustomField;
 use App\Models\CustomFieldValue;
 use App\Models\ListName;
@@ -61,7 +61,7 @@ it('records an action_logs row when an activity is updated', function () {
 
     (new UpdateActivity)($activity, UpdateActivityData::from(['subject' => 'Audited Update']));
 
-    assertActionLogged('activity.updated', Activity::class, $activity->id, $user->id);
+    assertActionLogged('activity.updated', (new Activity)->getMorphClass(), $activity->id, $user->id);
 });
 
 it('changes the type to a different valid list value', function () {
@@ -185,7 +185,7 @@ it('syncs custom fields when provided', function () {
 
     $cfv = CustomFieldValue::query()
         ->where('custom_field_id', $customField->id)
-        ->where('entity_type', Activity::class)
+        ->where('entity_type', $activity->getMorphClass())
         ->where('entity_id', $activity->id)
         ->first();
 

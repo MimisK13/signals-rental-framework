@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Domain\Activities\Models\Activity;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRequest;
-use App\Models\Activity;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;

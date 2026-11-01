@@ -1,9 +1,11 @@
 <?php
 
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Show;
 use App\Models\ActionLog;
-use App\Models\Activity;
 use App\Models\Member;
 use App\Models\User;
+use Livewire\Livewire;
 use Livewire\Volt\Volt;
 
 beforeEach(function () {
@@ -87,7 +89,7 @@ it('uses the activity-specific timeline colour override for completed actions', 
         'auditable_id' => $activity->id,
     ]);
 
-    Volt::test('activities.show', ['activity' => $activity])
+    Livewire::test(Show::class, ['activity' => $activity])
         ->assertSeeHtml('s-timeline-dot-green')
         ->assertSeeHtml('s-timeline-dot-red')
         ->assertSee('Activity Completed')

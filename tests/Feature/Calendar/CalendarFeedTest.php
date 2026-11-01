@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
 use App\Models\User;
 use Illuminate\Support\Facades\URL;
 

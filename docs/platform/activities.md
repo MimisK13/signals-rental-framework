@@ -7,6 +7,23 @@ description: Track tasks, calls, meetings, emails, and follow-ups against member
 
 Activities represent CRM engagement items in Signals. Each activity has a type, status, priority, and can be linked to a member or opportunity via the "regarding" association. Activities help teams track follow-ups, schedule calls, log meetings, and manage tasks.
 
+## Domain organization
+
+Activities lives under `app/Domain/Activities`, including its models, actions,
+DTOs, enums, policy, factories, type-list resolver and calendar services.
+`ActivitiesServiceProvider` registers its class-based Livewire pages, contextual
+activity panels, API controllers and calendar feeds. Their existing URLs,
+permissions, API abilities and webhook names remain unchanged.
+
+Presentation code and Blade templates are separate under `Presentation/Livewire`
+and `Presentation/Views`, with the `activities::` view namespace. The calendar and
+Member/Product/StockLevel/Opportunity activity panels use the same domain actions.
+
+Historical migrations remain in `database/migrations`. Legacy model/enum aliases
+and preserved polymorphic type keys keep existing audit, attachment, custom-field
+and queued notification records readable without a data backfill. The activity
+type-list cache is scoped to one application request/lifecycle.
+
 **Activity Type** is user-configurable via **Settings → List Names** (`ActivityType` list). Admins can add, rename, reorder, or deactivate types. The seeded defaults are:
 
 | Type | Description |

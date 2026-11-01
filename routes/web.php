@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\Web\CommunicationUnsubscribeController;
 use App\Http\Controllers\Web\DocsController;
 use App\Http\Controllers\Web\InboundWebhookController;
@@ -105,7 +104,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('members/{member}/invoices', 'members.invoices')->name('members.invoices');
     Volt::route('members/{member}/information', 'members.information')->name('members.information');
     Volt::route('members/{member}/member-contacts', 'members.member-contacts')->name('members.contacts');
-    Volt::route('members/{member}/activities', 'members.activities')->name('members.activities');
     Volt::route('members/{member}/files', 'members.files')->name('members.files');
     Volt::route('members/{member}/communications', 'members.communications')->name('members.communications');
 
@@ -127,7 +125,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('products/{product}/supplier-costs', 'products.supplier-costs')->name('products.supplier-costs');
     Volt::route('products/{product}/container-config', 'products.container-config')->name('products.container-config');
     Volt::route('products/{product}/custom-fields', 'products.custom-fields')->name('products.custom-fields');
-    Volt::route('products/{product}/activities', 'products.activities')->name('products.activities');
     Volt::route('products/{product}/files', 'products.files')->name('products.files');
 
     // Product Groups
@@ -141,7 +138,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('stock-levels/create', 'stock-levels.form')->name('stock-levels.create');
     Volt::route('stock-levels/{stockLevel}', 'stock-levels.show')->name('stock-levels.show');
     Volt::route('stock-levels/{stockLevel}/edit', 'stock-levels.form')->name('stock-levels.edit');
-    Volt::route('stock-levels/{stockLevel}/activities', 'stock-levels.activities')->name('stock-levels.activities');
 
     // Stocktakes record physical observations without mutating inventory.
     Volt::route('stocktakes', 'stocktakes.index')->name('stocktakes.index');
@@ -232,7 +228,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('opportunities/{opportunity}/participants', 'opportunities.participants')->name('opportunities.participants')->withTrashed();
     Volt::route('opportunities/{opportunity}/shortages', 'opportunities.shortages')->name('opportunities.shortages')->withTrashed();
     Volt::route('opportunities/{opportunity}/versions', 'opportunities.versions')->name('opportunities.versions')->withTrashed();
-    Volt::route('opportunities/{opportunity}/activities', 'opportunities.activities')->name('opportunities.activities')->withTrashed();
     Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
     Volt::route('opportunities/{opportunity}/files', 'opportunities.files')->name('opportunities.files')->withTrashed();
     Volt::route('opportunities/{opportunity}/communications', 'opportunities.communications')->name('opportunities.communications')->withTrashed();
@@ -265,15 +260,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // gates on `opportunities.access` (no dedicated planner permission exists yet —
     // it reuses the opportunities area gate, mirroring the Job Planning nav).
     Route::get('planner', PlannerIndex::class)->name('planner');
-
-    // Activities
-    Volt::route('activities', 'activities.index')->name('activities.index');
-    Volt::route('activities/create', 'activities.form')->name('activities.create');
-    Volt::route('activities/{activity}', 'activities.show')->name('activities.show');
-    Volt::route('activities/{activity}/edit', 'activities.form')->name('activities.edit');
-
-    // Calendar
-    Volt::route('calendar', 'calendar.index')->name('calendar.index');
 
     // Calendar package sandbox
     Route::view('calendar/sandbox', 'calendar.sandbox')->name('calendar.sandbox');
@@ -319,21 +305,6 @@ Route::middleware(['signals.setup-complete', 'signed', 'throttle:'.config('commu
         ->name('communications.unsubscribe.show');
     Route::post('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'confirm'])
         ->name('communications.unsubscribe.confirm');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Calendar iCal Feeds (signed URL, no auth required)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['signals.setup-complete'])->group(function () {
-    Route::get('calendar/feed.ics', [CalendarFeedController::class, 'global'])
-        ->name('calendar.feed.global')
-        ->middleware('signed');
-    Route::get('calendar/feed/{user}.ics', [CalendarFeedController::class, 'user'])
-        ->name('calendar.feed.user')
-        ->middleware('signed');
 });
 
 /*

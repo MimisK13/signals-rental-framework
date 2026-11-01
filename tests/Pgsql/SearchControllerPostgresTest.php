@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;

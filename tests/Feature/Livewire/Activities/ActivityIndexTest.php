@@ -1,13 +1,14 @@
 <?php
 
-use App\Enums\ActivityStatus;
-use App\Models\Activity;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Index;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -49,7 +50,7 @@ it('renders the regarding column with a friendly type label, not the class strin
     $product = Product::factory()->create(['name' => 'Par Can 64']);
     $activity = Activity::factory()->forProduct($product)->create()->load('regarding');
 
-    $html = view('livewire.activities.partials.column-regarding', ['item' => $activity])->render();
+    $html = view('activities::partials.column-regarding', ['item' => $activity])->render();
 
     expect($html)->toContain('Par Can 64')
         ->and($html)->toContain('Product')
@@ -60,7 +61,7 @@ it('renders a stock-level regarding column as "Stock Level"', function () {
     $stockLevel = StockLevel::factory()->create(['item_name' => 'Crate 12U']);
     $activity = Activity::factory()->forStockLevel($stockLevel)->create()->load('regarding');
 
-    $html = view('livewire.activities.partials.column-regarding', ['item' => $activity])->render();
+    $html = view('activities::partials.column-regarding', ['item' => $activity])->render();
 
     expect($html)->toContain('Stock Level')
         ->and($html)->not->toContain('App\\Models\\StockLevel');
@@ -74,7 +75,7 @@ it('wires a bulk-actions view into the data table', function () {
     $this->actingAs($user)
         ->get('/activities')
         ->assertOk()
-        ->assertSee('livewire.activities.partials.bulk-actions', false);
+        ->assertSee('activities::partials.bulk-actions', false);
 });
 
 it('bulk-completes the selected activities', function () {
@@ -82,8 +83,8 @@ it('bulk-completes the selected activities', function () {
     $a = Activity::factory()->create(['completed' => false, 'status_id' => ActivityStatus::Scheduled]);
     $b = Activity::factory()->create(['completed' => false, 'status_id' => ActivityStatus::Scheduled]);
 
-    Volt::actingAs($user)
-        ->test('activities.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('bulkComplete', [$a->id, $b->id]);
 
     expect($a->fresh()->completed)->toBeTrue();
@@ -97,8 +98,8 @@ it('bulk-deletes the selected activities', function () {
     $b = Activity::factory()->create();
     $keep = Activity::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('activities.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('bulkDelete', [$a->id, $b->id]);
 
     expect(Activity::find($a->id))->toBeNull();
@@ -110,8 +111,8 @@ it('skips already-completed activities on bulk complete', function () {
     $user = User::factory()->owner()->create();
     $done = Activity::factory()->completed()->create();
 
-    Volt::actingAs($user)
-        ->test('activities.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('bulkComplete', [$done->id]);
 
     expect($done->fresh()->completed)->toBeTrue();

@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Console\Commands\Concerns\ClearsDemoPhase4Data;
 use App\Console\Commands\Concerns\HasSignalsBranding;
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
 use App\Models\Email;
 use App\Models\Member;
 use App\Models\MemberRelationship;

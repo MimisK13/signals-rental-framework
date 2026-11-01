@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Activities\Models\Activity;
 use App\Enums\AllowedStockType;
 use App\Enums\ProductType;
 use App\Enums\StockMethod;
 use App\Models\Accessory;
-use App\Models\Activity;
 use App\Models\CostGroup;
 use App\Models\Country;
 use App\Models\Product;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Activity;
-use App\Views\ActivityColumnRegistry;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Views\Column;
 
 describe('ActivityColumnRegistry', function () {

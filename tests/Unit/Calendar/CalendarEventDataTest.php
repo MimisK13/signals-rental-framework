@@ -1,13 +1,13 @@
 <?php
 
-use App\Data\Calendar\CalendarEventData;
-use App\Enums\ActivityStatus;
-use App\Enums\TimeStatus;
-use App\Models\Activity;
+use App\Domain\Activities\Data\Calendar\CalendarEventData;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Enums\TimeStatus;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Services\Calendar\OwnerColorResolver;
 use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\User;
-use App\Services\Calendar\OwnerColorResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

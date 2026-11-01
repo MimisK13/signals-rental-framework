@@ -13,13 +13,14 @@ use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\SetDealPriceData;
 use App\Data\Opportunities\UpdateOpportunityItemDetailsData;
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;
 
 require_once __DIR__.'/../../Support/LineItemsEditorTestHelpers.php';
+use App\Domain\Activities\Presentation\Livewire\Embedded\OpportunityActivities;
 use App\Enums\OpportunityItemType;
 use App\Models\Accessory;
 use App\Models\Opportunity;
@@ -38,6 +39,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Features\SupportTesting\Testable;
+use Livewire\Livewire;
 use Livewire\Volt\Volt;
 use Thunk\Verbs\Models\VerbEvent;
 
@@ -2589,7 +2591,7 @@ describe('activities tab', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.activities', ['opportunity' => $opportunity])
+        Livewire::test(OpportunityActivities::class, ['opportunity' => $opportunity])
             ->assertOk()
             ->assertSee('New Activity')
             ->assertSeeHtml('regarding_type=Opportunity')

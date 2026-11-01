@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ActivityType;
-use App\Models\Activity;
+use App\Domain\Activities\Enums\ActivityType;
+use App\Domain\Activities\Models\Activity;
 use App\Models\ListName;
 use App\Models\ListValue;
 use App\Models\Member;

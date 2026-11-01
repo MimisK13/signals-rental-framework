@@ -1,11 +1,12 @@
 <?php
 
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Embedded\MemberActivities;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\Api\WebhookService;
 use Illuminate\Support\Facades\Log;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->user = User::factory()->owner()->create();
@@ -16,7 +17,7 @@ it('completes an activity and dispatches event', function () {
     $member = Member::factory()->create();
     $activity = Activity::factory()->forMember($member)->create(['completed' => false]);
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('completeActivity', $activity->id)
         ->assertDispatched('activity-completed')
         ->assertOk();
@@ -28,7 +29,7 @@ it('deletes an activity and dispatches event', function () {
     $member = Member::factory()->create();
     $activity = Activity::factory()->forMember($member)->create();
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('deleteActivity', $activity->id)
         ->assertDispatched('activity-deleted')
         ->assertOk();
@@ -39,7 +40,7 @@ it('deletes an activity and dispatches event', function () {
 it('handles completing a non-existent activity gracefully', function () {
     $member = Member::factory()->create();
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('completeActivity', 99999)
         ->assertDispatched('toast', type: 'success', message: 'Activity was already removed.')
         ->assertOk();
@@ -48,7 +49,7 @@ it('handles completing a non-existent activity gracefully', function () {
 it('handles deleting a non-existent activity gracefully', function () {
     $member = Member::factory()->create();
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('deleteActivity', 99999)
         ->assertDispatched('toast', type: 'success', message: 'Activity was already removed.')
         ->assertOk();
@@ -61,7 +62,7 @@ it('handles auth denial on complete gracefully', function () {
     $member = Member::factory()->create();
     $activity = Activity::factory()->forMember($member)->create(['completed' => false]);
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('completeActivity', $activity->id)
         ->assertDispatched('toast', type: 'error', message: 'You do not have permission to complete this activity.')
         ->assertOk();
@@ -76,7 +77,7 @@ it('handles auth denial on delete gracefully', function () {
     $member = Member::factory()->create();
     $activity = Activity::factory()->forMember($member)->create();
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('deleteActivity', $activity->id)
         ->assertDispatched('toast', type: 'error', message: 'You do not have permission to delete this activity.')
         ->assertOk();
@@ -94,7 +95,7 @@ it('logs and toasts when completing an activity hits an unexpected error', funct
     $member = Member::factory()->create();
     $activity = Activity::factory()->forMember($member)->create(['completed' => false]);
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('completeActivity', $activity->id)
         ->assertDispatched('toast', type: 'error', message: 'Something went wrong. Please try again.');
 
@@ -115,7 +116,7 @@ it('logs and toasts when deleting an activity hits an unexpected error', functio
     $member = Member::factory()->create();
     $activity = Activity::factory()->forMember($member)->create();
 
-    Volt::test('members.activities', ['member' => $member])
+    Livewire::test(MemberActivities::class, ['member' => $member])
         ->call('deleteActivity', $activity->id)
         ->assertDispatched('toast', type: 'error', message: 'Something went wrong. Please try again.');
 

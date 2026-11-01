@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Enums\OpportunityState;
 use App\Enums\ShortageResolutionStatus;
 use App\Models\CustomView;
-use App\Views\ActivityColumnRegistry;
 use App\Views\MemberColumnRegistry;
 use App\Views\OpportunityColumnRegistry;
 use App\Views\ProductColumnRegistry;

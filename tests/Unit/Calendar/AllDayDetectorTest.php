@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\Calendar\AllDayDetector;
+use App\Domain\Activities\Services\Calendar\AllDayDetector;
 use Carbon\CarbonImmutable;
 
 /**

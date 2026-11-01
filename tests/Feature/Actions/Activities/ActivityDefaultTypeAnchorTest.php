@@ -1,16 +1,17 @@
 <?php
 
-use App\Actions\Activities\CreateActivity;
-use App\Data\Activities\CreateActivityData;
-use App\Enums\ActivityType;
-use App\Models\Activity;
+use App\Domain\Activities\Actions\CreateActivity;
+use App\Domain\Activities\Data\CreateActivityData;
+use App\Domain\Activities\Enums\ActivityType;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Form;
 use App\Models\ListName;
 use App\Models\ListValue;
 use App\Models\User;
 use Database\Seeders\ListOfValuesSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -74,8 +75,8 @@ it('resolves the default activity type from the stable icon key after the Task l
     $renamedId = renameTaskListValue('Action Item');
 
     // The Volt create form pre-selects typeId in mount() via defaultTypeId().
-    Volt::actingAs($user)
-        ->test('activities.form')
+    Livewire::actingAs($user)
+        ->test(Form::class)
         ->assertSet('typeId', $renamedId);
 });
 

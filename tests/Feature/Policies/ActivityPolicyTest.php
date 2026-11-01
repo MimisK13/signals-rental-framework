@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Policies\ActivityPolicy;
 use App\Models\User;
-use App\Policies\ActivityPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

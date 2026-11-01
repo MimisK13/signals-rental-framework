@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Activities\Models\Activity;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Models\Traits\FormatsMoney;

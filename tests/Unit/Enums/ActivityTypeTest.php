@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ActivityType;
+use App\Domain\Activities\Enums\ActivityType;
 
 it('has the correct RMS type_id values', function () {
     expect(ActivityType::Task->value)->toBe(1001)

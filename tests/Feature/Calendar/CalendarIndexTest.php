@@ -1,15 +1,16 @@
 <?php
 
-use App\Data\Calendar\CalendarEventData;
-use App\Enums\ActivityStatus;
-use App\Models\Activity;
+use App\Domain\Activities\Data\Calendar\CalendarEventData;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Calendar\Index;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Collection;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -22,8 +23,8 @@ beforeEach(function () {
 it('defaults to today and the week view', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->assertSet('view', 'week')
         ->assertSet('startDate', today()->toDateString());
 });
@@ -42,8 +43,8 @@ it('renders the calendar page', function () {
 it('switches between day, week, and month views', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->assertSet('view', 'day')
         ->call('setView', 'month')
@@ -55,8 +56,8 @@ it('switches between day, week, and month views', function () {
 it('ignores an invalid view', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'year')
         ->assertSet('view', 'week');
 });
@@ -66,8 +67,8 @@ it('ignores an invalid view', function () {
 it('computes a single-day range in day view', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->set('startDate', '2026-07-15')
         ->call('setView', 'day')
         ->tap(function ($component) {
@@ -85,8 +86,8 @@ it('computes a seven-day week range honouring the configured week start (Monday)
     $user = User::factory()->owner()->create();
 
     // 2026-07-15 is a Wednesday.
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->set('startDate', '2026-07-15')
         ->tap(function ($component) {
             /** @var array{0: CarbonInterface, 1: CarbonInterface} $range */
@@ -104,8 +105,8 @@ it('honours preferences.first_day_of_week = 0 (Sunday start)', function () {
     $user = User::factory()->owner()->create();
 
     // 2026-07-15 is a Wednesday; the Sunday-start week begins 2026-07-12.
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->set('startDate', '2026-07-15')
         ->tap(function ($component) {
             /** @var array{0: CarbonInterface, 1: CarbonInterface} $range */
@@ -122,8 +123,8 @@ it('computes a full-weeks month grid range', function () {
     settings()->set('preferences.first_day_of_week', 1);
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->set('startDate', '2026-07-15')
         ->call('setView', 'month')
         ->tap(function ($component) {
@@ -143,8 +144,8 @@ it('computes a full-weeks month grid range', function () {
 it('steps forward and back by week and resets to today', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->set('startDate', '2026-07-15')
         ->call('next')
         ->assertSet('startDate', '2026-07-22')
@@ -157,8 +158,8 @@ it('steps forward and back by week and resets to today', function () {
 it('steps by a single day in day view', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15')
         ->call('next')
@@ -168,8 +169,8 @@ it('steps by a single day in day view', function () {
 it('steps by a month in month view', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'month')
         ->set('startDate', '2026-07-15')
         ->call('next')
@@ -179,8 +180,8 @@ it('steps by a month in month view', function () {
 it('jumps to a day view via openDayView', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('openDayView', '2026-09-09')
         ->assertSet('view', 'day')
         ->assertSet('startDate', '2026-09-09');
@@ -203,8 +204,8 @@ it('returns only in-range scheduled activities', function () {
     ]);
     Activity::factory()->create(['subject' => 'No start', 'starts_at' => null]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15')
         ->tap(function ($component) use ($inRange) {
@@ -222,8 +223,8 @@ it('returns unscheduled activities only', function () {
     $unscheduled = Activity::factory()->create(['subject' => 'No start', 'starts_at' => null]);
     Activity::factory()->create(['subject' => 'Scheduled', 'starts_at' => '2026-07-15 10:00']);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->tap(function ($component) use ($unscheduled) {
             /** @var Collection<int, CalendarEventData> $events */
             $events = $component->instance()->unscheduledEvents();
@@ -249,8 +250,8 @@ it('filters events by owner ids', function () {
         'starts_at' => '2026-07-15 12:00',
     ]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15')
         ->call('toggleOwner', $other->id)
@@ -279,8 +280,8 @@ it('counts range stats', function () {
     Activity::factory()->create(['owned_by' => $a->id, 'starts_at' => '2026-07-15 09:00', 'completed' => true, 'status_id' => ActivityStatus::Completed]);
     Activity::factory()->create(['owned_by' => $b->id, 'starts_at' => '2026-07-15 11:00']);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15')
         ->tap(function ($component) {
@@ -298,8 +299,8 @@ it('lists active staff and excludes deactivated users', function () {
     User::factory()->create(['name' => 'Active Annie']);
     User::factory()->deactivated()->create(['name' => 'Gone Greg']);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->tap(function ($component) {
             /** @var Collection<int, User> $staff */
             $staff = $component->instance()->staff();
@@ -317,8 +318,8 @@ it('honours the configured working-hours window', function () {
     settings()->set('scheduling.default_end_time', '16:00');
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15')
         ->tap(function ($component) {
@@ -344,8 +345,8 @@ it('auto-expands the hour window to include early or late events', function () {
         'ends_at' => '2026-07-15 21:15',
     ]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15')
         ->tap(function ($component) {
@@ -361,16 +362,16 @@ it('reflects weekend availability for shading', function () {
     settings()->set('scheduling.weekend_availability', false);
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->tap(function ($component) {
             expect($component->instance()->weekendShaded())->toBeTrue();
         });
 
     settings()->set('scheduling.weekend_availability', true);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->tap(function ($component) {
             expect($component->instance()->weekendShaded())->toBeFalse();
         });
@@ -381,8 +382,8 @@ it('reflects weekend availability for shading', function () {
 it('re-queries events when calendar-refresh fires', function () {
     $user = User::factory()->owner()->create();
 
-    $component = Volt::actingAs($user)
-        ->test('calendar.index')
+    $component = Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('setView', 'day')
         ->set('startDate', '2026-07-15');
 
@@ -437,8 +438,8 @@ it('renders a multi-day event on its continuation day in day view (timezone boun
 
     // 2026-06-15 (local) is the continuation/end day — under the old instant
     // comparison the event was dropped from this column.
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->call('setView', 'day')
         ->set('startDate', '2026-06-15')
@@ -460,8 +461,8 @@ it('renders a multi-day event on every covered column in week view (start AND co
     ]);
 
     // startDate is the Sunday week-start; the week covers local 2026-06-14..2026-06-20.
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->set('startDate', '2026-06-14')
         ->assertSeeHtml('week-event-'.$activity->id.'-2026-06-14')
@@ -493,8 +494,8 @@ it('spans a multi-day event across month cells and restores the overflow badge',
 
     // The spanning event starts local 10:00 (before the 12:00 singles), so it sorts
     // into the visible top-three chips of the continuation cell.
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->call('setView', 'month')
         ->set('startDate', '2026-06-15')
@@ -521,8 +522,8 @@ it('renders an all-day event in the week all-day band, not the timed grid', func
         'ends_at' => '2026-06-16 00:00:00',
     ]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->set('startDate', '2026-06-14')
         ->assertSeeHtml('week-band-'.$activity->id)
@@ -540,8 +541,8 @@ it('bands a 3-day midnight-to-midnight event across its week columns', function 
         'ends_at' => '2026-06-18 00:00:00',
     ]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->set('startDate', '2026-06-14')
         ->assertSeeHtml('week-band-'.$activity->id)
@@ -561,8 +562,8 @@ it('keeps a 09:00 to 17:00 working-hours event in the timed grid, not the all-da
         'ends_at' => '2026-06-15 17:00:00',
     ]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->set('startDate', '2026-06-14')
         ->assertSeeHtml('week-event-'.$activity->id.'-2026-06-15')
@@ -579,8 +580,8 @@ it('renders an all-day event in the day-view all-day band, not the timed grid', 
         'ends_at' => '2026-06-16 00:00:00',
     ]);
 
-    Volt::actingAs($user)
-        ->test('calendar.index')
+    Livewire::actingAs($user)
+        ->test(Index::class)
         ->call('load')
         ->call('setView', 'day')
         ->set('startDate', '2026-06-15')

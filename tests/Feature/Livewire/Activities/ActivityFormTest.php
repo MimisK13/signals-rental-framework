@@ -1,13 +1,14 @@
 <?php
 
-use App\Models\Activity;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Form;
 use App\Models\CustomField;
 use App\Models\User;
 use Carbon\Carbon;
 use Database\Seeders\ListOfValuesSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -49,8 +50,8 @@ it('renders the Schedule section before the Basic Info section', function () {
 it('saves an activity with a "Y-m-d H:i" datetime from the datetime-input binding', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('activities.form')
+    Livewire::actingAs($user)
+        ->test(Form::class)
         ->set('subject', 'Scheduled Task')
         ->set('startsAt', '2026-03-08 14:30')
         ->set('endsAt', '2026-03-08 16:00')
@@ -70,8 +71,8 @@ it('hydrates an existing activity datetime into the property in "Y-m-d H:i" form
         'ends_at' => '2026-03-08 16:00:00',
     ]);
 
-    Volt::actingAs($user)
-        ->test('activities.form', ['activity' => $activity])
+    Livewire::actingAs($user)
+        ->test(Form::class, ['activity' => $activity])
         ->assertSet('startsAt', '2026-03-08 14:30')
         ->assertSet('endsAt', '2026-03-08 16:00');
 });
@@ -84,8 +85,8 @@ it('renders Activity custom field inputs from definitions', function () {
         'display_name' => 'Call Outcome',
     ]);
 
-    Volt::actingAs($user)
-        ->test('activities.form')
+    Livewire::actingAs($user)
+        ->test(Form::class)
         ->assertSee('Custom Fields')
         ->assertSee('Call Outcome');
 });
@@ -96,8 +97,8 @@ it('does not render custom field inputs for other modules', function () {
         'display_name' => 'Member Only Field',
     ]);
 
-    Volt::actingAs($user)
-        ->test('activities.form')
+    Livewire::actingAs($user)
+        ->test(Form::class)
         ->assertDontSee('Member Only Field');
 });
 
@@ -108,8 +109,8 @@ it('persists custom field values when creating an activity', function () {
         'display_name' => 'Call Outcome',
     ]);
 
-    Volt::actingAs($user)
-        ->test('activities.form')
+    Livewire::actingAs($user)
+        ->test(Form::class)
         ->set('subject', 'Discovery call')
         ->set('customFieldValues.call_outcome', 'Voicemail left')
         ->call('save')
@@ -133,7 +134,7 @@ it('hydrates existing custom field values when editing an activity', function ()
         'value_string' => 'Connected',
     ]);
 
-    Volt::actingAs($user)
-        ->test('activities.form', ['activity' => $activity])
+    Livewire::actingAs($user)
+        ->test(Form::class, ['activity' => $activity])
         ->assertSet('customFieldValues.call_outcome', 'Connected');
 });

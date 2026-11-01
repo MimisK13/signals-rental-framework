@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\ActivityStatus;
-use App\Models\Activity;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Services\Calendar\CalendarEventService;
 use App\Models\User;
-use App\Services\Calendar\CalendarEventService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

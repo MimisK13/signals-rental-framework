@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\V1\AccessoryController;
 use App\Http\Controllers\Api\V1\ActionLogController;
-use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BundleRuleController;
@@ -304,10 +303,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::post('products/{product}/stock_levels/{stock_level}/stock_transactions', [StockTransactionController::class, 'store'])->name('api.v1.stock_transactions.store');
     Route::delete('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}', [StockTransactionController::class, 'destroy'])->name('api.v1.stock_transactions.destroy');
     Route::post('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}/reverse', [StockTransactionController::class, 'reverse'])->name('api.v1.stock_transactions.reverse');
-
-    // Activities
-    Route::apiResource('activities', ActivityController::class)->names('api.v1.activities');
-    Route::post('activities/{activity}/complete', [ActivityController::class, 'complete'])->name('api.v1.activities.complete');
 
     // Opportunities (event-sourced lifecycle)
     // Read sub-resources (assets / availability / activity) — declared before the

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Activity;
-use App\Models\ActivityParticipant;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Models\ActivityParticipant;
 use App\Models\Member;
 
 it('belongs to an activity', function () {

@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ActivityStatus;
+use App\Domain\Activities\Enums\ActivityStatus;
 
 it('has the correct RMS status_id values', function () {
     expect(ActivityStatus::Scheduled->value)->toBe(2001)

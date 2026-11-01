@@ -1,8 +1,10 @@
 <?php
 
-use App\Data\Activities\ActivityData;
-use App\Enums\ActivityStatus;
-use App\Models\Activity;
+use App\Domain\Activities\Data\ActivityData;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Presentation\Livewire\Calendar\ActivityDetailModal;
+use App\Domain\Activities\Presentation\Livewire\Calendar\ActivityFormModal;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\User;
@@ -10,7 +12,7 @@ use Carbon\Carbon;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -23,8 +25,8 @@ beforeEach(function () {
 it('creates an activity from the form modal via CreateActivity', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->call('open', owned_by: $user->id, starts_at: '2026-07-01 10:00')
         ->assertSet('ownedBy', $user->id)
         ->assertSet('startsAt', '2026-07-01 10:00')
@@ -43,8 +45,8 @@ it('creates an activity from the form modal via CreateActivity', function () {
 it('validates that subject is required', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->call('open')
         ->set('subject', '')
         ->call('save')
@@ -59,8 +61,8 @@ it('updates an existing activity from the form modal via UpdateActivity', functi
     $user = User::factory()->owner()->create();
     $activity = Activity::factory()->create(['subject' => 'Original']);
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->call('open', activityId: $activity->id)
         ->assertSet('activityId', $activity->id)
         ->assertSet('subject', 'Original')
@@ -78,8 +80,8 @@ it('prefills owner and start time from a slot click payload', function () {
     $user = User::factory()->owner()->create();
     $owner = User::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->call('open', owned_by: $owner->id, starts_at: '2026-08-15 13:30')
         ->assertSet('ownedBy', $owner->id)
         ->assertSet('startsAt', '2026-08-15 13:30')
@@ -89,8 +91,8 @@ it('prefills owner and start time from a slot click payload', function () {
 it('prefills the working-hours window from a month-day click payload', function () {
     $user = User::factory()->owner()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->call('open', date: '2026-09-20')
         ->assertSet('startsAt', '2026-09-20 09:00')
         ->assertSet('endsAt', '2026-09-20 17:00')
@@ -104,8 +106,8 @@ it('attaches participants but never the owner', function () {
     $owner = User::factory()->owner()->create(['member_id' => $ownerMember->id]);
     $participant = Member::factory()->create();
 
-    Volt::actingAs($owner)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($owner)
+        ->test(ActivityFormModal::class)
         ->call('open')
         ->set('subject', 'With participants')
         ->set('ownedBy', $owner->id)
@@ -127,8 +129,8 @@ it('loads an activity into the detail modal', function () {
     $user = User::factory()->owner()->create();
     $activity = Activity::factory()->create(['subject' => 'Inspect rig']);
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->assertSet('activityId', $activity->id)
         ->assertSee('Inspect rig');
@@ -138,8 +140,8 @@ it('completes an activity from the detail modal and refreshes the calendar', fun
     $user = User::factory()->owner()->create();
     $activity = Activity::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->call('complete')
         ->assertDispatched('calendar-refresh')
@@ -155,8 +157,8 @@ it('deletes an activity from the detail modal and refreshes the calendar', funct
     $user = User::factory()->owner()->create();
     $activity = Activity::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->call('delete')
         ->assertDispatched('calendar-refresh')
@@ -175,8 +177,8 @@ it('renders the owner avatar photo from the DTO owner_thumb_url (OSS-10)', funct
     $owner = User::factory()->create(['name' => 'Owen Owner', 'member_id' => $ownerMember->id]);
     $activity = Activity::factory()->create(['owned_by' => $owner->id]);
 
-    Volt::actingAs($viewer)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($viewer)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->assertSee('Owen Owner')
         ->assertSeeHtml('<img');
@@ -221,8 +223,8 @@ it('renders a member regarding as a new-tab link with an avatar photo', function
     ]);
     $activity = Activity::factory()->forMember($member)->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->assertSee('Ada Lovelace')
         ->assertSeeHtml('href="'.route('members.show', $member->id).'"')
@@ -238,8 +240,8 @@ it('renders a member regarding link with initials when no photo is set', functio
     ]);
     $activity = Activity::factory()->forMember($member)->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->assertSee('Grace Hopper')
         ->assertSeeHtml('href="'.route('members.show', $member->id).'"')
@@ -252,8 +254,8 @@ it('renders a non-member regarding as a badge without a member link', function (
     $product = Product::factory()->create(['name' => 'Par Can 64']);
     $activity = Activity::factory()->forProduct($product)->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->assertSee('Par Can 64')
         ->assertSee('Product')
@@ -265,16 +267,16 @@ it('renders a non-member regarding as a badge without a member link', function (
 it('forbids mounting the form modal without activities.access', function () {
     $user = User::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->assertForbidden();
 });
 
 it('forbids mounting the detail modal without activities.access', function () {
     $user = User::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->assertForbidden();
 });
 
@@ -282,12 +284,12 @@ it('allows mounting the modals with activities.access', function () {
     $user = User::factory()->create();
     $user->givePermissionTo('activities.access');
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->assertOk();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->assertOk();
 });
 
@@ -298,8 +300,8 @@ it('forbids saving from the form modal without activities.create', function () {
     $user = User::factory()->create();
     $user->givePermissionTo(['activities.access', 'activities.view']);
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-form-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityFormModal::class)
         ->call('open')
         ->set('subject', 'Unauthorized activity')
         ->call('save')
@@ -313,8 +315,8 @@ it('forbids completing from the detail modal without activities.complete', funct
     $user->givePermissionTo(['activities.access', 'activities.view']);
     $activity = Activity::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->call('complete')
         ->assertForbidden();
@@ -327,8 +329,8 @@ it('forbids deleting from the detail modal without activities.delete', function 
     $user->givePermissionTo(['activities.access', 'activities.view']);
     $activity = Activity::factory()->create();
 
-    Volt::actingAs($user)
-        ->test('calendar.activity-detail-modal')
+    Livewire::actingAs($user)
+        ->test(ActivityDetailModal::class)
         ->call('open', activityId: $activity->id)
         ->call('delete')
         ->assertForbidden();

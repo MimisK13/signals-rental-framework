@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Calendar\OwnerColorResolver;
+use App\Domain\Activities\Services\Calendar\OwnerColorResolver;
 
 beforeEach(function () {
     $this->resolver = new OwnerColorResolver;

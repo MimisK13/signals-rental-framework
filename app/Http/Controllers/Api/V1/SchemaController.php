@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Activities\Models\Activity;
 use App\Http\Controllers\Api\Controller;
 use App\Models\ActionLog;
-use App\Models\Activity;
 use App\Models\Address;
 use App\Models\Attachment;
 use App\Models\Container;

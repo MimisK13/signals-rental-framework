@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Models\User;
 use App\Support\CostVisibility;
-use App\Views\ActivityColumnRegistry;
 use App\Views\ColumnRegistry;
 use App\Views\ContainerColumnRegistry;
 use App\Views\CreditNoteColumnRegistry;

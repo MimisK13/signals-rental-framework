@@ -7,6 +7,11 @@ description: Visualise scheduled activities across day, week, and month views wi
 
 The Calendar is a full-page scheduling view over the [Activities](/docs/platform/activities) module. It plots every scheduled activity onto a day, week, or month grid, colour-coded by owner, and lets you add, view, edit, and complete activities directly from the page without losing your place. It does not introduce a new entity — every event is an activity, and all changes flow through the same write path and permissions as the activities list.
 
+Calendar services, event DTOs, native Livewire pages/modals and signed feed
+controllers belong to `app/Domain/Activities`. Its Blade templates use the
+`activities::calendar.*` namespace. Public URLs, feed signatures and component
+event names remain unchanged.
+
 **Route:** `/calendar`
 
 Access to the calendar is gated on the `activities.access` permission. Users without it do not see the Calendar in navigation and cannot open the page.

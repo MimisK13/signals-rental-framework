@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Activities\Database\Seeders\ActivitySeeder;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

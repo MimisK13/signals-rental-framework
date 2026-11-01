@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\ActivityType;
+use App\Domain\Activities\Enums\ActivityType;
 use App\Models\ListName;
 use App\Models\ListValue;
 use Illuminate\Database\Seeder;

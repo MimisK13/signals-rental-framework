@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\TimeStatus;
+use App\Domain\Activities\Enums\TimeStatus;
 
 it('has the correct values', function () {
     expect(TimeStatus::Free->value)->toBe(0)

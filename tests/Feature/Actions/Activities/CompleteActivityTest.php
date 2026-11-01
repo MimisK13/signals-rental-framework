@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Activities\CompleteActivity;
-use App\Enums\ActivityStatus;
+use App\Domain\Activities\Actions\CompleteActivity;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Models\Activity;
 use App\Events\AuditableEvent;
-use App\Models\Activity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -40,7 +40,7 @@ it('records an action_logs row when an activity is completed', function () {
 
     (new CompleteActivity)($activity);
 
-    assertActionLogged('activity.completed', Activity::class, $activity->id, $user->id);
+    assertActionLogged('activity.completed', (new Activity)->getMorphClass(), $activity->id, $user->id);
 });
 
 it('can complete an already-completed activity without error', function () {

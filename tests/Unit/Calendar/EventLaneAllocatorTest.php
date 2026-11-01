@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Calendar\EventLaneAllocator;
+use App\Domain\Activities\Services\Calendar\EventLaneAllocator;
 
 beforeEach(function () {
     $this->allocator = new EventLaneAllocator;

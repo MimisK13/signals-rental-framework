@@ -1,7 +1,7 @@
 <?php
 
-use App\Actions\Activities\CreateActivity;
-use App\Data\Activities\CreateActivityData;
+use App\Domain\Activities\Actions\CreateActivity;
+use App\Domain\Activities\Data\CreateActivityData;
 use App\Jobs\DeliverWebhook;
 use App\Models\User;
 use App\Models\Webhook;

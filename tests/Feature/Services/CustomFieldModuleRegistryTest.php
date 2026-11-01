@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Traits\HasCustomFields;
 use App\Services\CustomFieldModuleRegistry;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
@@ -26,29 +29,41 @@ function controllerCustomFieldModules(): array
 {
     $modules = [];
 
-    foreach (glob(app_path('Http/Controllers/Api/V1/*.php')) as $file) {
-        $class = 'App\\Http\\Controllers\\Api\\V1\\'.basename($file, '.php');
+    $directories = [app_path('Http/Controllers/Api/V1'), ...File::glob(app_path('Domain/*/Presentation/Http/Controllers/Api/V1'))];
 
-        if (! class_exists($class)) {
-            continue;
-        }
+    foreach ($directories as $directory) {
+        foreach (File::allFiles($directory) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            $relative = substr($file->getPathname(), strlen(app_path()) + 1, -4);
+            $class = 'App\\'.str_replace('/', '\\', $relative);
 
-        $reflection = new ReflectionClass($class);
+            if (! class_exists($class)) {
+                continue;
+            }
 
-        if (! $reflection->hasProperty('customFieldModule')) {
-            continue;
-        }
+            $reflection = new ReflectionClass($class);
 
-        $property = $reflection->getProperty('customFieldModule');
-        $default = $property->getDefaultValue();
+            if (! $reflection->hasProperty('customFieldModule')) {
+                continue;
+            }
 
-        if (is_string($default) && $default !== '') {
-            $modules[] = $default;
+            $property = $reflection->getProperty('customFieldModule');
+            $default = $property->getDefaultValue();
+
+            if (is_string($default) && $default !== '') {
+                $modules[] = $default;
+            }
         }
     }
 
     return array_values(array_unique($modules));
 }
+
+it('discovers custom field declarations in domain API controllers', function (): void {
+    expect(controllerCustomFieldModules())->toContain('Activity', 'CrewMember', 'CrewRequest');
+});
 
 it('includes every API controller that declares a custom field module', function () {
     $controllerModules = controllerCustomFieldModules();

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Activities\Models\Activity;
 use App\Enums\AllowedStockType;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerCheckinMode;

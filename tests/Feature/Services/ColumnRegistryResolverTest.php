@@ -1,7 +1,10 @@
 <?php
 
-use App\Services\ColumnRegistryResolver;
+declare(strict_types=1);
+
+use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Models\User;
+use App\Services\ColumnRegistryResolver;
 use App\Views\Column;
 use App\Views\ColumnRegistry;
 use App\Views\MemberColumnRegistry;
@@ -14,9 +17,7 @@ beforeEach(function () {
 });
 
 /**
- * Discover every concrete ColumnRegistry subclass under app/Views, deriving the
- * class name from its path relative to app/Views so registries in subdirectories
- * (e.g. app/Views/Foo/BarColumnRegistry.php) are not silently skipped.
+ * Discover shared and domain-local presentation registries through their PSR-4 paths.
  *
  * @return list<class-string<ColumnRegistry>>
  */
@@ -24,27 +25,35 @@ function discoverColumnRegistries(): array
 {
     $registries = [];
 
-    foreach (File::allFiles(app_path('Views')) as $file) {
-        if ($file->getExtension() !== 'php') {
-            continue;
+    $directories = [app_path('Views'), ...File::glob(app_path('Domain/*/Presentation/Columns'))];
+
+    foreach ($directories as $directory) {
+        foreach (File::allFiles($directory) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $relative = substr($file->getPathname(), strlen(app_path()) + 1, -4);
+            $class = 'App\\'.str_replace('/', '\\', $relative);
+
+            if (! class_exists($class) || ! is_subclass_of($class, ColumnRegistry::class)) {
+                continue;
+            }
+
+            if ((new ReflectionClass($class))->isAbstract()) {
+                continue;
+            }
+
+            $registries[] = $class;
         }
-
-        $relative = str_replace('.php', '', $file->getRelativePathname());
-        $class = 'App\\Views\\'.str_replace('/', '\\', $relative);
-
-        if (! class_exists($class) || ! is_subclass_of($class, ColumnRegistry::class)) {
-            continue;
-        }
-
-        if ((new ReflectionClass($class))->isAbstract()) {
-            continue;
-        }
-
-        $registries[] = $class;
     }
 
     return $registries;
 }
+
+it('discovers column registries inside domain Presentation layers', function (): void {
+    expect(discoverColumnRegistries())->toContain(ActivityColumnRegistry::class);
+});
 
 it('resolves the members column registry', function () {
     $registry = $this->resolver->resolve('members');

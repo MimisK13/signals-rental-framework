@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Activities\CreateActivity;
-use App\Data\Activities\CreateActivityData;
-use App\Enums\ActivityType;
+use App\Domain\Activities\Actions\CreateActivity;
+use App\Domain\Activities\Data\CreateActivityData;
+use App\Domain\Activities\Enums\ActivityType;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Services\ActivityTypeList;
 use App\Events\AuditableEvent;
-use App\Models\Activity;
 use App\Models\ListName;
 use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\User;
-use App\Services\Activities\ActivityTypeList;
 use Database\Seeders\ListOfValuesSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -71,7 +71,7 @@ it('records an action_logs row when an activity is created', function () {
         'type_id' => activityTypeId(ActivityType::Task),
     ]));
 
-    assertActionLogged('activity.created', Activity::class, $result->id, $user->id);
+    assertActionLogged('activity.created', (new Activity)->getMorphClass(), $result->id, $user->id);
 });
 
 it('creates an activity with participants', function () {

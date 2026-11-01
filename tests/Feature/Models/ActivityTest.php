@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\ActivityPriority;
-use App\Enums\ActivityStatus;
-use App\Enums\TimeStatus;
-use App\Models\Activity;
-use App\Models\ActivityParticipant;
+use App\Domain\Activities\Enums\ActivityPriority;
+use App\Domain\Activities\Enums\ActivityStatus;
+use App\Domain\Activities\Enums\TimeStatus;
+use App\Domain\Activities\Models\Activity;
+use App\Domain\Activities\Models\ActivityParticipant;
 use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\Opportunity;
