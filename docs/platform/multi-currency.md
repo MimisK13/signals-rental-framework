@@ -11,6 +11,8 @@ Signals ships a complete financial **engine** for multi-currency and tax: a cata
 
 ## Currencies
 
+Currency catalogue models, effective-dated exchange rates, actions, DTOs, factories, seeders, policies, and the conversion service live in `app/Domain/Currency`. Its API controllers and routes belong to `Presentation`; the existing `currencies` and `exchange_rates` endpoints and permissions are unchanged. Company settings, shared money formatting, tax, and document snapshots remain with their existing owners. Historical migrations stay in `database/migrations`, and legacy model, service, and seeder class names remain compatible.
+
 Signals maintains a table of world currencies based on ISO 4217. Each currency records the data needed to store and format monetary values correctly.
 
 | Field | Description |

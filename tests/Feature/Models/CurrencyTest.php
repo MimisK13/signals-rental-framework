@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use Illuminate\Database\QueryException;
 
 it('creates a currency with factory', function () {

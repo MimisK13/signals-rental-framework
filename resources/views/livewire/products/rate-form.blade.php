@@ -5,7 +5,7 @@ use App\Actions\Rates\UpdateProductRate;
 use App\Data\Rates\CreateProductRateData;
 use App\Data\Rates\UpdateProductRateData;
 use App\Enums\RateTransactionType;
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use App\Models\PriceCategory;
 use App\Models\Product;
 use App\Models\ProductRate;

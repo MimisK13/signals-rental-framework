@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Currency\Models\Currency;
 use App\Models\CommunicationTemplate;
-use App\Models\Currency;
 use App\Models\User;
 use App\Services\Notifications\CommunicationTemplateRenderer;
 use App\Services\Notifications\CoreMergeFieldFilters;

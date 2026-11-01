@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Data\ExchangeRates;
+declare(strict_types=1);
+
+namespace App\Domain\Currency\Data\ExchangeRates;
 
 use Spatie\LaravelData\Data;
 
-class CreateExchangeRateData extends Data
+final class CreateExchangeRateData extends Data
 {
     public function __construct(
         public string $source_currency_code,

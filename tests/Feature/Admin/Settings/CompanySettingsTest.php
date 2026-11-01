@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use App\Models\User;
 use App\Support\Formatter;
 use Livewire\Volt\Volt;

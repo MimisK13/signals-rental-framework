@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Currency;
+use App\Domain\Currency\Database\Seeders\CurrencySeeder;
+use App\Domain\Currency\Models\Currency;
 use App\Models\User;
-use Database\Seeders\CurrencySeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;

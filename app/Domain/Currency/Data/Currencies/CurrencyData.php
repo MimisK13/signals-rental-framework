@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Data\Currencies;
+declare(strict_types=1);
 
-use App\Models\Currency;
+namespace App\Domain\Currency\Data\Currencies;
+
+use App\Domain\Currency\Models\Currency;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Data;
 
-class CurrencyData extends Data
+final class CurrencyData extends Data
 {
     public function __construct(
         public int $id,

@@ -17,7 +17,7 @@ use App\Domain\Crew\Models\CrewRequestLine;
 use App\Domain\Crew\Queries\CrewConflictQuery;
 use App\Domain\Crew\Queries\CrewRequirementQuery;
 use App\Domain\Crew\Services\CrewAudit;
-use App\Services\CurrencyService;
+use App\Domain\Currency\Services\CurrencyService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

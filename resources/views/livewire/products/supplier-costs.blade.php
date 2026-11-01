@@ -7,7 +7,7 @@ use App\Actions\SupplierCosts\UpdateSupplierCost;
 use App\Data\SupplierCosts\CreateSupplierCostData;
 use App\Data\SupplierCosts\UpdateSupplierCostData;
 use App\Enums\MembershipType;
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\ProductSupplierCost;

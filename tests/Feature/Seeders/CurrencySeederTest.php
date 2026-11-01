@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Currency;
-use Database\Seeders\CurrencySeeder;
+use App\Domain\Currency\Database\Seeders\CurrencySeeder;
+use App\Domain\Currency\Models\Currency;
 
 it('seeds currencies into the database', function () {
     $this->seed(CurrencySeeder::class);

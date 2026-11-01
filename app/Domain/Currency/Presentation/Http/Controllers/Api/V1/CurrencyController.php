@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+declare(strict_types=1);
 
-use App\Data\Currencies\CurrencyData;
+namespace App\Domain\Currency\Presentation\Http\Controllers\Api\V1;
+
+use App\Domain\Currency\Data\Currencies\CurrencyData;
+use App\Domain\Currency\Models\Currency;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
-use App\Models\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class CurrencyController extends Controller
+final class CurrencyController extends Controller
 {
     use FiltersQueries;
 

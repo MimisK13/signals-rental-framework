@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use Brick\Money\Money;
 use DateTimeInterface;
 

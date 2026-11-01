@@ -4,9 +4,9 @@ namespace App\Actions\Opportunities;
 
 use App\Data\Opportunities\VersionDiffData;
 use App\Data\Opportunities\VersionDiffItemData;
+use App\Domain\Currency\Services\CurrencyService;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityVersion;
-use App\Services\CurrencyService;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Illuminate\Support\Collection;

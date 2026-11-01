@@ -1,19 +1,26 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace App\Domain\Currency\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Currency\Database\Factories\ExchangeRateFactory;
 use App\Services\SchemaBuilder;
-use Database\Factories\ExchangeRateFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
-class ExchangeRate extends Model implements HasSchema
+final class ExchangeRate extends Model implements HasSchema
 {
     /** @use HasFactory<ExchangeRateFactory> */
     use HasFactory;
+
+    protected static function newFactory(): ExchangeRateFactory
+    {
+        return ExchangeRateFactory::new();
+    }
 
     /** @var list<string> */
     protected $fillable = [

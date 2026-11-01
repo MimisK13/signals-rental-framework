@@ -18,8 +18,19 @@ use Symfony\Component\Finder\Finder;
 it('only whitelists real DB columns in allowedFilters and allowedSorts', function () {
     $problems = [];
 
-    foreach (Finder::create()->files()->in(app_path('Http/Controllers/Api/V1'))->name('*.php') as $file) {
-        $class = 'App\\Http\\Controllers\\Api\\V1\\'.$file->getFilenameWithoutExtension();
+    $controllers = Finder::create()->files()->in([
+        app_path('Http/Controllers/Api/V1'),
+        app_path('Domain'),
+    ])->name('*.php');
+
+    foreach ($controllers as $file) {
+        $relativePath = str_replace('\\', '/', $file->getRealPath());
+        $applicationPath = str_replace('\\', '/', app_path()).'/';
+        $class = 'App\\'.str_replace('/', '\\', substr($relativePath, strlen($applicationPath), -4));
+
+        if (! str_contains($class, '\\Http\\Controllers\\Api\\V1\\')) {
+            continue;
+        }
 
         if (! class_exists($class)) {
             continue;

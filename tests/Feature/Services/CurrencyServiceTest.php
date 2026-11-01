@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\ExchangeRate;
-use App\Services\CurrencyService;
+use App\Domain\Currency\Database\Seeders\CurrencySeeder;
+use App\Domain\Currency\Database\Seeders\ExchangeRateSeeder;
+use App\Domain\Currency\Models\ExchangeRate;
+use App\Domain\Currency\Services\CurrencyService;
 use App\Services\SettingsService;
-use Database\Seeders\CurrencySeeder;
-use Database\Seeders\ExchangeRateSeeder;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

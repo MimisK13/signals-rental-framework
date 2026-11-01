@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\Models\Currency;
-use App\Models\ExchangeRate;
+namespace App\Domain\Currency\Services;
+
+use App\Domain\Currency\Models\Currency;
+use App\Domain\Currency\Models\ExchangeRate;
 use Brick\Math\RoundingMode;
 use Brick\Money\Context\CustomContext;
 use Brick\Money\Currency as BrickCurrency;
@@ -16,7 +18,7 @@ use Illuminate\Support\Carbon;
  * Uses RationalMoney for intermediate calculations and rounds only at the
  * final step to preserve precision.
  */
-class CurrencyService
+final class CurrencyService
 {
     /**
      * Convert an amount in minor units from one currency to another.

@@ -1,21 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+declare(strict_types=1);
 
-use App\Actions\ExchangeRates\CreateExchangeRate;
-use App\Actions\ExchangeRates\DeleteExchangeRate;
-use App\Actions\ExchangeRates\UpdateExchangeRate;
-use App\Data\ExchangeRates\CreateExchangeRateData;
-use App\Data\ExchangeRates\ExchangeRateData;
-use App\Data\ExchangeRates\UpdateExchangeRateData;
+namespace App\Domain\Currency\Presentation\Http\Controllers\Api\V1;
+
+use App\Domain\Currency\Actions\ExchangeRates\CreateExchangeRate;
+use App\Domain\Currency\Actions\ExchangeRates\DeleteExchangeRate;
+use App\Domain\Currency\Actions\ExchangeRates\UpdateExchangeRate;
+use App\Domain\Currency\Data\ExchangeRates\CreateExchangeRateData;
+use App\Domain\Currency\Data\ExchangeRates\ExchangeRateData;
+use App\Domain\Currency\Data\ExchangeRates\UpdateExchangeRateData;
+use App\Domain\Currency\Models\ExchangeRate;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Http\Traits\ResourceActions;
-use App\Models\ExchangeRate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ExchangeRateController extends Controller
+final class ExchangeRateController extends Controller
 {
     use FiltersQueries, ResourceActions;
 

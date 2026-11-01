@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Currency\Models\Currency;
+use App\Domain\Currency\Models\ExchangeRate;
 use App\Http\Controllers\Api\Controller;
 use App\Models\ActionLog;
 use App\Models\Address;
 use App\Models\Attachment;
 use App\Models\Container;
 use App\Models\Country;
-use App\Models\Currency;
 use App\Models\CustomView;
 use App\Models\Email;
-use App\Models\ExchangeRate;
 use App\Models\Link;
 use App\Models\Member;
 use App\Models\Opportunity;

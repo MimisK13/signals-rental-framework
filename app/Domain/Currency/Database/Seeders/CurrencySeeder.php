@@ -1,11 +1,13 @@
 <?php
 
-namespace Database\Seeders;
+declare(strict_types=1);
 
-use App\Models\Currency;
+namespace App\Domain\Currency\Database\Seeders;
+
+use App\Domain\Currency\Models\Currency;
 use Illuminate\Database\Seeder;
 
-class CurrencySeeder extends Seeder
+final class CurrencySeeder extends Seeder
 {
     public function run(): void
     {

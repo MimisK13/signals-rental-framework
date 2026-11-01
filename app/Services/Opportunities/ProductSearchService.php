@@ -4,13 +4,13 @@ namespace App\Services\Opportunities;
 
 use App\Data\Opportunities\ProductSearchAccessoryData;
 use App\Data\Opportunities\ProductSearchResultData;
+use App\Domain\Currency\Services\CurrencyService;
 use App\Enums\RateTransactionType;
 use App\Models\Accessory;
 use App\Models\Product;
 use App\Models\ProductRate;
 use App\Services\Api\RansackFilter;
 use App\Services\AvailabilityService;
-use App\Services\CurrencyService;
 use App\Services\FileService;
 use App\Services\RateEngine\RateCalculator;
 use App\Services\RateEngine\RateResolver;

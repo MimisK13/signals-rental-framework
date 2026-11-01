@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use App\Support\Formatter;
 
 describe('Formatter::money()', function () {

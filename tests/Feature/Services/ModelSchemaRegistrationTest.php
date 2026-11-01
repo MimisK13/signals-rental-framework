@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Currency\Models\Currency;
+use App\Domain\Currency\Models\ExchangeRate;
 use App\Models\ActionLog;
 use App\Models\Address;
 use App\Models\Attachment;
 use App\Models\Country;
-use App\Models\Currency;
 use App\Models\CustomView;
 use App\Models\Email;
-use App\Models\ExchangeRate;
 use App\Models\Link;
 use App\Models\Phone;
 use App\Models\TaxRate;

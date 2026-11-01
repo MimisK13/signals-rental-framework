@@ -1,8 +1,10 @@
 <?php
 
-namespace Database\Seeders;
+declare(strict_types=1);
 
-use App\Models\ExchangeRate;
+namespace App\Domain\Currency\Database\Seeders;
+
+use App\Domain\Currency\Models\ExchangeRate;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -14,7 +16,7 @@ use Illuminate\Support\Carbon;
  *
  * Depends on CurrencySeeder having run first so the currency codes exist.
  */
-class ExchangeRateSeeder extends Seeder
+final class ExchangeRateSeeder extends Seeder
 {
     public function run(): void
     {

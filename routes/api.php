@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\V1\CommunicationTemplateController;
 use App\Http\Controllers\Api\V1\ContainerController;
 use App\Http\Controllers\Api\V1\CountryController;
 use App\Http\Controllers\Api\V1\CreditNoteController;
-use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomFieldController;
 use App\Http\Controllers\Api\V1\CustomFieldGroupController;
 use App\Http\Controllers\Api\V1\CustomViewController;
@@ -22,7 +21,6 @@ use App\Http\Controllers\Api\V1\DocumentSequenceController;
 use App\Http\Controllers\Api\V1\DocumentTemplateController;
 use App\Http\Controllers\Api\V1\DocumentTypeController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
-use App\Http\Controllers\Api\V1\ExchangeRateController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\ListNameController;
 use App\Http\Controllers\Api\V1\ListValueController;
@@ -213,12 +211,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('tax_categories', TaxCategoryController::class)->names('api.v1.tax_categories');
     Route::apiResource('tax_rates', TaxRateController::class)->names('api.v1.tax_rates');
     Route::apiResource('tax_rules', TaxRuleController::class)->names('api.v1.tax_rules');
-
-    // Currencies (read-only)
-    Route::apiResource('currencies', CurrencyController::class)->only(['index', 'show'])->names('api.v1.currencies');
-
-    // Exchange Rates
-    Route::apiResource('exchange_rates', ExchangeRateController::class)->names('api.v1.exchange_rates');
 
     // Attachments
     Route::apiResource('attachments', AttachmentController::class)->only(['show', 'store', 'destroy'])->names('api.v1.attachments');

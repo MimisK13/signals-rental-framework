@@ -1,14 +1,16 @@
 <?php
 
-namespace Database\Factories;
+declare(strict_types=1);
 
-use App\Models\Currency;
+namespace App\Domain\Currency\Database\Factories;
+
+use App\Domain\Currency\Models\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<Currency>
  */
-class CurrencyFactory extends Factory
+final class CurrencyFactory extends Factory
 {
     protected $model = Currency::class;
 

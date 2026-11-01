@@ -14,7 +14,7 @@ use App\Livewire\Concerns\LoadsCustomFieldValues;
 use App\Livewire\Concerns\ReKeysCustomFieldErrors;
 use App\Models\Address;
 use App\Models\Country;
-use App\Models\Currency;
+use App\Domain\Currency\Models\Currency;
 use App\Models\CustomField;
 use App\Models\ListName;
 use App\Models\Member;

@@ -56,7 +56,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         return [
             'invoices' => $invoices,
             'outstandingMinor' => $outstandingMinor,
-            'currencyCode' => $invoices->first()?->currency_code ?? app(\App\Services\CurrencyService::class)->baseCurrencyCode(),
+            'currencyCode' => $invoices->first()?->currency_code ?? app(\App\Domain\Currency\Services\CurrencyService::class)->baseCurrencyCode(),
             'stores' => Store::query()->orderBy('name')->get(['id', 'name']),
         ];
     }

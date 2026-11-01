@@ -2,7 +2,7 @@
 
 namespace App\Data\Casts;
 
-use App\Services\CurrencyService;
+use App\Domain\Currency\Services\CurrencyService;
 use App\Services\Opportunities\OpportunityItemChargeBounds;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;

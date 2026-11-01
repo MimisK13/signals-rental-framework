@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Currency\Policies\ExchangeRatePolicy;
 use App\Models\User;
-use App\Policies\ExchangeRatePolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

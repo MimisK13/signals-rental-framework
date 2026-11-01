@@ -2,8 +2,8 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Currency\Models\Currency;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Currency;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Context\CustomContext;

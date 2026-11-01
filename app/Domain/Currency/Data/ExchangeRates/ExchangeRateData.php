@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Data\ExchangeRates;
+declare(strict_types=1);
 
-use App\Models\ExchangeRate;
+namespace App\Domain\Currency\Data\ExchangeRates;
+
+use App\Domain\Currency\Models\ExchangeRate;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Data;
 
-class ExchangeRateData extends Data
+final class ExchangeRateData extends Data
 {
     public function __construct(
         public int $id,

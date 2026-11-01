@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\ExchangeRate;
+use App\Domain\Currency\Models\ExchangeRate;
 use Illuminate\Support\Carbon;
 
 it('creates an exchange rate with factory', function () {

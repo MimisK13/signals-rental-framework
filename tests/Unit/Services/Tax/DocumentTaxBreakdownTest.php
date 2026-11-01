@@ -3,8 +3,8 @@
 use App\Contracts\Tax\TaxResolver;
 use App\Data\Tax\DocumentTaxLineInput;
 use App\Data\Tax\DocumentTaxRequest;
+use App\Domain\Currency\Models\Currency;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Currency;
 use App\Models\OrganisationTaxClass;
 use App\Models\ProductTaxClass;
 use App\Models\TaxRate;

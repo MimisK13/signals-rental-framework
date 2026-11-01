@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Actions\ExchangeRates;
+declare(strict_types=1);
 
-use App\Data\ExchangeRates\ExchangeRateData;
-use App\Data\ExchangeRates\UpdateExchangeRateData;
-use App\Models\ExchangeRate;
+namespace App\Domain\Currency\Actions\ExchangeRates;
+
+use App\Domain\Currency\Data\ExchangeRates\ExchangeRateData;
+use App\Domain\Currency\Data\ExchangeRates\UpdateExchangeRateData;
+use App\Domain\Currency\Models\ExchangeRate;
 use Illuminate\Support\Facades\Gate;
 
-class UpdateExchangeRate
+final class UpdateExchangeRate
 {
     public function __invoke(ExchangeRate $exchangeRate, UpdateExchangeRateData $data): ExchangeRateData
     {

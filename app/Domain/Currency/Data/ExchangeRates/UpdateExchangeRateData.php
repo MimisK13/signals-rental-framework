@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Data\ExchangeRates;
+declare(strict_types=1);
+
+namespace App\Domain\Currency\Data\ExchangeRates;
 
 use Spatie\LaravelData\Data;
 
-class UpdateExchangeRateData extends Data
+final class UpdateExchangeRateData extends Data
 {
     public function __construct(
         public ?string $rate = null,

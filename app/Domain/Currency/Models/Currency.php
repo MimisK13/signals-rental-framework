@@ -1,18 +1,25 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace App\Domain\Currency\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Currency\Database\Factories\CurrencyFactory;
 use App\Services\SchemaBuilder;
-use Database\Factories\CurrencyFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Currency extends Model implements HasSchema
+final class Currency extends Model implements HasSchema
 {
     /** @use HasFactory<CurrencyFactory> */
     use HasFactory;
+
+    protected static function newFactory(): CurrencyFactory
+    {
+        return CurrencyFactory::new();
+    }
 
     /** @var list<string> */
     protected $fillable = [

@@ -4,6 +4,7 @@ namespace App\Services\Opportunities;
 
 use App\Data\Tax\DocumentTaxLineInput;
 use App\Data\Tax\DocumentTaxRequest;
+use App\Domain\Currency\Services\CurrencyService;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
@@ -14,7 +15,6 @@ use App\Models\OpportunityItem;
 use App\Models\OpportunityVersion;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
-use App\Services\CurrencyService;
 use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\DiscountSourceRegistry;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;

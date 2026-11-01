@@ -1,16 +1,18 @@
 <?php
 
-namespace Database\Factories;
+declare(strict_types=1);
 
-use App\Models\Currency;
-use App\Models\ExchangeRate;
+namespace App\Domain\Currency\Database\Factories;
+
+use App\Domain\Currency\Models\Currency;
+use App\Domain\Currency\Models\ExchangeRate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<ExchangeRate>
  */
-class ExchangeRateFactory extends Factory
+final class ExchangeRateFactory extends Factory
 {
     protected $model = ExchangeRate::class;
 

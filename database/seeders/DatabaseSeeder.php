@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Domain\Activities\Database\Seeders\ActivitySeeder;
+use App\Domain\Currency\Database\Seeders\CurrencySeeder;
+use App\Domain\Currency\Database\Seeders\ExchangeRateSeeder;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

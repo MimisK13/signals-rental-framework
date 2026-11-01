@@ -3,11 +3,11 @@
 use App\Actions\Notifications\SendCustomerCommunication;
 use App\Contracts\Documents\DocumentRenderer;
 use App\Data\Notifications\SendCustomerCommunicationData;
+use App\Domain\Currency\Models\Currency;
 use App\Enums\DocumentOutputFormat;
 use App\Jobs\DeliverCustomerCommunication;
 use App\Models\CommunicationLog;
 use App\Models\CommunicationTemplate;
-use App\Models\Currency;
 use App\Models\Document;
 use App\Models\Member;
 use App\Models\NotificationType;
