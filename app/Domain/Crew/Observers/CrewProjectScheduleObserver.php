@@ -32,7 +32,11 @@ final class CrewProjectScheduleObserver implements ShouldHandleEventsAfterCommit
                             ->lockForUpdate()
                             ->firstOrFail();
 
-                        $assignment = CrewAssignment::withoutGlobalScope(StoreScope::class)->whereKey($candidate->id)->where('status', 'confirmed')->lockForUpdate()->first();
+                        $assignment = CrewAssignment::withoutGlobalScope(StoreScope::class)
+                            ->whereKey($candidate->id)
+                            ->where('status', 'confirmed')
+                            ->lockForUpdate()
+                            ->first();
 
                         if ($assignment === null) {
                             return;
