@@ -40,7 +40,8 @@ class CreateRepair
         $attributes['is_usable'] ??= true;
 
         return DB::transaction(function () use ($attributes): Repair {
-            app(ProductStoreCapacityLock::class)->acquire((int) $attributes['product_id'], (int) $attributes['store_id']);
+            app(ProductStoreCapacityLock::class)
+                ->acquire((int) $attributes['product_id'], (int) $attributes['store_id']);
 
             $repair = Repair::query()->create($attributes);
             event(new AuditableEvent($repair, 'repair.created'));
