@@ -391,6 +391,57 @@ describe('availableForItems stock/window orchestration', function () {
         expect($results)->toBe([7, 6]);
     });
 
+    it('excludes each item demand only from the slots where that demand overlaps', function () {
+        $product = Product::factory()->bulk()->create();
+        StockLevel::factory()->bulk()->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity_held' => 10,
+        ]);
+
+        $from = Carbon::now('UTC')->startOfDay()->addDays(10);
+        $middle = $from->copy()->addDay();
+        $to = $middle->copy()->addDays(2);
+
+        Demand::factory()->window($from, $middle)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 4,
+            'source_type' => 'opportunity_item',
+            'source_id' => 211,
+        ]);
+        Demand::factory()->window($middle, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 3,
+            'source_type' => 'opportunity_item',
+            'source_id' => 212,
+        ]);
+        Demand::factory()->window($from, $to)->create([
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'quantity' => 2,
+            'source_type' => 'booking',
+            'source_id' => 213,
+        ]);
+
+        $request = fn (int $excludeSourceId): array => [
+            'product_id' => $product->id,
+            'store_id' => $this->store->id,
+            'from' => $from,
+            'to' => $to,
+            'exclude_source_type' => 'opportunity_item',
+            'exclude_source_id' => $excludeSourceId,
+        ];
+
+        $results = $this->service->availableForItems([
+            $request(211),
+            $request(212),
+        ]);
+
+        expect($results)->toBe([5, 4]);
+    });
+
     it('shares only raw stock across separate window evaluations in one explicit context', function () {
         $product = Product::factory()->bulk()->create();
         StockLevel::factory()->bulk()->create([

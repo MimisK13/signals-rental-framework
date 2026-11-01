@@ -8,14 +8,20 @@ use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
+use App\Enums\OpportunityState;
+use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
+use App\Models\Product;
+use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
+use App\Services\Planning\OpportunityItemPlanningReader;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -33,6 +39,7 @@ function treeBuilderOpportunity(): Opportunity
         'store_id' => test()->store->id,
         'starts_at' => '2026-07-01T09:00:00Z',
         'ends_at' => '2026-07-04T09:00:00Z',
+        'currency' => settings('company.base_currency', 'GBP'),
     ]));
 
     return Opportunity::query()->whereKey($created->id)->firstOrFail();
@@ -145,6 +152,59 @@ it('reuses a supplied opportunity item collection for derived reads', function (
     $builder->parentGroupOptions($opportunity, $items);
 
     expect($queryCount)->toBe(1);
+});
+
+it('reuses planning availability without changing the canonical availability state', function (): void {
+    Bus::fake();
+
+    $opportunity = treeBuilderOpportunity();
+    $opportunity->forceFill([
+        'state' => OpportunityState::Quotation->value,
+        'status' => OpportunityStatus::QuotationReserved->statusValue(),
+    ])->saveQuietly();
+    $product = Product::factory()->bulk()->create();
+    StockLevel::factory()->bulk()->createQuietly([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 6,
+    ]);
+
+    (new AddOpportunityItem)($opportunity, AddOpportunityItemData::from([
+        'name' => $product->name,
+        'itemable_id' => $product->id,
+        'itemable_type' => Product::class,
+        'item_type' => OpportunityItemType::Product->value,
+        'quantity' => '10',
+        'unit_price' => 1000,
+    ]));
+
+    $opportunity = $opportunity->fresh(['items']);
+    $planning = app(OpportunityItemPlanningReader::class)
+        ->forOpportunity($opportunity, $opportunity->items)
+        ->keyBy('opportunity_item_id');
+    $availableByItem = $planning
+        ->mapWithKeys(fn ($item): array => [$item->opportunity_item_id => $item->available_quantity])
+        ->all();
+    $builder = app(OpportunityLineItemsTreeBuilder::class);
+    $canonical = $builder->tree($opportunity, $opportunity->items);
+    $reused = $builder->tree(
+        $opportunity,
+        $opportunity->items,
+        availableByItem: $availableByItem,
+    );
+
+    $availabilityState = static fn (array $row): array => collect($row)
+        ->only(['status_label', 'availability_status', 'has_shortage'])
+        ->all();
+
+    expect(collect($reused)->map($availabilityState)->all())
+        ->toBe(collect($canonical)->map($availabilityState)->all())
+        ->and($reused[0])
+        ->toMatchArray([
+            'status_label' => 'Shortage',
+            'availability_status' => 'out',
+            'has_shortage' => true,
+        ]);
 });
 
 it('builds display groups with subtotals and an ungrouped fallback bucket', function () {

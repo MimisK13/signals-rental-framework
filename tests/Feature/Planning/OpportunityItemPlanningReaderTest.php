@@ -6,6 +6,10 @@ use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\ChangeItemReservationData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Data\Opportunities\OpportunityItemReadContext;
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Data\Opportunities\PreparedStockInputs;
 use App\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
@@ -16,8 +20,10 @@ use App\Models\Product;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Planning\OpportunityItemPlanningReader;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function (): void {
     $this->store = Store::factory()->create(['name' => 'Main Warehouse', 'timezone' => 'UTC']);
@@ -226,4 +232,129 @@ it('returns null for non-product lines', function (): void {
     ]);
 
     expect(app(OpportunityItemPlanningReader::class)->read($item))->toBeNull();
+});
+
+it('fails instead of querying when a prepared Product is missing', function (): void {
+    $product = Product::factory()->bulk()->create();
+    $item = planningItem($this->store, $product);
+    $opportunity = $item->opportunity()->with('store')->firstOrFail();
+    $items = $opportunity->load(['items.item', 'items.dispatchStore'])->items;
+    $resolver = app(OpportunityItemDemandResolver::class);
+    $contexts = [
+        $item->id => OpportunityItemReadContext::fromResolved(
+            (int) $item->id,
+            $resolver->resolveContext($items->firstOrFail()),
+        ),
+    ];
+
+    expect(fn () => app(OpportunityItemPlanningReader::class)->forOpportunity(
+        $opportunity,
+        $items,
+        $contexts,
+        PreparedProductInputs::fromCollection(collect()),
+    ))->toThrow(LogicException::class);
+});
+
+it('forwards prepared inputs through shortage detection without raw fact fallbacks', function (): void {
+    $product = Product::factory()->rental()->bulk()->create(['track_availability' => true]);
+    StockLevel::factory()->bulk()->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity_held' => 5,
+    ]);
+    Demand::factory()->phase(DemandPhase::Committed)->window(
+        Carbon::parse('2026-07-10T08:00:00Z'),
+        Carbon::parse('2026-07-13T18:00:00Z'),
+    )->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity' => 4,
+        'source_type' => 'opportunity_item',
+        'source_id' => 999001,
+    ]);
+    Demand::factory()->phase(DemandPhase::Committed)->window(
+        Carbon::parse('2026-07-10T08:00:00Z'),
+        Carbon::parse('2026-07-13T18:00:00Z'),
+    )->create([
+        'product_id' => $product->id,
+        'store_id' => $this->store->id,
+        'quantity' => -2,
+        'source_type' => 'virtual_stock_intake',
+        'source_id' => 999002,
+    ]);
+    $item = planningItem($this->store, $product, ['quantity' => '3']);
+    $opportunity = $item->opportunity()->with('store')->firstOrFail();
+    $items = $opportunity->load(['items.item', 'items.dispatchStore'])->items;
+    $resolvedContext = app(OpportunityItemDemandResolver::class)->resolveContext($items->firstOrFail());
+    $rawDemand = Demand::query()
+        ->where('product_id', $product->id)
+        ->where('store_id', $this->store->id)
+        ->active()
+        ->overlapping($resolvedContext['from'], $resolvedContext['to'])
+        ->get();
+    $queries = [];
+
+    DB::listen(static function ($query) use (&$queries): void {
+        $queries[] = $query->sql;
+    });
+
+    $planning = app(OpportunityItemPlanningReader::class)->forOpportunity(
+        $opportunity,
+        $items,
+        [$item->id => OpportunityItemReadContext::fromResolved($item->id, $resolvedContext)],
+        PreparedProductInputs::fromCollection(collect([$product])),
+        new PreparedStockInputs([
+            PreparedStockInputs::key($product->id, $this->store->id) => 5,
+        ]),
+        new PreparedStandardDemandInputs([
+            PreparedStandardDemandInputs::key(
+                $product->id,
+                $this->store->id,
+                $resolvedContext['from'],
+                $resolvedContext['to'],
+            ) => $rawDemand,
+        ]),
+    );
+
+    expect($planning->first()?->shortage_quantity)->toBe(0)
+        ->and($planning->first()?->external_supply_quantity)->toBe(2)
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'stock_levels'))->all())->toBe([])
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, '"products"'))->all())->toBe([])
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, '"demands"'))->all())->toBe([]);
+});
+
+it('fails instead of loading stock when a prepared stock key is missing', function (): void {
+    $product = Product::factory()->bulk()->create();
+    $item = planningItem($this->store, $product);
+    $opportunity = $item->opportunity()->with('store')->firstOrFail();
+    $items = $opportunity->load(['items.item', 'items.dispatchStore'])->items;
+    $resolvedContext = app(OpportunityItemDemandResolver::class)->resolveContext($items->firstOrFail());
+
+    expect(fn () => app(OpportunityItemPlanningReader::class)->forOpportunity(
+        $opportunity,
+        $items,
+        [$item->id => OpportunityItemReadContext::fromResolved($item->id, $resolvedContext)],
+        PreparedProductInputs::fromCollection(collect([$product])),
+        new PreparedStockInputs([]),
+        new PreparedStandardDemandInputs([]),
+    ))->toThrow(LogicException::class);
+});
+
+it('fails instead of loading Demand when a prepared Demand key is missing', function (): void {
+    $product = Product::factory()->bulk()->create();
+    $item = planningItem($this->store, $product);
+    $opportunity = $item->opportunity()->with('store')->firstOrFail();
+    $items = $opportunity->load(['items.item', 'items.dispatchStore'])->items;
+    $resolvedContext = app(OpportunityItemDemandResolver::class)->resolveContext($items->firstOrFail());
+
+    expect(fn () => app(OpportunityItemPlanningReader::class)->forOpportunity(
+        $opportunity,
+        $items,
+        [$item->id => OpportunityItemReadContext::fromResolved($item->id, $resolvedContext)],
+        PreparedProductInputs::fromCollection(collect([$product])),
+        new PreparedStockInputs([
+            PreparedStockInputs::key($product->id, $this->store->id) => 20,
+        ]),
+        new PreparedStandardDemandInputs([]),
+    ))->toThrow(LogicException::class);
 });

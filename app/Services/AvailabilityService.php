@@ -697,27 +697,55 @@ class AvailabilityService
                 $loadDemands,
             ) ?? $loadDemands();
 
-            // Only the raw demand set is shared. Item-specific self-demand
-            // exclusion is applied independently by each availability result.
+            $requestIndexesByExclusion = [];
 
             foreach ($indexes as $index) {
                 $request = $requests[$index];
-                $competingDemands = $demands->reject(static fn (Demand $demand): bool => $demand->source_type === $request['exclude_source_type']
-                    && (int) $demand->source_id === $request['exclude_source_id']);
-                $worst = null;
+                $exclusionKey = $this->demandSourceKey(
+                    $request['exclude_source_type'],
+                    $request['exclude_source_id'],
+                );
+                $requestIndexesByExclusion[$exclusionKey][] = $index;
+                $results[$index] = null;
+            }
 
-                foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
-                    $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
-                    [$demanded] = $this->sumDemandIn($competingDemands, $slotStart, $slotEnd);
-                    $available = $totalStock - $demanded;
-                    $worst = $worst === null ? $available : min($worst, $available);
+            $demandsByExclusion = $demands->groupBy(
+                fn (Demand $demand): string => $this->demandSourceKey($demand->source_type, (int) $demand->source_id),
+            );
+
+            foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
+                $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
+                [$totalDemanded] = $this->sumDemandIn($demands, $slotStart, $slotEnd);
+
+                foreach ($requestIndexesByExclusion as $exclusionKey => $requestIndexes) {
+                    $excludedDemands = $demandsByExclusion->get($exclusionKey);
+                    $excludedDemanded = 0;
+
+                    if ($excludedDemands !== null) {
+                        [$excludedDemanded] = $this->sumDemandIn($excludedDemands, $slotStart, $slotEnd);
+                    }
+
+                    $available = $totalStock - ($totalDemanded - $excludedDemanded);
+
+                    foreach ($requestIndexes as $index) {
+                        $results[$index] = $results[$index] === null
+                            ? $available
+                            : min($results[$index], $available);
+                    }
                 }
+            }
 
-                $results[$index] = $worst ?? $totalStock;
+            foreach ($indexes as $index) {
+                $results[$index] ??= $totalStock;
             }
         }
 
         return $results;
+    }
+
+    private function demandSourceKey(string $sourceType, int $sourceId): string
+    {
+        return $sourceType."\0".$sourceId;
     }
 
     /**

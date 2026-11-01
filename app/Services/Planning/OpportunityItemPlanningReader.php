@@ -2,6 +2,10 @@
 
 namespace App\Services\Planning;
 
+use App\Data\Opportunities\OpportunityItemReadContext;
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Data\Opportunities\PreparedStockInputs;
 use App\Data\Planning\OpportunityItemPlanningData;
 use App\Enums\StockMethod;
 use App\Models\Demand;
@@ -50,23 +54,57 @@ final class OpportunityItemPlanningReader
     }
 
     /**
+     * @param  Collection<int, OpportunityItem>|null  $items
+     * @param  array<int, OpportunityItemReadContext>  $preparedContexts
      * @return Collection<int, OpportunityItemPlanningData>
      */
-    public function forOpportunity(Opportunity $opportunity): Collection
-    {
-        $opportunity->loadMissing(['store', 'items.item', 'items.dispatchStore']);
-        $opportunity->items->each(fn (OpportunityItem $item): OpportunityItem => $item->setRelation('opportunity', $opportunity));
+    public function forOpportunity(
+        Opportunity $opportunity,
+        ?Collection $items = null,
+        array $preparedContexts = [],
+        ?PreparedProductInputs $preparedProducts = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): Collection {
+        if ($items === null) {
+            $opportunity->loadMissing(['store', 'items.item', 'items.dispatchStore']);
+            $items = $opportunity->items;
+        } else {
+            if (! $opportunity->relationLoaded('store')) {
+                $opportunity->loadMissing('store');
+            }
+        }
 
-        return $this->readItems($opportunity->items, $opportunity);
+        $items->each(fn (OpportunityItem $item): OpportunityItem => $item->setRelation('opportunity', $opportunity));
+
+        $contexts = array_map(
+            static fn (OpportunityItemReadContext $context): array => $context->toResolvedArray(),
+            $preparedContexts,
+        );
+
+        return $this->readItems($items, $opportunity, $contexts, $preparedProducts, $preparedStock, $preparedDemand);
     }
 
     /**
      * @param  Collection<int, OpportunityItem>  $items
+     * @param  array<int, array{product_id: int|null, store_id: int|null, from: Carbon, to: Carbon, quantity: int, claim_quantity: int}>  $preparedContexts
      * @return Collection<int, OpportunityItemPlanningData>
      */
-    private function readItems(Collection $items, Opportunity $opportunity): Collection
-    {
-        if ($items instanceof EloquentCollection) {
+    private function readItems(
+        Collection $items,
+        Opportunity $opportunity,
+        array $preparedContexts = [],
+        ?PreparedProductInputs $preparedProducts = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): Collection {
+        $preparedPath = $preparedProducts !== null || $preparedStock !== null || $preparedDemand !== null;
+
+        if ($preparedPath && ($preparedProducts === null || $preparedStock === null || $preparedDemand === null)) {
+            throw new \LogicException('Complete prepared Product, stock, and Demand inputs are required for the prepared planning path.');
+        }
+
+        if (! $preparedPath && $items instanceof EloquentCollection) {
             $items->loadMissing(['item', 'dispatchStore']);
         }
         $planningItems = $items->filter(static fn (OpportunityItem $item): bool => $item->isProductBacked())->values();
@@ -75,7 +113,7 @@ final class OpportunityItemPlanningReader
             return collect();
         }
 
-        $missingProductRelation = $planningItems->contains(
+        $missingProductRelation = ! $preparedPath && $planningItems->contains(
             static fn (OpportunityItem $item): bool => ! $item->relationLoaded('item'),
         );
 
@@ -97,19 +135,35 @@ final class OpportunityItemPlanningReader
         $requestItemIds = [];
 
         foreach ($planningItems as $item) {
-            $context = $this->demandResolver->resolveContext($item);
+            $context = $preparedContexts[$item->id] ?? null;
+
+            if ($context === null) {
+                if ($preparedPath) {
+                    throw new \LogicException("Prepared context for OpportunityItem {$item->id} is missing.");
+                }
+
+                $context = $this->demandResolver->resolveContext($item);
+            }
 
             if ($context['product_id'] === null || $context['store_id'] === null) {
                 continue;
             }
 
-            $product = $item->relationLoaded('itemable') && $item->getRelation('itemable') instanceof Product
+            $product = $preparedProducts?->required((int) $context['product_id']);
+            $product ??= $item->relationLoaded('itemable') && $item->getRelation('itemable') instanceof Product
                 ? $item->getRelation('itemable')
                 : ($item->item instanceof Product ? $item->item : null);
-            $product ??= Product::query()->find($context['product_id']);
+
+            if (! $preparedPath) {
+                $product ??= Product::query()->find($context['product_id']);
+            }
             $store = $item->dispatch_store_id !== null && $item->dispatchStore instanceof Store
                 ? $item->dispatchStore
-                : ($opportunity->store instanceof Store ? $opportunity->store : Store::query()->find($context['store_id']));
+                : ($opportunity->store instanceof Store
+                    ? $opportunity->store
+                    : ($preparedPath
+                        ? null
+                        : Store::query()->find($context['store_id'])));
 
             if ($product === null || $store === null) {
                 continue;
@@ -134,11 +188,22 @@ final class OpportunityItemPlanningReader
         }
 
         $availableByItem = [];
-        foreach ($this->availability->availableForItems($requests) as $index => $available) {
+        foreach ($this->availability->availableForItems(
+            $requests,
+            products: $preparedProducts,
+            preparedStock: $preparedStock,
+            preparedDemand: $preparedDemand,
+        ) as $index => $available) {
             $availableByItem[$requestItemIds[$index]] = $available;
         }
 
-        $ownedAvailableByItem = $this->ownedCapacity->availableForItems($planningItems, $contexts);
+        $ownedAvailableByItem = $this->ownedCapacity->availableForItems(
+            $planningItems,
+            $contexts,
+            $preparedProducts,
+            $preparedStock,
+            $preparedDemand,
+        );
         $allocatedByItem = $this->allocatedQuantities($planningItems, $products);
         $shortages = $this->shortages->forItems(
             $planningItems,
@@ -147,8 +212,11 @@ final class OpportunityItemPlanningReader
             $availableByItem,
             $products,
             $allocatedByItem,
+            preparedProducts: $preparedProducts,
+            preparedStock: $preparedStock,
+            preparedDemand: $preparedDemand,
         );
-        $externalByItem = $this->externalSupplyQuantities($contexts);
+        $externalByItem = $this->externalSupplyQuantities($contexts, $preparedDemand);
 
         return $planningItems
             ->filter(fn (OpportunityItem $item): bool => isset($contexts[$item->id], $products[$item->id], $stores[$item->id]))
@@ -236,8 +304,10 @@ final class OpportunityItemPlanningReader
      * @param  array<int, array<string, mixed>>  $contexts
      * @return array<int, int>
      */
-    private function externalSupplyQuantities(array $contexts): array
-    {
+    private function externalSupplyQuantities(
+        array $contexts,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): array {
         $results = [];
         $groups = [];
 
@@ -253,14 +323,19 @@ final class OpportunityItemPlanningReader
 
         foreach ($groups as $itemIds) {
             $context = $contexts[$itemIds[0]];
-            $quantity = (int) Demand::query()
+            $demands = $preparedDemand?->required(
+                $context['product_id'],
+                $context['store_id'],
+                $context['from'],
+                $context['to'],
+            ) ?? Demand::query()
                 ->where('product_id', $context['product_id'])
                 ->where('store_id', $context['store_id'])
-                ->where('source_type', 'virtual_stock_intake')
-                ->where('quantity', '<', 0)
                 ->active()
                 ->overlapping($context['from'], $context['to'])
-                ->get()
+                ->get();
+            $quantity = (int) $demands
+                ->filter(static fn (Demand $demand): bool => $demand->source_type === 'virtual_stock_intake' && $demand->quantity < 0)
                 ->sum(fn (Demand $demand): int => abs($demand->effectiveQuantity()));
 
             foreach ($itemIds as $itemId) {
