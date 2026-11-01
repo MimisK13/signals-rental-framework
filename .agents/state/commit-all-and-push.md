@@ -1,14 +1,15 @@
-# Commit all pending work and push
-Objective: user explicitly requested commits for EVERYTHING in C:/Herd/signals-rental-framework and push to origin/main.
-Baseline: main d749963a; fetched origin/main matched HEAD; initially empty index. No force push or history rewrite.
-Completed source commits:
--38e0da21 Refresh Laravel and frontend agent guidance
--24072807 Refresh PHP dependencies and replace Horizon with Laravel queue workers
--d4e568c9 Protect test runs from cached production database settings
--b8b16181 Optimize batched availability and planning reads
--231562b7 Refine experimental quotation synchronization and batch pricing
--db1e652d Format repair capacity-lock acquisition
--4daea9f2 Implement Crew domain with class-based Presentation and staffing workflows
-Delivery scope includes all nonignored pending work. Checkpoints and generated storage/domain-report.html are intentionally included as a separate final inventory commit per user's EVERYTHING instruction. The report is generated source/schema inventory, not sampled business rows. Ignored secrets/build/runtime caches are excluded; newly created work/ delivery scratch files are removed.
-Validation: dirty Pint passed; Composer manifest/lock valid (existing unbounded-constraint warnings only); high-confidence token/private-key scan373 sources found0 candidates. Availability/planning/queue36 tests233 assertions passed; quotation/pricing52 tests136 assertions passed; both JS runner checks passed. Earlier Crew suites/static/build results remain recorded in Crew checkpoints. Every commit staged by exact group and cached diff reviewed; bootstrap Horizon removal and Crew registration staged separately.
-Source commits and verification complete. Final inventory commit captures these task records and domain report. Final remaining delivery action: ordinary git push origin main, then verify remote HEAD equals local HEAD and git status is clean. On resumption, inspect git status/log and remote refs before retrying a push; never force.
+# Commit domain extractions and push
+Objective: user explicitly requested commits for ALL pending changes in C:/Herd/signals-rental-framework, push, then next easiest domain recommendation.
+Baseline: main 458596a4; fetched origin/main matches baseline (0 ahead/0 behind). Index initially empty. Dense nested repository clean; no Dense changes to commit.
+Inventory: 329 pending source/state files across Activities, Stocktakes, Currency, required shared integration, one formatting-only Crew query change, domain-aware Ransack test. No dependency or historical migration changes.
+Verification: prior extraction suites recorded in individual domain checkpoints. Delivery rerun 23 cross-domain compatibility/architecture/presentation tests passed (68 assertions). Dirty Pint plus whole Activities/Stocktakes/Currency Pint passed. High-confidence secrets scan237 existing changed/new files found0 candidate files. Whitespace checks passed (existing SignalsClearDemo line-ending warning only).
+Commit plan: Crew formatting; Activities native domain+integration; Stocktakes native domain+integration; Currency domain+integration+Ransack scanner; delivery records. Shared files staged per domain through index-only intermediate versions; working files remain untouched.
+Next: finish source commits, stage/review remaining checkpoints, ordinary push origin main; verify local/remote HEAD equality and clean root/Dense status. Never force/rewrite.
+Recommendation read-only audit: Lists/ListValues next (2models6actions6DTOs,policy,2factories,seeder,2APIcontrollers,4nativePresentation conversions;6web+18APIroutes including legacy aliases). Keep Countries/Tax/CustomFields outside boundary.
+
+Source commits completed (staged diffs reviewed before each commit):
+1bc9f7cb Extract Currency domain and preserve exchange-rate integration
+229d0242 Extract Stocktakes domain with native Livewire presentation
+b7e9c128 Extract Activities domain with native Livewire presentation
+8e5cda2f Format Crew availability window output
+Only delivery checkpoints remain; source working tree matches reviewed index. Next: commit these records, ordinary push, verify clean working tree and remote/local HEAD match.
