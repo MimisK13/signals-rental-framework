@@ -69,7 +69,10 @@ final class CrewAvailabilityQuery
         }
 
         $format = function (array $interval): array {
-            return ['starts_at' => CarbonImmutable::createFromTimestampUTC($interval[0])->toIso8601String(), 'ends_at' => CarbonImmutable::createFromTimestampUTC($interval[1])->toIso8601String()];
+            return [
+                'starts_at' => CarbonImmutable::createFromTimestampUTC($interval[0])->toIso8601String(),
+                'ends_at' => CarbonImmutable::createFromTimestampUTC($interval[1])->toIso8601String(),
+            ];
         };
 
         return new CrewAvailabilityWindowData($crewMemberId, array_map($format, $merged), array_map($format, $free));
