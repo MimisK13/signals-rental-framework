@@ -32,7 +32,10 @@ interface OpportunityLineItemsEditorContract
     /**
      * @param  array<int, array<string, mixed>>  $localRows
      * @param  array<int, int>  $pendingLocalIds
-     * @return array{stale: bool, revision: string, tree: array<int, array<string, mixed>>, conflicts: array<int, string>, cache_token: string, charge_total: int, deal_total: int|null, has_deal_price: bool}
+     *                                            Implementations may return a lightweight acknowledgement without `tree`
+     *                                            when the client revision is current. Experimental implementations may
+     *                                            also accept optional synchronization flags after the shared arguments.
+     * @return array{changed?: bool, stale: bool, revision: string, tree?: array<int, array<string, mixed>>, conflicts?: array<int, string>, cache_token: string, charge_total: int, deal_total: int|null, has_deal_price: bool, collapsed_section_ids?: array<int, int>}
      */
     public function pullTree(int $baseRevision, array $localRows = [], array $pendingLocalIds = []): array;
 }

@@ -82,6 +82,7 @@ use App\Services\Notifications\RecipientResolvers\TriggerActorRecipientResolver;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
+use App\Services\Opportunities\OpportunityTotalsBatch;
 use App\Services\Opportunities\TransitionRuleRegistry;
 use App\Services\PermissionRegistry;
 use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
@@ -218,6 +219,7 @@ class AppServiceProvider extends ServiceProvider
         // Request-scoped suppression flag for batch auto-promotion (scoped so it is
         // Octane-safe — reset between requests).
         $this->app->scoped(AutoPromotionContext::class);
+        $this->app->scoped(OpportunityTotalsBatch::class);
 
         // Availability seams — tenant-ignorant OSS defaults. The commercial Cloud
         // package rebinds these to tenant-/hosting-aware implementations.

@@ -12,14 +12,18 @@ use App\Data\Opportunities\CreateOpportunityData;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
 use App\Enums\ProductType;
+use App\Enums\StockMethod;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;
+use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\CurrencyService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
+use RuntimeException;
 
 class HeavyQuotationSeeder extends Seeder
 {
@@ -27,14 +31,19 @@ class HeavyQuotationSeeder extends Seeder
 
     private const string TAG = 'experimental-heavy-quotation';
 
+    private const int STOCK_HEADROOM = 10;
+
+    private const string STOCK_MARKER = 'Experimental heavy quotation fixture stock';
+
+    /** @var array<string, int> */
+    private const array CONSTRAINED_STOCK = [
+        'AUD-SM58' => 1,
+        'LMH-ESPRITE' => 2,
+        'STG-DECK-8X4' => 0,
+    ];
+
     public function run(): void
     {
-        if (Opportunity::query()->where('reference', self::REFERENCE)->exists()) {
-            $this->command?->info('Heavy quotation already exists; nothing was seeded.');
-
-            return;
-        }
-
         $user = User::query()->whereNotNull('member_id')->first();
         $store = Store::query()->where('is_default', true)->first()
             ?? Store::query()->first();
@@ -46,11 +55,19 @@ class HeavyQuotationSeeder extends Seeder
                 ProductType::Service->value,
             ])
             ->orderBy('id')
-            ->get(['id', 'name', 'product_type']);
+            ->get(['id', 'name', 'sku', 'product_type', 'stock_method']);
         $currency = app(CurrencyService::class)->baseCurrencyCode();
 
-        if ($user === null || $store === null || $products->count() < 18) {
-            throw new RuntimeException('Heavy quotation seeding requires an existing user, store, and at least 18 active products.');
+        if ($user === null || $store === null || $products->isEmpty()) {
+            throw new RuntimeException('Heavy quotation seeding requires an existing user, store, and active product.');
+        }
+
+        $this->ensureFixtureStock($store, $products);
+
+        if (Opportunity::query()->where('reference', self::REFERENCE)->exists()) {
+            $this->command?->info('Heavy quotation and fixture stock already exist; nothing was seeded.');
+
+            return;
         }
 
         $customer = Member::query()
@@ -123,6 +140,73 @@ class HeavyQuotationSeeder extends Seeder
             $this->command?->info('Seeded one heavy quotation with 12 groups and 216 product lines.');
         } finally {
             Auth::forgetUser();
+        }
+    }
+
+    /**
+     * @param  Collection<int, Product>  $products
+     */
+    private function ensureFixtureStock(Store $store, Collection $products): void
+    {
+        $requiredByProduct = [];
+
+        foreach (range(1, 12) as $groupNumber) {
+            foreach (range(0, 17) as $lineNumber) {
+                $product = $products[($groupNumber * 18 + $lineNumber) % $products->count()];
+                $requiredByProduct[$product->id] = ($requiredByProduct[$product->id] ?? 0)
+                    + (($lineNumber % 4) + 1);
+            }
+        }
+
+        foreach ($products as $product) {
+            $required = $requiredByProduct[$product->id] ?? 0;
+            $target = isset(self::CONSTRAINED_STOCK[$product->sku])
+                ? self::CONSTRAINED_STOCK[$product->sku]
+                : $required + self::STOCK_HEADROOM;
+            $stockQuery = StockLevel::query()
+                ->where('product_id', $product->id)
+                ->where('store_id', $store->id);
+            $managedQuantity = (int) (clone $stockQuery)
+                ->where('item_name', self::STOCK_MARKER)
+                ->sum('quantity_held');
+            $externalQuantity = (int) (clone $stockQuery)
+                ->where(fn ($query) => $query
+                    ->whereNull('item_name')
+                    ->orWhere('item_name', '!=', self::STOCK_MARKER))
+                ->sum('quantity_held');
+            $desiredManagedQuantity = max(0, $target - $externalQuantity);
+
+            if ($managedQuantity === $desiredManagedQuantity) {
+                continue;
+            }
+
+            (clone $stockQuery)
+                ->where('item_name', self::STOCK_MARKER)
+                ->delete();
+
+            if ($product->stock_method === StockMethod::Serialised) {
+                StockLevel::factory()
+                    ->serialised()
+                    ->count($desiredManagedQuantity)
+                    ->createQuietly([
+                        'product_id' => $product->id,
+                        'store_id' => $store->id,
+                        'item_name' => self::STOCK_MARKER,
+                    ]);
+
+                continue;
+            }
+
+            if ($desiredManagedQuantity === 0) {
+                continue;
+            }
+
+            StockLevel::factory()->bulk()->createQuietly([
+                'product_id' => $product->id,
+                'store_id' => $store->id,
+                'quantity_held' => $desiredManagedQuantity,
+                'item_name' => self::STOCK_MARKER,
+            ]);
         }
     }
 }

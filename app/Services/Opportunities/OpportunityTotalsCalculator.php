@@ -159,12 +159,15 @@ class OpportunityTotalsCalculator
      *
      * Bundle and aggregate quantity discounts require opportunity-wide context,
      * so even a single-line mutation reprices the full opportunity item set.
+     *
+     * @param  array<int, int|null>  $manualUnitPrices  Event-sourced overrides by item ID; null explicitly clears an override.
      */
     public function repriceOpportunity(
         Opportunity $opportunity,
         ?OpportunityItem $focusItem = null,
         ?int $manualUnitPrice = null,
         bool $rollUp = true,
+        array $manualUnitPrices = [],
     ): void {
         $opportunity->loadMissing(['items.item', 'member.priceCategoryTier']);
         $items = $opportunity->items;
@@ -182,9 +185,13 @@ class OpportunityTotalsCalculator
                 continue;
             }
 
-            $manual = ($focusItem !== null && (int) $focusItem->id === (int) $item->id)
-                ? $manualUnitPrice
-                : null;
+            $manual = null;
+
+            if (array_key_exists((int) $item->id, $manualUnitPrices)) {
+                $manual = $manualUnitPrices[(int) $item->id];
+            } elseif ($focusItem !== null && (int) $focusItem->id === (int) $item->id) {
+                $manual = $manualUnitPrice;
+            }
 
             $quantity = $this->quantityMinor->normalizeQuantity((string) $item->quantity);
             [$start, $end] = $this->effectiveDates($item, $opportunity);
@@ -325,6 +332,10 @@ class OpportunityTotalsCalculator
      */
     public function rollUp(Opportunity $opportunity): void
     {
+        if (app(OpportunityTotalsBatch::class)->deferRollUp($opportunity)) {
+            return;
+        }
+
         $items = $opportunity->items()->with('itemSurcharges')->get();
         $costs = $opportunity->costs()->get();
 
