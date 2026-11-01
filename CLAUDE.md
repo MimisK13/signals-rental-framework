@@ -28,7 +28,7 @@ Key architectural traits:
 - **Spatie Laravel Data** — DTOs for input validation, internal transfer, and API response serialisation (replaces Form Requests AND API Resources)
 - **Spatie Laravel Permission** — roles and permissions (`resource.action` pattern)
 - **Laravel Sanctum** — API token auth with scoped abilities (`resource:action`)
-- **Laravel Horizon** — Redis queue monitoring and management
+- **Laravel queues** — Redis primary, database fallback
 - **Laravel Reverb** — WebSocket broadcast for real-time features
 - **Laravel Nightwatch** — APM and observability
 - **Scramble (dedoc/scramble)** — OpenAPI documentation auto-generated from code (route definitions, PHPDoc, validation rules, return types)
@@ -323,7 +323,7 @@ OSF ships single-tenant defaults (no-ops). Never add tenant awareness to core co
   - `ThrottlesExceptions` for transient external failures
 - Use `Bus::batch()` for bulk operations, `Bus::chain()` for sequential workflows.
 - Track long-running job progress via Cache: `job-progress:{class}:{id}`.
-- **Horizon** manages all queues in production. Dashboard gated behind super-admin.
+- Run long-lived Laravel queue workers under the production process manager, covering every named queue.
 
 ### Caching
 
@@ -469,7 +469,7 @@ All architectural decisions are documented in `framework-plans/`. **Always consu
 | `dashboard.md` | Section layout, widgets, real-time via Reverb, shared dashboards |
 | `search.md` | PostgreSQL full-text search, tsvector/GIN, global search modal |
 | `file-and-attachment-system.md` | S3 storage, polymorphic attachments, signed URLs, virus scanning |
-| `queue-and-job-infrastructure.md` | Redis/Horizon, named queues, job patterns, scheduling, progress tracking |
+| `queue-and-job-infrastructure.md` | Laravel queue workers, named queues, job patterns, scheduling, progress tracking |
 | `caching-strategy.md` | Redis config, cache map, invalidation patterns, tenant isolation |
 | `sso-and-enterprise-auth.md` | Socialite, SAML 2.0, OIDC, SSO connections, MFA enforcement |
 | `observability.md` | Nightwatch, structured logging, health checks, error tracking, alerting |
@@ -685,7 +685,6 @@ When working on Octane-specific features (concurrency, shared tables, memory, dr
 - Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `php artisan test --compact`.
 - Rerun a test after each change to it.
 - Run `vendor/bin/pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
-- After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
 
 === dedoc/scramble/core rules ===
 
