@@ -6,6 +6,7 @@
 @import './line-items-editor.css';
 
 @source "../views";
+@source "../../app/Domain/Crew/Presentation/Views";
 @source "../../packages/**/*.blade.php";
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';

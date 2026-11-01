@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
+use App\Domain\Crew\Services\CrewEventDefinitions;
 use App\Enums\NotificationAudience;
 use App\Services\NotificationRegistry;
 use Illuminate\Database\Seeder;
@@ -32,6 +35,7 @@ class NotificationTypeSeeder extends Seeder
             self::shortageTypes(),
             self::invoicingTypes(),
             self::documentTypes(),
+            CrewEventDefinitions::notifications(),
         );
     }
 

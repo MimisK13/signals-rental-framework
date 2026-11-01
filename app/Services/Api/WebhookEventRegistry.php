@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Api;
+
+use App\Domain\Crew\Services\CrewEventDefinitions;
 
 class WebhookEventRegistry
 {
@@ -10,6 +14,7 @@ class WebhookEventRegistry
      * @var list<string>
      */
     public const CORE_EVENT_NAMES = [
+        ...CrewEventDefinitions::WEBHOOKS,
         'user.created',
         'user.updated',
         'user.deactivated',
@@ -197,7 +202,7 @@ class WebhookEventRegistry
 
         $this->events[$name] = [
             'name' => $name,
-            'label' => $definition['label'] ?? (string) str(str($name)->after('.'))->headline(),
+            'label' => $definition['label'] ?? (string) str($name)->after('.')->headline(),
             'group' => $group,
             'weight' => $definition['weight'] ?? 1,
         ];

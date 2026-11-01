@@ -71,6 +71,12 @@
             "description": "Quotes, orders, availability, shortages, and the job planner timeline.",
             "pages": [
                 {
+                    "title": "Crew",
+                    "slug": "crew",
+                    "description": "Crew registry, staffing, shifts, availability, timesheets and compensation.",
+                    "urlSection": "platform"
+                },
+                {
                     "title": "Opportunities",
                     "slug": "opportunities",
                     "description": "Quote, order, and fulfil rental jobs — the opportunity lifecycle, line-item editor, quote versioning, and state transitions.",

@@ -1,0 +1,89 @@
+<nav
+    aria-label="Crew"
+    class="flex flex-wrap gap-2 border-b border-zinc-200 pb-3 dark:border-zinc-700"
+>
+    <flux:button
+        size="sm"
+        variant="ghost"
+        :href="route('crew.dashboard')"
+        wire:navigate.hover
+    >
+        Overview
+    </flux:button>
+    @can('crew.view')
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.members.index')"
+            wire:navigate.hover
+        >
+            Members
+        </flux:button>
+    @endcan
+
+    @can('crew.requests.view')
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.requests.index')"
+            wire:navigate.hover
+        >
+            Requests
+        </flux:button>
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.planner')"
+            wire:navigate.hover
+        >
+            Planner
+        </flux:button>
+    @endcan
+
+    @can('crew.shifts.view')
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.calendar')"
+            wire:navigate.hover
+        >
+            Calendar
+        </flux:button>
+    @endcan
+
+    @can('crew.timesheets.view')
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.timesheets.index')"
+            wire:navigate.hover
+        >
+            Timesheets
+        </flux:button>
+    @endcan
+
+</nav>
+<div class="flex flex-wrap gap-2">
+    @can('crew.rates.view')
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.rates.index')"
+            wire:navigate.hover
+        >
+            Rates
+        </flux:button>
+    @endcan
+
+    @can('crew.settings.manage')
+        <flux:button
+            size="sm"
+            variant="ghost"
+            :href="route('crew.roles.index')"
+            wire:navigate.hover
+        >
+            Configuration
+        </flux:button>
+    @endcan
+
+</div>

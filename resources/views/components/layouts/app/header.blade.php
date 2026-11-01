@@ -229,13 +229,17 @@
                             @endcanany
                             <div>
                                 <div class="mega-group-label">Services</div>
-                                <a href="#" class="mega-item">
+                                @if(settings()->moduleEnabled('crew'))
+                                @can('crew.access')
+                                <a href="{{ route('crew.dashboard') }}" class="mega-item" wire:navigate.hover>
                                     <flux:icon.users class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
                                         <span class="mega-item-label">Crew</span>
                                         <span class="mega-item-desc">People &amp; team scheduling</span>
                                     </div>
                                 </a>
+                                @endcan
+                                @endif
                                 <a href="#" class="mega-item">
                                     <flux:icon.wrench-screwdriver class="mega-item-icon" />
                                     <div class="flex flex-col gap-px">
@@ -658,9 +662,13 @@
 
                 {{-- Services placeholders (ungated until modules ship). --}}
                 <div class="sidebar-group-label">Services</div>
-                <a class="sidebar-item" href="#">
+                @if(settings()->moduleEnabled('crew'))
+                @can('crew.access')
+                <a class="sidebar-item" href="{{ route('crew.dashboard') }}" wire:navigate.hover>
                     <flux:icon.users class="!size-[15px]" /> Crew
                 </a>
+                @endcan
+                @endif
                 <a class="sidebar-item" href="#">
                     <flux:icon.wrench-screwdriver class="!size-[15px]" /> Labour
                 </a>

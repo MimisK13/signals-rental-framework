@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
+use App\Domain\Crew\Models\CrewMember;
+use App\Domain\Crew\Models\CrewRequest;
 use App\Models\Activity;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -42,6 +46,8 @@ class CustomFieldModuleRegistry
      * @var array<class-string<Model>, string>
      */
     private const MODELS = [
+        CrewMember::class => 'Crew Member',
+        CrewRequest::class => 'Crew Request',
         Member::class => 'Member',
         Product::class => 'Product',
         ProductGroup::class => 'Product Group',
