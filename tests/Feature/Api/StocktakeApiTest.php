@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stocktakes\Models\Stocktake;
 use App\Models\Asset;
 use App\Models\Product;
 use App\Models\StockLevel;
-use App\Models\Stocktake;
 use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;

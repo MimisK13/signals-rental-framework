@@ -1,19 +1,19 @@
 <?php
 
 use App\Actions\Products\AdjustStockLevel;
-use App\Actions\Stocktakes\CancelStocktake;
-use App\Actions\Stocktakes\CompleteStocktake;
-use App\Actions\Stocktakes\CreateStocktake;
-use App\Actions\Stocktakes\RecordBulkStocktakeObservation;
-use App\Actions\Stocktakes\StartStocktake;
 use App\Data\Products\AdjustStockLevelData;
-use App\Data\Stocktakes\CreateStocktakeData;
-use App\Data\Stocktakes\RecordBulkStocktakeObservationData;
-use App\Enums\StocktakeStatus;
+use App\Domain\Stocktakes\Actions\CancelStocktake;
+use App\Domain\Stocktakes\Actions\CompleteStocktake;
+use App\Domain\Stocktakes\Actions\CreateStocktake;
+use App\Domain\Stocktakes\Actions\RecordBulkStocktakeObservation;
+use App\Domain\Stocktakes\Actions\StartStocktake;
+use App\Domain\Stocktakes\Data\CreateStocktakeData;
+use App\Domain\Stocktakes\Data\RecordBulkStocktakeObservationData;
+use App\Domain\Stocktakes\Enums\StocktakeStatus;
+use App\Domain\Stocktakes\Models\StocktakeObservation;
 use App\Enums\TransactionType;
 use App\Models\Product;
 use App\Models\StockLevel;
-use App\Models\StocktakeObservation;
 use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;

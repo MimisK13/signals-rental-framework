@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Stocktakes\CompleteStocktake;
-use App\Actions\Stocktakes\CreateStocktake;
-use App\Actions\Stocktakes\RecordSerializedStocktakeObservation;
-use App\Actions\Stocktakes\StartStocktake;
-use App\Data\Stocktakes\CreateStocktakeData;
+use App\Domain\Stocktakes\Actions\CompleteStocktake;
+use App\Domain\Stocktakes\Actions\CreateStocktake;
+use App\Domain\Stocktakes\Actions\RecordSerializedStocktakeObservation;
+use App\Domain\Stocktakes\Actions\StartStocktake;
+use App\Domain\Stocktakes\Data\CreateStocktakeData;
+use App\Domain\Stocktakes\Enums\StocktakeObservationType;
+use App\Domain\Stocktakes\Models\Stocktake;
+use App\Domain\Stocktakes\Models\StocktakeObservation;
 use App\Enums\AssetLifecycleStatus;
-use App\Enums\StocktakeObservationType;
 use App\Models\Asset;
 use App\Models\Product;
 use App\Models\StockLevel;
-use App\Models\Stocktake;
-use App\Models\StocktakeObservation;
 use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;

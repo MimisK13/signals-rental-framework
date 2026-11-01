@@ -8,6 +8,7 @@
 @source "../views";
 @source "../../app/Domain/Crew/Presentation/Views";
 @source "../../app/Domain/Activities/Presentation/Views";
+@source "../../app/Domain/Stocktakes/Presentation/Views";
 @source "../../packages/**/*.blade.php";
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';

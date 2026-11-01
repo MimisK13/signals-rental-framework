@@ -139,11 +139,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('stock-levels/{stockLevel}', 'stock-levels.show')->name('stock-levels.show');
     Volt::route('stock-levels/{stockLevel}/edit', 'stock-levels.form')->name('stock-levels.edit');
 
-    // Stocktakes record physical observations without mutating inventory.
-    Volt::route('stocktakes', 'stocktakes.index')->name('stocktakes.index');
-    Volt::route('stocktakes/create', 'stocktakes.form')->name('stocktakes.create');
-    Volt::route('stocktakes/{stocktake}', 'stocktakes.show')->name('stocktakes.show');
-
     // Physical serialized asset detail and financial history.
     Volt::route('assets/{asset}', 'assets.show')->name('assets.show');
     Volt::route('assets/{asset}/utilization', 'assets.utilization')->name('assets.utilization');

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Stocktakes\Models\Stocktake;
 use App\Enums\ShortageDispatchPolicy;
 use App\Enums\ShortagePolicy;
 use App\Models\Traits\HasCustomFields;

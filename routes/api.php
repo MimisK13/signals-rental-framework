@@ -58,7 +58,6 @@ use App\Http\Controllers\Api\V1\SerialisedComponentController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShortageController;
 use App\Http\Controllers\Api\V1\StockLevelController;
-use App\Http\Controllers\Api\V1\StocktakeController;
 use App\Http\Controllers\Api\V1\StockTransactionController;
 use App\Http\Controllers\Api\V1\SurchargeController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
@@ -254,15 +253,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     // Stock Levels
     Route::apiResource('stock_levels', StockLevelController::class)->names('api.v1.stock_levels');
-
-    Route::get('stocktakes', [StocktakeController::class, 'index'])->name('api.v1.stocktakes.index');
-    Route::post('stocktakes', [StocktakeController::class, 'store'])->name('api.v1.stocktakes.store');
-    Route::get('stocktakes/{stocktake}', [StocktakeController::class, 'show'])->name('api.v1.stocktakes.show');
-    Route::post('stocktakes/{stocktake}/start', [StocktakeController::class, 'start'])->name('api.v1.stocktakes.start');
-    Route::post('stocktakes/{stocktake}/lines/{line}/count', [StocktakeController::class, 'count'])->name('api.v1.stocktakes.lines.count');
-    Route::post('stocktakes/{stocktake}/scan', [StocktakeController::class, 'scan'])->name('api.v1.stocktakes.scan');
-    Route::post('stocktakes/{stocktake}/complete', [StocktakeController::class, 'complete'])->name('api.v1.stocktakes.complete');
-    Route::post('stocktakes/{stocktake}/cancel', [StocktakeController::class, 'cancel'])->name('api.v1.stocktakes.cancel');
 
     // Containers — routes bind by public UUID ({@see Container::resolveRouteBinding})
     // with integer-id fallback for backward compatibility. The pack/unpack and

@@ -2,6 +2,7 @@
 
 use App\Domain\Activities\ActivitiesServiceProvider;
 use App\Domain\Crew\CrewServiceProvider;
+use App\Domain\Stocktakes\StocktakesServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\SettingsServiceProvider;
 use App\Providers\VoltServiceProvider;
@@ -12,6 +13,7 @@ return [
     SettingsServiceProvider::class,
     CrewServiceProvider::class,
     ActivitiesServiceProvider::class,
+    StocktakesServiceProvider::class,
     VoltServiceProvider::class,
     DenseServiceProvider::class,
 ];

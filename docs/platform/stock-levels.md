@@ -12,6 +12,20 @@ Stock Levels represent the physical inventory in Signals. Each stock level recor
 | Bulk Stock | 10 | Tracked by quantity |
 | Serialised Stock | 50 | Individually tracked items |
 
+## Stocktakes
+
+Physical counts are owned by `app/Domain/Stocktakes`. A stocktake snapshots the
+expected inventory and records immutable bulk counts or serialized observations.
+Starting, counting and completing a stocktake do not adjust stock quantities or
+asset lifecycle state; inventory corrections remain separate stock operations.
+
+The domain includes its actions, input DTOs, models, enums, factories and identifier
+resolver. Class-based Livewire pages, separate `stocktakes::` Blade views, API
+controllers and route files live under its `Presentation` directory. Existing
+`/stocktakes` and `/api/v1/stocktakes` URLs, permissions and API abilities are
+preserved. Historical migrations remain in `database/migrations`; legacy model
+and enum identifiers retain compatibility without a data backfill.
+
 ## Stock Levels List
 
 **Route:** `/stock-levels`

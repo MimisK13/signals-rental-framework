@@ -1,16 +1,18 @@
 <?php
 
-use App\Actions\Stocktakes\StartStocktake;
-use App\Enums\StocktakeStatus;
+use App\Domain\Stocktakes\Actions\StartStocktake;
+use App\Domain\Stocktakes\Enums\StocktakeStatus;
+use App\Domain\Stocktakes\Models\Stocktake;
+use App\Domain\Stocktakes\Presentation\Livewire\Form;
+use App\Domain\Stocktakes\Presentation\Livewire\Show;
 use App\Models\Product;
 use App\Models\StockLevel;
-use App\Models\Stocktake;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -30,14 +32,14 @@ beforeEach(function (): void {
 });
 
 it('creates and starts a stocktake from the operator pages', function (): void {
-    Volt::test('stocktakes.form')
+    Livewire::test(Form::class)
         ->set('storeId', $this->store->id)
         ->call('create')
         ->assertRedirect();
 
     $stocktake = Stocktake::query()->latest('id')->firstOrFail();
 
-    Volt::test('stocktakes.show', ['stocktake' => $stocktake])
+    Livewire::test(Show::class, ['stocktake' => $stocktake])
         ->call('start')
         ->assertSee('Bulk Cable')
         ->assertSee('12.00');
@@ -50,7 +52,7 @@ it('records a bulk count and shows the observation delta', function (): void {
     $stocktake = (new StartStocktake)($stocktake);
     $line = $stocktake->lines->firstOrFail();
 
-    Volt::test('stocktakes.show', ['stocktake' => $stocktake])
+    Livewire::test(Show::class, ['stocktake' => $stocktake])
         ->set("counts.{$line->id}", '9')
         ->call('recordCount', $line->id)
         ->assertSee('-3.00');
