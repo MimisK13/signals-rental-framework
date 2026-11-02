@@ -6,7 +6,7 @@ use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -16,14 +16,14 @@ beforeEach(function (): void {
 });
 
 it('renders the warehouse DataTable', function (): void {
-    Volt::test('warehouse.index')
+    Livewire::test('warehouse.index')
         ->assertSee('Order')
         ->assertSee('Planning period')
         ->assertSee('Attention');
 });
 
 it('preserves the former queue UI as a future TODO snippet', function (): void {
-    $html = Volt::test('warehouse.index')->html();
+    $html = Livewire::test('warehouse.index')->html();
 
     expect($html)->toContain('Snipe this preserved queue-based Warehouse UI');
 });
@@ -37,7 +37,7 @@ it('shows order work in the matching queue and links to execution', function ():
         'status' => OpportunityStatus::OrderActive->statusValue(),
     ]);
 
-    Volt::test('warehouse.index')
+    Livewire::test('warehouse.index')
         ->assertSee('ORD-1001')
         ->assertSee('Conference rig')
         ->assertSee('Main Warehouse')
@@ -57,7 +57,7 @@ it('filters the work queues by store', function (): void {
         'store_id' => $hiddenStore->id,
     ]);
 
-    Volt::test('warehouse.index')
+    Livewire::test('warehouse.index')
         ->set('storeFilter', (string) $visibleStore->id)
         ->assertSee('ORD-VISIBLE')
         ->assertDontSee('ORD-HIDDEN');
@@ -69,7 +69,7 @@ it('forbids users without opportunity access', function (): void {
 
     $this->actingAs($user);
 
-    Volt::test('warehouse.index')->assertForbidden();
+    Livewire::test('warehouse.index')->assertForbidden();
 });
 
 it('surfaces warehouse in desktop and mobile navigation', function (): void {

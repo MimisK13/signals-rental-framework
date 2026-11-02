@@ -1,23 +1,23 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\SealContainer;
-use App\Actions\Containers\UnsealContainer;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\PackContainerItemData;
-use App\Data\Containers\UnsealContainerData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\SealContainer;
+use App\Domain\Warehouse\Containers\Actions\UnsealContainer;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Data\UnsealContainerData;
+use App\Domain\Warehouse\Containers\Enums\ContainerScanMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
+use App\Domain\Warehouse\Containers\Events\BeforeContainerSealed;
+use App\Domain\Warehouse\Containers\Events\ContainerSealed;
+use App\Domain\Warehouse\Containers\Events\ContainerUnsealed;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerScanMode;
-use App\Enums\ContainerStatus;
-use App\Enums\ContainerUnsealReason;
 use App\Events\AuditableEvent;
-use App\Events\Containers\BeforeContainerSealed;
-use App\Events\Containers\ContainerSealed;
-use App\Events\Containers\ContainerUnsealed;
 use App\Jobs\DeliverWebhook;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

@@ -4,14 +4,14 @@ use App\Domain\Assets\Models\Asset;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\MemberStore;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -26,7 +26,7 @@ it('renders the durable Container onboarding page with searchable products and S
 
     $this->get(route('containers.create'))->assertOk();
 
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('productSearch', 'M32')
         ->assertSee('M32 Flightcase')
         ->assertSee('Thessaloniki')
@@ -37,7 +37,7 @@ it('renders the durable Container onboarding page with searchable products and S
 it('creates a durable Container through the canonical onboarding Action', function (): void {
     $product = Product::factory()->containerable()->create(['name' => 'Standard XLR Flightcase']);
 
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('productId', $product->id)
         ->set('storeId', $this->store->id)
         ->set('assetNumber', 'FC-001')
@@ -63,7 +63,7 @@ it('creates a durable Container through the canonical onboarding Action', functi
 });
 
 it('validates required onboarding fields without creating inventory', function (): void {
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('storeId', null)
         ->call('create')
         ->assertHasErrors(['productId', 'storeId', 'assetNumber']);
@@ -76,7 +76,7 @@ it('validates required onboarding fields without creating inventory', function (
 it('surfaces an ineligible Product on the Product field', function (): void {
     $product = Product::factory()->bulk()->create(['name' => 'Bulk Cable']);
 
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('productId', $product->id)
         ->set('storeId', $this->store->id)
         ->set('assetNumber', 'FC-001')
@@ -95,7 +95,7 @@ it('preserves entered identity when a duplicate Asset Number is rejected', funct
         'asset_number' => 'FC-001',
     ]);
 
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('productId', $product->id)
         ->set('storeId', $this->store->id)
         ->set('assetNumber', 'FC-001')
@@ -117,7 +117,7 @@ it('surfaces a duplicate barcode on the Barcode field', function (): void {
         'barcode' => 'FC-XLR-001',
     ]);
 
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('productId', $product->id)
         ->set('storeId', $this->store->id)
         ->set('assetNumber', 'FC-001')
@@ -139,7 +139,7 @@ it('requires access to the selected Store even when the UI input is tampered wit
     $this->actingAs($user);
     $product = Product::factory()->containerable()->create();
 
-    Volt::test('containers.create')
+    Livewire::test('containers.create')
         ->set('productId', $product->id)
         ->set('storeId', $blockedStore->id)
         ->set('assetNumber', 'FC-UNAUTHORIZED')

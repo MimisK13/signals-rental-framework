@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\EmailTemplate;
-use App\Models\EmailTemplateVersion;
+use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
+use App\Domain\Communications\Models\EmailTemplate;
+use App\Domain\Communications\Models\EmailTemplateVersion;
 use App\Models\User;
-use Database\Seeders\EmailTemplateSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -40,7 +40,7 @@ it('loads template data into the edit form', function () {
         'body_markdown' => 'Test body content',
     ]);
 
-    Volt::test('admin.settings.email-template-form', ['template' => $template])
+    Livewire::test('admin.settings.email-template-form', ['template' => $template])
         ->assertSet('subject', 'Test Subject')
         ->assertSet('bodyMarkdown', 'Test body content');
 });
@@ -51,7 +51,7 @@ it('saves template changes and creates a version', function () {
         'body_markdown' => 'Original body',
     ]);
 
-    $result = Volt::test('admin.settings.email-template-form', ['template' => $template])
+    $result = Livewire::test('admin.settings.email-template-form', ['template' => $template])
         ->set('subject', 'Updated Subject')
         ->set('bodyMarkdown', 'Updated body content')
         ->call('save');
@@ -72,7 +72,7 @@ it('saves template changes and creates a version', function () {
 it('validates required fields', function () {
     $template = EmailTemplate::factory()->create();
 
-    Volt::test('admin.settings.email-template-form', ['template' => $template])
+    Livewire::test('admin.settings.email-template-form', ['template' => $template])
         ->set('subject', '')
         ->call('save')
         ->assertHasErrors(['subject']);
@@ -83,7 +83,7 @@ it('can preview a template', function () {
         'body_markdown' => 'Hello {{ user.name }}',
     ]);
 
-    Volt::test('admin.settings.email-template-form', ['template' => $template])
+    Livewire::test('admin.settings.email-template-form', ['template' => $template])
         ->call('preview')
         ->assertSet('previewHtml', fn ($html) => str_contains($html, 'Jane Smith'));
 });
@@ -94,7 +94,7 @@ it('can reset a system template to defaults', function () {
     $template = EmailTemplate::where('key', 'test_email')->first();
     $template->update(['subject' => 'Modified Subject']);
 
-    Volt::test('admin.settings.email-template-form', ['template' => $template])
+    Livewire::test('admin.settings.email-template-form', ['template' => $template])
         ->call('resetToDefault')
         ->assertDispatched('email-template-reset');
 
@@ -109,7 +109,7 @@ it('shows the send test affordance on the list page', function () {
 });
 
 it('opens the test modal and resets fields', function () {
-    Volt::test('admin.settings.email-templates')
+    Livewire::test('admin.settings.email-templates')
         ->set('testRecipient', 'old@example.com')
         ->call('openTestModal')
         ->assertSet('showTestModal', true)

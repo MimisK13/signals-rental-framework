@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\EmailTemplate;
-use App\Models\EmailTemplateVersion;
+use App\Domain\Communications\Models\EmailTemplate;
+use App\Domain\Communications\Models\EmailTemplateVersion;
 use App\Models\User;
 
 it('has the correct fillable attributes', function () {

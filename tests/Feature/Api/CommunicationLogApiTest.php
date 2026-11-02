@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

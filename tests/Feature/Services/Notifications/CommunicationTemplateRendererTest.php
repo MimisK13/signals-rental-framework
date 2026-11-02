@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Services\CommunicationTemplateRenderer;
 use App\Domain\Currency\Models\Currency;
-use App\Models\CommunicationTemplate;
-use App\Services\Notifications\CommunicationTemplateRenderer;
 use Illuminate\Support\Facades\Cache;
 
 beforeEach(function () {

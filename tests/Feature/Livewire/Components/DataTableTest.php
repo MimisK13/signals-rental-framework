@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Enums\MembershipType;
 use App\Livewire\Components\DataTable;
 use App\Models\Member;
-use App\Models\OrganisationTaxClass;
 use App\Models\ProductGroup;
 use App\Models\User;
 use Illuminate\View\ViewException;

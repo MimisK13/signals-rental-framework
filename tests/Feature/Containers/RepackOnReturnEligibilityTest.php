@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\ContainerAvailabilityMode;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Services\RepackOnReturnEligibility;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Containers\RepackOnReturnEligibility;
 
 beforeEach(function () {
     $this->eligibility = app(RepackOnReturnEligibility::class);

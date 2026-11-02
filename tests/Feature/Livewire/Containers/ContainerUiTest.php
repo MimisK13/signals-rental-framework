@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
-use App\Data\Containers\PackContainerItemData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\ContainerAvailabilityMode;
-use App\Models\Container;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -37,7 +37,7 @@ it('filters containers by store and mode on the index page', function () {
         'name' => 'Transport Case Elsewhere',
     ]);
 
-    Volt::test('containers.index')
+    Livewire::test('containers.index')
         ->set('storeFilter', (string) $this->store->id)
         ->set('modeFilter', 'kit')
         ->assertSee($kit->name)
@@ -50,7 +50,7 @@ it('navigates to a container from a barcode scan', function () {
         'barcode' => 'CASE-SCAN-001',
     ]);
 
-    Volt::test('containers.index')
+    Livewire::test('containers.index')
         ->set('scanBarcode', 'CASE-SCAN-001')
         ->call('submitScan')
         ->assertRedirect(route('containers.show', $container));
@@ -64,7 +64,7 @@ it('opens the pack page after scanning a containerable housing without an active
         'asset_number' => 'HOUSING-001',
     ]);
 
-    $component = Volt::test('containers.index')
+    $component = Livewire::test('containers.index')
         ->set('scanBarcode', 'HOUSING-001')
         ->call('submitScan');
 
@@ -86,7 +86,7 @@ it('packs via the dedicated pack page with inline conflict resolution', function
         'serialised_item_id' => $asset->id,
     ]));
 
-    Volt::test('containers.pack', ['container' => $target])
+    Livewire::test('containers.pack', ['container' => $target])
         ->set('scanInput', 'COMP-001')
         ->call('scanItem')
         ->assertSet('packConflict.conflict', 'already_in_container')
@@ -103,7 +103,7 @@ it('packs via the dedicated pack page with inline conflict resolution', function
 it('shows lifecycle timeline and dissolve action on the show page', function () {
     $container = Container::factory()->kit()->create(['store_id' => $this->store->id]);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->assertSee('Lifecycle')
         ->assertSee('Contents')
         ->assertSee('Dissolve');

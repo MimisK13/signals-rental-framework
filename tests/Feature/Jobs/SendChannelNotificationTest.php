@@ -1,16 +1,16 @@
 <?php
 
-use App\Contracts\Notifications\ChannelDriver;
-use App\Data\Notifications\ChannelConfigFieldData;
-use App\Data\Notifications\ChannelSendData;
-use App\Data\Notifications\ChannelTestResultData;
-use App\Data\Notifications\TestChannelProviderData;
-use App\Jobs\SendChannelNotification;
-use App\Mail\TemplatedEmail;
+use App\Domain\Communications\Contracts\ChannelDriver;
+use App\Domain\Communications\Data\ChannelConfigFieldData;
+use App\Domain\Communications\Data\ChannelSendData;
+use App\Domain\Communications\Data\ChannelTestResultData;
+use App\Domain\Communications\Data\TestChannelProviderData;
+use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
+use App\Domain\Communications\Jobs\SendChannelNotification;
+use App\Domain\Communications\Mail\TemplatedEmail;
+use App\Domain\Communications\Services\ChannelProviderRegistry;
 use App\Models\Member;
-use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Plugins\PluginRegistrar;
-use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 

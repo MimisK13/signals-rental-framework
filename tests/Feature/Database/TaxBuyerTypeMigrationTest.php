@@ -1,18 +1,18 @@
 <?php
 
+use App\Domain\Tax\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxResultType;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Models\TaxZone;
 use App\Enums\MembershipType;
-use App\Enums\TaxBuyerType;
-use App\Enums\TaxResultType;
-use App\Models\TaxRule;
-use App\Models\TaxZone;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesIsolatedSqliteMigrations;
 
 uses(UsesIsolatedSqliteMigrations::class);
 
-const TAX_BUYER_TYPE_WIDEN_MIGRATION = 'database/migrations/2026_07_04_092927_widen_tax_buyer_type_columns.php';
-const TAX_BUYER_TYPE_DATA_MIGRATION = 'database/migrations/2026_07_04_092928_migrate_tax_buyer_type_values_and_seeded_rules.php';
+const TAX_BUYER_TYPE_MEMBER_MIGRATION = 'app/Domain/Tax/Database/Migrations/2026_07_04_092928_migrate_member_tax_buyer_types.php';
+const TAX_BUYER_TYPE_RULE_MIGRATION = 'app/Domain/Tax/Database/Migrations/2026_07_04_092929_repair_seeded_tax_rules.php';
 
 beforeEach(function () {
     TaxZone::factory()->uk()->create(['slug' => 'uk']);
@@ -23,12 +23,11 @@ beforeEach(function () {
 function rollbackTaxBuyerTypeMigrations(): void
 {
     Artisan::call('migrate:rollback', [
-        '--path' => TAX_BUYER_TYPE_DATA_MIGRATION,
+        '--path' => TAX_BUYER_TYPE_RULE_MIGRATION,
         '--force' => true,
     ]);
-
     Artisan::call('migrate:rollback', [
-        '--path' => TAX_BUYER_TYPE_WIDEN_MIGRATION,
+        '--path' => TAX_BUYER_TYPE_MEMBER_MIGRATION,
         '--force' => true,
     ]);
 }
@@ -36,12 +35,11 @@ function rollbackTaxBuyerTypeMigrations(): void
 function runTaxBuyerTypeMigrations(): void
 {
     Artisan::call('migrate', [
-        '--path' => TAX_BUYER_TYPE_WIDEN_MIGRATION,
+        '--path' => TAX_BUYER_TYPE_MEMBER_MIGRATION,
         '--force' => true,
     ]);
-
     Artisan::call('migrate', [
-        '--path' => TAX_BUYER_TYPE_DATA_MIGRATION,
+        '--path' => TAX_BUYER_TYPE_RULE_MIGRATION,
         '--force' => true,
     ]);
 }

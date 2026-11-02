@@ -6,20 +6,20 @@ use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
+use App\Domain\Tax\Enums\TaxBuyerType;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Models\TaxZone;
+use App\Domain\Tax\Models\TaxZoneMember;
 use App\Enums\LineItemTransactionType;
-use App\Enums\TaxBuyerType;
 use App\Models\Member;
 use App\Models\Opportunity;
-use App\Models\OrganisationTaxClass;
 use App\Models\Product;
-use App\Models\ProductTaxClass;
 use App\Models\Store;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
-use App\Models\TaxZone;
-use App\Models\TaxZoneMember;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
-use Database\Seeders\TaxZoneRuleSeeder;
 
 /**
  * @return array{

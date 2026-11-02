@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Communications\Jobs\SendBillingCustomerCommunication;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
@@ -11,7 +12,6 @@ use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Presentation\Livewire\Show;
 use App\Enums\PricingRoundingDirection;
-use App\Jobs\SendBillingCustomerCommunicationJob;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\User;
@@ -56,7 +56,7 @@ it('issues an invoice from the show page', function () {
 
     expect($invoice->fresh()->status)->toBe('issued');
 
-    Queue::assertPushed(SendBillingCustomerCommunicationJob::class, function (SendBillingCustomerCommunicationJob $job) use ($invoice): bool {
+    Queue::assertPushed(SendBillingCustomerCommunication::class, function (SendBillingCustomerCommunication $job) use ($invoice): bool {
         return $job->queue === 'communications'
             && $job->sourceId === (int) $invoice->id;
     });

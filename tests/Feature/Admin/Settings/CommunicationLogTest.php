@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationLog;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
@@ -8,7 +8,7 @@ use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -53,7 +53,7 @@ test('communication log filters by status', function () {
         'notification_type_key' => 'filter.failed.only',
     ]);
 
-    Volt::test('admin.settings.communication-log')
+    Livewire::test('admin.settings.communication-log')
         ->set('filterStatus', 'failed')
         ->assertSee('filter.failed.only')
         ->assertDontSee('filter.sent.only');
@@ -64,7 +64,7 @@ test('communication log pin toggle persists', function () {
 
     $log = CommunicationLog::factory()->create(['is_pinned' => false]);
 
-    Volt::test('admin.settings.communication-log')
+    Livewire::test('admin.settings.communication-log')
         ->call('togglePin', $log->id);
 
     expect($log->fresh()->is_pinned)->toBeTrue();
@@ -93,7 +93,7 @@ test('communication log respects store scoping for opportunity subjects', functi
         'notification_type_key' => 'hidden.log',
     ]);
 
-    Volt::test('admin.settings.communication-log')
+    Livewire::test('admin.settings.communication-log')
         ->assertSee('visible.log')
         ->assertDontSee('hidden.log');
 });

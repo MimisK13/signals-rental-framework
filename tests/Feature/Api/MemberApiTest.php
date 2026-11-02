@@ -3,6 +3,7 @@
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Models\Address;
 use App\Models\Country;
 use App\Models\DiscountCategory;
@@ -10,7 +11,6 @@ use App\Models\Email;
 use App\Models\Link;
 use App\Models\Member;
 use App\Models\MemberRelationship;
-use App\Models\OrganisationTaxClass;
 use App\Models\Phone;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

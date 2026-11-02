@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Communications\Services\CommunicationPreferences;
+use App\Domain\Communications\Services\CustomerCommunicationUnsubscribeUrl;
 use App\Models\Member;
-use App\Services\Notifications\CommunicationPreferences;
-use App\Services\Notifications\CustomerCommunicationUnsubscribeUrl;
 use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {

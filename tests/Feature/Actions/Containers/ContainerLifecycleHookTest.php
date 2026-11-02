@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\TransferContainerItem;
-use App\Data\Containers\PackContainerItemData;
-use App\Data\Containers\TransferContainerItemData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Events\Containers\BeforeContainerItemTransferred;
-use App\Events\Containers\BeforeContainerPacked;
-use App\Models\Container;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\TransferContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Data\TransferContainerItemData;
+use App\Domain\Warehouse\Containers\Events\BeforeContainerItemTransferred;
+use App\Domain\Warehouse\Containers\Events\BeforeContainerPacked;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

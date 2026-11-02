@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Admin\SendTestEmail;
-use App\Mail\TemplatedEmail;
+use App\Domain\Communications\Actions\SendTestEmail;
+use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
+use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Models\User;
-use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

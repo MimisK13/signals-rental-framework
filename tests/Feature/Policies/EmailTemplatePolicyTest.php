@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\EmailTemplate;
+use App\Domain\Communications\Models\EmailTemplate;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

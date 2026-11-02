@@ -3,7 +3,7 @@
 use App\Actions\Products\UpdateProductContainerConfig;
 use App\Data\Products\UpdateProductContainerConfigData;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

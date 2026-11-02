@@ -4,7 +4,6 @@
  * Coverage burn-up batch 2 — flip one-method-away classes to fully covered.
  */
 
-use App\Actions\Containers\DissolveContainer;
 use App\Actions\Members\CreateMemberRelationship;
 use App\Actions\Notifications\DispatchNotification;
 use App\Actions\Notifications\SaveMemberNotificationPreferences;
@@ -17,7 +16,6 @@ use App\Actions\Opportunities\ReorderOpportunitySections;
 use App\Actions\Opportunities\SetSectionDealPrice;
 use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Console\Commands\PruneCommunicationLogCommand;
 use App\Data\Members\CreateMemberRelationshipData;
 use App\Data\Notifications\DispatchNotificationData;
 use App\Data\Notifications\SaveMemberNotificationPreferencesData;
@@ -25,6 +23,11 @@ use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\ReorderOpportunitySectionsData;
 use App\Data\Opportunities\SetSectionDealPriceData;
+use App\Domain\Communications\Console\PruneCommunicationLog;
+use App\Domain\Communications\Jobs\DeliverCustomerCommunication;
+use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Notifications\CustomerCommunication;
 use App\Domain\Documents\Actions\FinaliseDocument;
 use App\Domain\Documents\Actions\ImportDocumentTemplate;
 use App\Domain\Documents\Data\ImportDocumentTemplateData;
@@ -32,18 +35,16 @@ use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
 use App\Domain\PurchaseOrders\Actions\UpdateDraftPurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
-use App\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Actions\DissolveContainer;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\OpportunityItemType;
 use App\Events\AuditableEvent;
 use App\Events\Availability\AvailabilityChanged;
-use App\Jobs\DeliverCustomerCommunication;
 use App\Jobs\SendNotification;
 use App\Listeners\Availability\DetectOrderShortages;
 use App\Livewire\Concerns\HandlesVerbsStateErrors;
 use App\Models\ActionLog;
-use App\Models\CommunicationLog;
-use App\Models\CommunicationTemplate;
-use App\Models\Container;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
@@ -57,7 +58,6 @@ use App\Models\ShortageResolutionItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
-use App\Notifications\CustomerCommunication;
 use App\Notifications\TestPipelineNotification;
 use App\Services\Notifications\NotificationChannelResolver;
 use Database\Seeders\PermissionSeeder;
@@ -436,19 +436,19 @@ it('ApportionVirtualStockCost removeForIntake removes linked opportunity costs',
     expect(OpportunityCost::query()->where('virtual_stock_intake_id', $intake->id)->count())->toBe(0);
 });
 
-it('PruneCommunicationLogCommand prunes old logs and rejects invalid safety days', function () {
+it('PruneCommunicationLog prunes old logs and rejects invalid safety days', function () {
     CommunicationLog::factory()->create([
         'status' => 'sent',
         'is_pinned' => false,
         'created_at' => now()->subDays(400),
     ]);
 
-    $this->artisan(PruneCommunicationLogCommand::class, ['--days' => 365, '--safety-days' => 7])
+    $this->artisan(PruneCommunicationLog::class, ['--days' => 365, '--safety-days' => 7])
         ->assertSuccessful();
 
     expect(CommunicationLog::query()->count())->toBe(0);
 
-    $this->artisan(PruneCommunicationLogCommand::class, ['--safety-days' => 0])
+    $this->artisan(PruneCommunicationLog::class, ['--safety-days' => 0])
         ->assertFailed();
 });
 

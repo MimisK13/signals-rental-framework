@@ -4,6 +4,9 @@
  * Coverage burn-up batch 5 — services, policies, and support classes.
  */
 
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Policies\CommunicationTemplatePolicy;
+use App\Domain\Communications\Services\CustomerCommunicationAttachmentResolver;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Exceptions\DocumentRenderException;
 use App\Domain\Documents\Models\Document;
@@ -19,7 +22,6 @@ use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\NotificationAudience;
 use App\Enums\ShortageResolutionType;
-use App\Models\CommunicationTemplate;
 use App\Models\MemberStore;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
@@ -32,8 +34,6 @@ use App\Models\ShortageResolutionItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
-use App\Policies\CommunicationTemplatePolicy;
-use App\Services\Notifications\CustomerCommunicationAttachmentResolver;
 use App\Services\Notifications\NotificationSettingsCatalog;
 use App\Services\Shortages\CostApportionmentContext;
 use App\Services\Shortages\Resolvers\SubHireResolver;

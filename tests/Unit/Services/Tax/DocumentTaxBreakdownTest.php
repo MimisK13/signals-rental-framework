@@ -1,17 +1,17 @@
 <?php
 
-use App\Contracts\Tax\TaxResolver;
-use App\Data\Tax\DocumentTaxLineInput;
-use App\Data\Tax\DocumentTaxRequest;
 use App\Domain\Currency\Models\Currency;
+use App\Domain\Tax\Contracts\TaxResolver;
+use App\Domain\Tax\Data\DocumentTaxLineInput;
+use App\Domain\Tax\Data\DocumentTaxRequest;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Services\DocumentTaxBreakdown;
+use App\Domain\Tax\Services\TaxCalculator;
+use App\Domain\Tax\Services\ZoneAwareTaxResolver;
 use App\Enums\PricingRoundingDirection;
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
-use App\Services\Tax\DocumentTaxBreakdown;
-use App\Services\Tax\ZoneAwareTaxResolver;
-use App\Services\TaxCalculator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

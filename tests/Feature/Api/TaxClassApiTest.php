@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

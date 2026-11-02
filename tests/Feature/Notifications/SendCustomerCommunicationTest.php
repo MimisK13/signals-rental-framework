@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Notifications\SendCustomerCommunication;
-use App\Data\Notifications\SendCustomerCommunicationData;
+use App\Domain\Communications\Actions\SendCustomerCommunication;
+use App\Domain\Communications\Data\SendCustomerCommunicationData;
+use App\Domain\Communications\Jobs\DeliverCustomerCommunication;
+use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Notifications\CustomerCommunication;
+use App\Domain\Communications\Services\CustomerCommunicationAttachmentResolver;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\ValueObjects\DocumentRenderResult;
-use App\Jobs\DeliverCustomerCommunication;
-use App\Models\CommunicationLog;
-use App\Models\CommunicationTemplate;
 use App\Models\Member;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\User;
-use App\Notifications\CustomerCommunication;
-use App\Services\Notifications\CustomerCommunicationAttachmentResolver;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
-use App\Models\TaxRule;
-use App\Services\TaxCalculator;
-use Database\Seeders\TaxClassSeeder;
-use Database\Seeders\TaxRateSeeder;
-use Database\Seeders\TaxRuleSeeder;
+use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
+use App\Domain\Tax\Database\Seeders\TaxRateSeeder;
+use App\Domain\Tax\Database\Seeders\TaxRuleSeeder;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Services\TaxCalculator;
 
 beforeEach(function () {
     $this->seed(TaxClassSeeder::class);

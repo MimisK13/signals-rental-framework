@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Notifications\RestoreCommunicationTemplateVersion;
-use App\Actions\Notifications\SaveCommunicationTemplate;
-use App\Data\Notifications\SaveCommunicationTemplateData;
-use App\Models\CommunicationTemplate;
-use App\Models\CommunicationTemplateVersion;
+use App\Domain\Communications\Actions\RestoreCommunicationTemplateVersion;
+use App\Domain\Communications\Actions\SaveCommunicationTemplate;
+use App\Domain\Communications\Data\SaveCommunicationTemplateData;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\CommunicationTemplateVersion;
+use App\Domain\Communications\Services\CommunicationTemplateRenderer;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Notifications\CommunicationTemplateRenderer;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

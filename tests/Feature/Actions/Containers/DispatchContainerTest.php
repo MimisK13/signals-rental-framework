@@ -1,30 +1,30 @@
 <?php
 
-use App\Actions\Containers\DispatchContainer;
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\SealContainer;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\ContainerDispatchAmendmentData;
-use App\Data\Containers\DispatchContainerData;
-use App\Data\Containers\PackContainerItemData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\SealContainer;
+use App\Domain\Warehouse\Containers\Data\ContainerDispatchAmendmentData;
+use App\Domain\Warehouse\Containers\Data\DispatchContainerData;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerDissolveReason;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Exceptions\ContainerDispatchAmendmentRequiredException;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerDissolveReason;
-use App\Enums\ContainerStatus;
 use App\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\ShortageDispatchPolicy;
 use App\Enums\ShortagePolicy;
-use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
-use App\Models\Container;
 use App\Models\Demand;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
@@ -39,7 +39,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -534,7 +534,7 @@ it('requires dispatch permission via policy', function () {
     ])))->toThrow(AuthorizationException::class);
 });
 
-it('smokes the volt dispatch affordance', function () {
+it('smokes the Livewire dispatch affordance', function () {
     $component = Product::factory()->serialised()->create();
     $container = p52TransportContainer($this->store);
     p52PackAsset($container, StockLevel::factory()->serialised()->create([
@@ -548,7 +548,7 @@ it('smokes the volt dispatch affordance', function () {
         $container->product_id => '1',
     ]);
 
-    Volt::test('containers.show', ['container' => $container->fresh()])
+    Livewire::test('containers.show', ['container' => $container->fresh()])
         ->assertSee('Dispatch to opportunity')
         ->set('dispatchOpportunityId', (string) $opportunity->id)
         ->call('dispatchContainer')
@@ -583,7 +583,7 @@ it('surfaces dispatch amendments in the opportunity assets book-out scan', funct
     p52GrantStoreAccess($operator, $this->store);
     $this->actingAs($operator);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test('opportunities.assets', ['opportunity' => $opportunity])
         ->set('subTab', 'book_out')
         ->set('scanAsset', 'CASE-AMEND-SCAN')
         ->call('scanBookOut')

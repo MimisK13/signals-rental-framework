@@ -1,12 +1,12 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Policies\ContainerPolicy;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;
 use App\Models\User;
-use App\Policies\ContainerPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

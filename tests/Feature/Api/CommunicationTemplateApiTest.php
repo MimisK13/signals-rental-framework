@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\CommunicationTemplate;
-use App\Models\CommunicationTemplateVersion;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\CommunicationTemplateVersion;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
 use App\Models\Store;

@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
-use App\Data\Containers\PackContainerItemData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

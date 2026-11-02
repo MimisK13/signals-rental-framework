@@ -1,10 +1,5 @@
 <?php
 
-use App\Actions\Containers\DispatchContainer;
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\RepackReturnItem;
-use App\Actions\Containers\SealContainer;
-use App\Actions\Containers\StartRepackOnReturn;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ConvertToOrder;
@@ -12,25 +7,30 @@ use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Actions\Opportunities\DispatchAsset;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\DispatchContainerData;
-use App\Data\Containers\PackContainerItemData;
-use App\Data\Containers\RepackReturnItemData;
-use App\Data\Containers\StartRepackOnReturnData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\DispatchAssetData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\RepackReturnItem;
+use App\Domain\Warehouse\Containers\Actions\SealContainer;
+use App\Domain\Warehouse\Containers\Actions\StartRepackOnReturn;
+use App\Domain\Warehouse\Containers\Data\DispatchContainerData;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Data\RepackReturnItemData;
+use App\Domain\Warehouse\Containers\Data\StartRepackOnReturnData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerScanMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerScanMode;
-use App\Enums\ContainerStatus;
 use App\Enums\KitComponentBinding;
 use App\Enums\LineItemTransactionType;
 use App\Events\AuditableEvent;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -432,7 +432,7 @@ it('smokes the repack split view', function () {
         'serialised_item_id' => $housing->id,
     ]));
 
-    Volt::test('containers.repack', [
+    Livewire::test('containers.repack', [
         'container' => Container::query()->whereKey($repack->container->id)->firstOrFail(),
         'opportunity' => $opportunity,
     ])

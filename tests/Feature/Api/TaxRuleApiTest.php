@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

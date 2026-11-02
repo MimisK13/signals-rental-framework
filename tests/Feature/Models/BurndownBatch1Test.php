@@ -3,13 +3,13 @@
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Models\TaxZone;
+use App\Domain\Tax\Models\TaxZoneMember;
 use App\Models\InboundWebhookLog;
 use App\Models\InboundWebhookSource;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\TaxRule;
-use App\Models\TaxZone;
-use App\Models\TaxZoneMember;
 
 it('exposes inbound webhook source logs relation', function () {
     $source = InboundWebhookSource::factory()->create();

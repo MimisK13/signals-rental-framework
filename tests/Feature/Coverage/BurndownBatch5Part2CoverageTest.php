@@ -4,7 +4,6 @@
  * P4-CL4b burndown batch 5 — classes 19–35 (cheapest-first slice).
  */
 
-use App\Actions\Containers\RepackReturnItem;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
@@ -21,6 +20,10 @@ use App\Data\Opportunities\UpdateOpportunityData;
 use App\Data\Pricing\SurchargeGroupData;
 use App\Data\Pricing\UpdateSurchargeGroupData;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Domain\Communications\Jobs\DeliverCustomerCommunication;
+use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Notifications\CustomerCommunication;
 use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\Documents\Actions\CreateDocumentTemplate;
 use App\Domain\Documents\Actions\GenerateBillingIssueDocument;
@@ -45,15 +48,13 @@ use App\Domain\PurchaseOrders\Data\UpdateDraftPurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\RepackReturnItem;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\LineItemTransactionType;
 use App\Enums\PricingRoundingDirection;
 use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
-use App\Jobs\DeliverCustomerCommunication;
 use App\Jobs\ExportApiRequestLog;
-use App\Models\CommunicationLog;
-use App\Models\CommunicationTemplate;
-use App\Models\Container;
 use App\Models\InboundWebhookLog;
 use App\Models\InboundWebhookSource;
 use App\Models\Member;
@@ -63,7 +64,6 @@ use App\Models\RequestLog;
 use App\Models\Store;
 use App\Models\SurchargeGroup;
 use App\Models\User;
-use App\Notifications\CustomerCommunication;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

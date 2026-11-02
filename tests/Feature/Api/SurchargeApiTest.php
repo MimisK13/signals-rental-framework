@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\ProductTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;
 use App\Models\User;

@@ -5,7 +5,7 @@
  */
 
 use App\Domain\Invoices\Settings\InvoiceSettings;
-use App\Settings\TaxSettings;
+use App\Domain\Tax\Settings\TaxSettings;
 
 it('TaxSettings rules and types expose validation metadata', function () {
     $settings = new TaxSettings;

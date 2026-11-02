@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Notifications\LogCommunication;
 use App\Contracts\Notifications\RecipientResolver;
 use App\Data\Notifications\NotificationContextData;
-use App\Data\Notifications\TransitionCommunicationLogData;
-use App\Models\CommunicationLog;
+use App\Domain\Communications\Actions\LogCommunication;
+use App\Domain\Communications\Data\TransitionCommunicationLogData;
+use App\Domain\Communications\Models\CommunicationLog;
 use App\Models\Member;
 use App\Models\NotificationType;
 use App\Models\Opportunity;

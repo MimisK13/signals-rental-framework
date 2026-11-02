@@ -3,12 +3,12 @@
 use App\Actions\Setup\CompleteSetup;
 use App\Data\Setup\CompleteSetupData;
 use App\Domain\Lists\Models\ListName;
+use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Enums\FeatureProfile;
 use App\Enums\MembershipType;
 use App\Models\Country;
 use App\Models\Member;
 use App\Models\Membership;
-use App\Models\OrganisationTaxClass;
 
 pest()->group('env-writing');
 use App\Domain\Rates\Models\RateDefinition;

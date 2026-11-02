@@ -1,8 +1,5 @@
 <?php
 
-use App\Actions\Containers\DissolveContainer;
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\TransferContainerItem;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ConvertToOrder;
@@ -10,23 +7,26 @@ use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Actions\Opportunities\DispatchAsset;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\PackContainerItemData;
-use App\Data\Containers\TransferContainerItemData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\DispatchAssetData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\DissolveContainer;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\TransferContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Data\TransferContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Exceptions\ContainerPackConflictException;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerItemUnpackReason;
-use App\Enums\ContainerStatus;
 use App\Enums\LineItemTransactionType;
 use App\Events\AuditableEvent;
-use App\Exceptions\Containers\ContainerPackConflictException;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Demand;
 use App\Models\Member;
 use App\Models\Opportunity;
@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -474,7 +474,7 @@ describe('Livewire conflict dialog', function () {
         ]);
         p51PackAsset($source, $asset);
 
-        Volt::test('containers.pack', ['container' => $target])
+        Livewire::test('containers.pack', ['container' => $target])
             ->set('scanInput', (string) $asset->id)
             ->call('scanItem')
             ->assertSet('packConflict.conflict', 'already_in_container')

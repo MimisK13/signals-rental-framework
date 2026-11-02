@@ -2,7 +2,7 @@
 
 use App\Actions\Pricing\CreateSurchargeGroup;
 use App\Data\Pricing\CreateSurchargeGroupData;
-use App\Models\ProductTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\SurchargeGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

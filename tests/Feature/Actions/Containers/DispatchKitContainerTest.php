@@ -1,35 +1,35 @@
 <?php
 
-use App\Actions\Containers\DispatchContainer;
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\ReturnKitContainer;
-use App\Actions\Containers\SealContainer;
-use App\Actions\Containers\VerifyKitCheckin;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Actions\Opportunities\ReturnAsset;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\DispatchContainerData;
-use App\Data\Containers\PackContainerItemData;
-use App\Data\Containers\ReturnKitContainerData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\ReturnAssetData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\ReturnKitContainer;
+use App\Domain\Warehouse\Containers\Actions\SealContainer;
+use App\Domain\Warehouse\Containers\Actions\VerifyKitCheckin;
+use App\Domain\Warehouse\Containers\Data\DispatchContainerData;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Data\ReturnKitContainerData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerCheckinMode;
-use App\Enums\ContainerStatus;
 use App\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityStatus;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Demand;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
@@ -45,7 +45,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -530,7 +530,7 @@ it('promotes opportunity status after kit dispatch', function () {
     expect($opportunity->fresh()->statusEnum())->toBe(OpportunityStatus::OrderOnHire);
 });
 
-it('smokes volt kit dispatch and return affordances', function () {
+it('smokes Livewire kit dispatch and return affordances', function () {
     $container = p53KitContainer($this->store);
     p53PackAsset($container, StockLevel::factory()->serialised()->create([
         'product_id' => Product::factory()->serialised()->create()->id,
@@ -540,7 +540,7 @@ it('smokes volt kit dispatch and return affordances', function () {
 
     $opportunity = p53DispatchOrder($this->store, [$container->product_id => '1']);
 
-    Volt::test('containers.show', ['container' => $container->fresh()])
+    Livewire::test('containers.show', ['container' => $container->fresh()])
         ->assertSee('Check-in mode')
         ->set('dispatchOpportunityId', (string) $opportunity->id)
         ->call('dispatchContainer')
@@ -549,7 +549,7 @@ it('smokes volt kit dispatch and return affordances', function () {
     $container = $container->fresh();
     expect($container->status)->toBe(ContainerStatus::Dispatched);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->assertSee('Return kit')
         ->call('returnKit')
         ->assertHasNoErrors();

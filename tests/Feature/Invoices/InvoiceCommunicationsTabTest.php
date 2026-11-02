@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
+use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Communications\Services\CommunicationLogQuery;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
@@ -10,10 +13,7 @@ use App\Domain\Invoices\Actions\IssueInvoice;
 use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Presentation\Livewire\Communications;
-use App\Models\CommunicationLog;
 use App\Models\User;
-use App\Services\Notifications\CommunicationLogQuery;
-use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

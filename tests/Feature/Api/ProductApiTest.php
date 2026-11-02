@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Tax\Models\TaxCategory;
 use App\Enums\ProductType;
 use App\Models\Accessory;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\TaxCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

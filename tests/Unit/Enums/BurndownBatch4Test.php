@@ -4,7 +4,7 @@
  * P4-CL4b burndown batch 4 — enum coverage.
  */
 
-use App\Enums\ContainerDissolveReason;
+use App\Domain\Warehouse\Containers\Enums\ContainerDissolveReason;
 use Tests\TestCase;
 
 // ContainerDissolveReason::configValues() reads config(), which needs the app.

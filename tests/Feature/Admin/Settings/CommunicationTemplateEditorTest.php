@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\CommunicationTemplate;
-use App\Models\CommunicationTemplateVersion;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\CommunicationTemplateVersion;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\Store;
@@ -9,7 +9,7 @@ use App\Models\User;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -49,14 +49,14 @@ test('communication template editor is forbidden without notifications.manage', 
 });
 
 test('inserts merge fields into the template body', function () {
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->call('insertField', 'opportunity.starts_at')
         ->assertSet('body', fn (string $body): bool => str_contains($body, '{{ opportunity.starts_at }}'));
 });
 
 test('renders live preview with sample data by default', function () {
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->assertSet('previewMode', 'sample')
         ->assertSet('previewBody', fn (string $body): bool => str_contains($body, 'Alex Sample'));
@@ -69,7 +69,7 @@ test('renders live preview with a store-scoped opportunity', function () {
         'reference' => 'OPP-REAL',
     ]);
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->set('previewMode', 'entity')
         ->set('sourceOpportunityId', $opportunity->id)
@@ -83,7 +83,7 @@ test('cannot preview with an opportunity from another store', function () {
         'subject' => 'Foreign Opportunity',
     ]);
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->set('previewMode', 'entity')
         ->set('sourceOpportunityId', $foreignOpportunity->id)
@@ -93,7 +93,7 @@ test('cannot preview with an opportunity from another store', function () {
 test('saves template edits and bumps version', function () {
     $originalVersion = $this->template->version;
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->set('body', 'Updated body for {{ contact.name }}')
         ->call('save')
@@ -107,7 +107,7 @@ test('saves template edits and bumps version', function () {
 });
 
 test('unauthorized user cannot save template edits', function () {
-    Volt::actingAs($this->admin)
+    Livewire::actingAs($this->admin)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->assertForbidden();
 });
@@ -118,13 +118,13 @@ test('system templates cannot be saved but can be duplicated', function () {
         'store_id' => $this->store->id,
     ]);
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $systemTemplate])
         ->set('body', 'Attempted edit')
         ->call('save')
         ->assertHasErrors('template');
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $systemTemplate])
         ->call('duplicateTemplate')
         ->assertRedirect();
@@ -135,7 +135,7 @@ test('system templates cannot be saved but can be duplicated', function () {
 test('restores a previous template version from the editor', function () {
     $originalBody = $this->template->body;
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template])
         ->set('body', 'Version two body')
         ->call('save');
@@ -145,7 +145,7 @@ test('restores a previous template version from the editor', function () {
         ->where('body', $originalBody)
         ->firstOrFail();
 
-    Volt::actingAs($this->owner)
+    Livewire::actingAs($this->owner)
         ->test('admin.settings.communication-template-editor', ['communicationTemplate' => $this->template->fresh()])
         ->call('restoreVersion', $version->id)
         ->assertDispatched('communication-template-version-restored')

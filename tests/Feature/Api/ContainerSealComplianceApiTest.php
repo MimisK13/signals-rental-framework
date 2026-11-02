@@ -2,18 +2,18 @@
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Enums\ContainerScanMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerScanMode;
-use App\Enums\ContainerStatus;
-use App\Enums\ContainerUnsealReason;
 use App\Jobs\DeliverWebhook;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Webhook;
-use App\Services\Containers\ContainerManifestService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\JsonResponse;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Exceptions\Tax\ViesServiceUnavailableException;
-use App\Services\Tax\DefaultVatNumberValidator;
+use App\Domain\Tax\Exceptions\ViesServiceUnavailableException;
+use App\Domain\Tax\Services\DefaultVatNumberValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;

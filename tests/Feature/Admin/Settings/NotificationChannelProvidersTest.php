@@ -1,10 +1,10 @@
 <?php
 
-use App\Data\Notifications\ChannelConfigFieldData;
-use App\Services\Notifications\ChannelConfigMasker;
-use App\Services\Notifications\ChannelProviderConfigService;
-use App\Services\Notifications\ChannelProviderRegistry;
-use App\Services\Notifications\SmsSegmentCounter;
+use App\Domain\Communications\Data\ChannelConfigFieldData;
+use App\Domain\Communications\Services\ChannelConfigMasker;
+use App\Domain\Communications\Services\ChannelProviderConfigService;
+use App\Domain\Communications\Services\ChannelProviderRegistry;
+use App\Domain\Communications\Services\SmsSegmentCounter;
 
 test('sms segment counter uses single segment for short messages', function () {
     $stats = app(SmsSegmentCounter::class)->analyse('Hello world');

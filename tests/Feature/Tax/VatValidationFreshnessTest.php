@@ -1,11 +1,11 @@
 <?php
 
-use App\Jobs\ValidateMemberVatNumber;
+use App\Domain\Tax\Jobs\ValidateMemberVatNumber;
+use App\Domain\Tax\Services\TaxResolutionContext;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Tax\TaxResolutionContext;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

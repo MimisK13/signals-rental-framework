@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Services\CommunicationTemplateRenderer;
+use App\Domain\Communications\Services\CoreMergeFieldFilters;
+use App\Domain\Communications\Services\MergeFieldFilterRegistry;
+use App\Domain\Communications\Services\MergeFieldRenderContext;
+use App\Domain\Communications\Services\MergeFieldRenderer;
 use App\Domain\Currency\Models\Currency;
-use App\Models\CommunicationTemplate;
 use App\Models\User;
-use App\Services\Notifications\CommunicationTemplateRenderer;
-use App\Services\Notifications\CoreMergeFieldFilters;
-use App\Services\Notifications\MergeFieldFilterRegistry;
-use App\Services\Notifications\MergeFieldRenderContext;
-use App\Services\Notifications\MergeFieldRenderer;
 use App\Support\Timezone;
 use Illuminate\Support\Carbon;
 

@@ -2,14 +2,14 @@
 
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
+use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
+use App\Domain\Tax\Models\TaxCategory;
 use App\Models\Product;
 use App\Models\Store;
-use App\Models\TaxCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\ProductGroupSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\TaxCategorySeeder;
 
 require_once __DIR__.'/../../Support/DemoSeederTestHelpers.php';
 

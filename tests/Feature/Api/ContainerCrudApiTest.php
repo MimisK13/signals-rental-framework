@@ -2,9 +2,9 @@
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\AvailabilityResolution;
 use App\Jobs\DeliverWebhook;
-use App\Models\Container;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

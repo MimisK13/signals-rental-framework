@@ -1,14 +1,14 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Container;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +24,7 @@ it('renders the containers index page', function () {
     $this->get(route('containers.index'))
         ->assertOk();
 
-    Volt::test('containers.index')
+    Livewire::test('containers.index')
         ->assertSee('Containers')
         ->assertSee('Physical warehouse units')
         ->assertSee('Search')
@@ -43,7 +43,7 @@ it('renders the container show page with pack affordance', function () {
         'product_id' => $asset->product_id,
     ]);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->assertSee($container->name)
         ->assertSee('Pack items')
         ->assertSee((string) $asset->id);
@@ -57,7 +57,7 @@ it('packs an item from the pack page', function () {
         'asset_number' => 'PACK-ME',
     ]);
 
-    Volt::test('containers.pack', ['container' => $container])
+    Livewire::test('containers.pack', ['container' => $container])
         ->set('scanInput', 'PACK-ME')
         ->call('scanItem')
         ->assertHasNoErrors();
@@ -77,7 +77,7 @@ it('packs an item from the show page quick pack drawer', function () {
         'asset_number' => 'QUICK-PACK-001',
     ]);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->assertSee('Quick pack')
         ->set('drawerScanInput', 'QUICK-PACK-001')
         ->call('packFromDrawer')
@@ -105,14 +105,14 @@ it('seals and unseals from the show page', function () {
         'product_id' => $asset->product_id,
     ]);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->assertSee('Seal')
         ->call('seal')
         ->assertHasNoErrors();
 
     expect($container->fresh()->status->value)->toBe('sealed');
 
-    Volt::test('containers.show', ['container' => $container->fresh()])
+    Livewire::test('containers.show', ['container' => $container->fresh()])
         ->assertSee('Unseal')
         ->set('unsealReason', 'manual')
         ->call('unseal')

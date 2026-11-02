@@ -3,6 +3,12 @@
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
+use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
+use App\Domain\Tax\Database\Seeders\TaxRateSeeder;
+use App\Domain\Tax\Database\Seeders\TaxRuleSeeder;
+use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
+use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;
@@ -10,12 +16,6 @@ use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\ProductGroupSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\TaxCategorySeeder;
-use Database\Seeders\TaxClassSeeder;
-use Database\Seeders\TaxRateSeeder;
-use Database\Seeders\TaxRuleSeeder;
-use Database\Seeders\TaxZoneRuleSeeder;
-use Database\Seeders\TaxZoneSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 

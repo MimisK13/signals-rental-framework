@@ -1,9 +1,9 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\ContainerStatus;
-use App\Models\Container;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\QueryException;

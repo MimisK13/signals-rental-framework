@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Services\SystemCommunicationTemplates;
 use App\Models\NotificationType;
 use App\Models\Store;
-use App\Services\Notifications\SystemCommunicationTemplates;
 use Database\Seeders\NotificationTypeSeeder;
 
 beforeEach(function () {

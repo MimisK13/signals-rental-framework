@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ProductTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -20,7 +20,7 @@ it('lists product tax classes', function () {
     ProductTaxClass::factory()->create(['name' => 'Standard Rate']);
     ProductTaxClass::factory()->create(['name' => 'Reduced Rate']);
 
-    Volt::test('admin.settings.tax.product-tax-classes')
+    Livewire::test('admin.settings.tax.product-tax-classes')
         ->assertSee('Standard Rate')
         ->assertSee('Reduced Rate');
 });
@@ -32,7 +32,7 @@ it('renders the create form', function () {
 });
 
 it('can create a tax class', function () {
-    Volt::test('admin.settings.tax.product-tax-class-form')
+    Livewire::test('admin.settings.tax.product-tax-class-form')
         ->set('name', 'Zero Rate')
         ->set('description', 'Zero rated items')
         ->call('save');
@@ -51,7 +51,7 @@ it('renders the edit form', function () {
 it('can edit a tax class', function () {
     $taxClass = ProductTaxClass::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.tax.product-tax-class-form', ['productTaxClass' => $taxClass])
+    Livewire::test('admin.settings.tax.product-tax-class-form', ['productTaxClass' => $taxClass])
         ->assertSet('name', 'Old Name')
         ->set('name', 'New Name')
         ->call('save');
@@ -63,7 +63,7 @@ it('can set default', function () {
     $taxClass1 = ProductTaxClass::factory()->default()->create(['name' => 'Class A']);
     $taxClass2 = ProductTaxClass::factory()->create(['name' => 'Class B']);
 
-    Volt::test('admin.settings.tax.product-tax-classes')
+    Livewire::test('admin.settings.tax.product-tax-classes')
         ->call('setDefault', $taxClass2->id);
 
     expect($taxClass1->fresh()->is_default)->toBeFalse();
@@ -73,7 +73,7 @@ it('can set default', function () {
 it('cannot delete the default tax class', function () {
     $taxClass = ProductTaxClass::factory()->default()->create(['name' => 'Default Class']);
 
-    Volt::test('admin.settings.tax.product-tax-classes')
+    Livewire::test('admin.settings.tax.product-tax-classes')
         ->call('deleteTaxClass', $taxClass->id)
         ->assertHasErrors('deleteTaxClass');
 
@@ -84,14 +84,14 @@ it('can delete a non-default tax class', function () {
     ProductTaxClass::factory()->default()->create();
     $taxClass = ProductTaxClass::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('admin.settings.tax.product-tax-classes')
+    Livewire::test('admin.settings.tax.product-tax-classes')
         ->call('deleteTaxClass', $taxClass->id);
 
     expect(ProductTaxClass::where('name', 'To Delete')->exists())->toBeFalse();
 });
 
 it('validates required name', function () {
-    Volt::test('admin.settings.tax.product-tax-class-form')
+    Livewire::test('admin.settings.tax.product-tax-class-form')
         ->set('name', '')
         ->call('save')
         ->assertHasErrors(['name']);

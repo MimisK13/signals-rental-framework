@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Tax\Schemas\DocumentTaxGroupSchema;
 use App\Models\Member;
 use App\Models\Store;
 use App\Models\User;
-use App\Schemas\DocumentTaxGroupSchema;
 use App\Services\SchemaRegistry;
 use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;

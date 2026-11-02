@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;

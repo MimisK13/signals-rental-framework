@@ -1,6 +1,6 @@
 <?php
 
-use App\ValueObjects\TaxResult;
+use App\Domain\Tax\ValueObjects\TaxResult;
 
 function taxResult(string $currency, int $net, int $tax, int $gross): TaxResult
 {

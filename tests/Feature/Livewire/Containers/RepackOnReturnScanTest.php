@@ -1,24 +1,24 @@
 <?php
 
-use App\Actions\Containers\DispatchContainer;
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\SealContainer;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\DispatchContainerData;
-use App\Data\Containers\PackContainerItemData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\SealContainer;
+use App\Domain\Warehouse\Containers\Data\DispatchContainerData;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerScanMode;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerScanMode;
 use App\Enums\KitComponentBinding;
 use App\Enums\LineItemTransactionType;
-use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\Store;
@@ -26,7 +26,7 @@ use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     Queue::fake();
@@ -123,7 +123,7 @@ function p551DispatchedTransportCase(Store $store, ?Product $product = null): ar
 it('starts repack from return when scanning a dispatched housing on the containers index', function () {
     ['housing' => $housing, 'opportunity' => $opportunity] = p551DispatchedTransportCase($this->store);
 
-    Volt::test('containers.index')
+    Livewire::test('containers.index')
         ->set('scanBarcode', $housing->asset_number)
         ->call('submitScan')
         ->assertHasNoErrors()
@@ -142,7 +142,7 @@ it('forbids repack scan without create permission', function () {
     $user->givePermissionTo(['containers.view', 'stock.access', 'opportunities.edit']);
     $this->actingAs($user);
 
-    Volt::test('containers.index')
+    Livewire::test('containers.index')
         ->set('scanBarcode', $housing->asset_number)
         ->call('submitScan')
         ->assertHasErrors('scanBarcode');
@@ -151,7 +151,7 @@ it('forbids repack scan without create permission', function () {
 it('starts repack from check-in scan on the opportunity assets tab', function () {
     ['housing' => $housing, 'opportunity' => $opportunity] = p551DispatchedTransportCase($this->store);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test('opportunities.assets', ['opportunity' => $opportunity])
         ->set('subTab', 'check_in')
         ->set('scanAsset', $housing->asset_number)
         ->call('scanCheckIn')
@@ -170,7 +170,7 @@ it('falls back to creating a container when housing is not checked out', functio
         'asset_number' => 'IDLE-CASE',
     ]);
 
-    Volt::test('containers.index')
+    Livewire::test('containers.index')
         ->set('scanBarcode', 'IDLE-CASE')
         ->call('submitScan')
         ->assertHasNoErrors()
@@ -183,7 +183,7 @@ it('updates scan mode on open containers from the show page', function () {
         'scan_mode' => ContainerScanMode::Strict->value,
     ]);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->set('editScanMode', ContainerScanMode::Free->value)
         ->call('saveScanMode')
         ->assertHasNoErrors();
@@ -197,7 +197,7 @@ it('rejects scan mode updates on sealed containers from the show page', function
         'scan_mode' => ContainerScanMode::Strict->value,
     ]);
 
-    Volt::test('containers.show', ['container' => $container])
+    Livewire::test('containers.show', ['container' => $container])
         ->assertSee('Strict')
         ->assertDontSeeHtml('wire:submit="saveScanMode"');
 });

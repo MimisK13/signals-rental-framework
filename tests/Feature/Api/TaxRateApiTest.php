@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRate;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

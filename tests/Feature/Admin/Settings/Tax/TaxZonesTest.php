@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\TaxBuyerType;
-use App\Enums\TaxResultType;
-use App\Models\TaxCategory;
-use App\Models\TaxRule;
-use App\Models\TaxZone;
+use App\Domain\Tax\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxResultType;
+use App\Domain\Tax\Models\TaxCategory;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Models\TaxZone;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,13 +24,13 @@ describe('tax zones admin', function () {
         TaxZone::factory()->create(['name' => 'United Kingdom']);
         TaxZone::factory()->create(['name' => 'EU Member States']);
 
-        Volt::test('admin.settings.tax.zones')
+        Livewire::test('admin.settings.tax.zones')
             ->assertSee('United Kingdom')
             ->assertSee('EU Member States');
     });
 
     it('can create a tax zone', function () {
-        Volt::test('admin.settings.tax.zone-form')
+        Livewire::test('admin.settings.tax.zone-form')
             ->set('name', 'Nordics')
             ->set('slug', 'nordics')
             ->set('priority', 40)
@@ -43,7 +43,7 @@ describe('tax zones admin', function () {
     it('can edit a tax zone', function () {
         $zone = TaxZone::factory()->create(['name' => 'Old Name', 'slug' => 'old_name']);
 
-        Volt::test('admin.settings.tax.zone-form', ['taxZone' => $zone])
+        Livewire::test('admin.settings.tax.zone-form', ['taxZone' => $zone])
             ->assertSet('name', 'Old Name')
             ->set('name', 'New Name')
             ->call('save');
@@ -54,7 +54,7 @@ describe('tax zones admin', function () {
     it('can delete a tax zone', function () {
         $zone = TaxZone::factory()->create(['name' => 'To Delete']);
 
-        Volt::test('admin.settings.tax.zones')
+        Livewire::test('admin.settings.tax.zones')
             ->call('deleteTaxZone', $zone->id);
 
         expect(TaxZone::where('name', 'To Delete')->exists())->toBeFalse();
@@ -69,7 +69,7 @@ describe('tax categories admin', function () {
     });
 
     it('can create a tax category', function () {
-        Volt::test('admin.settings.tax.category-form')
+        Livewire::test('admin.settings.tax.category-form')
             ->set('name', 'Special Rate')
             ->set('slug', 'special_rate')
             ->set('type', 'reduced')
@@ -82,7 +82,7 @@ describe('tax categories admin', function () {
     it('can delete a tax category', function () {
         $category = TaxCategory::factory()->create(['name' => 'To Delete']);
 
-        Volt::test('admin.settings.tax.categories')
+        Livewire::test('admin.settings.tax.categories')
             ->call('deleteCategory', $category->id);
 
         expect(TaxCategory::where('name', 'To Delete')->exists())->toBeFalse();
@@ -100,7 +100,7 @@ describe('zone tax rules admin', function () {
         $seller = TaxZone::factory()->uk()->create();
         $buyer = TaxZone::factory()->euMember()->create();
 
-        Volt::test('admin.settings.tax.zone-rule-form')
+        Livewire::test('admin.settings.tax.zone-rule-form')
             ->set('name', 'UK to EU B2B RC')
             ->set('sellerZoneId', $seller->id)
             ->set('buyerZoneId', $buyer->id)
@@ -120,7 +120,7 @@ describe('zone tax rules admin', function () {
     it('can edit a zone tax rule', function () {
         $rule = TaxRule::factory()->zoneMatch(['name' => 'Original'])->create();
 
-        Volt::test('admin.settings.tax.zone-rule-form', ['taxRule' => $rule])
+        Livewire::test('admin.settings.tax.zone-rule-form', ['taxRule' => $rule])
             ->assertSet('name', 'Original')
             ->set('name', 'Updated Rule')
             ->call('save');

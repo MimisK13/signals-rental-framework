@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -20,7 +20,7 @@ it('lists organisation tax classes', function () {
     OrganisationTaxClass::factory()->create(['name' => 'Domestic']);
     OrganisationTaxClass::factory()->create(['name' => 'EU Business']);
 
-    Volt::test('admin.settings.tax.organisation-tax-classes')
+    Livewire::test('admin.settings.tax.organisation-tax-classes')
         ->assertSee('Domestic')
         ->assertSee('EU Business');
 });
@@ -32,7 +32,7 @@ it('renders the create form', function () {
 });
 
 it('can create a tax class', function () {
-    Volt::test('admin.settings.tax.organisation-tax-class-form')
+    Livewire::test('admin.settings.tax.organisation-tax-class-form')
         ->set('name', 'Non-EU')
         ->set('description', 'Non-EU organisations')
         ->call('save');
@@ -51,7 +51,7 @@ it('renders the edit form', function () {
 it('can edit a tax class', function () {
     $taxClass = OrganisationTaxClass::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.tax.organisation-tax-class-form', ['organisationTaxClass' => $taxClass])
+    Livewire::test('admin.settings.tax.organisation-tax-class-form', ['organisationTaxClass' => $taxClass])
         ->assertSet('name', 'Old Name')
         ->set('name', 'New Name')
         ->call('save');
@@ -63,7 +63,7 @@ it('can set default', function () {
     $taxClass1 = OrganisationTaxClass::factory()->default()->create(['name' => 'Class A']);
     $taxClass2 = OrganisationTaxClass::factory()->create(['name' => 'Class B']);
 
-    Volt::test('admin.settings.tax.organisation-tax-classes')
+    Livewire::test('admin.settings.tax.organisation-tax-classes')
         ->call('setDefault', $taxClass2->id);
 
     expect($taxClass1->fresh()->is_default)->toBeFalse();
@@ -73,7 +73,7 @@ it('can set default', function () {
 it('cannot delete the default tax class', function () {
     $taxClass = OrganisationTaxClass::factory()->default()->create(['name' => 'Default Class']);
 
-    Volt::test('admin.settings.tax.organisation-tax-classes')
+    Livewire::test('admin.settings.tax.organisation-tax-classes')
         ->call('deleteTaxClass', $taxClass->id)
         ->assertHasErrors('deleteTaxClass');
 
@@ -84,14 +84,14 @@ it('can delete a non-default tax class', function () {
     OrganisationTaxClass::factory()->default()->create();
     $taxClass = OrganisationTaxClass::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('admin.settings.tax.organisation-tax-classes')
+    Livewire::test('admin.settings.tax.organisation-tax-classes')
         ->call('deleteTaxClass', $taxClass->id);
 
     expect(OrganisationTaxClass::where('name', 'To Delete')->exists())->toBeFalse();
 });
 
 it('validates required name', function () {
-    Volt::test('admin.settings.tax.organisation-tax-class-form')
+    Livewire::test('admin.settings.tax.organisation-tax-class-form')
         ->set('name', '')
         ->call('save')
         ->assertHasErrors(['name']);

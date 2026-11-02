@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\EmailTemplate;
-use App\Services\EmailTemplateRenderer;
+use App\Domain\Communications\Models\EmailTemplate;
+use App\Domain\Communications\Services\EmailTemplateRenderer;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 beforeEach(function () {

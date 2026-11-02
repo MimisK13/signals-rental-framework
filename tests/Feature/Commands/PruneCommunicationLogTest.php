@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationLog;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

@@ -1,8 +1,8 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DemandPhase;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;

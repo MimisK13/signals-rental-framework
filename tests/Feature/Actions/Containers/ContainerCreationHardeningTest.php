@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Containers\CreateContainer;
-use App\Actions\Containers\CreateTemporaryContainer;
-use App\Data\Containers\CreateContainerData;
-use App\Data\Containers\CreateTemporaryContainerData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Actions\CreateContainer;
+use App\Domain\Warehouse\Containers\Actions\CreateTemporaryContainer;
+use App\Domain\Warehouse\Containers\Data\CreateContainerData;
+use App\Domain\Warehouse\Containers\Data\CreateTemporaryContainerData;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
 use App\Models\MemberStore;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Containers\ContainerBarcodeResolver;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

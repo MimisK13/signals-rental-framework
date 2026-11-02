@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Admin\SendTestTemplateEmail;
-use App\Mail\TemplatedEmail;
-use App\Models\EmailTemplate;
+use App\Domain\Communications\Actions\SendTestTemplateEmail;
+use App\Domain\Communications\Mail\TemplatedEmail;
+use App\Domain\Communications\Models\EmailTemplate;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

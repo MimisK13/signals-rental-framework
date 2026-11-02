@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Containers\ContainerBarcodeResolver;
 
 beforeEach(function () {
     $this->resolver = app(ContainerBarcodeResolver::class);

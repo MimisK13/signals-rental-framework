@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\TaxClasses\CreateOrganisationTaxClass;
-use App\Actions\TaxClasses\CreateProductTaxClass;
-use App\Actions\TaxClasses\DeleteOrganisationTaxClass;
-use App\Actions\TaxClasses\DeleteProductTaxClass;
-use App\Actions\TaxClasses\UpdateOrganisationTaxClass;
-use App\Actions\TaxClasses\UpdateProductTaxClass;
-use App\Data\TaxClasses\CreateTaxClassData;
-use App\Data\TaxClasses\UpdateTaxClassData;
+use App\Domain\Tax\Actions\CreateOrganisationTaxClass;
+use App\Domain\Tax\Actions\CreateProductTaxClass;
+use App\Domain\Tax\Actions\DeleteOrganisationTaxClass;
+use App\Domain\Tax\Actions\DeleteProductTaxClass;
+use App\Domain\Tax\Actions\UpdateOrganisationTaxClass;
+use App\Domain\Tax\Actions\UpdateProductTaxClass;
+use App\Domain\Tax\Data\CreateTaxClassData;
+use App\Domain\Tax\Data\UpdateTaxClassData;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Events\AuditableEvent;
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

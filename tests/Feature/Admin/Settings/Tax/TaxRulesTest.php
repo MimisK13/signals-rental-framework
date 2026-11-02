@@ -1,13 +1,13 @@
 <?php
 
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -34,7 +34,7 @@ it('lists tax rules with related names', function () {
         'tax_rate_id' => $taxRate->id,
     ]);
 
-    Volt::test('admin.settings.tax.rules')
+    Livewire::test('admin.settings.tax.rules')
         ->assertSee('Standard Org')
         ->assertSee('Standard Product')
         ->assertSee('VAT');
@@ -51,7 +51,7 @@ it('can create a tax rule', function () {
     $prodClass = ProductTaxClass::factory()->create();
     $taxRate = TaxRate::factory()->create();
 
-    Volt::test('admin.settings.tax.rule-form')
+    Livewire::test('admin.settings.tax.rule-form')
         ->set('organisationTaxClassId', $orgClass->id)
         ->set('productTaxClassId', $prodClass->id)
         ->set('taxRateId', $taxRate->id)
@@ -72,7 +72,7 @@ it('renders the edit form', function () {
 it('can edit a tax rule', function () {
     $taxRule = TaxRule::factory()->create(['priority' => 0]);
 
-    Volt::test('admin.settings.tax.rule-form', ['taxRule' => $taxRule])
+    Livewire::test('admin.settings.tax.rule-form', ['taxRule' => $taxRule])
         ->set('priority', 5)
         ->call('save');
 
@@ -82,7 +82,7 @@ it('can edit a tax rule', function () {
 it('can delete a tax rule', function () {
     $taxRule = TaxRule::factory()->create();
 
-    Volt::test('admin.settings.tax.rules')
+    Livewire::test('admin.settings.tax.rules')
         ->call('deleteTaxRule', $taxRule->id);
 
     $this->assertDatabaseMissing('tax_rules', ['id' => $taxRule->id]);

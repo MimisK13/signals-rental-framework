@@ -1,10 +1,10 @@
 <?php
 
 use App\Actions\Notifications\DispatchNotification;
-use App\Actions\Notifications\LogCommunication;
 use App\Data\Notifications\DispatchNotificationData;
+use App\Domain\Communications\Actions\LogCommunication;
+use App\Domain\Communications\Models\CommunicationLog;
 use App\Jobs\SendNotification;
-use App\Models\CommunicationLog;
 use App\Models\Member;
 use App\Models\NotificationType;
 use App\Models\Opportunity;

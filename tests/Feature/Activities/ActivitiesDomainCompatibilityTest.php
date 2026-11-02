@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Actions\Notifications\LogCommunication;
 use App\Domain\Activities\Enums\ActivityType;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Models\ActivityParticipant;
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Communications\Actions\LogCommunication;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;

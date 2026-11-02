@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Notifications\ChannelConfigMasker;
+use App\Domain\Communications\Services\ChannelConfigMasker;
 
 it('masks short secret values with a fixed bullet run', function () {
     expect(ChannelConfigMasker::maskValue('ab'))->toBe('••••••••')

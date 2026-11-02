@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxBuyerType;
 
 it('exposes the four spec buyer types with canonical string values', function () {
     expect(TaxBuyerType::Business->value)->toBe('business')

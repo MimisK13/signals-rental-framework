@@ -1,33 +1,33 @@
 <?php
 
-use App\Data\Notifications\CommunicationLogData;
-use App\Data\Notifications\CommunicationTemplateData;
 use App\Data\Notifications\NotificationSettingData;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Pricing\PriceCategoryData;
 use App\Data\Products\ProductData;
-use App\Data\Tax\CreateZoneTaxRuleData;
-use App\Data\Tax\TaxZoneRuleMatchRequest;
+use App\Domain\Communications\Data\CommunicationLogData;
+use App\Domain\Communications\Data\CommunicationTemplateData;
+use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\CommunicationTemplateVersion;
 use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Tax\Data\CreateZoneTaxRuleData;
+use App\Domain\Tax\Data\TaxZoneRuleMatchRequest;
+use App\Domain\Tax\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxResultType;
+use App\Domain\Tax\Models\TaxZone;
 use App\Enums\NotificationAudience;
-use App\Enums\TaxBuyerType;
-use App\Enums\TaxResultType;
-use App\Models\CommunicationLog;
-use App\Models\CommunicationTemplate;
-use App\Models\CommunicationTemplateVersion;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
 use App\Models\PriceCategory;
 use App\Models\Product;
 use App\Models\Store;
-use App\Models\TaxZone;
 
 it('maps InvoiceData opportunity reference to null when no opportunity is linked', function () {
     $invoice = Invoice::factory()->create(['opportunity_id' => null]);

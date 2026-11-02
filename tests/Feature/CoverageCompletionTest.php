@@ -8,6 +8,8 @@
  */
 
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Communications\Models\EmailTemplate;
+use App\Domain\Communications\Services\EmailTemplateRenderer;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Services\CurrencyService;
 use App\Domain\CustomFields\Enums\CustomFieldType;
@@ -19,10 +21,8 @@ use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Services\ViewResolver;
 use App\Jobs\ExportActionLog;
 use App\Models\ActionLog;
-use App\Models\EmailTemplate;
 use App\Models\Member;
 use App\Models\User;
-use App\Services\EmailTemplateRenderer;
 use App\Services\PermissionRegistry;
 use App\Support\Formatter;
 use App\Views\MemberColumnRegistry;

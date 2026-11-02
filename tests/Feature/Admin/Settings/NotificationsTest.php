@@ -1,13 +1,13 @@
 <?php
 
-use App\Contracts\Notifications\ChannelDriver;
-use App\Data\Notifications\ChannelConfigFieldData;
-use App\Data\Notifications\ChannelSendData;
-use App\Data\Notifications\ChannelTestResultData;
-use App\Data\Notifications\TestChannelProviderData;
+use App\Domain\Communications\Contracts\ChannelDriver;
+use App\Domain\Communications\Data\ChannelConfigFieldData;
+use App\Domain\Communications\Data\ChannelSendData;
+use App\Domain\Communications\Data\ChannelTestResultData;
+use App\Domain\Communications\Data\TestChannelProviderData;
+use App\Domain\Communications\Models\ChannelProvider;
+use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Enums\NotificationAudience;
-use App\Models\ChannelProvider;
-use App\Models\CommunicationTemplate;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
 use App\Models\Store;

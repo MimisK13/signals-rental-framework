@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
-use App\Actions\Containers\UnpackContainerItem;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\PackContainerItemData;
-use App\Data\Containers\UnpackContainerItemData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Actions\UnpackContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Data\UnpackContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerItemUnpackReason;
-use App\Enums\ContainerStatus;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

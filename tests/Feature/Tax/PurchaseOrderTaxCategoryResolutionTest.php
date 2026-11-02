@@ -1,19 +1,19 @@
 <?php
 
 use App\Domain\PurchaseOrders\Services\PurchaseOrderTaxCalculator;
+use App\Domain\Tax\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxResultType;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxCategory;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Models\TaxZone;
+use App\Domain\Tax\Models\TaxZoneMember;
 use App\Enums\PricingRoundingDirection;
-use App\Enums\TaxBuyerType;
-use App\Enums\TaxResultType;
 use App\Models\Member;
-use App\Models\OrganisationTaxClass;
 use App\Models\Product;
-use App\Models\ProductTaxClass;
 use App\Models\Store;
-use App\Models\TaxCategory;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
-use App\Models\TaxZone;
-use App\Models\TaxZoneMember;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

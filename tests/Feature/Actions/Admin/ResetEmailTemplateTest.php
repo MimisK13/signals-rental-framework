@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Admin\ResetEmailTemplate;
+use App\Domain\Communications\Actions\ResetEmailTemplate;
+use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
+use App\Domain\Communications\Models\EmailTemplate;
 use App\Events\AuditableEvent;
-use App\Models\EmailTemplate;
 use App\Models\User;
-use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;

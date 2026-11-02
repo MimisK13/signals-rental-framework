@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Enums\ChargePeriod;
-use App\Enums\ContainerStatus;
 use App\Enums\ShortageResolutionType;
 
 describe('AssetCondition::label', function () {

@@ -5,6 +5,8 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Policies\CreditNotePolicy;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\SupplierCosts\Policies\ProductSupplierCostPolicy;
+use App\Domain\Tax\Policies\TaxCategoryPolicy;
+use App\Domain\Tax\Policies\TaxZonePolicy;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;
@@ -13,8 +15,6 @@ use App\Policies\BundleRulePolicy;
 use App\Policies\DiscountRulePolicy;
 use App\Policies\SurchargeGroupPolicy;
 use App\Policies\SurchargePolicy;
-use App\Policies\TaxCategoryPolicy;
-use App\Policies\TaxZonePolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

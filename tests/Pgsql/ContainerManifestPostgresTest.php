@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\PackContainerItemData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\AvailabilityResolution;
-use App\Models\Container;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Containers\ContainerManifestService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Tests\Concerns\UsesPostgres;

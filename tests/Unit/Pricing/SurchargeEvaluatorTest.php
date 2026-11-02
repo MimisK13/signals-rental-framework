@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Enums\LineItemTransactionType;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunitySurchargeGroup;
 use App\Models\Product;
-use App\Models\ProductTaxClass;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;
 use App\Services\Pricing\SurchargeEvaluator;

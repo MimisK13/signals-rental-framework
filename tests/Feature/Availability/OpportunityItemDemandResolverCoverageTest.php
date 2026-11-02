@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
 use App\Enums\ReleasePoint;

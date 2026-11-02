@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Warehouse\Containers\Presentation\Columns\ContainerColumnRegistry;
 use App\Views\Column;
-use App\Views\ContainerColumnRegistry;
 
 describe('ContainerColumnRegistry', function () {
     it('exposes the container columns with the right metadata', function () {

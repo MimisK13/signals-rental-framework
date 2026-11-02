@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ContainerStatus;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\Member;
 use App\Models\Store;
 use App\Models\User;

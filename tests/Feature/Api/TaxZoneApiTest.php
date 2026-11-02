@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\TaxCategory;
-use App\Models\TaxZone;
+use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
+use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
+use App\Domain\Tax\Models\TaxCategory;
+use App\Domain\Tax\Models\TaxZone;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\TaxCategorySeeder;
-use Database\Seeders\TaxZoneSeeder;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Actions\Containers\VerifyKitCheckin;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ChangeItemReservation;
 use App\Actions\Opportunities\ChangeOpportunityStatus;
@@ -22,8 +21,9 @@ use App\Domain\Stock\Data\CreateStockTransactionData;
 use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\VerifyKitCheckin;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\OpportunityStatus;
-use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\User;

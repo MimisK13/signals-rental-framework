@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\Notifications\MergeFieldFilterRegistry;
-use App\Services\Notifications\MergeFieldRenderContext;
+use App\Domain\Communications\Services\MergeFieldFilterRegistry;
+use App\Domain\Communications\Services\MergeFieldRenderContext;
 use App\Services\Plugins\PluginRegistrar;
 
 it('registers custom filters via plugin registrar', function () {

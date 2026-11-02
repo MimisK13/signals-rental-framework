@@ -1,6 +1,6 @@
 <?php
 
-use App\Mail\TemplatedEmail;
+use App\Domain\Communications\Mail\TemplatedEmail;
 
 it('builds the envelope subject from the constructor argument', function () {
     $mailable = new TemplatedEmail(
@@ -22,7 +22,7 @@ it('uses the signals layout view and passes optional content fields', function (
 
     $content = $mailable->content();
 
-    expect($content->view)->toBe('emails.layouts.signals')
+    expect($content->view)->toBe('communications::emails.layouts.signals')
         ->and($content->with)->toMatchArray([
             'bodyHtml' => '<p>Please find your invoice attached.</p>',
             'eyebrow' => 'Billing',

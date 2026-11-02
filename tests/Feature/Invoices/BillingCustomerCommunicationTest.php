@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
+use App\Domain\Communications\Jobs\SendBillingCustomerCommunication;
+use App\Domain\Communications\Models\CommunicationLog;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
@@ -17,12 +20,9 @@ use App\Domain\Invoices\Enums\PaymentMethod;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Enums\PricingRoundingDirection;
-use App\Jobs\SendBillingCustomerCommunicationJob;
-use App\Models\CommunicationLog;
 use App\Models\Member;
 use App\Models\MemberRelationship;
 use App\Models\User;
-use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -352,7 +352,7 @@ describe('job dispatch', function () {
 
         (new IssueInvoice)($invoice->refresh());
 
-        Queue::assertPushed(SendBillingCustomerCommunicationJob::class, function (SendBillingCustomerCommunicationJob $job): bool {
+        Queue::assertPushed(SendBillingCustomerCommunication::class, function (SendBillingCustomerCommunication $job): bool {
             return $job->queue === 'communications';
         });
     });

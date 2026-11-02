@@ -5,34 +5,34 @@
  */
 
 use App\Actions\Members\MemberPriceCategoryTierValidator;
-use App\Actions\Notifications\DeleteCommunicationTemplate;
-use App\Actions\Notifications\DispatchBillingCustomerCommunication;
 use App\Actions\Notifications\DispatchNotification;
-use App\Actions\Notifications\DuplicateCommunicationTemplate;
-use App\Actions\Notifications\SaveChannelProvider;
-use App\Actions\Notifications\SaveCommunicationTemplate;
 use App\Actions\Notifications\SaveMemberNotificationPreferences;
-use App\Actions\Notifications\SendBillingCustomerCommunication;
 use App\Actions\Pricing\DeleteSurchargeGroup;
 use App\Actions\Pricing\SyncSurchargeGroupSurcharges;
 use App\Actions\Pricing\UpdateSurcharge;
 use App\Actions\Pricing\UpdateSurchargeGroup;
-use App\Actions\Tax\CreateTaxCategory;
-use App\Actions\Tax\UpdateTaxCategory;
 use App\Console\Commands\ApiFlushLogs;
-use App\Console\Commands\PruneCommunicationLogCommand;
 use App\Console\Commands\Shortages\EscalateUnresolvedShortages;
 use App\Console\Commands\SignalsSetupCommand;
 use App\Console\Commands\VirtualStock\DetectVirtualStockOverruns;
-use App\Data\Notifications\ChannelSendData;
 use App\Data\Notifications\DispatchNotificationData;
-use App\Data\Notifications\SaveChannelProviderData;
-use App\Data\Notifications\SaveCommunicationTemplateData;
 use App\Data\Notifications\SaveMemberNotificationPreferencesData;
 use App\Data\Pricing\UpdateSurchargeData;
 use App\Data\Pricing\UpdateSurchargeGroupData;
-use App\Data\Tax\CreateTaxCategoryData;
-use App\Data\Tax\UpdateTaxCategoryData;
+use App\Domain\Communications\Actions\DeleteCommunicationTemplate;
+use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Actions\DuplicateCommunicationTemplate;
+use App\Domain\Communications\Actions\SaveChannelProvider;
+use App\Domain\Communications\Actions\SaveCommunicationTemplate;
+use App\Domain\Communications\Actions\SendBillingCustomerCommunication as SendBillingCustomerCommunicationAction;
+use App\Domain\Communications\Console\PruneCommunicationLog;
+use App\Domain\Communications\Data\ChannelSendData;
+use App\Domain\Communications\Data\SaveChannelProviderData;
+use App\Domain\Communications\Data\SaveCommunicationTemplateData;
+use App\Domain\Communications\Jobs\SendBillingCustomerCommunication;
+use App\Domain\Communications\Jobs\SendChannelNotification;
+use App\Domain\Communications\Listeners\RecordCustomerCommunicationDelivery;
+use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\CustomFields\Presentation\Concerns\ReKeysCustomFieldErrors;
 use App\Domain\CustomViews\Actions\DeleteCustomView;
 use App\Domain\CustomViews\Models\CustomView;
@@ -51,13 +51,14 @@ use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
 use App\Domain\Invoices\Console\ProcessOverdueInvoices;
+use App\Domain\Tax\Actions\CreateTaxCategory;
+use App\Domain\Tax\Actions\UpdateTaxCategory;
+use App\Domain\Tax\Data\CreateTaxCategoryData;
+use App\Domain\Tax\Data\UpdateTaxCategoryData;
+use App\Domain\Tax\Models\TaxCategory;
 use App\Enums\BillingCommunicationKind;
 use App\Http\Middleware\VerifyInboundWebhookSignature;
-use App\Jobs\SendBillingCustomerCommunicationJob;
-use App\Jobs\SendChannelNotification;
-use App\Listeners\RecordCustomerCommunicationDelivery;
 use App\Livewire\Concerns\HasAuditTimeline;
-use App\Models\CommunicationTemplate;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
@@ -66,7 +67,6 @@ use App\Models\PriceCategoryTier;
 use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;
-use App\Models\TaxCategory;
 use App\Models\User;
 use App\Notifications\ChannelInfrastructureBroadcastNotification;
 use App\Notifications\FailingTestPipelineNotification;
@@ -245,15 +245,15 @@ it('DispatchBillingCustomerCommunication skips dispatch during Verbs replay', fu
     Queue::assertNothingPushed();
 });
 
-it('SendBillingCustomerCommunicationJob handle skips during Verbs replay', function () {
-    $job = new SendBillingCustomerCommunicationJob(
+it('SendBillingCustomerCommunication handle skips during Verbs replay', function () {
+    $job = new SendBillingCustomerCommunication(
         BillingCommunicationKind::Invoice,
         1,
         Store::factory()->create()->id,
         1,
     );
 
-    batch2WhileReplaying(fn () => $job->handle(app(SendBillingCustomerCommunication::class)));
+    batch2WhileReplaying(fn () => $job->handle(app(SendBillingCustomerCommunicationAction::class)));
 
     expect(true)->toBeTrue();
 });
@@ -414,8 +414,8 @@ it('EscalateUnresolvedShortages skips side effects during Verbs replay', functio
     });
 });
 
-it('PruneCommunicationLogCommand rejects invalid retention days', function () {
-    $this->artisan(PruneCommunicationLogCommand::class, ['--days' => 0])
+it('PruneCommunicationLog rejects invalid retention days', function () {
+    $this->artisan(PruneCommunicationLog::class, ['--days' => 0])
         ->assertFailed();
 });
 

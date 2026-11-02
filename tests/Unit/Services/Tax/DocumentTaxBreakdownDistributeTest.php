@@ -1,7 +1,7 @@
 <?php
 
-use App\Data\Tax\DocumentTaxLineInput;
-use App\Services\Tax\DocumentTaxBreakdown;
+use App\Domain\Tax\Data\DocumentTaxLineInput;
+use App\Domain\Tax\Services\DocumentTaxBreakdown;
 use Tests\TestCase;
 
 // DocumentTaxBreakdown resolves TaxResolver from the container, so the app must boot.

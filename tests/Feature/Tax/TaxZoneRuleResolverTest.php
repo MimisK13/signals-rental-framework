@@ -1,12 +1,12 @@
 <?php
 
-use App\Data\Tax\TaxZoneRuleMatchRequest;
-use App\Enums\TaxBuyerType;
-use App\Enums\TaxResultType;
-use App\Models\TaxCategory;
-use App\Models\TaxRule;
-use App\Models\TaxZone;
-use App\Services\Tax\TaxZoneRuleResolver;
+use App\Domain\Tax\Data\TaxZoneRuleMatchRequest;
+use App\Domain\Tax\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxResultType;
+use App\Domain\Tax\Models\TaxCategory;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Models\TaxZone;
+use App\Domain\Tax\Services\TaxZoneRuleResolver;
 
 beforeEach(function () {
     $this->resolver = app(TaxZoneRuleResolver::class);

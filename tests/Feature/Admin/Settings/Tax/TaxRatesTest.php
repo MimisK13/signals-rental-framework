@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\TaxRate;
-use App\Models\TaxRule;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -25,7 +25,7 @@ it('lists tax rates', function () {
     TaxRate::factory()->create(['name' => 'Standard']);
     TaxRate::factory()->create(['name' => 'Reduced']);
 
-    Volt::test('admin.settings.tax.rates')
+    Livewire::test('admin.settings.tax.rates')
         ->assertSee('Standard')
         ->assertSee('Reduced');
 });
@@ -37,7 +37,7 @@ it('renders the create form', function () {
 });
 
 it('can create a tax rate', function () {
-    Volt::test('admin.settings.tax.rate-form')
+    Livewire::test('admin.settings.tax.rate-form')
         ->set('name', 'Standard')
         ->set('rate', '20.00')
         ->call('save');
@@ -56,7 +56,7 @@ it('renders the edit form', function () {
 it('can edit a tax rate', function () {
     $taxRate = TaxRate::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.tax.rate-form', ['taxRate' => $taxRate])
+    Livewire::test('admin.settings.tax.rate-form', ['taxRate' => $taxRate])
         ->assertSet('name', 'Old Name')
         ->set('name', 'New Name')
         ->call('save');
@@ -67,7 +67,7 @@ it('can edit a tax rate', function () {
 it('can delete a tax rate', function () {
     $taxRate = TaxRate::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('admin.settings.tax.rates')
+    Livewire::test('admin.settings.tax.rates')
         ->call('deleteTaxRate', $taxRate->id);
 
     expect(TaxRate::where('name', 'To Delete')->exists())->toBeFalse();
@@ -77,7 +77,7 @@ it('cannot delete a tax rate used by rules', function () {
     $taxRate = TaxRate::factory()->create(['name' => 'In Use']);
     TaxRule::factory()->create(['tax_rate_id' => $taxRate->id]);
 
-    Volt::test('admin.settings.tax.rates')
+    Livewire::test('admin.settings.tax.rates')
         ->call('deleteTaxRate', $taxRate->id)
         ->assertHasErrors('deleteTaxRate');
 

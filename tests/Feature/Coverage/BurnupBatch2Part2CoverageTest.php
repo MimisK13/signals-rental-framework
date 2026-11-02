@@ -4,12 +4,15 @@
  * Coverage burn-up batch 2 (part 2) — services, data, policies, middleware, models.
  */
 
-use App\Contracts\Notifications\ChannelDriver;
-use App\Data\Notifications\ChannelConfigFieldData;
-use App\Data\Notifications\ChannelSendData;
-use App\Data\Notifications\ChannelTestResultData;
-use App\Data\Notifications\TestChannelProviderData;
 use App\Data\Opportunities\OpportunityItemAssetData;
+use App\Domain\Communications\Contracts\ChannelDriver;
+use App\Domain\Communications\Data\ChannelConfigFieldData;
+use App\Domain\Communications\Data\ChannelSendData;
+use App\Domain\Communications\Data\ChannelTestResultData;
+use App\Domain\Communications\Data\TestChannelProviderData;
+use App\Domain\Communications\Models\ChannelProvider;
+use App\Domain\Communications\Services\ChannelProviderConfigService;
+use App\Domain\Communications\Services\Drivers\EmailDriver;
 use App\Domain\Documents\Actions\ImportDocumentTemplate;
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Services\DocumentRenderErrorSanitizer;
@@ -22,10 +25,10 @@ use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
 use App\Enums\OpportunityItemType;
 use App\Http\Middleware\LogApiRequest;
-use App\Models\ChannelProvider;
-use App\Models\Container;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
@@ -35,9 +38,6 @@ use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Containers\ContainerBarcodeResolver;
-use App\Services\Notifications\ChannelProviderConfigService;
-use App\Services\Notifications\Drivers\EmailDriver;
 use App\Services\Notifications\NotificationLinkResolver;
 use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Pricing\DiscountRuleEvaluator;

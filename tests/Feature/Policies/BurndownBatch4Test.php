@@ -4,6 +4,10 @@
  * P4-CL4b burndown batch 4 — policy branch coverage.
  */
 
+use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Policies\CommunicationLogPolicy;
+use App\Domain\Communications\Policies\CommunicationTemplatePolicy;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentSequence;
@@ -14,16 +18,12 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Policies\InvoicePolicy;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
-use App\Models\CommunicationLog;
-use App\Models\CommunicationTemplate;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\Store;
 use App\Models\User;
-use App\Policies\CommunicationLogPolicy;
-use App\Policies\CommunicationTemplatePolicy;
 use App\Policies\OpportunityCostPolicy;
 use App\Policies\ProductGroupPolicy;
 use App\Policies\VirtualStockIntakePolicy;

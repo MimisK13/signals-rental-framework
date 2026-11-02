@@ -1,6 +1,6 @@
 <?php
 
-use App\Mail\TemplatedEmail;
+use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\Mail;

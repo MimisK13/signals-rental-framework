@@ -1,19 +1,19 @@
 <?php
 
+use App\Domain\Tax\Enums\TaxPointPolicy;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
+use App\Domain\Tax\Services\TaxPointDateResolver;
 use App\Enums\PricingRoundingDirection;
-use App\Enums\TaxPointPolicy;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\OrganisationTaxClass;
 use App\Models\Product;
-use App\Models\ProductTaxClass;
 use App\Models\Store;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
-use App\Services\Tax\TaxPointDateResolver;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

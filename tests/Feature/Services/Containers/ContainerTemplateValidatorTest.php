@@ -1,9 +1,9 @@
 <?php
 
 use App\Domain\Stock\Enums\StockMethod;
-use App\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Services\ContainerTemplateValidator;
 use App\Models\Product;
-use App\Services\Containers\ContainerTemplateValidator;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

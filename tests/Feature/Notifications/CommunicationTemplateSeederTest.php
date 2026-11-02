@@ -2,12 +2,12 @@
 
 use App\Actions\Stores\CreateStore;
 use App\Data\Stores\CreateStoreData;
-use App\Models\CommunicationTemplate;
+use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Services\SystemCommunicationTemplates;
 use App\Models\NotificationType;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Notifications\SystemCommunicationTemplates;
-use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

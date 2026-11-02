@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Containers\PackContainerItem;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Containers\PackContainerItemData;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
+use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\AvailabilityResolution;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerStatus;
-use App\Models\Container;
-use App\Models\ContainerItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

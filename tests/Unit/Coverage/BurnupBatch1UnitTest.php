@@ -4,7 +4,7 @@
  * Coverage burn-up batch 1 — pure unit tests.
  */
 
-use App\Enums\TaxBuyerType;
+use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Models\ShortageWaitlistMonitor;
 use App\Services\Dashboard\DashboardKpiService;
 use App\Services\Notifications\RecipientResolvers\SubjectOwnerRecipientResolver;

@@ -1,20 +1,20 @@
 <?php
 
-use App\Actions\Tax\CreateTaxRate;
-use App\Actions\Tax\CreateTaxRule;
-use App\Actions\Tax\DeleteTaxRate;
-use App\Actions\Tax\DeleteTaxRule;
-use App\Actions\Tax\UpdateTaxRate;
-use App\Actions\Tax\UpdateTaxRule;
-use App\Data\Tax\CreateTaxRateData;
-use App\Data\Tax\CreateTaxRuleData;
-use App\Data\Tax\UpdateTaxRateData;
-use App\Data\Tax\UpdateTaxRuleData;
+use App\Domain\Tax\Actions\CreateTaxRate;
+use App\Domain\Tax\Actions\CreateTaxRule;
+use App\Domain\Tax\Actions\DeleteTaxRate;
+use App\Domain\Tax\Actions\DeleteTaxRule;
+use App\Domain\Tax\Actions\UpdateTaxRate;
+use App\Domain\Tax\Actions\UpdateTaxRule;
+use App\Domain\Tax\Data\CreateTaxRateData;
+use App\Domain\Tax\Data\CreateTaxRuleData;
+use App\Domain\Tax\Data\UpdateTaxRateData;
+use App\Domain\Tax\Data\UpdateTaxRuleData;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRule;
 use App\Jobs\DeliverWebhook;
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
-use App\Models\TaxRate;
-use App\Models\TaxRule;
 use App\Models\User;
 use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;

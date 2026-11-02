@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\CommunicationTemplate;
+use App\Domain\Communications\Services\SystemCommunicationTemplates;
 use App\Models\NotificationType;
 use App\Models\Store;
-use App\Services\Notifications\SystemCommunicationTemplates;
 use Database\Seeders\NotificationTypeSeeder;
 
 beforeEach(function () {
@@ -13,7 +13,7 @@ beforeEach(function () {
 
 function refreshSystemCommunicationTemplatesMigration(): object
 {
-    return require database_path('migrations/2026_07_03_201500_refresh_system_communication_templates.php');
+    return require app_path('Domain/Communications/Database/Migrations/2026_07_03_201500_refresh_system_communication_templates.php');
 }
 
 it('seeds system communication templates for existing stores via migration', function () {
