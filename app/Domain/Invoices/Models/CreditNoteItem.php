@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Models;
 
 use App\Domain\Invoices\Database\Factories\CreditNoteItemFactory;
-use App\Enums\TaxResultType;
+use App\Domain\Tax\Enums\TaxResultType;
 use App\Models\Traits\FormatsMoney;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

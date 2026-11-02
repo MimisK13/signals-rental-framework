@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Services;
 
-use App\Data\Tax\DocumentTaxLineInput;
-use App\Data\Tax\DocumentTaxRequest;
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
 use App\Domain\Invoices\Data\FrozenInvoiceTaxRowData;
-use App\Enums\TaxResultType;
+use App\Domain\Tax\Data\DocumentTaxLineInput;
+use App\Domain\Tax\Data\DocumentTaxRequest;
+use App\Domain\Tax\Enums\TaxResultType;
+use App\Domain\Tax\Services\DocumentTaxBreakdown;
+use App\Domain\Tax\Services\TaxPointDateResolver;
+use App\Domain\Tax\Services\TaxResolutionContext;
+use App\Domain\Tax\Services\TaxResolutionContextHolder;
+use App\Domain\Tax\ValueObjects\DocumentTaxGroup;
+use App\Domain\Tax\ValueObjects\DocumentTaxLineAllocation;
+use App\Domain\Tax\ValueObjects\DocumentTaxSummary;
 use App\Models\Opportunity;
-use App\Services\Tax\DocumentTaxBreakdown;
-use App\Services\Tax\TaxPointDateResolver;
-use App\Services\Tax\TaxResolutionContext;
-use App\Services\Tax\TaxResolutionContextHolder;
-use App\ValueObjects\Tax\DocumentTaxGroup;
-use App\ValueObjects\Tax\DocumentTaxLineAllocation;
-use App\ValueObjects\Tax\DocumentTaxSummary;
 use DateTimeInterface;
 use LogicException;
 

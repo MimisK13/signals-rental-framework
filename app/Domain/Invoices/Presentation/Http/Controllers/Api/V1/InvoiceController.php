@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Presentation\Http\Controllers\Api\V1;
 
-use App\Actions\Notifications\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;

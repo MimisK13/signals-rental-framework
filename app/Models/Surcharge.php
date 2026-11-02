@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Tax\Models\ProductTaxClass;
 use Database\Factories\SurchargeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

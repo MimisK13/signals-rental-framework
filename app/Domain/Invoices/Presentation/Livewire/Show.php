@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Presentation\Livewire;
 
-use App\Actions\Notifications\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
 use App\Domain\Documents\Models\Document;

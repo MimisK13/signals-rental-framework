@@ -7,7 +7,7 @@ namespace App\Domain\Invoices\Services;
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
 use App\Domain\Invoices\Data\FrozenInvoiceTaxRowData;
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
-use App\Enums\TaxResultType;
+use App\Domain\Tax\Enums\TaxResultType;
 use LogicException;
 
 /**

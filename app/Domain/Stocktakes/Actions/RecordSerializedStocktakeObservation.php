@@ -10,7 +10,7 @@ use App\Domain\Stocktakes\Models\Stocktake;
 use App\Domain\Stocktakes\Models\StocktakeLine;
 use App\Domain\Stocktakes\Models\StocktakeObservation;
 use App\Domain\Stocktakes\Services\SerializedStocktakeIdentifierResolver;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

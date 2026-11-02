@@ -6,7 +6,7 @@ namespace App\Domain\Invoices\Database\Factories;
 
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceItem;
-use App\Enums\TaxResultType;
+use App\Domain\Tax\Enums\TaxResultType;
 use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

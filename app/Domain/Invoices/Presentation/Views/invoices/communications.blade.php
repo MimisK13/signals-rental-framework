@@ -15,7 +15,7 @@
     @include('invoices::invoices.partials.invoice-tabs', ['invoice' => $invoice, 'activeTab' => 'communications'])
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
-        @include('livewire.notifications.partials.communication-log-table', [
+        @include('communications::partials.communication-log-table', [
             'logs' => $logs,
             'statuses' => $statuses,
         ])

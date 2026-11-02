@@ -2,8 +2,8 @@
 
 namespace App\Data\Products;
 
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerCheckinMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Spatie\LaravelData\Data;

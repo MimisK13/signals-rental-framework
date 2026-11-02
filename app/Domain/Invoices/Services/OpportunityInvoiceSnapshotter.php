@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Services;
 
-use App\Data\Tax\DocumentTaxLineInput;
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
+use App\Domain\Tax\Data\DocumentTaxLineInput;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Services\TaxCalculator;
 use App\Enums\DealPriceMode;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\ProductTaxClass;
 use App\Services\Pricing\QuantityMinorArithmetic;
-use App\Services\TaxCalculator;
 use Illuminate\Support\Collection;
 
 /**

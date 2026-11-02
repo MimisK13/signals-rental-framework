@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\Members\CreateMember;
-use App\Actions\Members\RequestMemberVatValidation;
+use App\Domain\Tax\Actions\RequestMemberVatValidation;
 use App\Actions\Members\UpdateMember;
 use App\Data\Members\CreateMemberData;
 use App\Data\Members\UpdateMemberData;
@@ -13,7 +13,7 @@ use App\Models\DiscountCategory;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
 use App\Models\Member;
-use App\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Models\PriceCategory;
 use App\Models\PriceCategoryTier;
 use App\Models\User;

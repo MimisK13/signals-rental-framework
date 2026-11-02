@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Web\CommunicationUnsubscribeController;
 use App\Http\Controllers\Web\DocsController;
 use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\OpportunityLineItemController;
@@ -100,7 +99,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('members/{member}/invoices', 'members.invoices')->name('members.invoices');
     Volt::route('members/{member}/information', 'members.information')->name('members.information');
     Volt::route('members/{member}/member-contacts', 'members.member-contacts')->name('members.contacts');
-    Volt::route('members/{member}/communications', 'members.communications')->name('members.communications');
 
     // Products
     Volt::route('products', 'products.index')->name('products.index');
@@ -138,14 +136,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
     Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
 
-    // Containers (P49 scaffold — full warehouse UI in P55)
-    Volt::route('warehouse', 'warehouse.index')->name('warehouse.index');
-    Volt::route('containers', 'containers.index')->name('containers.index');
-    Volt::route('containers/create', 'containers.create')->name('containers.create');
-    Volt::route('containers/{container}', 'containers.show')->name('containers.show');
-    Volt::route('containers/{container}/pack', 'containers.pack')->name('containers.pack');
-    Volt::route('containers/{container}/repack/{opportunity}', 'containers.repack')->name('containers.repack');
-
     // Opportunities
     //
     // Named web routes resolve now so route('opportunities.*') works everywhere
@@ -176,7 +166,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('opportunities/{opportunity}/shortages', 'opportunities.shortages')->name('opportunities.shortages')->withTrashed();
     Volt::route('opportunities/{opportunity}/versions', 'opportunities.versions')->name('opportunities.versions')->withTrashed();
     Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
-    Volt::route('opportunities/{opportunity}/communications', 'opportunities.communications')->name('opportunities.communications')->withTrashed();
     Volt::route('opportunities/{opportunity}/documents', 'opportunities.documents')->name('opportunities.documents')->withTrashed();
 
     Route::delete('opportunities/{opportunity}/items/{item}', [OpportunityLineItemController::class, 'destroy'])
@@ -242,19 +231,6 @@ Route::middleware(['signals.setup-complete'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Customer communication unsubscribe (signed URL, no auth required)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['signals.setup-complete', 'signed', 'throttle:'.config('communications.unsubscribe_throttle', '10,1')])->group(function (): void {
-    Route::get('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'show'])
-        ->name('communications.unsubscribe.show');
-    Route::post('communications/unsubscribe/{member}', [CommunicationUnsubscribeController::class, 'confirm'])
-        ->name('communications.unsubscribe.confirm');
-});
-
-/*
-|--------------------------------------------------------------------------
 | Admin Panel
 |--------------------------------------------------------------------------
 */
@@ -283,11 +259,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     // Preferences
     Volt::route('admin/settings/preferences', 'admin.settings.preferences')->name('admin.settings.preferences');
     Volt::route('admin/settings/email', 'admin.settings.email')->name('admin.settings.email');
-    Volt::route('admin/settings/email-templates', 'admin.settings.email-templates')->name('admin.settings.email-templates');
-    Volt::route('admin/settings/email-templates/{template}/edit', 'admin.settings.email-template-form')->name('admin.settings.email-templates.edit');
     Volt::route('admin/settings/notifications', 'admin.settings.notifications')->name('admin.settings.notifications');
-    Volt::route('admin/settings/communication-log', 'admin.settings.communication-log')->name('admin.settings.communication-log');
-    Volt::route('admin/settings/communication-templates/{communicationTemplate}/edit', 'admin.settings.communication-template-editor')->name('admin.settings.communication-templates.edit');
     Volt::route('admin/settings/scheduling', 'admin.settings.scheduling')->name('admin.settings.scheduling');
 
     // Integrations
@@ -305,34 +277,7 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     // Data
     Volt::route('admin/settings/countries', 'admin.settings.countries')->name('admin.settings.countries');
 
-    // Tax
-    Volt::route('admin/settings/tax/product-tax-classes', 'admin.settings.tax.product-tax-classes')->name('admin.settings.tax.product-tax-classes');
-    Volt::route('admin/settings/tax/product-tax-classes/create', 'admin.settings.tax.product-tax-class-form')->name('admin.settings.tax.product-tax-classes.create');
-    Volt::route('admin/settings/tax/product-tax-classes/{productTaxClass}/edit', 'admin.settings.tax.product-tax-class-form')->name('admin.settings.tax.product-tax-classes.edit');
-    Volt::route('admin/settings/tax/organisation-tax-classes', 'admin.settings.tax.organisation-tax-classes')->name('admin.settings.tax.organisation-tax-classes');
-    Volt::route('admin/settings/tax/organisation-tax-classes/create', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.create');
-    Volt::route('admin/settings/tax/organisation-tax-classes/{organisationTaxClass}/edit', 'admin.settings.tax.organisation-tax-class-form')->name('admin.settings.tax.organisation-tax-classes.edit');
-
-    // Tax Zones & Categories
     Volt::route('admin/settings/finance', 'admin.settings.finance')->name('admin.settings.finance');
-    Volt::route('admin/settings/tax/zones', 'admin.settings.tax.zones')->name('admin.settings.tax.zones');
-    Volt::route('admin/settings/tax/zones/create', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.create');
-    Volt::route('admin/settings/tax/zones/{taxZone}/edit', 'admin.settings.tax.zone-form')->name('admin.settings.tax.zones.edit');
-    Volt::route('admin/settings/tax/categories', 'admin.settings.tax.categories')->name('admin.settings.tax.categories');
-    Volt::route('admin/settings/tax/categories/create', 'admin.settings.tax.category-form')->name('admin.settings.tax.categories.create');
-    Volt::route('admin/settings/tax/categories/{taxCategory}/edit', 'admin.settings.tax.category-form')->name('admin.settings.tax.categories.edit');
-
-    // Tax Rates
-    Volt::route('admin/settings/tax/rates', 'admin.settings.tax.rates')->name('admin.settings.tax.rates');
-    Volt::route('admin/settings/tax/rates/create', 'admin.settings.tax.rate-form')->name('admin.settings.tax.rates.create');
-    Volt::route('admin/settings/tax/rates/{taxRate}/edit', 'admin.settings.tax.rate-form')->name('admin.settings.tax.rates.edit');
-
-    // Tax Rules
-    Volt::route('admin/settings/tax/rules', 'admin.settings.tax.rules')->name('admin.settings.tax.rules');
-    Volt::route('admin/settings/tax/rules/create', 'admin.settings.tax.rule-form')->name('admin.settings.tax.rules.create');
-    Volt::route('admin/settings/tax/rules/create-zone', 'admin.settings.tax.zone-rule-form')->name('admin.settings.tax.rules.create-zone');
-    Volt::route('admin/settings/tax/rules/{taxRule}/edit', 'admin.settings.tax.rule-form')->name('admin.settings.tax.rules.edit');
-    Volt::route('admin/settings/tax/rules/{taxRule}/edit-zone', 'admin.settings.tax.zone-rule-form')->name('admin.settings.tax.rules.edit-zone');
 
     // Pricing
 

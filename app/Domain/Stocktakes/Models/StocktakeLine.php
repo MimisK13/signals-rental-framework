@@ -8,7 +8,7 @@ use App\Domain\Assets\Models\Asset;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Database\Factories\StocktakeLineFactory;
 use App\Domain\Stocktakes\Enums\StocktakeStatus;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Models\Container;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

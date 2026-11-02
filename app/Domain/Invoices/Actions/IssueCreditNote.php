@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Actions;
 
-use App\Actions\Notifications\DispatchBillingCustomerCommunication;
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
 use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
 use App\Domain\Documents\Services\DocumentTemplateResolver;
 use App\Domain\Invoices\Data\CreditNoteData;

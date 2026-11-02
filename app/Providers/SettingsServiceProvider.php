@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Domain\Invoices\Settings\InvoiceSettings;
+use App\Domain\Tax\Settings\TaxSettings;
 use App\Services\SettingsRegistry;
 use App\Services\SettingsService;
 use App\Settings\ActionLogSettings;
@@ -19,7 +20,6 @@ use App\Settings\PricingSettings;
 use App\Settings\SchedulingSettings;
 use App\Settings\SecuritySettings;
 use App\Settings\SsoSettings;
-use App\Settings\TaxSettings;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\ServiceProvider;
 

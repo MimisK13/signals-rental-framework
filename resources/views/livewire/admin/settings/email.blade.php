@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Admin\SendTestEmail;
+use App\Domain\Communications\Actions\SendTestEmail;
 use App\Services\SettingsRegistry;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;

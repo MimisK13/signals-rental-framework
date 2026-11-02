@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Services;
 
-use App\Contracts\Tax\TaxResolver;
 use App\Domain\Quotations\Enums\QuotationItemType;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\ValueObjects\QuotationLinePricing;
@@ -13,6 +12,7 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Services\RateEngine\RateCalculator;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
 use App\Domain\Rates\ValueObjects\CalculationContext;
+use App\Domain\Tax\Contracts\TaxResolver;
 use App\Enums\LineItemTransactionType;
 use App\Models\Product;
 use App\Services\Pricing\QuantityMinorArithmetic;

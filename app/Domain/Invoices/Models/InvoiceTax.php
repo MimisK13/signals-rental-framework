@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Models;
 
 use App\Domain\Invoices\Database\Factories\InvoiceTaxFactory;
-use App\Models\TaxRate;
+use App\Domain\Tax\Models\TaxRate;
 use App\Models\Traits\FormatsMoney;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

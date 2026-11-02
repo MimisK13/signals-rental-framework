@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Models\Store;
 use App\Services\NotificationRegistry;
-use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Illuminate\Database\Migrations\Migration;
 

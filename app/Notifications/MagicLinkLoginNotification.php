@@ -2,8 +2,8 @@
 
 namespace App\Notifications;
 
-use App\Mail\TemplatedEmail;
-use App\Services\EmailTemplateRenderer;
+use App\Domain\Communications\Mail\TemplatedEmail;
+use App\Domain\Communications\Services\EmailTemplateRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;

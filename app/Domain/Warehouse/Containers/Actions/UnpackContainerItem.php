@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Warehouse\Containers\Actions;
+
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Data\ContainerItemData;
+use App\Domain\Warehouse\Containers\Data\UnpackContainerItemData;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Services\ContainerEventRecorder;
+use App\Services\Availability\ContainerDemandResolver;
+use App\Services\Availability\ProductStoreCapacityLock;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * Unpack a serialised item from an open container — soft-closing the active
+ * membership row and releasing its container demand so the item returns to
+ * individual availability (serialised-containers.md §"Kit Mode" — unpack removes
+ * the demand).
+ *
+ * Plain Eloquent + resolver call, wrapped in one transaction so the membership
+ * close and the demand release are atomic.
+ *
+ * Guards: the container must be OPEN, and an ACTIVE membership for the item must
+ * exist in this container.
+ */
+final class UnpackContainerItem
+{
+    public function __invoke(Container $container, UnpackContainerItemData $data): ContainerItemData
+    {
+        Gate::authorize('containers.pack');
+
+        if (! $container->status->acceptsPacking()) {
+            throw ValidationException::withMessages([
+                'container' => __('Items can only be unpacked from an open container.'),
+            ]);
+        }
+
+        $item = DB::transaction(function () use ($container, $data): ContainerItem {
+            $lockedContainer = Container::query()
+                ->whereKey($container->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($lockedContainer === null || ! $lockedContainer->status->acceptsPacking()) {
+                throw ValidationException::withMessages([
+                    'container' => __('Items can only be unpacked from an open container.'),
+                ]);
+            }
+
+            $item = ContainerItem::query()
+                ->where('container_id', $lockedContainer->id)
+                ->where('serialised_item_id', $data->serialised_item_id)
+                ->whereNull('unpacked_at')
+                ->lockForUpdate()
+                ->first();
+
+            if ($item === null) {
+                throw ValidationException::withMessages([
+                    'serialised_item_id' => __('The item is not packed in this container.'),
+                ]);
+            }
+
+            $stockLevel = StockLevel::query()->findOrFail($item->serialised_item_id);
+            app(ProductStoreCapacityLock::class)->acquire($stockLevel->product_id, $stockLevel->store_id);
+
+            $item->forceFill([
+                'unpacked_at' => Carbon::now('UTC'),
+                'unpacked_reason' => $data->reason,
+            ])->save();
+
+            // Clear the CRMS-compat containment mirror on the stock level.
+            StockLevel::query()
+                ->whereKey($item->serialised_item_id)
+                ->update([
+                    'container_stock_level_id' => null,
+                    'container_mode' => null,
+                ]);
+
+            // Release the container demand — the item returns to availability.
+            $item->setRelation('container', $lockedContainer);
+            app(ContainerDemandResolver::class)->releaseDemands($item);
+
+            app(ContainerEventRecorder::class)->itemUnpacked($container, $item);
+
+            return $item;
+        });
+
+        return ContainerItemData::fromModel($item->fresh() ?? $item);
+    }
+}

@@ -2,9 +2,9 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
-use App\Models\ProductTaxClass;
 use App\Models\Surcharge;
 use App\Verbs\Events\Opportunities\Concerns\PricesOpportunityItems;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;

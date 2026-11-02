@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\Country;
-use App\Models\EmailTemplate;
+use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Lists\Models\ListName;
 use App\Models\NotificationType;
-use App\Models\OrganisationTaxClass;
-use App\Models\ProductTaxClass;
-use App\Models\TaxRate;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Models\TaxRate;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Layout;

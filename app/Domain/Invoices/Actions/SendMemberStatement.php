@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Actions;
 
-use App\Actions\Notifications\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
 use App\Domain\Invoices\Data\SendMemberStatementData;
 use App\Enums\BillingCommunicationKind;
 use App\Models\Member;

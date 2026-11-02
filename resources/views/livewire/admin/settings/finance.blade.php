@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\TaxPointPolicy;
+use App\Domain\Tax\Enums\TaxPointPolicy;
 use App\Services\SettingsRegistry;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;

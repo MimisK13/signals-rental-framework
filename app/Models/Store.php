@@ -8,6 +8,7 @@ use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Stocktakes\Models\Stocktake;
+use App\Domain\Tax\Models\TaxZone;
 use App\Enums\ShortageDispatchPolicy;
 use App\Enums\ShortagePolicy;
 use App\Services\SchemaBuilder;

@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Enums\ProductType;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\ProductTaxClass;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder

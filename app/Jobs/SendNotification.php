@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Actions\Notifications\LogCommunication;
-use App\Data\Notifications\CreateCommunicationLogData;
-use App\Data\Notifications\TransitionCommunicationLogData;
+use App\Domain\Communications\Actions\LogCommunication;
+use App\Domain\Communications\Data\CreateCommunicationLogData;
+use App\Domain\Communications\Data\TransitionCommunicationLogData;
 use App\Models\Member;
 use App\Notifications\SignalsNotification;
 use App\Services\Notifications\NotificationChannelResolver;

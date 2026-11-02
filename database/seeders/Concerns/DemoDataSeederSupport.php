@@ -3,12 +3,12 @@
 namespace Database\Seeders\Concerns;
 
 use App\Actions\Stores\CreateStore;
+use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
-use App\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\OrganisationTaxClass;
+use App\Domain\Tax\Models\TaxZone;
 use App\Models\Store;
-use App\Models\TaxZone;
 use App\Models\User;
-use Database\Seeders\CommunicationTemplateSeeder;
 use Illuminate\Support\Facades\Auth;
 
 trait DemoDataSeederSupport

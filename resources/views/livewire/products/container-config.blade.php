@@ -2,11 +2,11 @@
 
 use App\Actions\Products\UpdateProductContainerConfig;
 use App\Data\Products\UpdateProductContainerConfigData;
-use App\Enums\ContainerAvailabilityMode;
-use App\Enums\ContainerCheckinMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
 use App\Enums\KitComponentBinding;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\Container;
+use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\Product;
 use App\Services\Api\RansackFilter;
 use Illuminate\Database\Eloquent\Collection;

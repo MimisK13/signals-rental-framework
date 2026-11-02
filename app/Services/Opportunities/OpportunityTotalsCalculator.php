@@ -2,13 +2,19 @@
 
 namespace App\Services\Opportunities;
 
-use App\Data\Tax\DocumentTaxLineInput;
-use App\Data\Tax\DocumentTaxRequest;
 use App\Domain\Currency\Services\CurrencyService;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Services\RateEngine\RateCalculator;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
 use App\Domain\Rates\ValueObjects\CalculationContext;
+use App\Domain\Tax\Data\DocumentTaxLineInput;
+use App\Domain\Tax\Data\DocumentTaxRequest;
+use App\Domain\Tax\Models\ProductTaxClass;
+use App\Domain\Tax\Services\DocumentTaxBreakdown;
+use App\Domain\Tax\Services\TaxCalculator;
+use App\Domain\Tax\Services\TaxPointDateResolver;
+use App\Domain\Tax\Services\TaxResolutionContext;
+use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
@@ -17,7 +23,6 @@ use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityVersion;
 use App\Models\Product;
-use App\Models\ProductTaxClass;
 use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\DiscountSourceRegistry;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
@@ -25,11 +30,6 @@ use App\Services\Pricing\OpportunitySurchargeApplicator;
 use App\Services\Pricing\PriceCategoryTierMultiplier;
 use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\Pricing\RoundingStrategy;
-use App\Services\Tax\DocumentTaxBreakdown;
-use App\Services\Tax\TaxPointDateResolver;
-use App\Services\Tax\TaxResolutionContext;
-use App\Services\Tax\TaxResolutionContextHolder;
-use App\Services\TaxCalculator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

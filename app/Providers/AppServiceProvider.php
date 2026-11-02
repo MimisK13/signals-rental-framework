@@ -5,15 +5,12 @@ namespace App\Providers;
 use App\Contracts\Availability\AvailabilityDataPresence;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\Availability\AvailabilityStrategyContract;
-use App\Contracts\Tax\TaxResolver;
-use App\Contracts\Tax\VatNumberValidator;
 use App\Guards\Opportunities\Contracts\ApprovalGate;
 use App\Guards\Opportunities\PluginValidatorRegistry;
 use App\Guards\Opportunities\Rules\DispatchShortageRule;
 use App\Guards\Opportunities\Rules\FxTaxLockRule;
 use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\Stages\AutoApprovalGate;
-use App\Listeners\RecordCustomerCommunicationDelivery;
 use App\Models\User;
 use App\Policies\NumberingPolicy;
 use App\Services\Api\AbilityRegistry;
@@ -39,17 +36,8 @@ use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
 use App\Services\NotificationRegistry;
-use App\Services\Notifications\ChannelProviderRegistry;
-use App\Services\Notifications\CommunicationLogStatusRegistry;
-use App\Services\Notifications\CommunicationTemplateRenderer;
-use App\Services\Notifications\CoreMergeFieldFilters;
-use App\Services\Notifications\Drivers\BroadcastDriver;
-use App\Services\Notifications\Drivers\DatabaseDriver;
-use App\Services\Notifications\Drivers\EmailDriver;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
 use App\Services\Notifications\EventNotificationMapRegistry;
-use App\Services\Notifications\MergeFieldFilterRegistry;
-use App\Services\Notifications\MergeFieldRenderer;
 use App\Services\Notifications\NotificationChannelResolver;
 use App\Services\Notifications\RecipientResolverRegistry;
 use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
@@ -102,11 +90,6 @@ use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
 use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Services\Shortages\SubHireSupplierCostQuery;
-use App\Services\Tax\DefaultVatNumberValidator;
-use App\Services\Tax\TaxResolutionContextHolder;
-use App\Services\Tax\TaxZoneRuleResolver;
-use App\Services\Tax\ZoneAwareTaxResolver;
-use App\Services\TaxCalculator;
 use App\Support\Formatter;
 use App\Support\NumberingAccess;
 use App\Support\Timezone;
@@ -116,7 +99,6 @@ use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -140,12 +122,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocsService::class);
         $this->app->singleton(SchemaRegistry::class);
         $this->app->singleton(PluginRegistrar::class);
-        $this->app->singleton(TaxCalculator::class);
-        $this->app->scoped(TaxResolutionContextHolder::class);
-        $this->app->singleton(TaxZoneRuleResolver::class);
-        $this->app->singleton(ZoneAwareTaxResolver::class);
-        $this->app->bind(TaxResolver::class, ZoneAwareTaxResolver::class);
-        $this->app->singleton(VatNumberValidator::class, DefaultVatNumberValidator::class);
         $this->app->singleton(ColumnRegistryResolver::class);
 
         // Request-scoped suppression flag for batch auto-promotion (scoped so it is
@@ -195,18 +171,6 @@ class AppServiceProvider extends ServiceProvider
             return $registry;
         });
 
-        $this->app->singleton(ChannelProviderRegistry::class, function ($app): ChannelProviderRegistry {
-            $registry = new ChannelProviderRegistry($app);
-
-            $registry->register('email', EmailDriver::class);
-            $registry->register('database', DatabaseDriver::class);
-            $registry->register('broadcast', BroadcastDriver::class);
-
-            return $registry;
-        });
-
-        $this->app->singleton(CommunicationLogStatusRegistry::class);
-
         $this->app->singleton(EventNotificationMapRegistry::class);
 
         $this->app->singleton(EventNotificationConditionEvaluator::class);
@@ -224,16 +188,6 @@ class AppServiceProvider extends ServiceProvider
 
             return $registry;
         });
-
-        $this->app->singleton(MergeFieldFilterRegistry::class, function (): MergeFieldFilterRegistry {
-            $registry = new MergeFieldFilterRegistry;
-            CoreMergeFieldFilters::register($registry);
-
-            return $registry;
-        });
-
-        $this->app->singleton(MergeFieldRenderer::class);
-        $this->app->singleton(CommunicationTemplateRenderer::class);
 
         $this->app->singleton(AbilityRegistry::class, function (): AbilityRegistry {
             $registry = new AbilityRegistry;
@@ -438,7 +392,6 @@ class AppServiceProvider extends ServiceProvider
         $this->registerApiCatalogueCacheInvalidation();
         $this->registerPricingWorkflowTriggers();
         $this->registerDocumentWorkflowTriggers();
-        $this->registerCustomerCommunicationListeners();
 
         // LogAction is auto-discovered by Laravel via its handle(AuditableEvent) type-hint.
         // Manual registration removed to prevent duplicate listener execution.
@@ -469,14 +422,6 @@ class AppServiceProvider extends ServiceProvider
                 'user_agent' => $request?->userAgent(),
             ];
         });
-    }
-
-    protected function registerCustomerCommunicationListeners(): void
-    {
-        Event::listen(
-            NotificationSent::class,
-            [RecordCustomerCommunicationDelivery::class, 'handle'],
-        );
     }
 
     protected function registerApiCatalogueCacheInvalidation(): void

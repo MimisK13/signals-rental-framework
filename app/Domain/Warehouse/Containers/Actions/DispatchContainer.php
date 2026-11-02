@@ -1,0 +1,243 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Warehouse\Containers\Actions;
+
+use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Warehouse\Containers\Actions\Concerns\DispatchesOpportunityContainerAssets;
+use App\Domain\Warehouse\Containers\Data\ContainerData;
+use App\Domain\Warehouse\Containers\Data\ContainerDispatchProductVerdictData;
+use App\Domain\Warehouse\Containers\Data\ContainerDispatchResultData;
+use App\Domain\Warehouse\Containers\Data\DispatchContainerData;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerDissolveReason;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Events\BeforeContainerDispatched;
+use App\Domain\Warehouse\Containers\Events\BeforeContainerDissolved;
+use App\Domain\Warehouse\Containers\Events\ContainerDispatchedLifecycle;
+use App\Domain\Warehouse\Containers\Events\ContainerDissolved;
+use App\Domain\Warehouse\Containers\Exceptions\ContainerDispatchAmendmentRequiredException;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Services\ContainerDispatchValidator;
+use App\Domain\Warehouse\Containers\Services\ContainerDissolveService;
+use App\Domain\Warehouse\Containers\Services\ContainerEventRecorder;
+use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
+use App\Enums\OpportunityState;
+use App\Models\Opportunity;
+use App\Services\Opportunities\AutoPromotionContext;
+use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+use Throwable;
+use Thunk\Verbs\Facades\Verbs;
+
+/**
+ * Container dispatch orchestrator — routes by availability mode:
+ *
+ *  - **Transport** — dissolve-on-dispatch (serialised-containers.md §"Dissolve-on-Dispatch")
+ *  - **Kit / Hybrid** — persistent unit dispatch via {@see DispatchKitContainer}
+ *
+ * Permissions: {@see opportunities.edit} + {@see containers.view} via the container
+ * policy's `dispatch` ability.
+ */
+final class DispatchContainer
+{
+    use CommitsVerbsEvents, DispatchesOpportunityContainerAssets, PromotesOpportunityStatus;
+
+    public function __invoke(Container $container, DispatchContainerData $data): ContainerDispatchResultData
+    {
+        Gate::authorize('dispatch', $container);
+        Gate::authorize('update', Opportunity::query()->findOrFail($data->opportunity_id));
+
+        if ($container->availabilityMode()->isBookableKit()) {
+            return (new DispatchKitContainer)($container, $data);
+        }
+
+        return $this->dispatchTransport($container, $data);
+    }
+
+    protected function dispatchTransport(Container $container, DispatchContainerData $data): ContainerDispatchResultData
+    {
+        $this->pendingLinesByProduct = [];
+
+        $opportunity = Opportunity::query()->whereKey($data->opportunity_id)->firstOrFail();
+
+        $this->guardTransportContainer($container);
+        $this->guardOpportunity($opportunity);
+
+        $approvedAmendments = $data->amendments !== null
+            ? array_values($data->amendments->all())
+            : [];
+        $validation = app(ContainerDispatchValidator::class)->validate(
+            container: $container,
+            opportunity: $opportunity,
+            actor: Auth::user(),
+            autoAddMissing: $data->auto_add_missing,
+            approvedAmendments: $approvedAmendments,
+        );
+
+        if ($validation['has_failures']) {
+            throw ValidationException::withMessages([
+                'dispatch' => [__('Container dispatch failed validation.')],
+                'validation' => [array_map(
+                    fn (ContainerDispatchProductVerdictData $row): array => $row->toArray(),
+                    $validation['products'],
+                )],
+            ]);
+        }
+
+        if ($validation['has_prompts']) {
+            throw new ContainerDispatchAmendmentRequiredException(
+                amendments: array_map(
+                    fn (ContainerDispatchProductVerdictData $row): array => $this->promptPayload($row),
+                    $validation['prompts'],
+                ),
+                validation: array_map(
+                    fn (ContainerDispatchProductVerdictData $row): array => $row->toArray(),
+                    $validation['products'],
+                ),
+            );
+        }
+
+        $autoAdded = [];
+        $amended = [];
+        $dispatchedAssetIds = [];
+        $containersDissolved = 0;
+
+        $containersInTree = count(app(ContainerManifestService::class)->containersInTree($container));
+
+        BeforeContainerDispatched::dispatch($container, $opportunity);
+
+        try {
+            DB::transaction(function () use (
+                $container,
+                $opportunity,
+                $validation,
+                $approvedAmendments,
+                $containersInTree,
+                &$autoAdded,
+                &$amended,
+                &$dispatchedAssetIds,
+                &$containersDissolved,
+            ): void {
+                $this->lockModelForMutation(
+                    $container,
+                    ContainerStatus::Sealed->value,
+                    failureKey: 'container',
+                    assert: fn (Container $locked) => $this->guardTransportContainer($locked),
+                );
+
+                $opportunity->refresh()->load('items');
+
+                $this->applyAmendments(
+                    opportunity: $opportunity,
+                    validation: $validation,
+                    approvedAmendments: $approvedAmendments,
+                    autoAdded: $autoAdded,
+                    amended: $amended,
+                );
+
+                if ($autoAdded !== [] || $amended !== []) {
+                    Verbs::commit();
+                    $opportunity->refresh()->load('items');
+                    $this->pendingLinesByProduct = [];
+                } else {
+                    $opportunity->refresh()->load('items');
+                }
+
+                $dispatchedAt = Carbon::now('UTC')->toIso8601String();
+                $assets = app(ContainerManifestService::class)->dispatchAssets($container);
+                $overlay = [];
+
+                app(AutoPromotionContext::class)->suppress(function () use (
+                    $opportunity,
+                    $assets,
+                    $dispatchedAt,
+                    &$dispatchedAssetIds,
+                    &$overlay,
+                ): void {
+                    $overlay = $this->dispatchAssetManifest($opportunity, $assets, $dispatchedAt);
+                    $dispatchedAssetIds = array_keys($overlay);
+                });
+
+                $this->promoteOpportunityFromItems(
+                    $opportunity->fresh(),
+                    ['assignment_statuses' => $overlay],
+                );
+
+                Verbs::commit();
+
+                BeforeContainerDissolved::dispatch($container);
+
+                $itemCount = app(ContainerDissolveService::class)->dissolveTree(
+                    $container,
+                    ContainerDissolveReason::Dispatched,
+                    $opportunity->id,
+                );
+
+                $dissolved = $container->fresh() ?? $container;
+
+                app(ContainerEventRecorder::class)->dissolved(
+                    $dissolved,
+                    ContainerDissolveReason::Dispatched,
+                    $itemCount,
+                );
+
+                ContainerDissolved::dispatch($dissolved, $itemCount);
+
+                $containersDissolved = $containersInTree;
+            });
+        } catch (Throwable $e) {
+            $this->resetVerbsState();
+
+            throw $e;
+        }
+
+        $fresh = $container->fresh() ?? $container;
+        ContainerDispatchedLifecycle::dispatch($fresh, $opportunity, count($dispatchedAssetIds));
+
+        return new ContainerDispatchResultData(
+            container: ContainerData::fromModel($fresh),
+            opportunity_id: $opportunity->id,
+            assets_checked_out: count($dispatchedAssetIds),
+            assets_dispatched: $dispatchedAssetIds,
+            auto_added_products: $autoAdded,
+            amended_products: $amended,
+            containers_dissolved: $containersDissolved,
+        );
+    }
+
+    protected function guardTransportContainer(Container $container): void
+    {
+        if ($container->status !== ContainerStatus::Sealed) {
+            throw ValidationException::withMessages([
+                'container' => __('Only sealed containers can be dispatched.'),
+            ]);
+        }
+
+        if ($container->availabilityMode() !== ContainerAvailabilityMode::Transport) {
+            throw ValidationException::withMessages([
+                'container' => __('Only transport-mode containers dissolve on dispatch.'),
+            ]);
+        }
+    }
+
+    protected function guardOpportunity(Opportunity $opportunity): void
+    {
+        if ($opportunity->state !== OpportunityState::Order) {
+            throw ValidationException::withMessages([
+                'opportunity' => __('The target opportunity must be an order.'),
+            ]);
+        }
+
+        if ($opportunity->statusEnum()->isClosed()) {
+            throw ValidationException::withMessages([
+                'opportunity' => __('A closed opportunity cannot receive a container dispatch.'),
+            ]);
+        }
+    }
+}

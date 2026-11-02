@@ -4,10 +4,6 @@ use App\Http\Controllers\Api\V1\AccessoryController;
 use App\Http\Controllers\Api\V1\ActionLogController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BundleRuleController;
-use App\Http\Controllers\Api\V1\ChannelProviderController;
-use App\Http\Controllers\Api\V1\CommunicationLogController;
-use App\Http\Controllers\Api\V1\CommunicationTemplateController;
-use App\Http\Controllers\Api\V1\ContainerController;
 use App\Http\Controllers\Api\V1\CountryController;
 use App\Http\Controllers\Api\V1\DiscountCategoryController;
 use App\Http\Controllers\Api\V1\DiscountRuleController;
@@ -23,12 +19,10 @@ use App\Http\Controllers\Api\V1\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
-use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
 use App\Http\Controllers\Api\V1\PriceCategoryController;
 use App\Http\Controllers\Api\V1\ProductContainerTemplateController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
-use App\Http\Controllers\Api\V1\ProductTaxClassController;
 use App\Http\Controllers\Api\V1\RequestLogController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SchemaController;
@@ -38,10 +32,6 @@ use App\Http\Controllers\Api\V1\ShortageController;
 use App\Http\Controllers\Api\V1\SurchargeController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
 use App\Http\Controllers\Api\V1\SystemController;
-use App\Http\Controllers\Api\V1\TaxCategoryController;
-use App\Http\Controllers\Api\V1\TaxRateController;
-use App\Http\Controllers\Api\V1\TaxRuleController;
-use App\Http\Controllers\Api\V1\TaxZoneController;
 use App\Http\Controllers\Api\V1\UsageController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\VirtualStockIntakeController;
@@ -70,18 +60,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('schema', [SchemaController::class, 'index'])->name('api.v1.schema.index');
     Route::get('schema/{model}', [SchemaController::class, 'show'])->name('api.v1.schema.show');
 
-    Route::apiResource('communication_log', CommunicationLogController::class)->only(['index', 'show'])->names('api.v1.communication_log');
-    Route::get('communication_templates/{communicationTemplate}/versions', [CommunicationTemplateController::class, 'versions'])->name('api.v1.communication_templates.versions');
-    Route::post('communication_templates/{communicationTemplate}/versions/{version}/restore', [CommunicationTemplateController::class, 'restoreVersion'])->name('api.v1.communication_templates.restore_version');
-    Route::apiResource('communication_templates', CommunicationTemplateController::class)->names('api.v1.communication_templates');
-
     Route::get('notification_preferences', [NotificationPreferenceController::class, 'index'])->name('api.v1.notification_preferences.index');
     Route::put('notification_preferences', [NotificationPreferenceController::class, 'update'])->name('api.v1.notification_preferences.update');
     Route::get('members/{member}/notification_preferences', [MemberNotificationPreferenceController::class, 'index'])->name('api.v1.members.notification_preferences.index');
     Route::put('members/{member}/notification_preferences', [MemberNotificationPreferenceController::class, 'update'])->name('api.v1.members.notification_preferences.update');
-
-    Route::post('channel_providers/{channel_provider}/test', [ChannelProviderController::class, 'test'])->name('api.v1.channel_providers.test');
-    Route::apiResource('channel_providers', ChannelProviderController::class)->names('api.v1.channel_providers');
 
     Route::get('notification_settings', [NotificationSettingController::class, 'index'])->name('api.v1.notification_settings.index');
     Route::put('notification_settings', [NotificationSettingController::class, 'update'])->name('api.v1.notification_settings.update');
@@ -131,10 +113,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     // Custom Fields
 
-    // Tax Classes
-    Route::apiResource('organisation_tax_classes', OrganisationTaxClassController::class)->names('api.v1.organisation_tax_classes');
-    Route::apiResource('product_tax_classes', ProductTaxClassController::class)->names('api.v1.product_tax_classes');
-
     // Pricing Categories
     Route::apiResource('discount_categories', DiscountCategoryController::class)->names('api.v1.discount_categories');
     Route::apiResource('discount_rules', DiscountRuleController::class)->names('api.v1.discount_rules');
@@ -142,12 +120,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('surcharge_groups', SurchargeGroupController::class)->names('api.v1.surcharge_groups');
     Route::apiResource('surcharges', SurchargeController::class)->names('api.v1.surcharges');
     Route::apiResource('price_categories', PriceCategoryController::class)->names('api.v1.price_categories');
-
-    // Tax Rates & Rules
-    Route::apiResource('tax_zones', TaxZoneController::class)->names('api.v1.tax_zones');
-    Route::apiResource('tax_categories', TaxCategoryController::class)->names('api.v1.tax_categories');
-    Route::apiResource('tax_rates', TaxRateController::class)->names('api.v1.tax_rates');
-    Route::apiResource('tax_rules', TaxRuleController::class)->names('api.v1.tax_rules');
 
     // Products
     Route::apiResource('products', ProductController::class)->names('api.v1.products');
@@ -167,27 +139,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('product_groups', ProductGroupController::class)->names('api.v1.product_groups');
 
     // Stock Levels
-
-    // Containers — routes bind by public UUID ({@see Container::resolveRouteBinding})
-    // with integer-id fallback for backward compatibility. The pack/unpack and
-    // temporary create routes are declared before the {container} segment routes.
-    Route::post('containers/temporary', [ContainerController::class, 'storeTemporary'])->name('api.v1.containers.temporary.store');
-    Route::post('containers/repack/start', [ContainerController::class, 'startRepack'])->name('api.v1.containers.repack.start');
-    Route::post('containers/{container}/pack', [ContainerController::class, 'pack'])->name('api.v1.containers.pack');
-    Route::post('containers/{container}/transfer', [ContainerController::class, 'transfer'])->name('api.v1.containers.transfer');
-    Route::post('containers/{container}/unpack', [ContainerController::class, 'unpack'])->name('api.v1.containers.unpack');
-    Route::post('containers/{container}/seal', [ContainerController::class, 'seal'])->name('api.v1.containers.seal');
-    Route::post('containers/{container}/unseal', [ContainerController::class, 'unseal'])->name('api.v1.containers.unseal');
-    Route::post('containers/{container}/dissolve', [ContainerController::class, 'dissolve'])->name('api.v1.containers.dissolve');
-    Route::post('containers/{container}/dispatch', [ContainerController::class, 'dispatch'])->name('api.v1.containers.dispatch');
-    Route::post('containers/{container}/return', [ContainerController::class, 'returnKit'])->name('api.v1.containers.return');
-    Route::post('containers/{container}/repack', [ContainerController::class, 'repackItem'])->name('api.v1.containers.repack.item');
-    Route::post('containers/{container}/verify-checkin', [ContainerController::class, 'verifyCheckin'])->name('api.v1.containers.verify-checkin');
-    Route::get('containers/{container}/compliance', [ContainerController::class, 'compliance'])->name('api.v1.containers.compliance');
-    Route::get('containers', [ContainerController::class, 'index'])->name('api.v1.containers.index');
-    Route::post('containers', [ContainerController::class, 'store'])->name('api.v1.containers.store');
-    Route::get('containers/{container}', [ContainerController::class, 'show'])->name('api.v1.containers.show');
-    Route::patch('containers/{container}', [ContainerController::class, 'update'])->name('api.v1.containers.update');
 
     // Availability (read-only: point query via ?date, range query via ?from&?to).
     // The static calendar/shortages grids and the {product}/gantt bar view are

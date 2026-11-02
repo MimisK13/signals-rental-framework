@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Warehouse\Containers\Enums;
+
+/**
+ * Why a sealed container was reopened (serialised-containers.md §"Container
+ * Lifecycle" — unsealing returns the container to open for modifications).
+ *
+ * Values are config-driven via {@see config('containers.unseal_reasons')}; this
+ * enum mirrors the canonical set for type-safe internal use.
+ */
+enum ContainerUnsealReason: string
+{
+    case Manual = 'manual';
+    case Transfer = 'transfer';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Manual => 'Manual',
+            self::Transfer => 'Transfer',
+        };
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function configValues(): array
+    {
+        /** @var list<string> $reasons */
+        $reasons = config('containers.unseal_reasons', []);
+
+        return $reasons;
+    }
+}

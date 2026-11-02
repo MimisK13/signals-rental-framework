@@ -14,7 +14,7 @@ use App\Domain\Stock\Enums\AllowedStockType;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Observers\StockLevelObserver;
-use App\Models\ContainerBulkMembership;
+use App\Domain\Warehouse\Containers\Models\ContainerBulkMembership;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\Store;

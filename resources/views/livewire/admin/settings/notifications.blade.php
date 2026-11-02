@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Notifications\SaveChannelProvider;
-use App\Actions\Notifications\TestChannelProvider;
-use App\Data\Notifications\SaveChannelProviderData;
-use App\Data\Notifications\TestChannelProviderData;
+use App\Domain\Communications\Actions\SaveChannelProvider;
+use App\Domain\Communications\Actions\TestChannelProvider;
+use App\Domain\Communications\Data\SaveChannelProviderData;
+use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Enums\NotificationAudience;
-use App\Models\ChannelProvider;
-use App\Models\CommunicationTemplate;
+use App\Domain\Communications\Models\ChannelProvider;
+use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Models\Member;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
-use App\Services\Notifications\ChannelProviderConfigService;
-use App\Services\Notifications\ChannelProviderRegistry;
+use App\Domain\Communications\Services\ChannelProviderConfigService;
+use App\Domain\Communications\Services\ChannelProviderRegistry;
 use App\Services\Notifications\RecipientResolverRegistry;
 use App\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Gate;
@@ -283,7 +283,7 @@ new #[Layout('components.layouts.app')] #[Title('Notifications')] class extends 
     /**
      * @return array{
      *     grouped: \Illuminate\Support\Collection<string, \Illuminate\Database\Eloquent\Collection<int, NotificationType>>,
-     *     drivers: list<\App\Data\Notifications\ChannelDriverData>,
+     *     drivers: list<\App\Domain\Communications\Data\ChannelDriverData>,
      *     providers: \Illuminate\Support\Collection<string, ChannelProvider>,
      *     recipientTypes: list<string>,
      *     roles: \Illuminate\Support\Collection<string, string>,

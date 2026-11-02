@@ -4,7 +4,7 @@ namespace App\Services\Availability;
 
 use App\Data\Availability\AvailabilityRangeData;
 use App\Data\Availability\AvailabilitySlotData;
-use App\Enums\ContainerAvailabilityMode;
+use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Enums\KitComponentBinding;
 use App\Models\Product;
 use App\Models\SerialisedComponent;

@@ -9,7 +9,7 @@ use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Enums\StocktakeStatus;
 use App\Domain\Stocktakes\Models\Stocktake;
-use App\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

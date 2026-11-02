@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Presentation\Livewire;
 
+use App\Domain\Communications\Services\CommunicationLogQuery;
+use App\Domain\Communications\Services\CommunicationLogStatusRegistry;
 use App\Domain\Invoices\Models\Invoice;
-use App\Services\Notifications\CommunicationLogQuery;
-use App\Services\Notifications\CommunicationLogStatusRegistry;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

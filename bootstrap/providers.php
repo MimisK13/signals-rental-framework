@@ -3,6 +3,7 @@
 use App\Domain\Activities\ActivitiesServiceProvider;
 use App\Domain\Assets\AssetsServiceProvider;
 use App\Domain\Attachments\AttachmentsServiceProvider;
+use App\Domain\Communications\CommunicationsServiceProvider;
 use App\Domain\Crew\CrewServiceProvider;
 use App\Domain\Currency\CurrencyServiceProvider;
 use App\Domain\CustomFields\CustomFieldsServiceProvider;
@@ -19,6 +20,8 @@ use App\Domain\Stock\StockServiceProvider;
 use App\Domain\Stocktakes\StocktakesServiceProvider;
 use App\Domain\SupplierBills\SupplierBillsServiceProvider;
 use App\Domain\SupplierCosts\SupplierCostsServiceProvider;
+use App\Domain\Tax\TaxServiceProvider;
+use App\Domain\Warehouse\WarehouseServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\SettingsServiceProvider;
 use App\Providers\VoltServiceProvider;
@@ -30,6 +33,7 @@ return [
     AttachmentsServiceProvider::class,
     AssetsServiceProvider::class,
     CrewServiceProvider::class,
+    CommunicationsServiceProvider::class,
     CustomViewsServiceProvider::class,
     CustomFieldsServiceProvider::class,
     DocumentsServiceProvider::class,
@@ -46,6 +50,8 @@ return [
     RepairsServiceProvider::class,
     SupplierCostsServiceProvider::class,
     SupplierBillsServiceProvider::class,
+    TaxServiceProvider::class,
+    WarehouseServiceProvider::class,
     VoltServiceProvider::class,
     DenseServiceProvider::class,
 ];

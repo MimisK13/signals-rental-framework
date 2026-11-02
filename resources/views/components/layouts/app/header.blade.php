@@ -386,7 +386,7 @@
                                     <span class="mega-item-desc">Scan &amp; receive returns</span>
                                 </div>
                             </a>
-                            @can('viewAny', App\Models\Container::class)
+                            @can('viewAny', App\Domain\Warehouse\Containers\Models\Container::class)
                                 <a href="{{ route('containers.index') }}"
                                     class="mega-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}"
                                     wire:navigate.hover>
@@ -788,7 +788,7 @@
             <a class="sidebar-item" href="#">
                 <flux:icon.qr-code class="!size-[15px]" /> Global Check-in
             </a>
-            @can('viewAny', App\Models\Container::class)
+            @can('viewAny', App\Domain\Warehouse\Containers\Models\Container::class)
                 <a class="sidebar-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}"
                     href="{{ route('containers.index') }}" wire:navigate.hover x-on:click="mobileNav = false">
                     <flux:icon.cube-transparent class="!size-[15px]" /> Containers

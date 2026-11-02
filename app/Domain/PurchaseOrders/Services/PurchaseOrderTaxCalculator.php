@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Services;
 
-use App\Data\Tax\DocumentTaxLineInput;
-use App\Data\Tax\DocumentTaxRequest;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Tax\Data\DocumentTaxLineInput;
+use App\Domain\Tax\Data\DocumentTaxRequest;
+use App\Domain\Tax\Services\DocumentTaxBreakdown;
+use App\Domain\Tax\Services\TaxResolutionContext;
+use App\Domain\Tax\Services\TaxResolutionContextHolder;
+use App\Domain\Tax\ValueObjects\DocumentTaxSummary;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Tax\DocumentTaxBreakdown;
-use App\Services\Tax\TaxResolutionContext;
-use App\Services\Tax\TaxResolutionContextHolder;
-use App\ValueObjects\Tax\DocumentTaxSummary;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use DateTimeInterface;

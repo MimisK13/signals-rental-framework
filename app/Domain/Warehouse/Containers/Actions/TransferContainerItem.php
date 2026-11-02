@@ -1,0 +1,140 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Warehouse\Containers\Actions;
+
+use App\Concerns\LocksModelsForMutation;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Warehouse\Containers\Data\ContainerItemData;
+use App\Domain\Warehouse\Containers\Data\TransferContainerItemData;
+use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
+use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
+use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
+use App\Domain\Warehouse\Containers\Events\BeforeContainerItemTransferred;
+use App\Domain\Warehouse\Containers\Events\ContainerItemTransferred;
+use App\Domain\Warehouse\Containers\Models\Container;
+use App\Domain\Warehouse\Containers\Models\ContainerItem;
+use App\Domain\Warehouse\Containers\Services\ContainerEventRecorder;
+use App\Services\Availability\ContainerDemandResolver;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * Atomically move a serialised item from one open container to another
+ * (serialised-containers.md §"One container at a time — with transfer support").
+ *
+ * Unpacks from the source (reason transferred), packs into the target, and
+ * auto-unseals a sealed source with reason {@see ContainerUnsealReason::Transfer}.
+ */
+final class TransferContainerItem
+{
+    use LocksModelsForMutation;
+
+    public function __invoke(Container $target, TransferContainerItemData $data): ContainerItemData
+    {
+        Gate::authorize('transfer', $target);
+        Gate::authorize('pack', $target);
+
+        $source = Container::query()->findOrFail($data->source_container_id);
+
+        if ($source->id === $target->id) {
+            throw ValidationException::withMessages([
+                'source_container_id' => __('Source and target containers must differ.'),
+            ]);
+        }
+
+        Gate::authorize('transfer', $source);
+
+        $membership = ContainerItem::query()
+            ->where('container_id', $source->id)
+            ->where('serialised_item_id', $data->serialised_item_id)
+            ->whereNull('unpacked_at')
+            ->first();
+
+        if ($membership === null) {
+            throw ValidationException::withMessages([
+                'serialised_item_id' => __('The item is not packed in the source container.'),
+            ]);
+        }
+
+        $stockLevel = StockLevel::query()->findOrFail($data->serialised_item_id);
+
+        BeforeContainerItemTransferred::dispatch($source, $target, $stockLevel, $membership);
+
+        return DB::transaction(function () use ($source, $target, $membership, $stockLevel, $data): ContainerItemData {
+            $lockedContainers = collect([$source, $target])
+                ->sortBy(fn (Container $container): int => $container->id)
+                ->mapWithKeys(function (Container $container): array {
+                    $locked = $this->lockModelForMutation($container);
+
+                    return [$locked->id => $locked];
+                });
+
+            $source = $lockedContainers->get($source->id);
+            $target = $lockedContainers->get($target->id);
+
+            if ($source === null || ($source->status !== ContainerStatus::Sealed && ! $source->status->acceptsPacking())) {
+                throw ValidationException::withMessages([
+                    'source_container_id' => __('Items can only be transferred from an open container.'),
+                ]);
+            }
+
+            if ($target === null || ! $target->status->acceptsPacking()) {
+                throw ValidationException::withMessages([
+                    'container' => __('Items can only be transferred into an open container.'),
+                ]);
+            }
+
+            if ($source->status === ContainerStatus::Sealed) {
+                $source->update([
+                    'status' => ContainerStatus::Open,
+                    'unsealed_at' => Carbon::now('UTC'),
+                    'unsealed_by_user_id' => Auth::id(),
+                ]);
+                $source->refresh();
+                app(ContainerEventRecorder::class)->unsealed($source, ContainerUnsealReason::Transfer);
+            }
+
+            if (! $source->status->acceptsPacking()) {
+                throw ValidationException::withMessages([
+                    'source_container_id' => __('Items can only be transferred from an open container.'),
+                ]);
+            }
+
+            $membership->forceFill([
+                'unpacked_at' => Carbon::now('UTC'),
+                'unpacked_reason' => ContainerItemUnpackReason::Transferred,
+                'transferred_to_container_id' => $target->id,
+            ])->save();
+
+            StockLevel::query()
+                ->whereKey($membership->serialised_item_id)
+                ->update([
+                    'container_stock_level_id' => null,
+                    'container_mode' => null,
+                ]);
+
+            $membership->setRelation('container', $source);
+            app(ContainerDemandResolver::class)->releaseDemands($membership);
+            app(ContainerEventRecorder::class)->itemUnpacked($source, $membership);
+
+            $packer = app(PackContainerItem::class);
+
+            $packed = $packer->executePack($target, $stockLevel, $data->position, $data->notes);
+
+            app(ContainerEventRecorder::class)->itemTransferred(
+                $source,
+                $target,
+                $packed,
+            );
+
+            ContainerItemTransferred::dispatch($source, $target, $packed);
+
+            return ContainerItemData::fromModel($packed->fresh() ?? $packed);
+        });
+    }
+}

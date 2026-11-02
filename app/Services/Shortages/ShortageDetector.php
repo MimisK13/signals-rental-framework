@@ -67,7 +67,10 @@ class ShortageDetector
 
     public function forItem(OpportunityItem $item, ?Opportunity $opportunity = null): ?Shortage
     {
-        $opportunity ??= $item->opportunity;
+        if ($opportunity === null) {
+            $item->loadMissing('opportunity');
+            $opportunity = $item->opportunity;
+        }
 
         return $this->forItems(new EloquentCollection([$item]), $opportunity)[$item->id] ?? null;
     }

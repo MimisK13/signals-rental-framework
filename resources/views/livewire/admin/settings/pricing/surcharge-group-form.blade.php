@@ -7,7 +7,7 @@ use App\Data\Pricing\UpdateSurchargeGroupData;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\ProductTaxClass;
+use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\SurchargeGroup;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;

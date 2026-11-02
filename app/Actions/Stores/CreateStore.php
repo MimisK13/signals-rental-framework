@@ -3,10 +3,10 @@
 namespace App\Actions\Stores;
 
 use App\Data\Stores\CreateStoreData;
+use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Events\AuditableEvent;
 use App\Models\Store;
-use Database\Seeders\CommunicationTemplateSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
