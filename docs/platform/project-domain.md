@@ -8,7 +8,10 @@ description: Current domain archaeology and the staged migration plan from the O
 ## Status
 
 This document records the **CURRENT / IMPLEMENTED** architecture and the
-**PROPOSED / FUTURE** convergence plan. It is a P0 architecture document only.
+historical convergence proposal. Its current-state archaeology remains valid,
+but its **PROPOSED / FUTURE** direction is superseded by
+[ADR 0001](../adr/0001-independent-project-first-quotations.md): Project becomes
+the central coordination context and Quotations become an independent aggregate.
 
 No model, table, route, API, event, or permission rename is implemented by this
 document.
