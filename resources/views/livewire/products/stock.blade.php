@@ -49,7 +49,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <livewire:components.data-table
             :columns="$columns"
-            :model="\App\Models\StockLevel::class"
+            :model="\App\Domain\Stock\Models\StockLevel::class"
             :searchable="['item_name', 'asset_number', 'serial_number', 'barcode']"
             :with="['store']"
             :scopes="$scopes"

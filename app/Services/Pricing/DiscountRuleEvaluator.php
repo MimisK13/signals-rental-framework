@@ -2,10 +2,10 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Enums\DiscountRuleScope;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
-use App\Enums\RateTransactionType;
 use App\Models\DiscountRule;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;

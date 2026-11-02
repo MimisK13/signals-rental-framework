@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\HasSchema;
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
-use App\Services\Documents\DocumentResolverRegistry;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\ValueObjects\FieldDefinition;
 use Illuminate\Support\Facades\Cache;
 

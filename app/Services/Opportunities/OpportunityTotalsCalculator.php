@@ -5,10 +5,13 @@ namespace App\Services\Opportunities;
 use App\Data\Tax\DocumentTaxLineInput;
 use App\Data\Tax\DocumentTaxRequest;
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Services\RateEngine\RateCalculator;
+use App\Domain\Rates\Services\RateEngine\RateResolver;
+use App\Domain\Rates\ValueObjects\CalculationContext;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
-use App\Enums\RateTransactionType;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
@@ -22,14 +25,11 @@ use App\Services\Pricing\OpportunitySurchargeApplicator;
 use App\Services\Pricing\PriceCategoryTierMultiplier;
 use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\Pricing\RoundingStrategy;
-use App\Services\RateEngine\RateCalculator;
-use App\Services\RateEngine\RateResolver;
 use App\Services\Tax\DocumentTaxBreakdown;
 use App\Services\Tax\TaxPointDateResolver;
 use App\Services\Tax\TaxResolutionContext;
 use App\Services\Tax\TaxResolutionContextHolder;
 use App\Services\TaxCalculator;
-use App\ValueObjects\CalculationContext;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -332,10 +332,6 @@ class OpportunityTotalsCalculator
      */
     public function rollUp(Opportunity $opportunity): void
     {
-        if (app(OpportunityTotalsBatch::class)->deferRollUp($opportunity)) {
-            return;
-        }
-
         $items = $opportunity->items()->with('itemSurcharges')->get();
         $costs = $opportunity->costs()->get();
 

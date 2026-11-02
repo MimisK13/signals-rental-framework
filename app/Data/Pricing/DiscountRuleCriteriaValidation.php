@@ -2,8 +2,8 @@
 
 namespace App\Data\Pricing;
 
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Enums\DiscountRuleScope;
-use App\Enums\RateTransactionType;
 use Illuminate\Validation\Rule;
 
 class DiscountRuleCriteriaValidation

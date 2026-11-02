@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Activities\Services;
 
 use App\Domain\Activities\Enums\ActivityType;
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use Illuminate\Support\Collection;
 
 /**

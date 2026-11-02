@@ -4,11 +4,11 @@ namespace App\Actions\Containers;
 
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\CreateContainerData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Services\Containers\ContainerEventRecorder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

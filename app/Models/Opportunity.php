@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Attachments\Concerns\HasAttachments;
+use App\Domain\CustomFields\Concerns\HasCustomFields;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Models\Project;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Models\Traits\FormatsMoney;
-use App\Models\Traits\HasAttachments;
-use App\Models\Traits\HasCustomFields;
 use App\Services\SchemaBuilder;
 use Database\Factories\OpportunityFactory;
 use Illuminate\Database\Eloquent\Builder;

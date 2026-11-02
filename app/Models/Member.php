@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Attachments\Concerns\HasAttachments;
+use App\Domain\CustomFields\Concerns\HasCustomFields;
+use App\Domain\Lists\Models\ListValue;
 use App\Enums\MembershipType;
 use App\Enums\TaxBuyerType;
 use App\Models\Traits\FormatsMoney;
-use App\Models\Traits\HasAttachments;
-use App\Models\Traits\HasCustomFields;
 use App\Services\SchemaBuilder;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Builder;

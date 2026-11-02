@@ -4,9 +4,9 @@ namespace App\Actions\Containers;
 
 use App\Data\Containers\ContainerItemData;
 use App\Data\Containers\UnpackContainerItemData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Container;
 use App\Models\ContainerItem;
-use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
 use App\Services\Availability\ProductStoreCapacityLock;
 use App\Services\Containers\ContainerEventRecorder;

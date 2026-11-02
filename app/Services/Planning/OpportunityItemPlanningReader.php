@@ -7,7 +7,7 @@ use App\Data\Opportunities\PreparedProductInputs;
 use App\Data\Opportunities\PreparedStandardDemandInputs;
 use App\Data\Opportunities\PreparedStockInputs;
 use App\Data\Planning\OpportunityItemPlanningData;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;

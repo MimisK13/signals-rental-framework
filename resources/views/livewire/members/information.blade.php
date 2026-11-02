@@ -4,7 +4,7 @@ use App\Actions\Members\DeleteAddress;
 use App\Actions\Members\DeleteEmail;
 use App\Actions\Members\DeleteLink;
 use App\Actions\Members\DeletePhone;
-use App\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\Member;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -232,7 +232,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     {{ $field->display_name ?? $field->name }}
                                 </dt>
                                 <dd class="mt-1 text-sm">
-                                    @if($field->field_type === \App\Enums\CustomFieldType::Boolean)
+                                    @if($field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::Boolean)
                                         @if($value === true)
                                             <span class="s-badge s-badge-green">Yes</span>
                                         @elseif($value === false)
@@ -240,11 +240,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         @else
                                             <span class="text-[var(--text-muted)]">&mdash;</span>
                                         @endif
-                                    @elseif($field->field_type === \App\Enums\CustomFieldType::Website && $value)
+                                    @elseif($field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::Website && $value)
                                         <a href="{{ $value }}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">{{ Str::limit($value, 40) }}</a>
-                                    @elseif($field->field_type === \App\Enums\CustomFieldType::Email && $value)
+                                    @elseif($field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::Email && $value)
                                         <a href="mailto:{{ $value }}" class="text-[var(--link)] hover:underline">{{ $value }}</a>
-                                    @elseif($field->field_type === \App\Enums\CustomFieldType::MultiListOfValues && is_array($value))
+                                    @elseif($field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::MultiListOfValues && is_array($value))
                                         @if(count($value) > 0)
                                             <div class="flex flex-wrap gap-1">
                                                 @foreach($value as $item)

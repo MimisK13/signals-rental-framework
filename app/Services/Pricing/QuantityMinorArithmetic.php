@@ -2,7 +2,7 @@
 
 namespace App\Services\Pricing;
 
-use App\ValueObjects\CalculationContext;
+use App\Domain\Rates\ValueObjects\CalculationContext;
 
 /**
  * Decimal-quantity × minor-unit arithmetic with tenant rounding at the boundary.

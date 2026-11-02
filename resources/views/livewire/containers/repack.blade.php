@@ -9,7 +9,7 @@ use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use App\Services\Containers\ContainerManifestService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

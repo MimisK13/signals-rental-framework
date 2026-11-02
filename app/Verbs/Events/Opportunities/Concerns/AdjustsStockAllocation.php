@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\Opportunities\Concerns;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\OpportunityItem;
-use App\Models\StockLevel;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\AvailabilityService;
 use Brick\Math\BigDecimal;

@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Services\Api\RansackFilter;
 use BackedEnum;
 

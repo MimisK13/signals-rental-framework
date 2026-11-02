@@ -3,12 +3,12 @@
 namespace App\Services\Availability;
 
 use App\Contracts\DemandResolverContract;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DemandPhase;
 use App\Enums\KitComponentBinding;
 use App\Enums\ReleasePoint;
-use App\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;

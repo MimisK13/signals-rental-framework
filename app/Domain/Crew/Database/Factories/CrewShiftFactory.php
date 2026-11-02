@@ -8,7 +8,7 @@ use App\Domain\Crew\Enums\CrewShiftStatus;
 use App\Domain\Crew\Enums\CrewShiftType;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewShift;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;

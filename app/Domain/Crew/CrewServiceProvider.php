@@ -40,7 +40,7 @@ use App\Domain\Crew\Services\CrewEventDefinitions;
 use App\Domain\Crew\Services\CrewRecipientResolver;
 use App\Domain\Crew\Services\CrewStatusRegistry;
 use App\Domain\Crew\Settings\CrewSettings;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use App\Services\Api\AbilityRegistry;
 use App\Services\Api\WebhookEventRegistry;
 use App\Services\Notifications\EventNotificationMapRegistry;

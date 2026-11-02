@@ -8,7 +8,7 @@ use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
 use App\Models\Opportunity;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Containers\ContainerBarcodeResolver;
 use App\Services\Containers\RepackOnReturnEligibility;
@@ -88,7 +88,7 @@ new #[Layout('components.layouts.app')] #[Title('Containers')] class extends Com
             return;
         }
 
-        /** @var \App\Models\StockLevel $stockLevel */
+        /** @var \App\Domain\Stock\Models\StockLevel $stockLevel */
         $stockLevel = $resolution['stock_level'];
 
         if ($resolution['container'] !== null) {

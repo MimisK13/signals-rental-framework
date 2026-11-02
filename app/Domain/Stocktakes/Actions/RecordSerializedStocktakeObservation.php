@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Actions;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stocktakes\Models\Stocktake;
 use App\Domain\Stocktakes\Models\StocktakeLine;
 use App\Domain\Stocktakes\Models\StocktakeObservation;
 use App\Domain\Stocktakes\Services\SerializedStocktakeIdentifierResolver;
 use App\Models\ContainerItem;
-use App\Models\StockLevel;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

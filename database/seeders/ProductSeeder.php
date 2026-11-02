@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\ProductType;
-use App\Enums\StockMethod;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductTaxClass;

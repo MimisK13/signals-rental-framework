@@ -7,7 +7,7 @@ namespace App\Domain\Crew\Observers;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Services\CrewAudit;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use App\Models\Scopes\StoreScope;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Support\Facades\DB;

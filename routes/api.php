@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\V1\AccessoryController;
 use App\Http\Controllers\Api\V1\ActionLogController;
-use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BundleRuleController;
 use App\Http\Controllers\Api\V1\ChannelProviderController;
@@ -10,20 +9,9 @@ use App\Http\Controllers\Api\V1\CommunicationLogController;
 use App\Http\Controllers\Api\V1\CommunicationTemplateController;
 use App\Http\Controllers\Api\V1\ContainerController;
 use App\Http\Controllers\Api\V1\CountryController;
-use App\Http\Controllers\Api\V1\CreditNoteController;
-use App\Http\Controllers\Api\V1\CustomFieldController;
-use App\Http\Controllers\Api\V1\CustomFieldGroupController;
-use App\Http\Controllers\Api\V1\CustomViewController;
 use App\Http\Controllers\Api\V1\DiscountCategoryController;
 use App\Http\Controllers\Api\V1\DiscountRuleController;
-use App\Http\Controllers\Api\V1\DocumentController;
-use App\Http\Controllers\Api\V1\DocumentSequenceController;
-use App\Http\Controllers\Api\V1\DocumentTemplateController;
-use App\Http\Controllers\Api\V1\DocumentTypeController;
 use App\Http\Controllers\Api\V1\EndpointCatalogueController;
-use App\Http\Controllers\Api\V1\InvoiceController;
-use App\Http\Controllers\Api\V1\ListNameController;
-use App\Http\Controllers\Api\V1\ListValueController;
 use App\Http\Controllers\Api\V1\MemberAddressController;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\MemberEmailController;
@@ -34,29 +22,19 @@ use App\Http\Controllers\Api\V1\MemberRelationshipController;
 use App\Http\Controllers\Api\V1\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\OpportunityController;
-use App\Http\Controllers\Api\V1\OpportunityInvoiceController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
 use App\Http\Controllers\Api\V1\OrganisationTaxClassController;
 use App\Http\Controllers\Api\V1\PriceCategoryController;
 use App\Http\Controllers\Api\V1\ProductContainerTemplateController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductGroupController;
-use App\Http\Controllers\Api\V1\ProductRateController;
-use App\Http\Controllers\Api\V1\ProductSupplierCostController;
 use App\Http\Controllers\Api\V1\ProductTaxClassController;
-use App\Http\Controllers\Api\V1\ProjectController;
-use App\Http\Controllers\Api\V1\PurchaseOrderController;
-use App\Http\Controllers\Api\V1\RateCalculationController;
-use App\Http\Controllers\Api\V1\RateDefinitionController;
-use App\Http\Controllers\Api\V1\RateEngineMetaController;
 use App\Http\Controllers\Api\V1\RequestLogController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SchemaController;
 use App\Http\Controllers\Api\V1\SerialisedComponentController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShortageController;
-use App\Http\Controllers\Api\V1\StockLevelController;
-use App\Http\Controllers\Api\V1\StockTransactionController;
 use App\Http\Controllers\Api\V1\SurchargeController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
 use App\Http\Controllers\Api\V1\SystemController;
@@ -92,23 +70,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('schema', [SchemaController::class, 'index'])->name('api.v1.schema.index');
     Route::get('schema/{model}', [SchemaController::class, 'show'])->name('api.v1.schema.show');
 
-    // Document type field browser
-    Route::get('document_types', [DocumentTypeController::class, 'index'])->name('api.v1.document_types.index');
-    Route::get('document_types/{type}/fields', [DocumentTypeController::class, 'fields'])->name('api.v1.document_types.fields');
-    Route::get('document_sequences', [DocumentSequenceController::class, 'index'])->name('api.v1.document_sequences.index');
-    Route::put('document_sequences/{documentSequence}', [DocumentSequenceController::class, 'update'])->name('api.v1.document_sequences.update');
-    Route::post('document_templates/import', [DocumentTemplateController::class, 'import'])->name('api.v1.document_templates.import');
-    Route::get('document_templates/{documentTemplate}/export', [DocumentTemplateController::class, 'export'])->name('api.v1.document_templates.export');
-    Route::get('document_templates', [DocumentTemplateController::class, 'index'])->name('api.v1.document_templates.index');
-    Route::post('document_templates', [DocumentTemplateController::class, 'store'])->name('api.v1.document_templates.store');
-    Route::get('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'show'])->name('api.v1.document_templates.show');
-    Route::put('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'update'])->name('api.v1.document_templates.update');
-    Route::delete('document_templates/{documentTemplate}', [DocumentTemplateController::class, 'destroy'])->name('api.v1.document_templates.destroy');
-    Route::post('document_templates/{documentTemplate}/set_default', [DocumentTemplateController::class, 'setDefault'])->name('api.v1.document_templates.set_default');
-    Route::post('document_templates/{documentTemplate}/duplicate', [DocumentTemplateController::class, 'duplicate'])->name('api.v1.document_templates.duplicate');
-    Route::post('document_templates/{documentTemplate}/restore_default', [DocumentTemplateController::class, 'restoreDefault'])->name('api.v1.document_templates.restore_default');
-    Route::post('document_templates/{documentTemplate}/versions/{version}/restore', [DocumentTemplateController::class, 'restoreVersion'])->name('api.v1.document_templates.restore_version');
-
     Route::apiResource('communication_log', CommunicationLogController::class)->only(['index', 'show'])->names('api.v1.communication_log');
     Route::get('communication_templates/{communicationTemplate}/versions', [CommunicationTemplateController::class, 'versions'])->name('api.v1.communication_templates.versions');
     Route::post('communication_templates/{communicationTemplate}/versions/{version}/restore', [CommunicationTemplateController::class, 'restoreVersion'])->name('api.v1.communication_templates.restore_version');
@@ -124,16 +85,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     Route::get('notification_settings', [NotificationSettingController::class, 'index'])->name('api.v1.notification_settings.index');
     Route::put('notification_settings', [NotificationSettingController::class, 'update'])->name('api.v1.notification_settings.update');
-
-    Route::get('documents', [DocumentController::class, 'index'])->name('api.v1.documents.index');
-    Route::post('documents/generate', [DocumentController::class, 'generate'])->name('api.v1.documents.generate');
-    Route::post('documents/batch_generate', [DocumentController::class, 'batchGenerate'])->name('api.v1.documents.batch_generate');
-    Route::get('documents/{document}', [DocumentController::class, 'show'])->name('api.v1.documents.show');
-    Route::post('documents/{document}/finalise', [DocumentController::class, 'finalise'])->name('api.v1.documents.finalise');
-    Route::post('documents/{document}/void', [DocumentController::class, 'void'])->name('api.v1.documents.void');
-    Route::post('documents/{document}/public_link', [DocumentController::class, 'createPublicLink'])->name('api.v1.documents.public_link.create');
-    Route::put('documents/{document}/public_link', [DocumentController::class, 'configurePublicLink'])->name('api.v1.documents.public_link.configure');
-    Route::delete('documents/{document}/public_link', [DocumentController::class, 'revokePublicLink'])->name('api.v1.documents.public_link.revoke');
 
     // Settings
     Route::get('settings', [SettingsController::class, 'index'])->name('api.v1.settings.index');
@@ -173,26 +124,12 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('members.phones', MemberPhoneController::class)->except(['show'])->names('api.v1.members.phones');
     Route::apiResource('members.links', MemberLinkController::class)->except(['show'])->names('api.v1.members.links');
     Route::apiResource('members.relationships', MemberRelationshipController::class)->only(['index', 'store', 'destroy'])->names('api.v1.members.relationships');
-    Route::get('members/{member}/attachments', [AttachmentController::class, 'indexForMember'])->name('api.v1.members.attachments.index');
 
     // Custom Views
-    Route::apiResource('custom_views', CustomViewController::class)->names('api.v1.custom_views');
-    Route::post('custom_views/{custom_view}/clone', [CustomViewController::class, 'clone'])->name('api.v1.custom_views.clone');
-
     // Countries (read-only)
     Route::apiResource('countries', CountryController::class)->only(['index', 'show'])->names('api.v1.countries');
 
     // Custom Fields
-    Route::apiResource('custom_field_groups', CustomFieldGroupController::class)->names('api.v1.custom_field_groups');
-    Route::apiResource('custom_fields', CustomFieldController::class)->names('api.v1.custom_fields');
-
-    // Lists of Values
-    Route::apiResource('list_names', ListNameController::class)->names('api.v1.list_names');
-    Route::apiResource('list_names.list_values', ListValueController::class)->except(['show'])->names('api.v1.list_names.list_values');
-
-    // RMS-compatible alias for Lists of Values
-    Route::apiResource('list_of_values', ListNameController::class)->parameters(['list_of_values' => 'list_name'])->names('api.v1.list_of_values');
-    Route::apiResource('list_of_values.list_values', ListValueController::class)->parameters(['list_of_values' => 'list_name', 'list_values' => 'list_value'])->except(['show'])->names('api.v1.list_of_values.list_values');
 
     // Tax Classes
     Route::apiResource('organisation_tax_classes', OrganisationTaxClassController::class)->names('api.v1.organisation_tax_classes');
@@ -212,20 +149,10 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('tax_rates', TaxRateController::class)->names('api.v1.tax_rates');
     Route::apiResource('tax_rules', TaxRuleController::class)->names('api.v1.tax_rules');
 
-    // Attachments
-    Route::apiResource('attachments', AttachmentController::class)->only(['show', 'store', 'destroy'])->names('api.v1.attachments');
-
     // Products
     Route::apiResource('products', ProductController::class)->names('api.v1.products');
     Route::post('products/{product}/merge', [ProductController::class, 'merge'])->name('api.v1.products.merge');
     Route::apiResource('products.accessories', AccessoryController::class)->only(['index', 'store', 'update', 'destroy'])->names('api.v1.products.accessories');
-    Route::apiResource('products.rates', ProductRateController::class)->names('api.v1.products.rates');
-    Route::post('products/{product}/supplier_costs/{supplierCost}/set_preferred', [ProductSupplierCostController::class, 'setPreferred'])
-        ->name('api.v1.products.supplier_costs.set_preferred');
-    Route::apiResource('products.supplier_costs', ProductSupplierCostController::class)
-        ->parameters(['supplier_costs' => 'supplierCost'])
-        ->names('api.v1.products.supplier_costs');
-    Route::post('products/{product}/calculate_rate', [RateCalculationController::class, 'calculate'])->name('api.v1.products.calculate_rate');
     // Kit composition (serialised_components — the product's bill-of-materials)
     Route::apiResource('products.components', SerialisedComponentController::class)
         ->only(['index', 'store', 'update', 'destroy'])
@@ -238,13 +165,8 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     // Product Groups
     Route::apiResource('product_groups', ProductGroupController::class)->names('api.v1.product_groups');
-    Route::apiResource('projects', ProjectController::class)->names('api.v1.projects');
-    Route::post('projects/{project}/opportunities/{opportunity}/attach', [ProjectController::class, 'attach'])->name('api.v1.projects.opportunities.attach');
-    Route::delete('projects/{project}/opportunities/{opportunity}', [ProjectController::class, 'detach'])->name('api.v1.projects.opportunities.detach');
-    Route::post('projects/{project}/opportunities/{opportunity}/move', [ProjectController::class, 'move'])->name('api.v1.projects.opportunities.move');
 
     // Stock Levels
-    Route::apiResource('stock_levels', StockLevelController::class)->names('api.v1.stock_levels');
 
     // Containers — routes bind by public UUID ({@see Container::resolveRouteBinding})
     // with integer-id fallback for backward compatibility. The pack/unpack and
@@ -277,14 +199,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::get('products/{product}/availability', [AvailabilityController::class, 'showForProduct'])->name('api.v1.products.availability');
     // Serialised assets of a product free across ?from&?to at ?store_id.
     Route::get('products/{product}/available-assets', [AvailabilityController::class, 'availableAssets'])->name('api.v1.products.available_assets');
-
-    // Stock Transactions (nested under products/stock_levels, matching RMS)
-    Route::get('products/{product}/stock_levels/{stock_level}/stock_transactions', [StockTransactionController::class, 'index'])->name('api.v1.stock_transactions.index');
-    Route::get('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}', [StockTransactionController::class, 'show'])->name('api.v1.stock_transactions.show');
-    Route::post('products/{product}/stock_levels/{stock_level}/adjust', [StockTransactionController::class, 'adjust'])->name('api.v1.stock_levels.adjust');
-    Route::post('products/{product}/stock_levels/{stock_level}/stock_transactions', [StockTransactionController::class, 'store'])->name('api.v1.stock_transactions.store');
-    Route::delete('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}', [StockTransactionController::class, 'destroy'])->name('api.v1.stock_transactions.destroy');
-    Route::post('products/{product}/stock_levels/{stock_level}/stock_transactions/{stock_transaction}/reverse', [StockTransactionController::class, 'reverse'])->name('api.v1.stock_transactions.reverse');
 
     // Opportunities (event-sourced lifecycle)
     // Read sub-resources (assets / availability / activity) — declared before the
@@ -387,29 +301,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
 
     Route::apiResource('opportunities', OpportunityController::class)->names('api.v1.opportunities');
 
-    Route::post('opportunities/{opportunity}/invoices', [OpportunityInvoiceController::class, 'store'])
-        ->middleware('idempotency')
-        ->name('api.v1.opportunities.invoices.store');
-
-    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('api.v1.invoices.pdf');
-    Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('api.v1.invoices.issue');
-    Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('api.v1.invoices.void');
-    Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'recordPayment'])
-        ->middleware('idempotency')
-        ->name('api.v1.invoices.payments.store');
-    Route::post('invoices/{invoice}/refunds', [InvoiceController::class, 'recordRefund'])
-        ->middleware('idempotency')
-        ->name('api.v1.invoices.refunds.store');
-    Route::post('invoices/{invoice}/credit_notes', [InvoiceController::class, 'issueCreditNote'])->name('api.v1.invoices.credit_notes.store');
-    Route::apiResource('credit_notes', CreditNoteController::class)->only(['index', 'show'])->names('api.v1.credit_notes');
-    Route::post('invoices/{invoice}/email', [InvoiceController::class, 'email'])->name('api.v1.invoices.email');
-    Route::apiResource('invoices', InvoiceController::class)->names('api.v1.invoices');
-
-    Route::post('purchase_orders/{purchase_order}/send', [PurchaseOrderController::class, 'send'])->name('api.v1.purchase_orders.send');
-    Route::post('purchase_orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive'])->name('api.v1.purchase_orders.receive');
-    Route::post('purchase_orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('api.v1.purchase_orders.cancel');
-    Route::apiResource('purchase_orders', PurchaseOrderController::class)->names('api.v1.purchase_orders');
-
     Route::post('virtual_stock_intakes/{virtual_stock_intake}/confirm', [VirtualStockIntakeController::class, 'confirm'])->name('api.v1.virtual_stock_intakes.confirm');
     Route::post('virtual_stock_intakes/{virtual_stock_intake}/receive', [VirtualStockIntakeController::class, 'receive'])->name('api.v1.virtual_stock_intakes.receive');
     Route::post('virtual_stock_intakes/{virtual_stock_intake}/return', [VirtualStockIntakeController::class, 'return'])->name('api.v1.virtual_stock_intakes.return');
@@ -419,13 +310,4 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::delete('virtual_stock_intakes/{virtual_stock_intake}/cost_overrides/{opportunity}', [VirtualStockIntakeController::class, 'clearCostOverride'])->name('api.v1.virtual_stock_intakes.cost_overrides.clear');
     Route::apiResource('virtual_stock_intakes', VirtualStockIntakeController::class)->names('api.v1.virtual_stock_intakes');
 
-    // Rate Definitions
-    Route::post('rate_definitions/{rate_definition}/duplicate', [RateDefinitionController::class, 'duplicate'])->name('api.v1.rate_definitions.duplicate');
-    Route::apiResource('rate_definitions', RateDefinitionController::class)->names('api.v1.rate_definitions');
-
-    // Rate Engine metadata (for external form builders)
-    Route::get('rate_engine/strategies', [RateEngineMetaController::class, 'strategies'])->name('api.v1.rate_engine.strategies');
-    Route::get('rate_engine/modifiers', [RateEngineMetaController::class, 'modifiers'])->name('api.v1.rate_engine.modifiers');
-    Route::get('rate_engine/presets', [RateEngineMetaController::class, 'presets'])->name('api.v1.rate_engine.presets');
-    Route::get('rate_engine/schema', [RateEngineMetaController::class, 'schema'])->name('api.v1.rate_engine.schema');
 });

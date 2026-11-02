@@ -29,7 +29,7 @@ use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
 use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Livewire\Concerns\HasAuditTimeline;
 use App\Models\Container;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;

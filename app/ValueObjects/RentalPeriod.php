@@ -2,7 +2,7 @@
 
 namespace App\ValueObjects;
 
-use App\Enums\BasePeriod;
+use App\Domain\Rates\Enums\BasePeriod;
 use App\Enums\DayType;
 use Illuminate\Support\Carbon;
 

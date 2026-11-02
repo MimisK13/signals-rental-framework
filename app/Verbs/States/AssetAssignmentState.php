@@ -2,8 +2,8 @@
 
 namespace App\Verbs\States;
 
+use App\Domain\Assets\Enums\AssetCondition;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AssetCondition;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\State;
 

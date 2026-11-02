@@ -5,10 +5,10 @@ namespace App\Services\Shortages;
 use App\Data\Opportunities\PreparedProductInputs;
 use App\Data\Opportunities\PreparedStandardDemandInputs;
 use App\Data\Opportunities\PreparedStockInputs;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\OpportunityState;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
-use App\Enums\StockMethod;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
@@ -70,6 +70,11 @@ class ShortageDetector
         $opportunity ??= $item->opportunity;
 
         return $this->forItems(new EloquentCollection([$item]), $opportunity)[$item->id] ?? null;
+    }
+
+    public function flush(): void
+    {
+        $this->opportunityCache = [];
     }
 
     /**

@@ -3,6 +3,9 @@
 namespace App\Actions\Setup;
 
 use App\Data\Setup\CompleteSetupData;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Domain\Rates\Database\Seeders\RateDefinitionPresetSeeder;
 use App\Enums\MembershipType;
 use App\Models\Member;
 use App\Models\Membership;
@@ -10,12 +13,9 @@ use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\CountrySeeder;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\ListOfValuesSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RateDefinitionPresetSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\TaxClassSeeder;
 use Illuminate\Support\Env;

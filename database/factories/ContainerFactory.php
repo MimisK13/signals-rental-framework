@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

@@ -8,7 +8,7 @@ use App\Domain\Crew\Data\Planning\CrewCostForecastData;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewTimesheet;
 use App\Domain\Crew\Services\CrewCompensationCalculator;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use Illuminate\Support\Facades\Gate;
 
 final class CrewCostForecastQuery

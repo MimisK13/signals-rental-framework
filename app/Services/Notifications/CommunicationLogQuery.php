@@ -2,11 +2,11 @@
 
 namespace App\Services\Notifications;
 
+use App\Domain\Documents\Models\Document;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Models\CommunicationLog;
-use App\Models\CreditNote;
-use App\Models\Document;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
 use App\Models\Opportunity;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;

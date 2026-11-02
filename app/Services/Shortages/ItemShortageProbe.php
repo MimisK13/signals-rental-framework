@@ -4,8 +4,8 @@ namespace App\Services\Shortages;
 
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ChangeItemDates;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\AvailabilityEventType;
-use App\Enums\StockMethod;
 use App\Models\AvailabilityEvent;
 use App\Models\OpportunityItem;
 use App\ValueObjects\Shortage;

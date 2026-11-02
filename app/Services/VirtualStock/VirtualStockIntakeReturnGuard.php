@@ -2,11 +2,11 @@
 
 namespace App\Services\VirtualStock;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\ShortageResolution;
-use App\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use Brick\Math\BigDecimal;
 

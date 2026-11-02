@@ -2,20 +2,21 @@
 
 namespace App\Services\Shortages\Resolvers;
 
-use App\Actions\PurchaseOrders\Concerns\BuildsPurchaseOrderLinePayloads;
 use App\Concerns\CommitsVerbsEvents;
 use App\Contracts\BatchShortageResolverContract;
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\PurchaseOrders\Actions\Concerns\BuildsPurchaseOrderLinePayloads;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderStatusRegistry;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderTotalsCalculator;
+use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderCreated;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
 use App\Models\ShortageResolution;
 use App\Models\ShortageResolutionItem;
-use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
-use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
-use App\Services\PurchaseOrders\PurchaseOrderTotalsCalculator;
 use App\Services\SequenceAllocator;
 use App\Services\Shortages\ShortageEventRecorder;
 use App\Services\Shortages\SubHireCostCalculator;
@@ -26,7 +27,6 @@ use App\ValueObjects\ResolutionOption;
 use App\ValueObjects\ResolutionResult;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageGroup;
-use App\Verbs\Events\PurchaseOrders\PurchaseOrderCreated;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeCreated;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;

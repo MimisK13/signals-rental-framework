@@ -4,8 +4,8 @@ namespace App\Actions\Products;
 
 use App\Data\Products\ProductContainerConfigData;
 use App\Data\Products\UpdateProductContainerConfigData;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\ContainerAvailabilityMode;
-use App\Enums\StockMethod;
 use App\Events\AuditableEvent;
 use App\Models\Container;
 use App\Models\Product;

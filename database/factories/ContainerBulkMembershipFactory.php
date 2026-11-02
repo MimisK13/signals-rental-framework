@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Container;
 use App\Models\ContainerBulkMembership;
-use App\Models\StockLevel;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

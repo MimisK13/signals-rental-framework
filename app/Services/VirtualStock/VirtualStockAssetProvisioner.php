@@ -2,13 +2,13 @@
 
 namespace App\Services\VirtualStock;
 
-use App\Enums\AllowedStockType;
+use App\Domain\Stock\Enums\AllowedStockType;
+use App\Domain\Stock\Enums\StockCategory;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
-use App\Enums\StockCategory;
-use App\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;

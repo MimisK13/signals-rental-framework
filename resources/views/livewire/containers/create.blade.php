@@ -2,7 +2,7 @@
 
 use App\Actions\Containers\CreateDurableContainer;
 use App\Data\Containers\CreateDurableContainerData;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Container;
 use App\Models\Product;
 use App\Models\Store;

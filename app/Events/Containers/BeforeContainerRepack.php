@@ -2,8 +2,8 @@
 
 namespace App\Events\Containers;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Opportunity;
-use App\Models\StockLevel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Validation\ValidationException;

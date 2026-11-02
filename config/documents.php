@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\Documents\Drivers\BrowsershotDriver;
-use App\Services\Documents\Drivers\DompdfDriver;
+use App\Domain\Documents\Services\Drivers\BrowsershotDriver;
+use App\Domain\Documents\Services\Drivers\DompdfDriver;
 
 return [
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\Opportunity;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

@@ -2,9 +2,9 @@
 
 namespace App\Services\Investment;
 
-use App\Enums\InvoiceType;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\InvoiceItem;
 use App\Enums\LineItemTransactionType;
-use App\Models\InvoiceItem;
 use App\Models\Product;
 use Carbon\CarbonImmutable;
 

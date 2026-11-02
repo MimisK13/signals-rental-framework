@@ -4,8 +4,8 @@ namespace App\Listeners;
 
 use App\Actions\Notifications\DispatchNotification;
 use App\Data\Notifications\DispatchNotificationData;
+use App\Domain\Invoices\Models\Invoice;
 use App\Events\AuditableEvent;
-use App\Models\Invoice;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\ShortageResolution;

@@ -1,44 +1,26 @@
-<?php
-
-use App\Actions\Members\DeleteAddress;
-use App\Models\Member;
-use Livewire\Attributes\Layout;
-use Livewire\Volt\Component;
-
-new #[Layout('components.layouts.app')] class extends Component {
-    public Member $member;
-
-    public function mount(Member $member): void
-    {
-        $this->member = $member->loadCount(['addresses', 'emails', 'phones', 'links']);
-    }
-
-    public function deleteAddress(int $addressId): void
-    {
-        $address = $this->member->addresses()->findOrFail($addressId);
-        (new DeleteAddress)($address);
-        $this->member->loadCount(['addresses', 'emails', 'phones', 'links']);
-    }
-
-    public function with(): array
-    {
-        return [
-            'addresses' => $this->member->addresses()->with(['country', 'type'])->orderBy('is_primary', 'desc')->get(),
-        ];
-    }
-}; ?>
-
 <section class="w-full">
     <x-dense::page-header :title="$member->name">
         <x-slot:breadcrumbs>
-            <a href="{{ route('members.index') }}" wire:navigate.hover class="text-[var(--link)] hover:underline">Members</a>
+            <a
+                href="{{ route('members.index') }}"
+                wire:navigate.hover
+                class="text-[var(--link)] hover:underline"
+            >Members</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
-            <a href="{{ route('members.show', $member) }}" wire:navigate.hover class="text-[var(--link)] hover:underline">{{ $member->name }}</a>
+            <a
+                href="{{ route('members.show', $member) }}"
+                wire:navigate.hover
+                class="text-[var(--link)] hover:underline"
+            >{{ $member->name }}</a>
             <span class="mx-1 text-[var(--text-muted)]">/</span>
             <span>Addresses</span>
         </x-slot:breadcrumbs>
         <x-slot:actions>
-            <flux:button variant="primary" href="{{ route('members.addresses.create', $member) }}" wire:navigate.hover>Add Address</flux:button>
+            <flux:button
+                variant="primary"
+                href="{{ route('members.addresses.create', $member) }}"
+                wire:navigate.hover
+            >Add Address</flux:button>
         </x-slot:actions>
     </x-dense::page-header>
 
@@ -69,24 +51,34 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <td>{{ $address->country?->name ?? '—' }}</td>
                             <td>{{ $address->type?->name ?? '—' }}</td>
                             <td>
-                                @if($address->is_primary)
+                                @if ($address->is_primary)
                                     <span class="s-badge s-badge-green">Primary</span>
                                 @endif
                             </td>
                             <td class="text-right">
-                                <a href="{{ route('members.addresses.edit', [$member, $address]) }}" wire:navigate.hover class="s-btn s-btn-ghost s-btn-sm" title="Edit">
+                                <a
+                                    href="{{ route('members.addresses.edit', [$member, $address]) }}"
+                                    wire:navigate.hover
+                                    class="s-btn s-btn-ghost s-btn-sm"
+                                    title="Edit"
+                                >
                                     <flux:icon.pencil-square class="w-4 h-4" />
                                 </a>
-                                <button wire:click="deleteAddress({{ $address->id }})"
-                                        wire:confirm="Are you sure you want to delete this address?"
-                                        class="s-btn-ghost s-btn-xs text-[var(--red)]">
+                                <button
+                                    wire:click="deleteAddress({{ $address->id }})"
+                                    wire:confirm="Are you sure you want to delete this address?"
+                                    class="s-btn-ghost s-btn-xs text-[var(--red)]"
+                                >
                                     Delete
                                 </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center text-[var(--text-muted)]">No addresses found.</td>
+                            <td
+                                colspan="8"
+                                class="text-center text-[var(--text-muted)]"
+                            >No addresses found.</td>
                         </tr>
                     @endforelse
                 </tbody>

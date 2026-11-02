@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Documents\ConfigureDocumentPublicLink;
-use App\Actions\Documents\CreateDocumentPublicLink;
-use App\Actions\Documents\GenerateDocument;
-use App\Actions\Documents\RevokeDocumentPublicLink;
-use App\Data\Documents\ConfigureDocumentPublicLinkData;
-use App\Data\Documents\CreateDocumentPublicLinkData;
-use App\Data\Documents\GenerateDocumentData;
-use App\Enums\DocumentOutputFormat;
-use App\Models\Document;
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Actions\ConfigureDocumentPublicLink;
+use App\Domain\Documents\Actions\CreateDocumentPublicLink;
+use App\Domain\Documents\Actions\GenerateDocument;
+use App\Domain\Documents\Actions\RevokeDocumentPublicLink;
+use App\Domain\Documents\Data\ConfigureDocumentPublicLinkData;
+use App\Domain\Documents\Data\CreateDocumentPublicLinkData;
+use App\Domain\Documents\Data\GenerateDocumentData;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Models\Opportunity;
-use App\Services\Documents\QrCodeGenerator;
+use App\Domain\Documents\Services\QrCodeGenerator;
 use App\Services\FileService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

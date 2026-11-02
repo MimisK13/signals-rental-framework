@@ -1,0 +1,163 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\CustomViews\Database\Seeders;
+
+use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
+use App\Enums\OpportunityState;
+use App\Enums\ShortageResolutionStatus;
+use App\Views\MemberColumnRegistry;
+use App\Views\OpportunityColumnRegistry;
+use App\Views\ProductColumnRegistry;
+use App\Views\ProductGroupColumnRegistry;
+use App\Views\ShortageResolutionColumnRegistry;
+use Illuminate\Database\Seeder;
+
+final class ViewSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $memberDefaultColumns = (new MemberColumnRegistry)->defaultColumns();
+
+        $memberViews = [
+            $this->systemView('All Members', 'members', $memberDefaultColumns, isDefault: true),
+            $this->systemView('Organisations Only', 'members', $memberDefaultColumns, filters: [
+                ['field' => 'membership_type', 'predicate' => 'eq', 'value' => 'organisation'],
+            ]),
+            $this->systemView('Contacts Only', 'members', $memberDefaultColumns, filters: [
+                ['field' => 'membership_type', 'predicate' => 'eq', 'value' => 'contact'],
+            ]),
+            $this->systemView('Active Venues', 'members', $memberDefaultColumns, filters: [
+                ['field' => 'membership_type', 'predicate' => 'eq', 'value' => 'venue'],
+                ['field' => 'is_active', 'predicate' => 'eq', 'value' => true],
+            ]),
+            $this->systemView('Inactive Members', 'members', $memberDefaultColumns, filters: [
+                ['field' => 'is_active', 'predicate' => 'eq', 'value' => false],
+            ]),
+        ];
+
+        $productDefaultColumns = (new ProductColumnRegistry)->defaultColumns();
+
+        $productViews = [
+            $this->systemView('All Products', 'products', $productDefaultColumns, isDefault: true),
+            $this->systemView('Rental Products', 'products', $productDefaultColumns, filters: [
+                ['field' => 'product_type', 'predicate' => 'eq', 'value' => 'rental'],
+            ]),
+            $this->systemView('Sale Products', 'products', $productDefaultColumns, filters: [
+                ['field' => 'product_type', 'predicate' => 'eq', 'value' => 'sale'],
+            ]),
+            $this->systemView('Active Products', 'products', $productDefaultColumns, filters: [
+                ['field' => 'is_active', 'predicate' => 'eq', 'value' => true],
+            ]),
+            $this->systemView('Inactive Products', 'products', $productDefaultColumns, filters: [
+                ['field' => 'is_active', 'predicate' => 'eq', 'value' => false],
+            ]),
+        ];
+
+        $stockLevelDefaultColumns = (new StockLevelColumnRegistry)->defaultColumns();
+
+        $stockLevelViews = [
+            $this->systemView('All Stock Levels', 'stock_levels', $stockLevelDefaultColumns, isDefault: true, sortColumn: 'item_name'),
+            $this->systemView('Serialised Stock', 'stock_levels', $stockLevelDefaultColumns, filters: [
+                ['field' => 'stock_category', 'predicate' => 'eq', 'value' => 50],
+            ], sortColumn: 'item_name'),
+            $this->systemView('Bulk Stock', 'stock_levels', $stockLevelDefaultColumns, filters: [
+                ['field' => 'stock_category', 'predicate' => 'eq', 'value' => 10],
+            ], sortColumn: 'item_name'),
+        ];
+
+        $activityDefaultColumns = (new ActivityColumnRegistry)->defaultColumns();
+
+        $activityViews = [
+            $this->systemView('All Activities', 'activities', $activityDefaultColumns, isDefault: true, sortColumn: 'created_at', sortDirection: 'desc'),
+            $this->systemView('Scheduled Activities', 'activities', $activityDefaultColumns, filters: [
+                ['field' => 'status_id', 'predicate' => 'eq', 'value' => 2001],
+            ], sortColumn: 'starts_at'),
+            $this->systemView('Completed Activities', 'activities', $activityDefaultColumns, filters: [
+                ['field' => 'status_id', 'predicate' => 'eq', 'value' => 2002],
+            ], sortColumn: 'created_at', sortDirection: 'desc'),
+        ];
+
+        $productGroupDefaultColumns = (new ProductGroupColumnRegistry)->defaultColumns();
+
+        $productGroupViews = [
+            $this->systemView('All Product Groups', 'product_groups', $productGroupDefaultColumns, isDefault: true),
+        ];
+
+        $opportunityDefaultColumns = (new OpportunityColumnRegistry)->defaultColumns();
+
+        $opportunityViews = [
+            $this->systemView('All Opportunities', 'opportunities', $opportunityDefaultColumns, isDefault: true, sortColumn: 'created_at', sortDirection: 'desc'),
+            $this->systemView('Drafts', 'opportunities', $opportunityDefaultColumns, filters: [
+                ['field' => 'state', 'predicate' => 'eq', 'value' => OpportunityState::Draft->value],
+            ], sortColumn: 'created_at', sortDirection: 'desc'),
+            $this->systemView('Quotations', 'opportunities', $opportunityDefaultColumns, filters: [
+                ['field' => 'state', 'predicate' => 'eq', 'value' => OpportunityState::Quotation->value],
+            ], sortColumn: 'created_at', sortDirection: 'desc'),
+            $this->systemView('Orders', 'opportunities', $opportunityDefaultColumns, filters: [
+                ['field' => 'state', 'predicate' => 'eq', 'value' => OpportunityState::Order->value],
+            ], sortColumn: 'created_at', sortDirection: 'desc'),
+        ];
+
+        $shortageResolutionDefaultColumns = (new ShortageResolutionColumnRegistry)->defaultColumns();
+
+        $shortageResolutionViews = [
+            $this->systemView('All Shortage Resolutions', 'shortage_resolutions', $shortageResolutionDefaultColumns, isDefault: true, sortColumn: 'created_at', sortDirection: 'desc'),
+            $this->systemView('Pending Resolutions', 'shortage_resolutions', $shortageResolutionDefaultColumns, filters: [
+                ['field' => 'status', 'predicate' => 'eq', 'value' => ShortageResolutionStatus::Pending->value],
+            ], sortColumn: 'created_at', sortDirection: 'desc'),
+            $this->systemView('Confirmed Resolutions', 'shortage_resolutions', $shortageResolutionDefaultColumns, filters: [
+                ['field' => 'status', 'predicate' => 'eq', 'value' => ShortageResolutionStatus::Confirmed->value],
+            ], sortColumn: 'created_at', sortDirection: 'desc'),
+        ];
+
+        $allViews = array_merge($memberViews, $productViews, $stockLevelViews, $activityViews, $productGroupViews, $opportunityViews, $shortageResolutionViews);
+
+        foreach ($allViews as $view) {
+            CustomView::query()->updateOrCreate(
+                [
+                    'name' => $view['name'],
+                    'entity_type' => $view['entity_type'],
+                ],
+                $view,
+            );
+        }
+    }
+
+    /**
+     * Build a system view definition array.
+     *
+     * @param  list<string>  $columns
+     * @param  list<array{field: string, predicate: string, value: mixed}>  $filters
+     * @return array<string, mixed>
+     */
+    private function systemView(
+        string $name,
+        string $entityType,
+        array $columns,
+        bool $isDefault = false,
+        array $filters = [],
+        string $sortColumn = 'name',
+        string $sortDirection = 'asc',
+    ): array {
+        return [
+            'name' => $name,
+            'entity_type' => $entityType,
+            'visibility' => 'system',
+            'user_id' => null,
+            'is_default' => $isDefault,
+            'columns' => $columns,
+            'filters' => $filters,
+            'sort_column' => $sortColumn,
+            'sort_direction' => $sortDirection,
+            'per_page' => 20,
+            'config' => [],
+        ];
+    }
+}

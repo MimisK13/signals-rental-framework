@@ -3,8 +3,8 @@
 namespace App\Services\Investment;
 
 use App\Data\InvestmentComponentCompleteness;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\InvestmentIntelligenceCompleteness;
-use App\Enums\StockMethod;
 use App\Enums\UtilizationCompleteness;
 use App\Models\Product;
 use App\Services\Assets\ProductFinancialsCalculator;

@@ -4,10 +4,10 @@ namespace App\Actions\Products;
 
 use App\Data\Products\ProductData;
 use App\Data\Products\UpdateProductData;
+use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Events\AuditableEvent;
 use App\Models\Product;
 use App\Services\Api\WebhookService;
-use App\Services\CustomFieldValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

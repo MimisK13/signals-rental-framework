@@ -19,8 +19,8 @@ use App\Domain\Crew\Queries\CrewCostForecastQuery;
 use App\Domain\Crew\Queries\CrewCoverageQuery;
 use App\Domain\Crew\Queries\CrewUtilisationQuery;
 use App\Domain\Crew\Queries\CrewWorkHistoryQuery;
+use App\Domain\Projects\Models\Project;
 use App\Http\Controllers\Api\Controller;
-use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

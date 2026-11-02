@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\PurchaseOrders\Actions;
+
+use App\Concerns\CommitsVerbsEvents;
+use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderEventRecorder;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderStatusRegistry;
+use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderSent;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Gate;
+
+class SendPurchaseOrder
+{
+    use CommitsVerbsEvents;
+
+    public function __invoke(PurchaseOrder $purchaseOrder, ?string $supplierReference = null): PurchaseOrderData
+    {
+        Gate::authorize('send', $purchaseOrder);
+
+        $status = 'sent';
+        app(PurchaseOrderStatusRegistry::class)->assertKnown($status);
+        app(PurchaseOrderStatusRegistry::class)->assertCanTransitionTo($purchaseOrder->status, $status);
+
+        $sentAt = CarbonImmutable::now('UTC');
+
+        $this->commitVerbs(function () use ($purchaseOrder, $status, $sentAt, $supplierReference): void {
+            $this->lockModelForMutation(
+                $purchaseOrder,
+                assert: fn (PurchaseOrder $locked) => app(PurchaseOrderStatusRegistry::class)
+                    ->assertCanTransitionTo($locked->status, $status),
+            );
+
+            PurchaseOrderSent::fire(
+                state_id: (int) $purchaseOrder->state_id,
+                status: $status,
+                sent_at: $sentAt->toIso8601String(),
+                supplier_reference: $supplierReference,
+                supplier_reference_provided: $supplierReference !== null,
+            );
+        });
+
+        $purchaseOrder = $purchaseOrder->refresh();
+        app(PurchaseOrderEventRecorder::class)->sent($purchaseOrder);
+
+        return PurchaseOrderData::fromModel($purchaseOrder);
+    }
+}

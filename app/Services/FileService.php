@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Attachment;
-use App\Models\Document;
-use App\Services\Documents\DocumentTypeRegistry;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Services\DocumentTypeRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

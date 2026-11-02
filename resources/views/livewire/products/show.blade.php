@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Product;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;

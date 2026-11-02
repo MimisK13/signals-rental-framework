@@ -307,7 +307,7 @@
             </button>
         </div>
 
-        @include('livewire.partials.file-browser', ['entityLabel' => 'activity'])
+        @include('attachments::file-browser', ['entityLabel' => 'activity'])
     </div>
 
     {{-- TIMELINE TAB --}}

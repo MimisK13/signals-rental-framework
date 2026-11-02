@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Services;
 
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use Illuminate\Database\Eloquent\Collection;
 
 final class SerializedStocktakeIdentifierResolver

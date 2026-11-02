@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerScanMode;
 use App\Enums\ContainerStatus;

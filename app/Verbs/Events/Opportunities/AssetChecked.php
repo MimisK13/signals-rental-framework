@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Assets\Enums\AssetCondition;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AssetCondition;
 use App\Models\OpportunityItemAsset;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;

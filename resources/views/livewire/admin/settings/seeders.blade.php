@@ -2,7 +2,7 @@
 
 use App\Models\Country;
 use App\Models\EmailTemplate;
-use App\Models\ListName;
+use App\Domain\Lists\Models\ListName;
 use App\Models\NotificationType;
 use App\Models\OrganisationTaxClass;
 use App\Models\ProductTaxClass;
@@ -75,7 +75,7 @@ new #[Layout('components.layouts.app')] #[Title('Seeders')] class extends Compon
 
         $taxRatesSeeded = Schema::hasTable('tax_rates') && TaxRate::query()->exists();
 
-        $rateDefinitionsSeeded = Schema::hasTable('rate_definitions') && \App\Models\RateDefinition::query()->where('is_preset', true)->exists();
+        $rateDefinitionsSeeded = Schema::hasTable('rate_definitions') && \App\Domain\Rates\Models\RateDefinition::query()->where('is_preset', true)->exists();
 
         $storesSeeded = Schema::hasTable('stores') && \App\Models\Store::query()->exists();
 
@@ -84,7 +84,7 @@ new #[Layout('components.layouts.app')] #[Title('Seeders')] class extends Compon
         $demoMembersSeeded = Schema::hasTable('members')
             && \App\Models\Member::query()->whereJsonContains('tag_list', 'demo-data')->exists();
         $demoInvoicesSeeded = Schema::hasTable('invoices')
-            && \App\Models\Invoice::query()->whereJsonContains('tag_list', 'demo-data')->exists();
+            && \App\Domain\Invoices\Models\Invoice::query()->whereJsonContains('tag_list', 'demo-data')->exists();
 
         $this->seeders = [
             'countries' => [
@@ -137,7 +137,7 @@ new #[Layout('components.layouts.app')] #[Title('Seeders')] class extends Compon
             ],
             'rate_definitions' => [
                 'name' => 'RateDefinitionPresetSeeder',
-                'class' => 'Database\\Seeders\\RateDefinitionPresetSeeder',
+                'class' => 'App\\Domain\\Rates\\Database\\Seeders\\RateDefinitionPresetSeeder',
                 'description' => 'Creates the industry-standard rate definition presets used to price products.',
                 'items' => [
                     'Daily, Hourly, Half-Hourly, Weekly and Monthly Rate presets',

@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Actions\Invoices\SendMemberStatement;
 use App\Actions\Members\AnonymiseMember;
 use App\Actions\Members\CreateMember;
 use App\Actions\Members\DeleteMember;
 use App\Actions\Members\MergeMember;
 use App\Actions\Members\RestoreMember;
 use App\Actions\Members\UpdateMember;
-use App\Data\Invoices\SendMemberStatementData;
 use App\Data\Members\CreateMemberData;
 use App\Data\Members\MemberData;
 use App\Data\Members\MergeMemberData;
 use App\Data\Members\UpdateMemberData;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\Invoices\Actions\SendMemberStatement;
+use App\Domain\Invoices\Data\SendMemberStatementData;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
 use App\Http\Traits\ResourceActions;
-use App\Models\CustomView;
 use App\Models\Member;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;

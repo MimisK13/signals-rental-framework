@@ -6,7 +6,7 @@ namespace App\Domain\Crew\Queries;
 
 use App\Domain\Crew\Data\Planning\CrewCoverageLineData;
 use App\Domain\Crew\Models\CrewRequest;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 

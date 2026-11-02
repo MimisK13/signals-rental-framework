@@ -14,7 +14,7 @@ use App\Domain\Crew\Models\CrewRequest;
 use App\Domain\Crew\Queries\CrewConflictQuery;
 use App\Domain\Crew\Queries\CrewRequirementQuery;
 use App\Domain\Crew\Services\CrewAudit;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;

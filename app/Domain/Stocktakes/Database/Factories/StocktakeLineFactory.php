@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Database\Factories;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Models\Stocktake;
 use App\Domain\Stocktakes\Models\StocktakeLine;
-use App\Models\StockLevel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<StocktakeLine> */

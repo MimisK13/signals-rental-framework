@@ -4,8 +4,8 @@ namespace App\Jobs;
 
 use App\Actions\Notifications\LogCommunication;
 use App\Data\Notifications\TransitionCommunicationLogData;
+use App\Domain\Documents\Models\Document;
 use App\Models\CommunicationTemplate;
-use App\Models\Document;
 use App\Models\Member;
 use App\Notifications\CustomerCommunication;
 use App\Services\Notifications\CommunicationPreferences;

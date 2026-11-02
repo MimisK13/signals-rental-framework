@@ -4,13 +4,13 @@ namespace App\Services\Investment;
 
 use App\Data\InvestmentEvidence;
 use App\Data\InvestmentSignal;
-use App\Enums\AssetLifecycleStatus;
+use App\Domain\Assets\Enums\AssetLifecycleStatus;
+use App\Domain\Assets\Services\AssetFinancialsResult;
+use App\Domain\Assets\Services\AssetUtilizationResult;
 use App\Enums\InvestmentGuidance;
 use App\Enums\InvestmentIntelligenceCompleteness;
 use App\Enums\InvestmentSignalType;
 use App\Enums\UtilizationCompleteness;
-use App\Services\Assets\AssetFinancialsResult;
-use App\Services\Assets\AssetUtilizationResult;
 use App\Services\Assets\ProductUtilizationResult;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

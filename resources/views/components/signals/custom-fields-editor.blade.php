@@ -17,23 +17,23 @@
                         $errorId = "{$fieldId}-error";
                         $hasError = $errors->has($errorKey);
                         $inputType = match ($field->field_type) {
-                            \App\Enums\CustomFieldType::Number,
-                            \App\Enums\CustomFieldType::Currency,
-                            \App\Enums\CustomFieldType::Percentage => 'number',
-                            \App\Enums\CustomFieldType::Date => 'date',
-                            \App\Enums\CustomFieldType::DateTime => 'datetime-local',
-                            \App\Enums\CustomFieldType::Time => 'time',
-                            \App\Enums\CustomFieldType::Email => 'email',
-                            \App\Enums\CustomFieldType::Website => 'url',
-                            \App\Enums\CustomFieldType::Telephone => 'tel',
-                            \App\Enums\CustomFieldType::Colour => 'color',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Number,
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Currency,
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Percentage => 'number',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Date => 'date',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::DateTime => 'datetime-local',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Time => 'time',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Email => 'email',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Website => 'url',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Telephone => 'tel',
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Colour => 'color',
                             default => 'text',
                         };
-                        $inputPlaceholder = $field->field_type === \App\Enums\CustomFieldType::Website ? 'https://' : null;
+                        $inputPlaceholder = $field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::Website ? 'https://' : null;
                         $inputStep = in_array($field->field_type, [
-                            \App\Enums\CustomFieldType::Number,
-                            \App\Enums\CustomFieldType::Currency,
-                            \App\Enums\CustomFieldType::Percentage,
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Number,
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Currency,
+                            \App\Domain\CustomFields\Enums\CustomFieldType::Percentage,
                         ], true) ? 'any' : null;
                     @endphp
 
@@ -46,7 +46,7 @@
                             :error-id="$errorId"
                         >
 
-                        @if($field->field_type === \App\Enums\CustomFieldType::Boolean)
+                        @if($field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::Boolean)
                             <div class="flex items-center gap-2">
                                 <input
                                     id="{{ $fieldId }}"
@@ -57,7 +57,7 @@
                                     class="size-4 rounded border-[var(--erp-color-border)] text-[var(--blue)] focus:ring-[var(--blue)] @if($hasError) is-invalid @endif"
                                 />
                             </div>
-                        @elseif(in_array($field->field_type, [\App\Enums\CustomFieldType::Text, \App\Enums\CustomFieldType::RichText], true))
+                        @elseif(in_array($field->field_type, [\App\Domain\CustomFields\Enums\CustomFieldType::Text, \App\Domain\CustomFields\Enums\CustomFieldType::RichText], true))
                             <x-dense::textarea
                                 id="{{ $fieldId }}"
                                 wire:model="{{ $prefix }}.{{ $field->name }}"
@@ -66,7 +66,7 @@
                                 :invalid="$hasError"
                                 :aria-describedby="$hasError ? $errorId : null"
                             />
-                        @elseif($field->field_type === \App\Enums\CustomFieldType::ListOfValues)
+                        @elseif($field->field_type === \App\Domain\CustomFields\Enums\CustomFieldType::ListOfValues)
                             <x-dense::select
                                 id="{{ $fieldId }}"
                                 wire:model="{{ $prefix }}.{{ $field->name }}"

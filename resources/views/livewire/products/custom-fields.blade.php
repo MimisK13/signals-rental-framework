@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\Product;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

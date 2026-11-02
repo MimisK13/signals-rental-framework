@@ -8,7 +8,7 @@ use App\Domain\Crew\Enums\CrewExpenseCategory;
 use App\Domain\Crew\Enums\CrewExpenseStatus;
 use App\Domain\Crew\Models\CrewExpense;
 use App\Domain\Crew\Models\CrewMember;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

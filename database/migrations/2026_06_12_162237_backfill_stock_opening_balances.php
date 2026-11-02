@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\TransactionType;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
+use App\Domain\Stock\Enums\TransactionType;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration

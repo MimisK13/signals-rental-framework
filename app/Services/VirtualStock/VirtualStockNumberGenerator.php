@@ -2,8 +2,8 @@
 
 namespace App\Services\VirtualStock;
 
-use App\Models\DocumentSequence;
-use App\Services\Documents\DocumentNumberGenerator;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\DocumentNumberGenerator;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Components\Concerns;
 
-use App\Models\CustomView;
+use App\Domain\CustomViews\Actions\SetDefaultCustomView;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Services\ViewResolver;
 use App\Models\User;
-use App\Models\UserViewPreference;
-use App\Services\ViewResolver;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -54,10 +54,19 @@ trait HasDataTableViews
             return;
         }
 
-        UserViewPreference::updateOrCreate(
-            ['user_id' => auth()->id(), 'entity_type' => $this->entityType],
-            ['custom_view_id' => $this->viewId],
-        );
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return;
+        }
+
+        $view = app(ViewResolver::class)->resolve($this->entityType, $this->viewId, $user);
+
+        if ($view === null || $view->id !== $this->viewId) {
+            return;
+        }
+
+        (new SetDefaultCustomView)($user, $this->entityType, $view);
     }
 
     private function loadAvailableViews(): void
@@ -117,6 +126,8 @@ trait HasDataTableViews
                 $this->perPage = $view->per_page;
             }
         } else {
+            $this->viewId = null;
+            $this->activeViewName = null;
             $this->visibleColumnKeys = [];
         }
     }

@@ -11,7 +11,7 @@ use App\Enums\ContainerStatus;
 use App\Enums\PackContainerResolution;
 use App\Exceptions\Containers\ContainerPackConflictException;
 use App\Models\Container;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use App\Services\Containers\ContainerManifestService;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;

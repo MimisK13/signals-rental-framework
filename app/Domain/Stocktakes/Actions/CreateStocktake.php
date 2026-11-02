@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Actions;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stocktakes\Enums\StocktakeStatus;
 use App\Domain\Stocktakes\Models\Stocktake;
-use App\Models\StockLevel;
 use App\Models\Store;
 use Illuminate\Support\Facades\Gate;
 

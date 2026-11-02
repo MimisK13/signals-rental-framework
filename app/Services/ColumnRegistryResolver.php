@@ -3,14 +3,18 @@
 namespace App\Services;
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
+use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
+use App\Domain\Invoices\Presentation\Tables\InvoiceColumnRegistry;
+use App\Domain\Invoices\Presentation\Tables\InvoicePaymentColumnRegistry;
+use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
+use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
+use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
+use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Models\User;
 use App\Support\CostVisibility;
 use App\Views\ColumnRegistry;
 use App\Views\ContainerColumnRegistry;
-use App\Views\CreditNoteColumnRegistry;
-use App\Views\DocumentTemplateColumnRegistry;
-use App\Views\InvoiceColumnRegistry;
-use App\Views\InvoicePaymentColumnRegistry;
 use App\Views\MemberColumnRegistry;
 use App\Views\OpportunityColumnRegistry;
 use App\Views\OpportunityCostColumnRegistry;
@@ -18,12 +22,8 @@ use App\Views\OpportunityItemColumnRegistry;
 use App\Views\OpportunityVersionColumnRegistry;
 use App\Views\ProductColumnRegistry;
 use App\Views\ProductGroupColumnRegistry;
-use App\Views\ProductRateColumnRegistry;
-use App\Views\PurchaseOrderColumnRegistry;
-use App\Views\RateDefinitionColumnRegistry;
 use App\Views\SerialisedComponentColumnRegistry;
 use App\Views\ShortageResolutionColumnRegistry;
-use App\Views\StockLevelColumnRegistry;
 use App\Views\VirtualStockIntakeColumnRegistry;
 use Illuminate\Validation\ValidationException;
 

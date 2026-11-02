@@ -2,9 +2,9 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Models\OpportunityItemAsset;
-use App\Models\StockLevel;
 use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;

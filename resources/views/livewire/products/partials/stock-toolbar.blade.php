@@ -7,8 +7,8 @@
     if ($forProductId) {
         $toolbarProduct = \App\Models\Product::find($forProductId);
         $bulkLimitReached = $toolbarProduct
-            && $toolbarProduct->stock_method !== \App\Enums\StockMethod::Serialised
-            && \App\Models\StockLevel::where('product_id', $forProductId)->exists();
+            && $toolbarProduct->stock_method !== \App\Domain\Stock\Enums\StockMethod::Serialised
+            && \App\Domain\Stock\Models\StockLevel::where('product_id', $forProductId)->exists();
     }
 @endphp
 @unless($bulkLimitReached)

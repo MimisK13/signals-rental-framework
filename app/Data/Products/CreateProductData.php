@@ -2,9 +2,9 @@
 
 namespace App\Data\Products;
 
-use App\Enums\AllowedStockType;
+use App\Domain\Stock\Enums\AllowedStockType;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\ProductType;
-use App\Enums\StockMethod;
 use Illuminate\Validation\Rules\Enum;
 use Spatie\LaravelData\Data;
 

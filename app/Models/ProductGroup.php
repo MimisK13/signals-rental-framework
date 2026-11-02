@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
-use App\Models\Traits\HasAttachments;
-use App\Models\Traits\HasCustomFields;
+use App\Domain\Attachments\Concerns\HasAttachments;
+use App\Domain\CustomFields\Concerns\HasCustomFields;
 use App\Services\SchemaBuilder;
 use Database\Factories\ProductGroupFactory;
 use Illuminate\Database\Eloquent\Builder;

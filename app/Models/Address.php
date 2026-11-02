@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Lists\Models\ListValue;
 use App\Services\SchemaBuilder;
 use Database\Factories\AddressFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

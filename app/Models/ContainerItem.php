@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerItemUnpackReason;
 use Database\Factories\ContainerItemFactory;
 use Illuminate\Database\Eloquent\Builder;

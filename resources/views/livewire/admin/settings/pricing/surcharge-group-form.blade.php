@@ -4,7 +4,7 @@ use App\Actions\Pricing\CreateSurchargeGroup;
 use App\Actions\Pricing\UpdateSurchargeGroup;
 use App\Data\Pricing\CreateSurchargeGroupData;
 use App\Data\Pricing\UpdateSurchargeGroupData;
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductTaxClass;

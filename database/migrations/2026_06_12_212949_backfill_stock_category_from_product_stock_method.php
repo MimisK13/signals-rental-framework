@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\StockCategory;
-use App\Enums\StockMethod;
-use App\Models\StockLevel;
+use App\Domain\Stock\Enums\StockCategory;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration

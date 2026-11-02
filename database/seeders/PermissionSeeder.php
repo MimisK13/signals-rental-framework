@@ -58,6 +58,15 @@ class PermissionSeeder extends Seeder
             'projects.edit' => ['label' => 'Edit Projects', 'description' => 'Edit projects and attach or detach opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.view']],
             'projects.delete' => ['label' => 'Delete Projects', 'description' => 'Archive project records without deleting opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.edit']],
 
+            // Quotations
+            'quotations.access' => ['label' => 'Access Quotations', 'description' => 'Access standalone and Project quotations', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'quotations.view' => ['label' => 'View Quotations', 'description' => 'View quotations and their versions', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.access']],
+            'quotations.create' => ['label' => 'Create Quotations', 'description' => 'Create standalone and Project quotations', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.view']],
+            'quotations.edit' => ['label' => 'Edit Quotations', 'description' => 'Edit draft quotations and their versions', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.view']],
+            'quotations.delete' => ['label' => 'Delete Quotations', 'description' => 'Delete draft quotations', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.edit']],
+            'quotations.send' => ['label' => 'Send Quotations', 'description' => 'Send quotation versions to customers', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.edit']],
+            'quotations.accept' => ['label' => 'Accept Quotations', 'description' => 'Record acceptance and create or link a Project', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.view']],
+
             // Shortages (detection, resolution, and the confirmation-gate override)
             'shortages.view' => ['label' => 'View Shortages', 'description' => 'View detected shortages and their resolutions', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['opportunities.view']],
             'shortages.resolve' => ['label' => 'Resolve Shortages', 'description' => 'Apply resolutions and acknowledge shortages', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['shortages.view']],

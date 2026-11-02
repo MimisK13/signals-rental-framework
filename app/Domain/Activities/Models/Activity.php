@@ -9,13 +9,13 @@ use App\Domain\Activities\Database\Factories\ActivityFactory;
 use App\Domain\Activities\Enums\ActivityPriority;
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Enums\TimeStatus;
-use App\Models\ListValue;
+use App\Domain\Attachments\Concerns\HasAttachments;
+use App\Domain\CustomFields\Concerns\HasCustomFields;
+use App\Domain\Lists\Models\ListValue;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;
-use App\Models\StockLevel;
-use App\Models\Traits\HasAttachments;
-use App\Models\Traits\HasCustomFields;
 use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
@@ -104,7 +104,7 @@ final class Activity extends Model implements HasSchema
 
     /**
      * Human-friendly label for a regarding_type (FQCN or short alias), e.g.
-     * "App\Models\StockLevel" => "Stock Level". Returns null when unset so the
+     * "App\Domain\Stock\Models\StockLevel" => "Stock Level". Returns null when unset so the
      * caller can decide on a placeholder. Never leaks the raw class string.
      */
     public static function regardingTypeLabel(?string $type): ?string

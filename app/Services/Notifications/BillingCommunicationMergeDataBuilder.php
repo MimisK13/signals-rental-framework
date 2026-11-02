@@ -2,9 +2,9 @@
 
 namespace App\Services\Notifications;
 
-use App\Models\CreditNote;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Models\Member;
 
 /**

@@ -3,12 +3,12 @@
 namespace App\Services\Availability;
 
 use App\Contracts\DemandResolverContract;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DemandPhase;
 use App\Enums\KitComponentBinding;
 use App\Models\ContainerItem;
 use App\Models\Demand;
-use App\Models\StockLevel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;

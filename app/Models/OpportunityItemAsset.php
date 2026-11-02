@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
+use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AssetCondition;
 use Database\Factories\OpportunityItemAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

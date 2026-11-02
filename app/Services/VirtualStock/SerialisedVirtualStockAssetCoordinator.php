@@ -2,9 +2,9 @@
 
 namespace App\Services\VirtualStock;
 
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;
 use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsProvisioned;

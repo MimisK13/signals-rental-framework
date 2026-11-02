@@ -2,7 +2,8 @@
 
 namespace App\Services\Assets;
 
-use App\Models\Asset;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Services\AssetFinancialsResult;
 
 final readonly class ProductFinancialsResult
 {

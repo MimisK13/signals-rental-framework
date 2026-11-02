@@ -1,6 +1,6 @@
 /* Local-first opportunity line-items editor (Alpine table under wire:ignore) */
 
-.opportunity-line-items-editor [x-cloak] {
+:is(.opportunity-line-items-editor, .quotation-line-items-editor) [x-cloak] {
     display: none !important;
 }
 
@@ -173,7 +173,7 @@
     max-width: 75px;
 }
 
-.opportunity-line-items-editor .s-btn-icon {
+:is(.opportunity-line-items-editor, .quotation-line-items-editor) .s-btn-icon {
     width: 32px;
     height: 32px;
     padding: 0;
@@ -183,8 +183,8 @@
     flex-shrink: 0;
 }
 
-.opportunity-line-items-editor .s-btn-icon > span,
-.opportunity-line-items-editor .s-btn-icon svg {
+:is(.opportunity-line-items-editor, .quotation-line-items-editor) .s-btn-icon > span,
+:is(.opportunity-line-items-editor, .quotation-line-items-editor) .s-btn-icon svg {
     display: block;
 }
 

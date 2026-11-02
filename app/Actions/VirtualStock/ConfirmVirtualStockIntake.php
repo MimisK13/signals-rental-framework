@@ -4,7 +4,7 @@ namespace App\Actions\VirtualStock;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\VirtualStockIntakeData;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Product;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;

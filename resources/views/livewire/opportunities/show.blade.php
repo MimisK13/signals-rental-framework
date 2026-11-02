@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\Invoices\GenerateDepositInvoice;
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Data\Invoices\GenerateDepositInvoiceData;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Enums\InvoiceType;
+use App\Domain\Invoices\Actions\GenerateDepositInvoice;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Enums\InvoiceType;
 use App\Livewire\Concerns\HasOpportunityActions;
 use App\Models\Opportunity;
-use App\Services\Invoices\InvoiceSourceStateRule;
+use App\Domain\Invoices\Services\InvoiceSourceStateRule;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

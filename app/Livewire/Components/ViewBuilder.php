@@ -2,16 +2,17 @@
 
 namespace App\Livewire\Components;
 
-use App\Actions\Views\CreateCustomView;
-use App\Actions\Views\UpdateCustomView;
-use App\Data\Views\CreateCustomViewData;
-use App\Data\Views\UpdateCustomViewData;
-use App\Models\CustomView;
+use App\Domain\CustomViews\Actions\CreateCustomView;
+use App\Domain\CustomViews\Actions\UpdateCustomView;
+use App\Domain\CustomViews\Data\CreateCustomViewData;
+use App\Domain\CustomViews\Data\UpdateCustomViewData;
+use App\Domain\CustomViews\Models\CustomView;
 use App\Services\ColumnRegistryResolver;
 use App\Views\Column;
 use App\Views\ColumnRegistry;
 use App\Views\MemberColumnRegistry;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -52,6 +53,7 @@ class ViewBuilder extends Component
 
         if ($viewId !== null) {
             $view = CustomView::findOrFail($viewId);
+            Gate::authorize('update', $view);
             $this->name = $view->name;
             $this->visibility = $view->visibility;
             $this->selectedColumns = $view->columns;

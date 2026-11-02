@@ -2,7 +2,7 @@
 
 namespace App\Data\Pricing;
 
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;

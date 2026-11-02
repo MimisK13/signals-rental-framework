@@ -2,12 +2,12 @@
 
 namespace App\Services\Containers;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerDissolveReason;
 use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerStatus;
 use App\Models\Container;
 use App\Models\ContainerItem;
-use App\Models\StockLevel;
 use App\Services\Availability\ContainerDemandResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;

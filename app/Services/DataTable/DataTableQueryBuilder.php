@@ -2,9 +2,9 @@
 
 namespace App\Services\DataTable;
 
-use App\Models\CustomView;
+use App\Domain\CustomViews\Services\ViewResolver;
+use App\Models\User;
 use App\Services\Api\RansackFilter;
-use App\Services\ViewResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -58,9 +58,14 @@ class DataTableQueryBuilder
         }
 
         if ($viewId !== null && $entityType !== null) {
-            $activeView = CustomView::find($viewId);
+            $user = auth()->user();
+            $activeView = app(ViewResolver::class)->resolve(
+                $entityType,
+                $viewId,
+                $user instanceof User ? $user : null,
+            );
 
-            if ($activeView instanceof CustomView) {
+            if ($activeView !== null) {
                 app(ViewResolver::class)->applyFilters($query, $activeView);
             }
         }

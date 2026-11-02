@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Models;
 
+use App\Domain\Attachments\Concerns\HasAttachments;
 use App\Domain\Crew\Database\Factories\CrewExpenseFactory;
 use App\Domain\Crew\Enums\CrewExpenseCategory;
 use App\Domain\Crew\Enums\CrewExpenseStatus;
-use App\Models\Project;
+use App\Domain\Projects\Models\Project;
 use App\Models\Store;
 use App\Models\Traits\FormatsMoney;
-use App\Models\Traits\HasAttachments;
 use App\Models\Traits\HasStoreScoping;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

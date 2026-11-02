@@ -2,9 +2,9 @@
 
 namespace App\Services\Opportunities;
 
-use App\Models\DocumentSequence;
-use App\Services\Documents\DocumentNumberGenerator;
-use App\Services\Documents\DocumentSequenceDefaults;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\DocumentNumberGenerator;
+use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

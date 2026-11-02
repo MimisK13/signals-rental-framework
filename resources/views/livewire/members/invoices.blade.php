@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Invoices\SendMemberStatement;
-use App\Data\Invoices\SendMemberStatementData;
-use App\Models\Invoice;
+use App\Domain\Invoices\Actions\SendMemberStatement;
+use App\Domain\Invoices\Data\SendMemberStatementData;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\Member;
 use App\Models\Store;
 use Illuminate\Support\Facades\Gate;

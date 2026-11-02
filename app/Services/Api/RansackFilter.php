@@ -2,8 +2,8 @@
 
 namespace App\Services\Api;
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Support\BackedEnumHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

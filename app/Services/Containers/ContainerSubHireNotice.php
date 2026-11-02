@@ -2,7 +2,7 @@
 
 namespace App\Services\Containers;
 
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 

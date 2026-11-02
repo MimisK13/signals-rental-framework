@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Domain\Invoices\Settings\InvoiceSettings;
 use App\Services\SettingsRegistry;
 use App\Services\SettingsService;
 use App\Settings\ActionLogSettings;
@@ -12,7 +13,6 @@ use App\Settings\EmailSettings;
 use App\Settings\FinanceSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
-use App\Settings\InvoiceSettings;
 use App\Settings\NotificationSettings;
 use App\Settings\OpportunitySettings;
 use App\Settings\PricingSettings;

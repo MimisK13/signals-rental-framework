@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;
 use App\Services\SchemaBuilder;

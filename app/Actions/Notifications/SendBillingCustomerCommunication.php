@@ -2,18 +2,18 @@
 
 namespace App\Actions\Notifications;
 
-use App\Actions\Documents\GenerateBillingIssueDocument;
-use App\Actions\Documents\RecordDocumentEmailDelivery;
-use App\Data\Documents\DocumentData;
 use App\Data\Notifications\SendBillingCustomerCommunicationData;
 use App\Data\Notifications\SendCustomerCommunicationData;
+use App\Domain\Documents\Actions\GenerateBillingIssueDocument;
+use App\Domain\Documents\Actions\RecordDocumentEmailDelivery;
+use App\Domain\Documents\Data\DocumentData;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Services\DocumentTemplateResolver;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Enums\BillingCommunicationKind;
-use App\Models\CreditNote;
-use App\Models\Document;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
 use App\Models\Member;
-use App\Services\Documents\DocumentTemplateResolver;
 use App\Services\Notifications\BillingCommunicationMergeDataBuilder;
 use App\Services\Notifications\CommunicationTemplateResolver;
 use Illuminate\Support\Facades\Auth;

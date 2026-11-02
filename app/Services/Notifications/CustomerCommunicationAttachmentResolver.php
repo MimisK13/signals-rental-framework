@@ -2,10 +2,10 @@
 
 namespace App\Services\Notifications;
 
-use App\Contracts\Documents\DocumentRenderer;
-use App\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Contracts\DocumentRenderer;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Models\Document;
 use App\Models\CommunicationTemplate;
-use App\Models\Document;
 
 /**
  * Resolves PDF attachments for customer communications from frozen document snapshots (P27).

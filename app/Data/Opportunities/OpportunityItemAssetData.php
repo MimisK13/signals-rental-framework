@@ -4,8 +4,8 @@ namespace App\Data\Opportunities;
 
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\OpportunityItemAsset;
-use App\Models\StockLevel;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Lazy;
 

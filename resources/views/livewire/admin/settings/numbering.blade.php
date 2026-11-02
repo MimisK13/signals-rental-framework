@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Documents\UpdateDocumentSequence;
-use App\Data\Documents\UpdateDocumentSequenceData;
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Actions\UpdateDocumentSequence;
+use App\Domain\Documents\Data\UpdateDocumentSequenceData;
+use App\Domain\Documents\Models\DocumentSequence;
 use App\Models\Store;
-use App\Services\Documents\DocumentNumberGenerator;
-use App\Services\Documents\DocumentSequenceDefaults;
-use App\Services\Documents\EntityNumberSchemeCatalog;
+use App\Domain\Documents\Services\DocumentNumberGenerator;
+use App\Domain\Documents\Services\DocumentSequenceDefaults;
+use App\Domain\Documents\Services\EntityNumberSchemeCatalog;
 use App\Support\NumberingAccess;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;

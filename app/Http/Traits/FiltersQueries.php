@@ -2,9 +2,9 @@
 
 namespace App\Http\Traits;
 
-use App\Models\CustomView;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Services\ViewResolver;
 use App\Services\Api\RansackFilter;
-use App\Services\ViewResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;

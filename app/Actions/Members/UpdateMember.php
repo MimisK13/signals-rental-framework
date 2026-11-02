@@ -4,11 +4,11 @@ namespace App\Actions\Members;
 
 use App\Data\Members\MemberData;
 use App\Data\Members\UpdateMemberData;
+use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Enums\MembershipType;
 use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Services\Api\WebhookService;
-use App\Services\CustomFieldValidator;
 use App\Services\Tax\MemberVatValidationService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

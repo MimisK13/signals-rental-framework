@@ -5,7 +5,7 @@ use App\Actions\Pricing\UpdateDiscountCategory;
 use App\Data\Pricing\CreateDiscountCategoryData;
 use App\Data\Pricing\UpdateDiscountCategoryData;
 use App\Enums\DiscountRuleScope;
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Models\DiscountCategory;
 use App\Models\Product;
 use App\Models\ProductGroup;

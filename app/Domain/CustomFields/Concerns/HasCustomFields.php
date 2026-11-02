@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\CustomFields\Concerns;
+
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\CustomFields\Services\CustomFieldSerializer;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Collection;
+
+trait HasCustomFields
+{
+    /**
+     * @return MorphMany<CustomFieldValue, $this>
+     */
+    public function customFieldValues(): MorphMany
+    {
+        return $this->morphMany(CustomFieldValue::class, 'entity');
+    }
+
+    /**
+     * Get the module type string for custom field resolution.
+     * Override in the model if the class name doesn't match the module type.
+     */
+    public function customFieldModuleType(): string
+    {
+        return class_basename($this);
+    }
+
+    /**
+     * Get all custom field values as a flat key-value array.
+     *
+     * @return array<string, mixed>
+     */
+    public function getCustomFieldsAttribute(): array
+    {
+        return app(CustomFieldSerializer::class)->toArray($this);
+    }
+
+    /**
+     * Sync custom field values from a flat key-value array.
+     *
+     * @param  array<string, mixed>  $fields
+     * @param  bool  $applyDefaults  Whether to apply default values for fields not in input
+     */
+    public function syncCustomFields(array $fields, bool $applyDefaults = false): void
+    {
+        app(CustomFieldSerializer::class)->fromArray($this, $fields, $applyDefaults);
+    }
+
+    /**
+     * Batch-load custom field values for a collection of entities to prevent N+1.
+     *
+     * @param  Collection<int, static>  $entities
+     */
+    public static function eagerLoadCustomFields(Collection $entities): void
+    {
+        if ($entities->isEmpty()) {
+            return;
+        }
+
+        $moduleType = $entities->first()->customFieldModuleType();
+        app(CustomFieldSerializer::class)->eagerLoad($entities, $moduleType);
+    }
+}

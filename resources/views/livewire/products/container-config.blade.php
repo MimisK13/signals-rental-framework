@@ -5,7 +5,7 @@ use App\Data\Products\UpdateProductContainerConfigData;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerCheckinMode;
 use App\Enums\KitComponentBinding;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Container;
 use App\Models\Product;
 use App\Services\Api\RansackFilter;

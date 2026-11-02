@@ -2,8 +2,8 @@
 
 namespace App\Data\Notifications;
 
+use App\Domain\Documents\Models\Document;
 use App\Models\CommunicationTemplate;
-use App\Models\Document;
 use App\Models\Member;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\Data;

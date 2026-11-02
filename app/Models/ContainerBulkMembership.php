@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Stock\Models\StockLevel;
 use Database\Factories\ContainerBulkMembershipFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

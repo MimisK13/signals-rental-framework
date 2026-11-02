@@ -2,20 +2,20 @@
 
 namespace App\Console\Commands\Concerns;
 
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\Container;
 use App\Models\ContainerItem;
-use App\Models\CreditNote;
 use App\Models\Demand;
-use App\Models\Invoice;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\OpportunityVersion;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
-use App\Models\PurchaseOrder;
-use App\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

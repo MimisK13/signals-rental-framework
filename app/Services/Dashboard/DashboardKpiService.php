@@ -2,12 +2,12 @@
 
 namespace App\Services\Dashboard;
 
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\InvoiceType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
-use App\Models\CreditNote;
-use App\Models\Invoice;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;

@@ -2,7 +2,7 @@
 
 namespace App\Data\Opportunities;
 
-use App\Enums\AssetCondition;
+use App\Domain\Assets\Enums\AssetCondition;
 use Illuminate\Validation\Rules\Enum;
 use Spatie\LaravelData\Data;
 

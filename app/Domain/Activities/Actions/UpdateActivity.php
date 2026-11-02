@@ -7,9 +7,9 @@ namespace App\Domain\Activities\Actions;
 use App\Domain\Activities\Data\ActivityData;
 use App\Domain\Activities\Data\UpdateActivityData;
 use App\Domain\Activities\Models\Activity;
+use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Events\AuditableEvent;
 use App\Services\Api\WebhookService;
-use App\Services\CustomFieldValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

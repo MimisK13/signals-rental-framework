@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\AutoNumberSequence;
-use App\Models\CustomField;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

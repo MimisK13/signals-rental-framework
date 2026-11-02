@@ -2,13 +2,13 @@
 
 namespace App\Actions\Opportunities;
 
-use App\Actions\Repairs\CreateRepair;
-use App\Actions\Repairs\SetRepairUsability;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\CheckAssetData;
-use App\Enums\AssetCondition;
+use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Repairs\Actions\CreateRepair;
+use App\Domain\Repairs\Actions\SetRepairUsability;
+use App\Domain\Repairs\Models\Repair;
 use App\Models\OpportunityItemAsset;
-use App\Models\Repair;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

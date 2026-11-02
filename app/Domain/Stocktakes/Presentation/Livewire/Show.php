@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Presentation\Livewire;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Actions\CancelStocktake;
 use App\Domain\Stocktakes\Actions\CompleteStocktake;
 use App\Domain\Stocktakes\Actions\RecordBulkStocktakeObservation;
@@ -13,7 +14,6 @@ use App\Domain\Stocktakes\Data\RecordBulkStocktakeObservationData;
 use App\Domain\Stocktakes\Models\Stocktake;
 use App\Domain\Stocktakes\Models\StocktakeLine;
 use App\Domain\Stocktakes\Models\StocktakeObservation;
-use App\Models\StockLevel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;

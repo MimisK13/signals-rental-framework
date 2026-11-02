@@ -3,10 +3,10 @@
 namespace App\Services\Availability;
 
 use App\Contracts\DemandResolverContract;
+use App\Domain\Repairs\Models\Repair;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
 use App\Models\Demand;
-use App\Models\Repair;
-use App\Models\StockLevel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -48,7 +48,9 @@ class RepairDemandResolver implements DemandResolverContract
         $existing = $this->demand($repair);
 
         if ($repair->asset_id !== null) {
-            $asset = $repair->asset ?: $repair->asset()->first();
+            $asset = $repair->relationLoaded('asset')
+                ? $repair->getRelation('asset')
+                : $repair->asset()->first();
 
             if ($asset !== null && ! $asset->isOperationallyActive()) {
                 $this->releaseDemand($existing);

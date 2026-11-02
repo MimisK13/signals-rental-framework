@@ -4,9 +4,9 @@ use App\Actions\Containers\DispatchContainer;
 use App\Actions\Containers\ReturnKitContainer;
 use App\Actions\Containers\StartRepackOnReturn;
 use App\Actions\Containers\VerifyKitCheckin;
-use App\Actions\Assets\ConfirmAssetLost;
-use App\Actions\Assets\MarkAssetMissing;
-use App\Actions\Assets\RestoreAsset;
+use App\Domain\Assets\Actions\ConfirmAssetLost;
+use App\Domain\Assets\Actions\MarkAssetMissing;
+use App\Domain\Assets\Actions\RestoreAsset;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ClearAssetContainer;
 use App\Actions\Opportunities\DeallocateAsset;
@@ -42,11 +42,11 @@ use App\Data\Opportunities\RevertAssetStatusData;
 use App\Data\Opportunities\SetAssetContainerData;
 use App\Data\Opportunities\SubstituteAssetData;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AssetCondition;
-use App\Enums\AssetLifecycleStatus;
+use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Enums\ContainerStatus;
 use App\Enums\OpportunityState;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Exceptions\Containers\ContainerDispatchAmendmentRequiredException;
 use App\Livewire\Concerns\HasOpportunityActions;
 use App\Models\Container;
@@ -54,8 +54,8 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Models\Repair;
-use App\Models\StockLevel;
+use App\Domain\Repairs\Models\Repair;
+use App\Domain\Stock\Models\StockLevel;
 use App\Services\Containers\ContainerBarcodeResolver;
 use App\Services\Containers\ContainerManifestService;
 use App\Services\Containers\RepackOnReturnEligibility;
@@ -1849,9 +1849,9 @@ new #[Layout('components.layouts.app')] class extends Component
     @include('livewire.opportunities.partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'assets'])
 
     @php
-        $statusBadge = fn (\App\Enums\AssetAssignmentStatus $s, ?\App\Enums\AssetLifecycleStatus $lifecycle = null) => match (true) {
-            $lifecycle === \App\Enums\AssetLifecycleStatus::Lost => 's-status-red',
-            $lifecycle === \App\Enums\AssetLifecycleStatus::Missing => 's-status-amber',
+        $statusBadge = fn (\App\Enums\AssetAssignmentStatus $s, ?\App\Domain\Assets\Enums\AssetLifecycleStatus $lifecycle = null) => match (true) {
+            $lifecycle === \App\Domain\Assets\Enums\AssetLifecycleStatus::Lost => 's-status-red',
+            $lifecycle === \App\Domain\Assets\Enums\AssetLifecycleStatus::Missing => 's-status-amber',
             default => match ($s) {
             \App\Enums\AssetAssignmentStatus::Allocated => 's-status-zinc',
             \App\Enums\AssetAssignmentStatus::Prepared => 's-status-blue',

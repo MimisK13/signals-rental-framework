@@ -2,9 +2,9 @@
 
 namespace App\Events\Containers;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Container;
 use App\Models\ContainerItem;
-use App\Models\StockLevel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Validation\ValidationException;

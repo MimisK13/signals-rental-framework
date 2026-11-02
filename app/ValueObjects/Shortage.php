@@ -2,7 +2,7 @@
 
 namespace App\ValueObjects;
 
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Demand;
 use App\Services\Shortages\ShortageDetector;
 use Illuminate\Support\Carbon;

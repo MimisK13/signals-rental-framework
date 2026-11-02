@@ -2,10 +2,14 @@
 
 namespace App\Services\Plugins;
 
-use App\Contracts\Documents\DocumentDataResolver;
-use App\Contracts\Documents\PdfDriver;
 use App\Contracts\Notifications\ChannelDriver;
 use App\Contracts\Notifications\RecipientResolver;
+use App\Domain\Documents\Contracts\DocumentDataResolver;
+use App\Domain\Documents\Contracts\PdfDriver;
+use App\Domain\Documents\Services\DocumentResolverRegistry;
+use App\Domain\Documents\Services\DocumentTypeRegistry;
+use App\Domain\Documents\Services\PdfDriverManager;
+use App\Domain\Documents\Services\PluginDocumentTemplateSeederRegistry;
 use App\Events\Containers\BeforeContainerDispatched;
 use App\Events\Containers\BeforeContainerDissolved;
 use App\Events\Containers\BeforeContainerItemTransferred;
@@ -19,9 +23,6 @@ use App\Events\Containers\ContainerPacked;
 use App\Events\Containers\ContainerRepackStarted;
 use App\Events\Containers\ContainerSealed;
 use App\Models\Store;
-use App\Services\Documents\DocumentResolverRegistry;
-use App\Services\Documents\DocumentTypeRegistry;
-use App\Services\Documents\PdfDriverManager;
 use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Notifications\MergeFieldFilterRegistry;
 use App\Services\Notifications\MergeFieldRenderContext;

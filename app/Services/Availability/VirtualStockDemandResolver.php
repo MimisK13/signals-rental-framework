@@ -3,8 +3,8 @@
 namespace App\Services\Availability;
 
 use App\Contracts\DemandResolverContract;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\DemandPhase;
-use App\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Product;
 use App\Models\VirtualStockIntake;

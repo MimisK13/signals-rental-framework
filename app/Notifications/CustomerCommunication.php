@@ -4,9 +4,9 @@ namespace App\Notifications;
 
 use App\Actions\Notifications\LogCommunication;
 use App\Data\Notifications\TransitionCommunicationLogData;
+use App\Domain\Documents\Models\Document;
 use App\Jobs\DeliverCustomerCommunication;
 use App\Models\CommunicationTemplate;
-use App\Models\Document;
 use App\Models\Member;
 use App\Services\Notifications\CommunicationTemplateRenderer;
 use App\Services\Notifications\CustomerCommunicationAttachmentResolver;

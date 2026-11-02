@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Models;
 
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Database\Factories\StocktakeObservationFactory;
 use App\Domain\Stocktakes\Enums\StocktakeObservationType;
-use App\Models\Asset;
-use App\Models\StockLevel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

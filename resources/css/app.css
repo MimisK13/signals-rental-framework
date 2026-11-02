@@ -9,6 +9,12 @@
 @source "../../app/Domain/Crew/Presentation/Views";
 @source "../../app/Domain/Activities/Presentation/Views";
 @source "../../app/Domain/Stocktakes/Presentation/Views";
+@source "../../app/Domain/Lists/Presentation/Views";
+@source "../../app/Domain/SupplierCosts/Presentation/Views";
+@source "../../app/Domain/Rates/Presentation/Views";
+@source "../../app/Domain/Projects/Presentation/Views";
+@source "../../app/Domain/Attachments/Presentation/Views";
+@source "../../app/Domain/Quotations/Presentation/Views";
 @source "../../packages/**/*.blade.php";
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';

@@ -3,7 +3,7 @@
 namespace App\Data\VirtualStock;
 
 use App\Data\Concerns\FormatsTimestamps;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use Spatie\LaravelData\Data;
 
 class VirtualStockAssetData extends Data

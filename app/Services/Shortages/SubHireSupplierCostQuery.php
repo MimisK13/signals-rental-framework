@@ -2,7 +2,7 @@
 
 namespace App\Services\Shortages;
 
-use App\Models\ProductSupplierCost;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use Illuminate\Database\Eloquent\Collection;
 
 /**

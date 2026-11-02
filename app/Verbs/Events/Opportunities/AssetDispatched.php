@@ -2,12 +2,12 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\OpportunityState;
-use App\Models\AssetUsage;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
-use App\Models\StockLevel;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;

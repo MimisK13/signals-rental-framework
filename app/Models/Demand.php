@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
 use App\Observers\DemandObserver;
 use Carbon\CarbonInterface;

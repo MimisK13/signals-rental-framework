@@ -3,7 +3,7 @@
 use App\Data\Availability\GanttDemandBarData;
 use App\Models\Opportunity;
 use App\Models\Product;
-use App\Models\StockLevel;
+use App\Domain\Stock\Models\StockLevel;
 use App\Services\AvailabilityService;
 use App\Services\Planning\PlanningStoreFilter;
 use App\Services\Opportunities\OpportunityPresentation;

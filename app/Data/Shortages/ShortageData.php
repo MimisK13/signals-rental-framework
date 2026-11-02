@@ -3,7 +3,7 @@
 namespace App\Data\Shortages;
 
 use App\Data\Concerns\FormatsTimestamps;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\ValueObjects\Shortage;
 use Spatie\LaravelData\Data;
 

@@ -2,10 +2,12 @@
 
 namespace App\Services\Assets;
 
-use App\Enums\AssetOwnershipType;
-use App\Enums\StockMethod;
+use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Services\AssetUtilizationCalculator;
+use App\Domain\Assets\Services\AssetUtilizationResult;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\UtilizationCompleteness;
-use App\Models\Asset;
 use App\Models\Product;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

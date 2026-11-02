@@ -2,11 +2,11 @@
 
 namespace App\Listeners;
 
-use App\Data\Invoices\InvoiceData;
 use App\Data\Opportunities\OpportunityData;
+use App\Domain\Invoices\Data\InvoiceData;
+use App\Domain\Invoices\Models\Invoice;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Invoice;
 use App\Models\Opportunity;
 use App\Models\ShortageResolution;
 use App\Models\ShortageWaitlistMonitor;

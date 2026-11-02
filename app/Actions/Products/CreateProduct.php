@@ -4,15 +4,15 @@ namespace App\Actions\Products;
 
 use App\Data\Products\CreateProductData;
 use App\Data\Products\ProductData;
-use App\Enums\StockCategory;
-use App\Enums\StockMethod;
+use App\Domain\CustomFields\Services\CustomFieldValidator;
+use App\Domain\Stock\Enums\StockCategory;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Api\WebhookService;
-use App\Services\CustomFieldValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

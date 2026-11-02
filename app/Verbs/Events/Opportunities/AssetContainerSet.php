@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\OpportunityItemAsset;
-use App\Models\StockLevel;
 use App\Verbs\Events\Opportunities\Concerns\GuardsAssetAssignment;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\AssetAssignmentState;

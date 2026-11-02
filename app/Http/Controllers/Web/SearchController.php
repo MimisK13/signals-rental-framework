@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Web;
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\MembershipType;
 use App\Enums\OpportunityState;
 use App\Enums\ProductType;
-use App\Models\CreditNote;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\PurchaseOrder;
-use App\Models\StockLevel;
 use App\Models\VirtualStockIntake;
 use App\Services\FileService;
 use Illuminate\Http\JsonResponse;

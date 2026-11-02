@@ -14,7 +14,7 @@ use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Services\ActivityTypeList;
 use App\Domain\Activities\Services\Calendar\OwnerColorResolver;
-use App\Models\ListValue;
+use App\Domain\Lists\Models\ListValue;
 use App\Models\User;
 use App\Support\Timezone;
 use Illuminate\Support\Carbon;

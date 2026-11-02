@@ -2,8 +2,8 @@
 
 namespace App\Services\Notifications;
 
+use App\Domain\Invoices\Models\Invoice;
 use App\Events\AuditableEvent;
-use App\Models\Invoice;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\Product;

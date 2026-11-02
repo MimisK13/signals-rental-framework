@@ -4,7 +4,7 @@ use App\Actions\Pricing\CreateBundleRule;
 use App\Actions\Pricing\UpdateBundleRule;
 use App\Data\Pricing\CreateBundleRuleData;
 use App\Data\Pricing\UpdateBundleRuleData;
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Models\BundleRule;
 use App\Models\Product;
 use App\Models\ProductGroup;

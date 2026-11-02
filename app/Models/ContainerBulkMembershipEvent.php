@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerBulkMembershipEventType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

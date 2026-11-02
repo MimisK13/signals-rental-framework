@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Domain\Activities\Database\Seeders\ActivitySeeder;
 use App\Domain\Currency\Database\Seeders\CurrencySeeder;
 use App\Domain\Currency\Database\Seeders\ExchangeRateSeeder;
+use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Rates\Database\Seeders\RateDefinitionPresetSeeder;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

@@ -2,12 +2,12 @@
 
 namespace App\Services\Containers;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\ContainerAvailabilityMode;
 use App\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
-use App\Models\StockLevel;
 use Illuminate\Support\Collection;
 
 /**

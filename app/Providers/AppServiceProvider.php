@@ -5,8 +5,6 @@ namespace App\Providers;
 use App\Contracts\Availability\AvailabilityDataPresence;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\Availability\AvailabilityStrategyContract;
-use App\Contracts\Documents\DocumentRenderer;
-use App\Contracts\Documents\PdfDriver;
 use App\Contracts\Tax\TaxResolver;
 use App\Contracts\Tax\VatNumberValidator;
 use App\Guards\Opportunities\Contracts\ApprovalGate;
@@ -16,10 +14,8 @@ use App\Guards\Opportunities\Rules\FxTaxLockRule;
 use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\Stages\AutoApprovalGate;
 use App\Listeners\RecordCustomerCommunicationDelivery;
-use App\Models\Project;
 use App\Models\User;
 use App\Policies\NumberingPolicy;
-use App\Policies\ProjectPolicy;
 use App\Services\Api\AbilityRegistry;
 use App\Services\Api\ApiEndpointCatalogue;
 use App\Services\Api\CoreAbilityDefinitions;
@@ -42,23 +38,6 @@ use App\Services\ColumnRegistryResolver;
 use App\Services\DemandSourceDefinition;
 use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
-use App\Services\Documents\CreditNoteDataResolver;
-use App\Services\Documents\DocumentBrandingResolver;
-use App\Services\Documents\DocumentEventDispatcher;
-use App\Services\Documents\DocumentRenderContext;
-use App\Services\Documents\DocumentRenderPipeline;
-use App\Services\Documents\DocumentResolverRegistry;
-use App\Services\Documents\DocumentTypeRegistry;
-use App\Services\Documents\InvoiceDataResolver;
-use App\Services\Documents\OpportunityDataResolver;
-use App\Services\Documents\PdfDriverManager;
-use App\Services\Documents\PurchaseOrderDataResolver;
-use App\Services\Documents\ReceiptDataResolver;
-use App\Services\Documents\ReturnListDataResolver;
-use App\Services\Documents\SandboxedBladeCompiler;
-use App\Services\Documents\SandboxedBladeRenderer;
-use App\Services\Documents\StatementDataResolver;
-use App\Services\Invoices\InvoiceStatusRegistry;
 use App\Services\NotificationRegistry;
 use App\Services\Notifications\ChannelProviderRegistry;
 use App\Services\Notifications\CommunicationLogStatusRegistry;
@@ -81,10 +60,8 @@ use App\Services\Notifications\RecipientResolvers\TriggerActorRecipientResolver;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
 use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
-use App\Services\Opportunities\OpportunityTotalsBatch;
 use App\Services\Opportunities\TransitionRuleRegistry;
 use App\Services\PermissionRegistry;
-use App\Services\Plugins\PluginDocumentTemplateSeederRegistry;
 use App\Services\Plugins\PluginRegistrar;
 use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\CriteriaMatcher;
@@ -105,13 +82,6 @@ use App\Services\Pricing\Predicates\QuantityMinPredicate;
 use App\Services\Pricing\Predicates\TagNamesPredicate;
 use App\Services\Pricing\Predicates\TransactionTypesPredicate;
 use App\Services\Pricing\QuantityContextResolver;
-use App\Services\RateEngine\Modifiers\FactorModifier;
-use App\Services\RateEngine\Modifiers\MultiplierModifier;
-use App\Services\RateEngine\RateEngineRegistry;
-use App\Services\RateEngine\RateResolver;
-use App\Services\RateEngine\Strategies\FixedStrategy;
-use App\Services\RateEngine\Strategies\HybridStrategy;
-use App\Services\RateEngine\Strategies\PeriodStrategy;
 use App\Services\SchemaRegistry;
 use App\Services\Shortages\CostApportionmentRegistry;
 use App\Services\Shortages\NullCostApportionmentStrategy;
@@ -146,7 +116,6 @@ use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
@@ -170,42 +139,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Formatter::class);
         $this->app->singleton(DocsService::class);
         $this->app->singleton(SchemaRegistry::class);
-        $this->app->singleton(DocumentResolverRegistry::class, function ($app): DocumentResolverRegistry {
-            $registry = new DocumentResolverRegistry;
-            $registry->register($app->make(OpportunityDataResolver::class));
-            $registry->register($app->make(ReturnListDataResolver::class));
-            $registry->register($app->make(StatementDataResolver::class));
-            $registry->register($app->make(ReceiptDataResolver::class));
-            $registry->register($app->make(InvoiceDataResolver::class));
-            $registry->register($app->make(CreditNoteDataResolver::class));
-            $registry->register($app->make(PurchaseOrderDataResolver::class));
-
-            return $registry;
-        });
-        $this->app->singleton(DocumentTypeRegistry::class);
-        $this->app->singleton(DocumentEventDispatcher::class);
-        $this->app->scoped(DocumentRenderContext::class);
-        $this->app->singleton(PluginDocumentTemplateSeederRegistry::class);
         $this->app->singleton(PluginRegistrar::class);
-        $this->app->singleton(SandboxedBladeCompiler::class, function ($app): SandboxedBladeCompiler {
-            $cachePath = (string) config('documents.sandbox_cache_path');
-
-            if (! is_dir($cachePath)) {
-                mkdir($cachePath, 0755, true);
-            }
-
-            return new SandboxedBladeCompiler(
-                $app->make(Filesystem::class),
-                $cachePath,
-                base_path(),
-            );
-        });
-        $this->app->singleton(SandboxedBladeRenderer::class);
-        $this->app->singleton(DocumentBrandingResolver::class);
-        $this->app->singleton(PdfDriverManager::class);
-        $this->app->bind(PdfDriver::class, fn ($app): PdfDriver => $app->make(PdfDriverManager::class)->driver());
-        $this->app->singleton(DocumentRenderPipeline::class);
-        $this->app->bind(DocumentRenderer::class, DocumentRenderPipeline::class);
         $this->app->singleton(TaxCalculator::class);
         $this->app->scoped(TaxResolutionContextHolder::class);
         $this->app->singleton(TaxZoneRuleResolver::class);
@@ -217,7 +151,6 @@ class AppServiceProvider extends ServiceProvider
         // Request-scoped suppression flag for batch auto-promotion (scoped so it is
         // Octane-safe — reset between requests).
         $this->app->scoped(AutoPromotionContext::class);
-        $this->app->scoped(OpportunityTotalsBatch::class);
 
         // Availability seams — tenant-ignorant OSS defaults. The commercial Cloud
         // package rebinds these to tenant-/hosting-aware implementations.
@@ -237,7 +170,6 @@ class AppServiceProvider extends ServiceProvider
         // instance, so under Octane it must be reset each request/job rather than
         // persisting a stale timezone for the worker's lifetime.
         $this->app->scoped(RecalculationPipeline::class);
-        $this->app->scoped(RateResolver::class);
         $this->app->scoped(ShortageDetector::class);
         $this->app->scoped(AvailabilityService::class);
 
@@ -274,7 +206,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(CommunicationLogStatusRegistry::class);
-        $this->app->singleton(InvoiceStatusRegistry::class);
 
         $this->app->singleton(EventNotificationMapRegistry::class);
 
@@ -401,19 +332,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(OpportunityPricingCalculateDecorator::class);
         $this->app->singleton(DealPriceProportionalDistributor::class);
         $this->app->singleton(OpportunityPricingRecalculator::class);
-
-        $this->app->singleton(RateEngineRegistry::class, function (): RateEngineRegistry {
-            $registry = new RateEngineRegistry;
-
-            $registry->registerStrategy(new PeriodStrategy);
-            $registry->registerStrategy(new FixedStrategy);
-            $registry->registerStrategy(new HybridStrategy);
-
-            $registry->registerModifier(new MultiplierModifier);
-            $registry->registerModifier(new FactorModifier);
-
-            return $registry;
-        });
 
         // Built-in resolvers memoise read-only facts on their instances. Keep
         // those instances request/job scoped so one detection pass shares the
@@ -624,7 +542,6 @@ class AppServiceProvider extends ServiceProvider
     protected function configureAuthorization(): void
     {
         Gate::policy(NumberingAccess::class, NumberingPolicy::class);
-        Gate::policy(Project::class, ProjectPolicy::class);
 
         Gate::before(function (User $user, string $ability, array $arguments): ?bool {
             if (! $user->isOwner()) {

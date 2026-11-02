@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Stocktakes\Actions;
 
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stocktakes\Data\RecordBulkStocktakeObservationData;
 use App\Domain\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stocktakes\Models\Stocktake;
 use App\Domain\Stocktakes\Models\StocktakeLine;
 use App\Domain\Stocktakes\Models\StocktakeObservation;
-use App\Enums\StockMethod;
-use App\Models\StockLevel;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

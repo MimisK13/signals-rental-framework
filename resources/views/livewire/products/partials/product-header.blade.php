@@ -16,7 +16,7 @@
     <x-slot:meta>
         {{-- Stock mechanism first, matching the stock-level header order --}}
         @php
-            $isSerialised = $product->stock_method === \App\Enums\StockMethod::Serialised;
+            $isSerialised = $product->stock_method === \App\Domain\Stock\Enums\StockMethod::Serialised;
         @endphp
         <x-signals.stock-method-badge :serialised="$isSerialised" />
         @php

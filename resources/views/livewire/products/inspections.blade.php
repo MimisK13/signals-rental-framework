@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\InspectionPolicy;
-use App\Actions\Inspections\CancelAssetInspection;
-use App\Enums\InspectionStatus;
+use App\Domain\Assets\Models\InspectionPolicy;
+use App\Domain\Assets\InspectionActions\CancelAssetInspection;
+use App\Domain\Assets\Enums\InspectionStatus;
 use App\Models\Product;
-use App\Services\Assets\AssetInspectionComplianceReader;
+use App\Domain\Assets\Services\AssetInspectionComplianceReader;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -25,7 +25,7 @@ new #[Layout('components.layouts.app')] class extends Component
     public function mount(Product $product): void
     {
         Gate::authorize('stock.view');
-        abort_unless($product->stock_method === \App\Enums\StockMethod::Serialised, 404);
+        abort_unless($product->stock_method === \App\Domain\Stock\Enums\StockMethod::Serialised, 404);
         $this->product = $product;
     }
 

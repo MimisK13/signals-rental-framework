@@ -3,7 +3,7 @@
 namespace App\Services\Pricing\Predicates;
 
 use App\Contracts\Pricing\DiscountCriteriaPredicate;
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\ValueObjects\Pricing\DiscountCriteriaContext;
 
 class TransactionTypesPredicate implements DiscountCriteriaPredicate

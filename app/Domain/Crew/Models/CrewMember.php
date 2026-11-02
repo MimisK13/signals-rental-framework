@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Models;
 
+use App\Domain\Attachments\Concerns\HasAttachments;
 use App\Domain\Crew\Database\Factories\CrewMemberFactory;
 use App\Domain\Crew\Enums\CrewEngagementType;
 use App\Domain\Crew\Enums\CrewMemberStatus;
+use App\Domain\CustomFields\Concerns\HasCustomFields;
 use App\Models\Member;
-use App\Models\Traits\HasAttachments;
-use App\Models\Traits\HasCustomFields;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

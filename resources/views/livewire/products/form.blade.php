@@ -5,12 +5,12 @@ use App\Actions\Products\UpdateProduct;
 use App\Data\Products\CreateProductData;
 use App\Data\Products\UpdateProductData;
 use App\Enums\ProductType;
-use App\Enums\StockMethod;
-use App\Livewire\Concerns\LoadsCustomFieldValues;
-use App\Livewire\Concerns\ReKeysCustomFieldErrors;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\CustomFields\Presentation\Concerns\LoadsCustomFieldValues;
+use App\Domain\CustomFields\Presentation\Concerns\ReKeysCustomFieldErrors;
 use App\Models\CostGroup;
 use App\Models\Country;
-use App\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductTaxClass;
@@ -588,7 +588,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                 <div>
                                     @if($productType === 'sale')
                                         <flux:select wire:model.live="stockMethod" label="Stock Method" disabled>
-                                            <option value="{{ \App\Enums\StockMethod::Bulk->value }}">{{ \App\Enums\StockMethod::Bulk->label() }}</option>
+                                            <option value="{{ \App\Domain\Stock\Enums\StockMethod::Bulk->value }}">{{ \App\Domain\Stock\Enums\StockMethod::Bulk->label() }}</option>
                                         </flux:select>
                                         <p class="text-xs text-(--text-muted) mt-1">Sale products use Bulk stock method only.</p>
                                     @else
@@ -620,7 +620,7 @@ new #[Layout('components.layouts.app')] class extends Component
                                 <div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
                                     <flux:input wire:model="sku" label="SKU" />
                                     <div>
-                                        @if($stockMethod == \App\Enums\StockMethod::Serialised->value)
+                                        @if($stockMethod == \App\Domain\Stock\Enums\StockMethod::Serialised->value)
                                             <flux:input wire:model="barcode" label="Barcode" disabled />
                                             <p class="text-xs text-(--text-muted) mt-1">Serialised items get individual barcodes at stock level.</p>
                                         @else

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Models;
 
+use App\Domain\Attachments\Concerns\HasAttachments;
 use App\Domain\Crew\Database\Factories\CrewAvailabilityFactory;
 use App\Domain\Crew\Enums\CrewAvailabilityStatus;
 use App\Domain\Crew\Enums\CrewAvailabilityType;
-use App\Models\Traits\HasAttachments;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

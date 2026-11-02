@@ -2,8 +2,8 @@
 
 namespace App\Services\Containers;
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Container;
-use App\Models\StockLevel;
 use Illuminate\Validation\ValidationException;
 
 /**

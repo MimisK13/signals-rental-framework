@@ -2,15 +2,15 @@
 
 namespace App\Actions\Containers;
 
-use App\Actions\Products\CreateStockLevel;
 use App\Data\Containers\ContainerData;
 use App\Data\Containers\CreateContainerData;
 use App\Data\Containers\CreateDurableContainerData;
-use App\Data\Products\CreateStockLevelData;
-use App\Enums\StockMethod;
+use App\Domain\Stock\Actions\CreateStockLevel;
+use App\Domain\Stock\Data\CreateStockLevelData;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Container;
 use App\Models\Product;
-use App\Models\StockLevel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

@@ -2,9 +2,9 @@
 
 namespace App\Services\Containers;
 
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\KitComponentBinding;
-use App\Enums\StockMethod;
 use App\Models\Product;
 use Illuminate\Validation\ValidationException;
 
