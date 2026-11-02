@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Models\Store;
-use App\Services\Documents\SystemDocumentTemplates;
-use Database\Seeders\DocumentTemplateSeeder;
 
 beforeEach(function () {
     $this->store = Store::factory()->create();
@@ -12,7 +12,11 @@ beforeEach(function () {
 
 function refreshReturnListStatementMigration(): object
 {
-    return require database_path('migrations/2026_07_03_200000_refresh_system_document_templates_return_list_statement.php');
+    $snapshot = require base_path('app/Domain/Documents/Database/Migrations/2026_07_03_200000_refresh_system_document_templates_return_list_statement.php');
+    $refresh = require base_path('app/Domain/Documents/Database/Migrations/2026_07_03_200001_apply_system_document_templates_return_list_statement.php');
+    $snapshot->up();
+
+    return $refresh;
 }
 
 it('seeds return_list and statement templates for existing stores via migration', function () {

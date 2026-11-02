@@ -1,11 +1,11 @@
 <?php
 
-use App\Contracts\Documents\PdfDriver;
-use App\Services\Documents\Drivers\BrowsershotDriver;
-use App\Services\Documents\Drivers\DompdfDriver;
-use App\Services\Documents\PageDimensions;
-use App\Services\Documents\PdfPageLayout;
-use App\ValueObjects\Documents\PdfDocumentParts;
+use App\Domain\Documents\Contracts\PdfDriver;
+use App\Domain\Documents\Services\Drivers\BrowsershotDriver;
+use App\Domain\Documents\Services\Drivers\DompdfDriver;
+use App\Domain\Documents\Services\PageDimensions;
+use App\Domain\Documents\Services\PdfPageLayout;
+use App\Domain\Documents\ValueObjects\PdfDocumentParts;
 use Illuminate\Support\Str;
 
 /**

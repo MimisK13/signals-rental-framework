@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\CustomFields\CreateCustomField;
-use App\Actions\CustomFields\DeleteCustomField;
-use App\Actions\CustomFields\UpdateCustomField;
-use App\Data\CustomFields\CreateCustomFieldData;
-use App\Data\CustomFields\UpdateCustomFieldData;
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Actions\CreateCustomField;
+use App\Domain\CustomFields\Actions\DeleteCustomField;
+use App\Domain\CustomFields\Actions\UpdateCustomField;
+use App\Domain\CustomFields\Data\CreateCustomFieldData;
+use App\Domain\CustomFields\Data\UpdateCustomFieldData;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Events\AuditableEvent;
-use App\Models\CustomField;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\SchemaRegistry;

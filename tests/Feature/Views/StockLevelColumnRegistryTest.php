@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\StockLevel;
-use App\Views\StockLevelColumnRegistry;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 
 it('returns stock_levels as entity type', function () {
     $registry = new StockLevelColumnRegistry;

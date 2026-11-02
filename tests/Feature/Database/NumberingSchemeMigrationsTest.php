@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\InvoiceType;
-use App\Models\CreditNote;
-use App\Models\DocumentSequence;
-use App\Models\Invoice;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Models\Member;
 use App\Models\Opportunity;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Services\SequenceAllocator;
 use App\Support\Database\StoreNumberUniqueConstraintPreflight;

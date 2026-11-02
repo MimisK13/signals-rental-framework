@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
+use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
+use App\Domain\Invoices\Presentation\Tables\InvoiceColumnRegistry;
+use App\Domain\Invoices\Presentation\Tables\InvoicePaymentColumnRegistry;
+use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
 use App\Models\User;
 use App\Views\ColumnRegistry;
-use App\Views\CreditNoteColumnRegistry;
-use App\Views\DocumentTemplateColumnRegistry;
-use App\Views\InvoiceColumnRegistry;
-use App\Views\InvoicePaymentColumnRegistry;
-use App\Views\PurchaseOrderColumnRegistry;
 use App\Views\VirtualStockIntakeColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

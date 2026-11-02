@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
-use App\Models\CustomFieldGroup;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldGroup;
 use App\Models\Member;
 use App\Views\MemberColumnRegistry;
 

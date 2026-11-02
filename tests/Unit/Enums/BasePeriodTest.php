@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\BasePeriod;
+use App\Domain\Rates\Enums\BasePeriod;
 
 it('has correct cases', function () {
     expect(BasePeriod::cases())->toHaveCount(5);

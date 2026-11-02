@@ -1,13 +1,13 @@
 <?php
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\CustomFields\Services\CustomFieldCopier;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Models\Member;
 use App\Models\Store;
-use App\Services\CustomFieldCopier;
 use App\ValueObjects\CopyResult;
 
 describe('CustomFieldCopier', function () {

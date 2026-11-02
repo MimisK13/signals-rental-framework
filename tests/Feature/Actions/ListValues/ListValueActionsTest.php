@@ -1,18 +1,19 @@
 <?php
 
-use App\Actions\ListValues\CreateListValue;
-use App\Actions\ListValues\DeleteListValue;
-use App\Actions\ListValues\UpdateListValue;
-use App\Data\ListValues\CreateListValueData;
-use App\Data\ListValues\UpdateListValueData;
+use App\Domain\Lists\Actions\CreateListValue;
+use App\Domain\Lists\Actions\DeleteListValue;
+use App\Domain\Lists\Actions\UpdateListValue;
+use App\Domain\Lists\Data\CreateListValueData;
+use App\Domain\Lists\Data\UpdateListValueData;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Events\AuditableEvent;
-use App\Models\ListName;
-use App\Models\ListValue;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
@@ -54,6 +55,50 @@ it('updates a list value', function () {
     Event::assertDispatched(AuditableEvent::class);
 });
 
+it('rejects a parent from another list', function (): void {
+    $listName = ListName::factory()->hierarchical()->create();
+    $otherList = ListName::factory()->hierarchical()->create();
+    $foreignParent = ListValue::factory()->forList($otherList)->create();
+
+    expect(fn () => (new CreateListValue)(CreateListValueData::from([
+        'list_name_id' => $listName->id,
+        'name' => 'Invalid child',
+        'parent_id' => $foreignParent->id,
+    ])))->toThrow(ValidationException::class);
+
+    $this->assertDatabaseMissing('list_values', [
+        'list_name_id' => $listName->id,
+        'name' => 'Invalid child',
+    ]);
+});
+
+it('rejects self-parenting and descendant cycles', function (): void {
+    $listName = ListName::factory()->hierarchical()->create();
+    $root = ListValue::factory()->forList($listName)->create();
+    $child = ListValue::factory()->forList($listName)->create(['parent_id' => $root->id]);
+    $grandchild = ListValue::factory()->forList($listName)->create(['parent_id' => $child->id]);
+
+    expect(fn () => (new UpdateListValue)($root, UpdateListValueData::from([
+        'parent_id' => $root->id,
+    ])))->toThrow(ValidationException::class);
+
+    expect(fn () => (new UpdateListValue)($root, UpdateListValueData::from([
+        'parent_id' => $grandchild->id,
+    ])))->toThrow(ValidationException::class);
+
+    expect($root->fresh()->parent_id)->toBeNull();
+});
+
+it('clears a parent when null is explicitly provided', function (): void {
+    $listName = ListName::factory()->hierarchical()->create();
+    $parent = ListValue::factory()->forList($listName)->create();
+    $child = ListValue::factory()->forList($listName)->create(['parent_id' => $parent->id]);
+
+    (new UpdateListValue)($child, UpdateListValueData::from(['parent_id' => null]));
+
+    expect($child->fresh()->parent_id)->toBeNull();
+});
+
 it('deletes a list value', function () {
     Event::fake([AuditableEvent::class]);
 
@@ -76,7 +121,7 @@ it('records an action_logs row when a list value is created', function () {
         'name' => 'Audited Value',
     ]));
 
-    assertActionLogged('list_value.created', ListValue::class, $result->id, $user->id);
+    assertActionLogged('list_value.created', (new ListValue)->getMorphClass(), $result->id, $user->id);
 });
 
 it('records an action_logs row when a list value is updated', function () {
@@ -86,7 +131,7 @@ it('records an action_logs row when a list value is updated', function () {
 
     (new UpdateListValue)($value, UpdateListValueData::from(['name' => 'Renamed Value']));
 
-    assertActionLogged('list_value.updated', ListValue::class, $value->id, $user->id);
+    assertActionLogged('list_value.updated', $value->getMorphClass(), $value->id, $user->id);
 });
 
 it('records an action_logs row when a list value is deleted', function () {
@@ -96,7 +141,7 @@ it('records an action_logs row when a list value is deleted', function () {
 
     (new DeleteListValue)($value);
 
-    assertActionLogged('list_value.deleted', ListValue::class, $value->id, $user->id);
+    assertActionLogged('list_value.deleted', $value->getMorphClass(), $value->id, $user->id);
 });
 
 it('rejects unauthorized list value creation', function () {

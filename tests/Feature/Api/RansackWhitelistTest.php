@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\ViewSeeder;
 
 /**
  * Regression coverage for the Ransack whitelist bypass (todo #77).

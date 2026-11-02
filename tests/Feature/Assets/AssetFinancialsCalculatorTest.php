@@ -1,16 +1,16 @@
 <?php
 
-use App\Enums\AssetRentalRevenueAttributionStatus;
+use App\Domain\Assets\Enums\AssetRentalRevenueAttributionStatus;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetExpense;
+use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Assets\Services\AssetFinancialsCalculator;
+use App\Domain\Assets\Services\AssetFinancialsResult;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
 use App\Enums\LineItemTransactionType;
-use App\Models\Asset;
-use App\Models\AssetExpense;
-use App\Models\AssetUsage;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Services\Assets\AssetFinancialsCalculator;
-use App\Services\Assets\AssetFinancialsResult;
 use Illuminate\Support\Carbon;
 
 /**

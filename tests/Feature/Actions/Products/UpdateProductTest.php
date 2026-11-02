@@ -2,10 +2,10 @@
 
 use App\Actions\Products\UpdateProduct;
 use App\Data\Products\UpdateProductData;
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Events\AuditableEvent;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

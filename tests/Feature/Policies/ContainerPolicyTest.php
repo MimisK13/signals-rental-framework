@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Container;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Policies\ContainerPolicy;

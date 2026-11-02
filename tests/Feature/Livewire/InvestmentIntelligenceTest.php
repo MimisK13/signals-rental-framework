@@ -1,10 +1,11 @@
 <?php
 
-use App\Enums\AssetOwnershipType;
-use App\Models\Asset;
+use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Presentation\Livewire\Investment;
 use App\Models\Product;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -23,25 +24,8 @@ it('renders the asset investment page with explainable sections', function (): v
 
     $this->get(route('assets.investment', $asset))->assertOk();
 
-    Volt::test('assets.investment', ['asset' => $asset])
+    Livewire::test(Investment::class, ['asset' => $asset])
         ->assertSee('Investment Position')
         ->assertSee('Operating Evidence')
         ->assertSee('Signals &amp; Guidance', false);
-});
-
-it('renders the product investment page only for serialized products', function (): void {
-    $product = Product::factory()->serialised()->create(['name' => 'Midas M32']);
-
-    $this->get(route('products.investment', $product))->assertOk();
-
-    Volt::test('products.investment', ['product' => $product])
-        ->assertSee('Financial Position')
-        ->assertSee('Fleet Capacity')
-        ->assertSee('Signals &amp; Guidance', false);
-});
-
-it('does not expose product investment for bulk products', function (): void {
-    $product = Product::factory()->bulk()->create();
-
-    $this->get(route('products.investment', $product))->assertNotFound();
 });

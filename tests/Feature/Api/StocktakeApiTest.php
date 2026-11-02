@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Domain\Stocktakes\Models\Stocktake;
-use App\Models\Asset;
 use App\Models\Product;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

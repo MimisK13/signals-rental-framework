@@ -1,12 +1,14 @@
 <?php
 
-use App\Enums\ProjectStatus;
+use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Presentation\Livewire\Index;
+use App\Domain\Projects\Presentation\Livewire\Show;
 use App\Models\Member;
-use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['app.key' => 'base64:'.base64_encode(str_repeat('a', 32))]);
@@ -16,7 +18,7 @@ beforeEach(function (): void {
 it('renders the project list and dense create panel contract', function (): void {
     Project::factory()->create(['name' => 'Summer Festival 2027']);
 
-    Volt::test('projects.index')
+    Livewire::test(Index::class)
         ->assertSee('Summer Festival 2027')
         ->assertSee('New Project')
         ->assertSeeHtml('dense-side-panel')
@@ -28,7 +30,7 @@ it('renders the project list and dense create panel contract', function (): void
 });
 
 it('creates a project from the in-context side panel', function (): void {
-    $component = Volt::test('projects.index')
+    $component = Livewire::test(Index::class)
         ->call('openCreateProject')
         ->set('projectName', 'Created from panel')
         ->call('saveProject');
@@ -42,7 +44,7 @@ it('creates a project from the in-context side panel', function (): void {
 it('edits a project from the in-context side panel', function (): void {
     $project = Project::factory()->create(['name' => 'Before panel edit']);
 
-    $component = Volt::test('projects.index')
+    $component = Livewire::test(Index::class)
         ->call('openEditProject', $project->id)
         ->assertSet('projectName', 'Before panel edit')
         ->set('projectName', 'After panel edit')
@@ -56,7 +58,7 @@ it('edits a project from the in-context side panel', function (): void {
 });
 
 it('keeps the panel usable after required-name validation fails', function (): void {
-    $component = Volt::test('projects.index')
+    $component = Livewire::test(Index::class)
         ->call('openCreateProject')
         ->set('projectName', '')
         ->call('saveProject');
@@ -70,7 +72,7 @@ it('keeps the panel usable after required-name validation fails', function (): v
 it('rejects invalid member types through the panel and preserves create state', function (): void {
     $venue = Member::factory()->venue()->create();
 
-    $component = Volt::test('projects.index')
+    $component = Livewire::test(Index::class)
         ->call('openCreateProject')
         ->set('projectName', 'Invalid member project')
         ->set('projectCustomerId', $venue->id)
@@ -86,7 +88,7 @@ it('rejects invalid member types through the panel and preserves create state', 
 it('rejects an invalid lifecycle transition from the edit panel', function (): void {
     $project = Project::factory()->create(['status' => ProjectStatus::Draft]);
 
-    Volt::test('projects.index')
+    Livewire::test(Index::class)
         ->call('openEditProject', $project->id)
         ->set('projectStatus', ProjectStatus::Completed->value)
         ->call('saveProject')
@@ -101,13 +103,13 @@ it('denies an unauthorised user access to the project list', function (): void {
     expect(Gate::forUser($user)->allows('viewAny', Project::class))->toBeFalse();
 });
 
-it('redirects the legacy create route to the create side panel', function (): void {
+it('opens the create side panel through the create route', function (): void {
     $this->withoutMiddleware()
         ->get(route('projects.create'))
         ->assertRedirect(route('projects.index', ['panel' => 'create']));
 });
 
-it('redirects the legacy edit route to the matching edit side panel', function (): void {
+it('opens the matching edit side panel through the edit route', function (): void {
     $project = Project::factory()->create();
 
     $this->withoutMiddleware()
@@ -119,7 +121,7 @@ it('does not expose edit actions for archived projects', function (): void {
     $project = Project::factory()->create();
     $project->delete();
 
-    Volt::test('projects.index')
+    Livewire::test(Index::class)
         ->call('setArchiveFilter', 'all')
         ->assertDontSeeHtml('openEditProject('.$project->id.')');
 });
@@ -129,7 +131,7 @@ it('applies active, archived, and all project scopes through the data table', fu
     $archivedProject = Project::factory()->create(['name' => 'Visible archived project']);
     $archivedProject->delete();
 
-    $component = Volt::test('projects.index')
+    $component = Livewire::test(Index::class)
         ->assertSee('Visible active project')
         ->assertDontSee('Visible archived project')
         ->call('setArchiveFilter', 'archived')
@@ -146,7 +148,7 @@ it('applies active, archived, and all project scopes through the data table', fu
 it('does not load project panel options while switching archive filters', function (): void {
     DB::enableQueryLog();
 
-    Volt::test('projects.index')
+    Livewire::test(Index::class)
         ->call('setArchiveFilter', 'archived');
 
     $memberQueries = collect(DB::getQueryLog())
@@ -159,7 +161,7 @@ it('does not load project panel options while switching archive filters', functi
 it('loads project panel options only once when the create panel opens', function (): void {
     DB::enableQueryLog();
 
-    Volt::test('projects.index')
+    Livewire::test(Index::class)
         ->call('openCreateProject');
 
     $memberQueries = collect(DB::getQueryLog())
@@ -173,7 +175,7 @@ it('loads each project show dataset only once per render', function (): void {
     $project = Project::factory()->create();
     DB::enableQueryLog();
 
-    Volt::test('projects.show', ['project' => $project]);
+    Livewire::test(Show::class, ['project' => $project]);
 
     $queries = collect(DB::getQueryLog())->pluck('query');
 

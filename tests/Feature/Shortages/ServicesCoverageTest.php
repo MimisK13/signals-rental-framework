@@ -2,18 +2,18 @@
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\ShortageResolverContract;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\ShortageDispatchPolicy;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
-use App\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\ShortageResolution;
 use App\Models\ShortageWaitlistMonitor;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Shortages\DispatchShortageGate;

@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\DocumentSequence;
-use App\Models\Invoice;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\EntityNumberSchemeCatalog;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Documents\EntityNumberSchemeCatalog;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,13 +1,14 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Presentation\Livewire\ProductRateForm;
 use App\Models\PriceCategory;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -28,7 +29,7 @@ it('shows the price category selector on the assign rate form', function () {
 });
 
 it('creates a rate scoped to a price category from the editor', function () {
-    Volt::test('products.rate-form', ['product' => $this->product])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product])
         ->set('rateDefinitionId', $this->definition->id)
         ->set('transactionType', 'rental')
         ->set('price', '88.00')
@@ -55,7 +56,7 @@ it('populates the price category when editing an existing rate', function () {
         'currency' => 'GBP',
     ]);
 
-    Volt::test('products.rate-form', ['product' => $this->product, 'rate' => $rate])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product, 'rate' => $rate])
         ->assertSet('priceCategoryId', $this->trade->id);
 });
 

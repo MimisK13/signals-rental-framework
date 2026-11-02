@@ -1,9 +1,9 @@
 <?php
 
 use App\Contracts\HasSchema;
-use App\Enums\BasePeriod;
-use App\Enums\CalculationStrategyType;
-use App\Models\RateDefinition;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\CalculationStrategyType;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Services\SchemaBuilder;
 
 it('persists and casts its columns', function () {

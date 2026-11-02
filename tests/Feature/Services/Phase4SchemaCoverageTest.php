@@ -1,13 +1,13 @@
 <?php
 
 use App\Contracts\HasSchema;
-use App\Models\CreditNote;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\InvoicePayment;
-use App\Models\ProductSupplierCost;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\VirtualStockIntake;
 use App\Services\SchemaRegistry;
 use Illuminate\Database\Eloquent\Model;

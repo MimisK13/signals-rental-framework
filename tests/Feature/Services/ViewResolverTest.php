@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\CustomField;
-use App\Models\CustomView;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Models\UserViewPreference;
+use App\Domain\CustomViews\Services\ViewResolver;
 use App\Models\Member;
 use App\Models\User;
-use App\Models\UserViewPreference;
-use App\Services\ViewResolver;
-use Database\Seeders\ViewSeeder;
 
 beforeEach(function () {
     $this->seed(ViewSeeder::class);
@@ -15,7 +15,11 @@ beforeEach(function () {
 });
 
 it('resolves explicit view by ID', function () {
-    $view = CustomView::factory()->create(['entity_type' => 'members']);
+    $view = CustomView::factory()->create([
+        'entity_type' => 'members',
+        'visibility' => 'personal',
+        'user_id' => $this->user->id,
+    ]);
 
     $resolved = $this->resolver->resolve('members', $view->id, $this->user);
 
@@ -28,8 +32,17 @@ it('ignores explicit view ID for wrong entity type', function () {
 
     $resolved = $this->resolver->resolve('members', $view->id, $this->user);
 
-    // Should fall through to system default since the view is for a different entity
-    expect($resolved->name)->toBe('All Members');
+    expect($resolved)->toBeNull();
+});
+
+it('rejects an explicit personal view owned by another user', function () {
+    $view = CustomView::factory()->create([
+        'entity_type' => 'members',
+        'visibility' => 'personal',
+        'user_id' => User::factory()->create()->id,
+    ]);
+
+    expect($this->resolver->resolve('members', $view->id, $this->user))->toBeNull();
 });
 
 it('resolves user preference when no explicit ID', function () {
@@ -74,6 +87,23 @@ it('falls back to system default when preference view is deleted', function () {
     $resolved = $this->resolver->resolve('members', null, $this->user);
 
     expect($resolved->name)->toBe('All Members');
+});
+
+it('ignores a preference that points to an invisible view', function () {
+    $view = CustomView::factory()->create([
+        'entity_type' => 'members',
+        'visibility' => 'personal',
+        'user_id' => User::factory()->create()->id,
+    ]);
+    UserViewPreference::factory()->create([
+        'user_id' => $this->user->id,
+        'entity_type' => 'members',
+        'custom_view_id' => $view->id,
+    ]);
+
+    $resolved = $this->resolver->resolve('members', null, $this->user);
+
+    expect($resolved?->name)->toBe('All Members');
 });
 
 it('returns null for unknown entity type', function () {

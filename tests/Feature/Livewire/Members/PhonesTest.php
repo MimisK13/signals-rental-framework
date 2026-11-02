@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Livewire\Members\PhoneForm;
+use App\Livewire\Members\Phones;
 use App\Models\Member;
 use App\Models\Phone;
 use App\Models\User;
-use Database\Seeders\ListOfValuesSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -32,13 +33,13 @@ it('lists phones for a member', function () {
         'number' => '0161 496 0000',
     ]);
 
-    Volt::test('members.phones', ['member' => $this->member])
+    Livewire::test(Phones::class, ['member' => $this->member])
         ->assertSee('020 7946 0958')
         ->assertSee('0161 496 0000');
 });
 
 it('shows empty state when no phones exist', function () {
-    Volt::test('members.phones', ['member' => $this->member])
+    Livewire::test(Phones::class, ['member' => $this->member])
         ->assertSee('No phone numbers found.');
 });
 
@@ -48,7 +49,7 @@ it('shows primary badge on primary phone', function () {
         'phoneable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.phones', ['member' => $this->member])
+    Livewire::test(Phones::class, ['member' => $this->member])
         ->assertSee('Primary');
 });
 
@@ -58,7 +59,7 @@ it('can delete a phone', function () {
         'phoneable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.phones', ['member' => $this->member])
+    Livewire::test(Phones::class, ['member' => $this->member])
         ->call('deletePhone', $phone->id);
 
     expect(Phone::find($phone->id))->toBeNull();
@@ -75,7 +76,7 @@ it('populates the type dropdown with the seeded Phone Type list values', functio
     // name is 'Phone Type', so the Type select rendered blank.
     $this->seed(ListOfValuesSeeder::class);
 
-    Volt::test('members.phone-form', ['member' => $this->member])
+    Livewire::test(PhoneForm::class, ['member' => $this->member])
         ->assertViewHas('phoneTypes', fn ($types) => $types->isNotEmpty())
         ->assertSee('Work')
         ->assertSee('Mobile')
@@ -84,7 +85,7 @@ it('populates the type dropdown with the seeded Phone Type list values', functio
 });
 
 it('can create a phone', function () {
-    Volt::test('members.phone-form', ['member' => $this->member])
+    Livewire::test(PhoneForm::class, ['member' => $this->member])
         ->set('number', '020 7946 1234')
         ->set('isPrimary', false)
         ->call('save')
@@ -100,7 +101,7 @@ it('can edit a phone', function () {
         'number' => '020 7946 0000',
     ]);
 
-    Volt::test('members.phone-form', ['member' => $this->member, 'phone' => $phone])
+    Livewire::test(PhoneForm::class, ['member' => $this->member, 'phone' => $phone])
         ->assertSet('number', '020 7946 0000')
         ->set('number', '020 7946 9999')
         ->call('save')
@@ -110,7 +111,7 @@ it('can edit a phone', function () {
 });
 
 it('validates required phone number', function () {
-    Volt::test('members.phone-form', ['member' => $this->member])
+    Livewire::test(PhoneForm::class, ['member' => $this->member])
         ->set('number', '')
         ->call('save')
         ->assertHasErrors(['number']);
@@ -122,7 +123,7 @@ it('can set primary phone', function () {
         'phoneable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.phone-form', ['member' => $this->member])
+    Livewire::test(PhoneForm::class, ['member' => $this->member])
         ->set('number', '020 7946 5555')
         ->set('isPrimary', true)
         ->call('save')
@@ -139,9 +140,9 @@ it('cannot delete another member\'s phone', function () {
         'phoneable_id' => $otherMember->id,
     ]);
 
-    expect(fn () => Volt::test('members.phones', ['member' => $this->member])
+    Livewire::test(Phones::class, ['member' => $this->member])
         ->call('deletePhone', $otherPhone->id)
-    )->toThrow(ModelNotFoundException::class);
+        ->assertNotFound();
 
     expect(Phone::find($otherPhone->id))->not->toBeNull();
 });

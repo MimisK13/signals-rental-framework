@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\PurchaseOrders\CreatePurchaseOrder;
-use App\Actions\PurchaseOrders\ReceivePurchaseOrder;
-use App\Actions\PurchaseOrders\SendPurchaseOrder;
 use App\Concerns\LocksModelsForMutation;
-use App\Data\PurchaseOrders\CreatePurchaseOrderData;
-use App\Data\PurchaseOrders\ReceivePurchaseOrderData;
+use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
+use App\Domain\PurchaseOrders\Actions\ReceivePurchaseOrder;
+use App\Domain\PurchaseOrders\Actions\SendPurchaseOrder;
+use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
+use App\Domain\PurchaseOrders\Data\ReceivePurchaseOrderData;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Member;
 use App\Models\OrganisationTaxClass;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
-use App\Models\PurchaseOrder;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\TaxRate;
 use App\Models\TaxRule;

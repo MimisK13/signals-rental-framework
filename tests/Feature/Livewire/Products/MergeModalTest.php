@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Events\AuditableEvent;
 use App\Livewire\Products\MergeModal;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

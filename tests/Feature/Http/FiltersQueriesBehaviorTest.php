@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\CustomViews\Models\CustomView;
 use App\Enums\MembershipType;
 use App\Http\Traits\FiltersQueries;
-use App\Models\CustomView;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;

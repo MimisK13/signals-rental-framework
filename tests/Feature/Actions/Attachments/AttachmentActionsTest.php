@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Attachments\CreateAttachment;
-use App\Actions\Attachments\DeleteAttachment;
-use App\Data\Attachments\CreateAttachmentData;
-use App\Models\Attachment;
+use App\Domain\Attachments\Actions\CreateAttachment;
+use App\Domain\Attachments\Actions\DeleteAttachment;
+use App\Domain\Attachments\Data\CreateAttachmentData;
+use App\Domain\Attachments\Models\Attachment;
 use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Products\CreateStockTransaction;
-use App\Actions\Products\DeleteStockTransaction;
-use App\Data\Products\CreateStockTransactionData;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Stock\Actions\CreateStockTransaction;
+use App\Domain\Stock\Actions\DeleteStockTransaction;
+use App\Domain\Stock\Data\CreateStockTransactionData;
+use App\Domain\Stock\Enums\TransactionType;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Enums\ContainerBulkMembershipEventType;
-use App\Enums\TransactionType;
-use App\Models\Asset;
 use App\Models\Container;
 use App\Models\ContainerBulkMembership;
 use App\Models\ContainerBulkMembershipEvent;
 use App\Models\Product;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\CarbonInterface;

@@ -1,20 +1,20 @@
 <?php
 
-use App\Actions\Invoices\GenerateDepositInvoice;
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\VoidInvoice;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Invoices\GenerateDepositInvoiceData;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Invoices\Actions\GenerateDepositInvoice;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\VoidInvoice;
+use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
 use App\Enums\LineItemTransactionType;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;

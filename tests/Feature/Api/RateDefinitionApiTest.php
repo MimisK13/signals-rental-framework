@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\BasePeriod;
-use App\Models\RateDefinition;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

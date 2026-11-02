@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityEventType;
 use App\Enums\DemandPhase;
 use App\Enums\WaitlistMonitorStatus;
@@ -12,7 +13,6 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\ShortageWaitlistMonitor;
-use App\Models\StockLevel;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 use Thunk\Verbs\Lifecycle\Broker;

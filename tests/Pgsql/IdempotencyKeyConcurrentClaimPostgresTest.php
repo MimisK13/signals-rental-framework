@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\InvoiceType;
+use App\Domain\Invoices\Enums\InvoiceType;
 use App\Models\ApiIdempotencyKey;
 use App\Models\User;
 use App\Services\Api\IdempotencyKeyService;

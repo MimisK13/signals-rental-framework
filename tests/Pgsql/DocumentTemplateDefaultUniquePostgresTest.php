@@ -1,7 +1,7 @@
 <?php
 
-use App\Actions\Documents\SetDefaultDocumentTemplate;
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Actions\SetDefaultDocumentTemplate;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

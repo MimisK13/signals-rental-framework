@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Documents\CreateDocumentTemplate;
-use App\Actions\Documents\DeleteDocumentTemplate;
-use App\Actions\Documents\DuplicateDocumentTemplate;
-use App\Actions\Documents\SetDefaultDocumentTemplate;
-use App\Actions\Documents\UpdateDocumentTemplate;
-use App\Data\Documents\CreateDocumentTemplateData;
-use App\Data\Documents\UpdateDocumentTemplateData;
+use App\Domain\Documents\Actions\CreateDocumentTemplate;
+use App\Domain\Documents\Actions\DeleteDocumentTemplate;
+use App\Domain\Documents\Actions\DuplicateDocumentTemplate;
+use App\Domain\Documents\Actions\SetDefaultDocumentTemplate;
+use App\Domain\Documents\Actions\UpdateDocumentTemplate;
+use App\Domain\Documents\Data\CreateDocumentTemplateData;
+use App\Domain\Documents\Data\UpdateDocumentTemplateData;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\DocumentTemplate;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;

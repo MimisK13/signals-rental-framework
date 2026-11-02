@@ -1,9 +1,10 @@
 <?php
 
 use App\Domain\Activities\Models\Activity;
-use App\Enums\AllowedStockType;
+use App\Domain\Stock\Enums\AllowedStockType;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ProductType;
-use App\Enums\StockMethod;
 use App\Models\Accessory;
 use App\Models\CostGroup;
 use App\Models\Country;
@@ -11,7 +12,6 @@ use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\ProductTaxClass;
 use App\Models\RevenueGroup;
-use App\Models\StockLevel;
 use App\Services\SchemaRegistry;
 
 it('has correct fillable attributes', function () {

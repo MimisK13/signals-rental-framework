@@ -1,14 +1,14 @@
 <?php
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Models\Email;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberRelationship;
 use App\Models\Opportunity;
 use App\Models\Phone;
 use App\Models\Product;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

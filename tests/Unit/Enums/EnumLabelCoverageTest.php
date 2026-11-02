@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\AssetCondition;
+use App\Domain\Assets\Enums\AssetCondition;
 use App\Enums\ChargePeriod;
 use App\Enums\ContainerStatus;
 use App\Enums\ShortageResolutionType;

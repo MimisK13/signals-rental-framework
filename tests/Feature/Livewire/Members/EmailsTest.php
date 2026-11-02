@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Livewire\Members\EmailForm;
+use App\Livewire\Members\Emails;
 use App\Models\Email;
 use App\Models\Member;
 use App\Models\User;
-use Database\Seeders\ListOfValuesSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -32,13 +33,13 @@ it('lists emails for a member', function () {
         'address' => 'jane@example.com',
     ]);
 
-    Volt::test('members.emails', ['member' => $this->member])
+    Livewire::test(Emails::class, ['member' => $this->member])
         ->assertSee('john@example.com')
         ->assertSee('jane@example.com');
 });
 
 it('shows empty state when no emails exist', function () {
-    Volt::test('members.emails', ['member' => $this->member])
+    Livewire::test(Emails::class, ['member' => $this->member])
         ->assertSee('No emails found.');
 });
 
@@ -49,7 +50,7 @@ it('shows primary badge on primary email', function () {
         'address' => 'primary@example.com',
     ]);
 
-    Volt::test('members.emails', ['member' => $this->member])
+    Livewire::test(Emails::class, ['member' => $this->member])
         ->assertSee('Primary');
 });
 
@@ -59,7 +60,7 @@ it('can delete an email', function () {
         'emailable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.emails', ['member' => $this->member])
+    Livewire::test(Emails::class, ['member' => $this->member])
         ->call('deleteEmail', $email->id);
 
     expect(Email::find($email->id))->toBeNull();
@@ -76,7 +77,7 @@ it('populates the type dropdown with the seeded Email Type list values', functio
     // seeded list name is 'Email Type', so the Type select rendered blank.
     $this->seed(ListOfValuesSeeder::class);
 
-    Volt::test('members.email-form', ['member' => $this->member])
+    Livewire::test(EmailForm::class, ['member' => $this->member])
         ->assertViewHas('emailTypes', fn ($types) => $types->isNotEmpty())
         ->assertSee('Work')
         ->assertSee('Personal')
@@ -85,7 +86,7 @@ it('populates the type dropdown with the seeded Email Type list values', functio
 });
 
 it('can create an email', function () {
-    Volt::test('members.email-form', ['member' => $this->member])
+    Livewire::test(EmailForm::class, ['member' => $this->member])
         ->set('address', 'new@example.com')
         ->set('isPrimary', false)
         ->call('save')
@@ -101,7 +102,7 @@ it('can edit an email', function () {
         'address' => 'old@example.com',
     ]);
 
-    Volt::test('members.email-form', ['member' => $this->member, 'email' => $email])
+    Livewire::test(EmailForm::class, ['member' => $this->member, 'email' => $email])
         ->assertSet('address', 'old@example.com')
         ->set('address', 'updated@example.com')
         ->call('save')
@@ -111,14 +112,14 @@ it('can edit an email', function () {
 });
 
 it('validates required email address', function () {
-    Volt::test('members.email-form', ['member' => $this->member])
+    Livewire::test(EmailForm::class, ['member' => $this->member])
         ->set('address', '')
         ->call('save')
         ->assertHasErrors(['address']);
 });
 
 it('validates email format', function () {
-    Volt::test('members.email-form', ['member' => $this->member])
+    Livewire::test(EmailForm::class, ['member' => $this->member])
         ->set('address', 'not-an-email')
         ->call('save')
         ->assertHasErrors(['address']);
@@ -130,7 +131,7 @@ it('can set primary email', function () {
         'emailable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.email-form', ['member' => $this->member])
+    Livewire::test(EmailForm::class, ['member' => $this->member])
         ->set('address', 'newprimary@example.com')
         ->set('isPrimary', true)
         ->call('save')
@@ -147,9 +148,9 @@ it('cannot delete another member\'s email', function () {
         'emailable_id' => $otherMember->id,
     ]);
 
-    expect(fn () => Volt::test('members.emails', ['member' => $this->member])
+    Livewire::test(Emails::class, ['member' => $this->member])
         ->call('deleteEmail', $otherEmail->id)
-    )->toThrow(ModelNotFoundException::class);
+        ->assertNotFound();
 
     expect(Email::find($otherEmail->id))->not->toBeNull();
 });

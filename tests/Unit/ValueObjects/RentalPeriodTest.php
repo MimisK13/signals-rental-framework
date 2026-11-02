@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\BasePeriod;
+use App\Domain\Rates\Enums\BasePeriod;
 use App\Enums\DayType;
 use App\ValueObjects\RentalPeriod;
 use Illuminate\Support\Carbon;

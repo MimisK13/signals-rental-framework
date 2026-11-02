@@ -1,6 +1,7 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
 use App\Models\AvailabilityDailySummary;
@@ -9,7 +10,6 @@ use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;

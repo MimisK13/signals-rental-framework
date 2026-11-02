@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 
 globalThis.window = {
-    __lfExperimentalQuotationEditorConfig: {},
-    __lfExperimentalQuotationEditorSeed: {},
+    __lfQuotationEditorConfig: {},
+    __lfQuotationEditorSeed: {},
 };
 globalThis.Livewire = { dispatch() {} };
 
-const { default: createEditor } = await import('../../resources/js/experimental/quotation-editor/editor.js');
+const { default: createEditor } = await import('../../resources/js/quotations/editor.js');
 
-const editor = createEditor({ oppId: 1 });
+const editor = createEditor({ quotationId: 1 });
 editor.rows = [{ id: 10, name: 'Camera', path: '0001' }];
 editor.baseRevision = '1';
 
@@ -59,7 +59,7 @@ assert.deepEqual(editor.rows, [{ id: 10, name: 'Camera', path: '0001' }]);
 assert.equal(editor.baseRevision, '3');
 assert.deepEqual(uploadedRowCounts, [0, 0]);
 
-const batchEditor = createEditor({ oppId: 2 });
+const batchEditor = createEditor({ quotationId: 2 });
 batchEditor.rows = [{ id: 10, quantity: '3' }];
 
 let fieldBatchCalls = 0;

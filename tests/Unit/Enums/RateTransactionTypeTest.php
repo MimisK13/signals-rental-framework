@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Enums\RateTransactionType;
 
 it('has correct cases', function () {
     expect(RateTransactionType::cases())->toHaveCount(3);

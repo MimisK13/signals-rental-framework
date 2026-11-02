@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesPostgres;

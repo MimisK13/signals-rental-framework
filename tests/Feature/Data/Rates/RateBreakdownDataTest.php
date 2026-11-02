@@ -1,11 +1,11 @@
 <?php
 
-use App\Data\Rates\CalculateRateData;
-use App\Data\Rates\RateBreakdownData;
-use App\Enums\BasePeriod;
-use App\Enums\RateTransactionType;
-use App\Services\RateEngine\RateCalculator;
-use App\ValueObjects\CalculationContext;
+use App\Domain\Rates\Data\CalculateRateData;
+use App\Domain\Rates\Data\RateBreakdownData;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Services\RateEngine\RateCalculator;
+use App\Domain\Rates\ValueObjects\CalculationContext;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 

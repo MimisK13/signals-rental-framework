@@ -1,12 +1,13 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Presentation\Livewire\ProductRates;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -42,7 +43,7 @@ it('renders the unit price as a left-aligned outline badge', function () {
         'price' => 5000,
     ]);
 
-    Volt::test('products.rates', ['product' => $this->product])
+    Livewire::test(ProductRates::class, ['product' => $this->product])
         ->assertSeeHtml('s-badge s-badge-outline');
 });
 
@@ -52,7 +53,7 @@ it('deletes a rate assignment', function () {
         'rate_definition_id' => $this->definition->id,
     ]);
 
-    Volt::test('products.rates', ['product' => $this->product])
+    Livewire::test(ProductRates::class, ['product' => $this->product])
         ->call('deleteRate', $rate->id)
         ->assertDispatched('rate-deleted');
 

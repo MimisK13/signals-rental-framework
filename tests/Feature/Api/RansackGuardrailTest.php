@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\ViewSeeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\Finder\Finder;

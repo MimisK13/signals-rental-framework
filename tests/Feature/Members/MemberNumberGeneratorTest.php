@@ -2,12 +2,12 @@
 
 use App\Actions\Members\CreateMember;
 use App\Data\Members\CreateMemberData;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Enums\MembershipType;
-use App\Models\DocumentSequence;
 use App\Models\Member;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Documents\DocumentSequenceDefaults;
 use App\Services\Members\MemberNumberGenerator;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

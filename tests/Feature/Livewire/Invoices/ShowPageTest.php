@@ -1,23 +1,24 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueCreditNote;
-use App\Actions\Invoices\IssueInvoice;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Data\Invoices\IssueCreditNoteData;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueCreditNote;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Data\IssueCreditNoteData;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Presentation\Livewire\Show;
 use App\Enums\PricingRoundingDirection;
-use App\Jobs\GenerateBillingIssueDocumentJob;
 use App\Jobs\SendBillingCustomerCommunicationJob;
-use App\Models\CreditNote;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\User;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -49,7 +50,7 @@ it('issues an invoice from the show page', function () {
     ]));
     $invoice = Invoice::query()->findOrFail($draft->id);
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('issue')
         ->assertHasNoErrors();
 
@@ -73,7 +74,7 @@ it('surfaces a notify toast when an owner attempts to issue a non-draft invoice'
 
     expect($invoice->status)->toBe('issued');
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('issue')
         ->assertHasNoErrors()
         ->assertDispatched('notify');
@@ -91,7 +92,7 @@ it('does not show issue on a paid invoice for owners', function () {
     (new IssueInvoice)($invoice);
     $invoice->refresh();
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('openPaymentModal')
         ->set('paymentAmount', $invoice->formatMoneyCost('amount_outstanding'))
         ->call('recordPayment')
@@ -100,7 +101,7 @@ it('does not show issue on a paid invoice for owners', function () {
     $paid = $invoice->fresh();
     expect($paid->status)->toBe('paid');
 
-    Volt::test('invoices.show', ['invoice' => $paid])
+    Livewire::test(Show::class, ['invoice' => $paid])
         ->assertDontSee('wire:click="issue"');
 });
 
@@ -114,7 +115,7 @@ it('records a payment via the modal', function () {
     (new IssueInvoice)($invoice);
     $invoice->refresh();
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('openPaymentModal')
         ->set('paymentAmount', $invoice->formatMoneyCost('amount_outstanding'))
         ->call('recordPayment')
@@ -141,7 +142,7 @@ it('hides margin column without costs.view permission', function () {
     ]);
     $this->actingAs($user);
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->assertDontSee('Margin');
 });
 
@@ -163,7 +164,7 @@ it('shows margin column with costs.view permission', function () {
     ]);
     $this->actingAs($user);
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->assertSee('Margin');
 });
 
@@ -179,7 +180,7 @@ it('queues PDF generation when download is clicked without an existing document'
     $invoice = Invoice::query()->findOrFail($draft->id);
     (new IssueInvoice)($invoice);
 
-    Volt::test('invoices.show', ['invoice' => $invoice->refresh()])
+    Livewire::test(Show::class, ['invoice' => $invoice->refresh()])
         ->call('downloadPdf')
         ->assertDispatched('notify');
 
@@ -206,7 +207,7 @@ it('issues a full credit note from the modal', function () {
     $invoice = issuedInvoiceForShowPage();
     $total = $invoice->total;
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('openCreditNoteModal')
         ->assertSet('fullCreditNote', true)
         ->set('creditNoteNotes', 'Full credit via UI')
@@ -227,7 +228,7 @@ it('issues a partial credit note from the modal with one line quantity', functio
     $halfQty = bcdiv((string) $item->quantity, '2', 2);
     $creditedBefore = $invoice->credited_total;
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('openCreditNoteModal')
         ->set('fullCreditNote', false)
         ->set("creditNoteLines.{$item->id}.quantity", $halfQty)
@@ -250,7 +251,7 @@ it('surfaces validation when partial credit exceeds remaining quantity', functio
     $item = $invoice->items->first();
     $overQty = bcadd((string) $item->quantity, '1', 2);
 
-    Volt::test('invoices.show', ['invoice' => $invoice])
+    Livewire::test(Show::class, ['invoice' => $invoice])
         ->call('openCreditNoteModal')
         ->set('fullCreditNote', false)
         ->set("creditNoteLines.{$item->id}.quantity", $overQty)
@@ -276,7 +277,7 @@ it('surfaces cumulative over-credit from the action as a toast', function () {
 
     $invoice->refresh();
 
-    Volt::test('invoices.show', ['invoice' => $invoice->load(['items', 'creditNotes.items'])])
+    Livewire::test(Show::class, ['invoice' => $invoice->load(['items', 'creditNotes.items'])])
         ->call('openCreditNoteModal')
         ->call('issueCreditNote')
         ->assertHasNoErrors()

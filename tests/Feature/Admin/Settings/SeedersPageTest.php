@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Invoice;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Models\Member;
-use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

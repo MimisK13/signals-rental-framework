@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 
 it('has correct cases', function () {
     expect(StockMethod::cases())->toHaveCount(2);

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\OpportunityStatus;
 use App\Livewire\Dashboard\KpiCards;
-use App\Models\CreditNote;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;

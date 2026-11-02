@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CustomView;
+use App\Domain\CustomViews\Models\CustomView;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -21,11 +21,34 @@ describe('CustomViewPolicy', function () {
     });
 
     describe('view', function () {
-        it('allows any authenticated user', function () {
+        it('allows system views', function () {
             $user = User::factory()->create();
-            $view = CustomView::factory()->create();
+            $view = CustomView::factory()->system()->create();
 
             expect($user->can('view', $view))->toBeTrue();
+        });
+
+        it('allows only the owner of a personal view', function () {
+            $owner = User::factory()->create();
+            $other = User::factory()->create();
+            $view = CustomView::factory()->create([
+                'visibility' => 'personal',
+                'user_id' => $owner->id,
+            ]);
+
+            expect($owner->can('view', $view))->toBeTrue();
+            expect($other->can('view', $view))->toBeFalse();
+        });
+
+        it('allows shared views only through an assigned role', function () {
+            $allowed = User::factory()->create();
+            $allowed->assignRole('Admin');
+            $denied = User::factory()->create();
+            $view = CustomView::factory()->shared()->create();
+            $view->roles()->attach((int) $allowed->roles()->firstOrFail()->getKey());
+
+            expect($allowed->can('view', $view))->toBeTrue();
+            expect($denied->can('view', $view))->toBeFalse();
         });
     });
 

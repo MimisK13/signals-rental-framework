@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Models\PriceCategory;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Inspections\CancelAssetInspection;
-use App\Actions\Inspections\CompleteAssetInspection;
-use App\Actions\Inspections\InitializeAssetInspection;
-use App\Actions\Inspections\StartAssetInspection;
-use App\Enums\InspectionComplianceState;
-use App\Enums\InspectionResult;
-use App\Enums\InspectionStatus;
-use App\Enums\StockMethod;
-use App\Models\Asset;
-use App\Models\AssetInspection;
-use App\Models\Attachment;
+use App\Domain\Assets\Enums\InspectionComplianceState;
+use App\Domain\Assets\Enums\InspectionResult;
+use App\Domain\Assets\Enums\InspectionStatus;
+use App\Domain\Assets\InspectionActions\CancelAssetInspection;
+use App\Domain\Assets\InspectionActions\CompleteAssetInspection;
+use App\Domain\Assets\InspectionActions\InitializeAssetInspection;
+use App\Domain\Assets\InspectionActions\StartAssetInspection;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetInspection;
+use App\Domain\Assets\Models\InspectionPolicy;
+use App\Domain\Assets\Services\AssetInspectionComplianceReader;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Demand;
-use App\Models\InspectionPolicy;
 use App\Models\Product;
 use App\Models\User;
-use App\Services\Assets\AssetInspectionComplianceReader;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 

@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\SupplierBills\CreateSupplierBill;
-use App\Actions\SupplierBills\IssueSupplierBill;
-use App\Actions\SupplierBills\VoidSupplierBill;
-use App\Enums\SupplierBillStatus;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\SupplierBills\Actions\CreateSupplierBill;
+use App\Domain\SupplierBills\Actions\IssueSupplierBill;
+use App\Domain\SupplierBills\Actions\VoidSupplierBill;
+use App\Domain\SupplierBills\Enums\SupplierBillStatus;
+use App\Domain\SupplierBills\Models\SupplierBill;
+use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\Store;
-use App\Models\SupplierBill;
-use App\Models\SupplierBillItem;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

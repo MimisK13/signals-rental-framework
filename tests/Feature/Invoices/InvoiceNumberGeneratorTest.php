@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\InvoiceType;
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Services\InvoiceNumberGenerator;
 use App\Models\Store;
-use App\Services\Invoices\InvoiceNumberGenerator;
 use Carbon\CarbonImmutable;
 
 describe('InvoiceNumberGenerator', function () {

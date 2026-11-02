@@ -1,9 +1,10 @@
 <?php
 
-use Livewire\Volt\Volt;
+use App\Domain\SupplierBills\Presentation\Livewire\Show;
+use Livewire\Livewire;
 
 it('can render', function () {
-    $component = Volt::test('supplier-bills.show');
+    $component = Livewire::test(Show::class);
 
     $component->assertSee('');
 });

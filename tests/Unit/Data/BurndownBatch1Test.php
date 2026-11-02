@@ -1,13 +1,13 @@
 <?php
 
 use App\Data\Containers\ContainerDispatchAmendmentData;
-use App\Data\Documents\GenerateDocumentData;
-use App\Data\Documents\UpdateDocumentSequenceData;
-use App\Data\Invoices\FrozenInvoiceLineData;
-use App\Data\Invoices\GenerateProformaInvoiceData;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
-use App\Models\InvoicePayment;
+use App\Domain\Documents\Data\GenerateDocumentData;
+use App\Domain\Documents\Data\UpdateDocumentSequenceData;
+use App\Domain\Invoices\Data\FrozenInvoiceLineData;
+use App\Domain\Invoices\Data\GenerateProformaInvoiceData;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\ValueObjects\Tax\DocumentTaxLineAllocation;

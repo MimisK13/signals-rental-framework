@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Invoices\GenerateDepositInvoice;
-use App\Actions\Invoices\GenerateProformaInvoice;
-use App\Data\Invoices\GenerateDepositInvoiceData;
-use App\Data\Invoices\GenerateProformaInvoiceData;
-use App\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Invoices\Actions\GenerateDepositInvoice;
+use App\Domain\Invoices\Actions\GenerateProformaInvoice;
+use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
+use App\Domain\Invoices\Data\GenerateProformaInvoiceData;
+use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Invoices\Models\InvoiceTax;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\InvoiceTax;
 use App\Models\Opportunity;
 use App\Models\User;
 use Carbon\CarbonImmutable;

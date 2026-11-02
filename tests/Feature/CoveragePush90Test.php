@@ -5,14 +5,14 @@
  * Each test targets the exact uncovered method/branch to flip a class to 100%.
  */
 
-use App\Data\Attachments\AttachmentData;
-use App\Enums\CustomFieldType;
+use App\Domain\Attachments\Data\AttachmentData;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Jobs\ExportActionLog;
 use App\Livewire\Components\IconUpload;
 use App\Livewire\Components\ViewBuilder;
 use App\Livewire\Members\MergeModal;
-use App\Models\Attachment;
-use App\Models\CustomField;
 use App\Models\Member;
 use App\Models\User;
 use App\Support\Timezone;

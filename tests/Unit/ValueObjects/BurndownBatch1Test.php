@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\ShortageDispatchPolicy;
-use App\Enums\StockMethod;
 use App\Models\OpportunityItem;
 use App\ValueObjects\DispatchGateResult;
 use App\ValueObjects\Shortage;

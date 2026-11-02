@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\BasePeriod;
-use App\Enums\CalculationStrategyType;
-use App\Services\RateEngine\Presets\RatePresets;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\CalculationStrategyType;
+use App\Domain\Rates\Services\RateEngine\Presets\RatePresets;
 
 it('defines eleven RMS-parity presets', function () {
     expect(RatePresets::all())->toHaveCount(11);

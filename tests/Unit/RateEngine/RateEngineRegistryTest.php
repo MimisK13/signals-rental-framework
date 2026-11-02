@@ -1,13 +1,13 @@
 <?php
 
-use App\Contracts\CalculationStrategy;
-use App\Contracts\RateModifier;
-use App\Services\RateEngine\Modifiers\FactorModifier;
-use App\Services\RateEngine\Modifiers\MultiplierModifier;
-use App\Services\RateEngine\RateEngineRegistry;
-use App\Services\RateEngine\Strategies\FixedStrategy;
-use App\Services\RateEngine\Strategies\HybridStrategy;
-use App\Services\RateEngine\Strategies\PeriodStrategy;
+use App\Domain\Rates\Contracts\CalculationStrategy;
+use App\Domain\Rates\Contracts\RateModifier;
+use App\Domain\Rates\Services\RateEngine\Modifiers\FactorModifier;
+use App\Domain\Rates\Services\RateEngine\Modifiers\MultiplierModifier;
+use App\Domain\Rates\Services\RateEngine\RateEngineRegistry;
+use App\Domain\Rates\Services\RateEngine\Strategies\FixedStrategy;
+use App\Domain\Rates\Services\RateEngine\Strategies\HybridStrategy;
+use App\Domain\Rates\Services\RateEngine\Strategies\PeriodStrategy;
 
 it('registers and retrieves a strategy by identifier', function () {
     $registry = new RateEngineRegistry;

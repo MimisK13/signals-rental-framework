@@ -1,23 +1,24 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueInvoice;
-use App\Contracts\Documents\DocumentRenderer;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Contracts\DocumentRenderer;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\ValueObjects\DocumentRenderResult;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Presentation\Livewire\Communications;
 use App\Models\CommunicationLog;
-use App\Models\Document;
-use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Notifications\CommunicationLogQuery;
-use App\ValueObjects\Documents\DocumentRenderResult;
 use Database\Seeders\CommunicationTemplateSeeder;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Mail;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
@@ -67,7 +68,7 @@ it('lists invoice billing communications on the communications tab', function ()
     expect($log->attachments)->not->toBeNull()
         ->and(app(CommunicationLogQuery::class)->forInvoice($invoice->refresh(), $user)->count())->toBe(1);
 
-    Volt::test('invoices.communications', ['invoice' => $invoice])
+    Livewire::test(Communications::class, ['invoice' => $invoice])
         ->assertSee('invoice.created')
         ->assertSee($member->name);
 });
@@ -118,6 +119,6 @@ it('gates the invoice communications tab behind invoice view permission', functi
 
     $invoice = Invoice::factory()->create();
 
-    Volt::test('invoices.communications', ['invoice' => $invoice])
+    Livewire::test(Communications::class, ['invoice' => $invoice])
         ->assertForbidden();
 });

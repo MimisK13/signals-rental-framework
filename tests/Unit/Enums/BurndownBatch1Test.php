@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
 use App\Enums\BillingCommunicationKind;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerDispatchVerdict;
@@ -7,10 +9,8 @@ use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerUnsealReason;
 use App\Enums\DealPriceMode;
 use App\Enums\DemandDateSource;
-use App\Enums\InvoiceType;
 use App\Enums\KitComponentBinding;
 use App\Enums\OpportunityCostType;
-use App\Enums\PartialInvoiceTaxPolicy;
 use App\Enums\TaxBuyerType;
 use App\Enums\TaxUnresolvedZoneFallback;
 use App\Enums\WaitlistMonitorStatus;

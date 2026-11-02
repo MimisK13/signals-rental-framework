@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\ListName;
+use App\Domain\Lists\Models\ListName;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

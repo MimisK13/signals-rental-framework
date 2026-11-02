@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\PurchaseOrder;
-use App\Services\PurchaseOrders\EnsuresPurchaseOrderIsDraft;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Services\EnsuresPurchaseOrderIsDraft;
 use Illuminate\Validation\ValidationException;
 
 it('allows draft purchase orders', function () {

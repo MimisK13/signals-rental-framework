@@ -2,7 +2,7 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentSequence;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;

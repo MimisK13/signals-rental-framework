@@ -1,10 +1,11 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Presentation\Livewire\Form;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -16,7 +17,7 @@ beforeEach(function () {
 it('renders the violet serialised badge when a serialised product is selected', function () {
     $product = Product::factory()->serialised()->create(['name' => 'Serialised Camera']);
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->assertSee('Serialised Camera')
         ->assertSee('s-badge-violet', false)
@@ -26,7 +27,7 @@ it('renders the violet serialised badge when a serialised product is selected', 
 it('renders the cyan bulk badge when a bulk product is selected', function () {
     $product = Product::factory()->bulk()->create(['name' => 'Bulk Cable']);
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->assertSee('Bulk Cable')
         ->assertSee('s-badge-cyan', false)
@@ -35,7 +36,7 @@ it('renders the cyan bulk badge when a bulk product is selected', function () {
 
 it('renders the consistent badge in the product search results', function () {
     // Set results directly to avoid the pg-only ilike search query on the SQLite test DB.
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->set('productResults', [
             ['id' => 1, 'name' => 'Result Serialised', 'stock_method' => 2],
             ['id' => 2, 'name' => 'Result Bulk', 'stock_method' => 1],
@@ -49,7 +50,7 @@ it('renders the consistent badge in the product search results', function () {
 it('shows the single/bulk switcher and seeds a row when switching to bulk for serialised stock', function () {
     $product = Product::factory()->serialised()->create(['name' => 'Serialised Camera']);
 
-    $component = Volt::test('stock-levels.form')
+    $component = Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->assertSet('entryMode', 'single')
         ->assertSee('Single')
@@ -64,7 +65,7 @@ it('does not surface the bulk path for bulk products — single save still works
     $store = Store::first();
     $product = Product::factory()->bulk()->create(['name' => 'Bulk Cable']);
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', $store->id)
         ->set('quantityHeld', 10)
@@ -78,7 +79,7 @@ it('does not surface the bulk path for bulk products — single save still works
 it('adds and removes bulk rows, always keeping at least one', function () {
     $product = Product::factory()->serialised()->create();
 
-    $component = Volt::test('stock-levels.form')
+    $component = Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->call('addBulkRow')
@@ -97,7 +98,7 @@ it('adds and removes bulk rows, always keeping at least one', function () {
 it('marks a unique asset and serial as valid', function () {
     $product = Product::factory()->serialised()->create();
 
-    $component = Volt::test('stock-levels.form')
+    $component = Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->set('bulkRows', [
@@ -114,7 +115,7 @@ it('marks an asset number matching an existing stock level as duplicate', functi
     $product = Product::factory()->serialised()->create();
     StockLevel::factory()->create(['asset_number' => 'DUP-ASSET']);
 
-    $component = Volt::test('stock-levels.form')
+    $component = Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->set('bulkRows', [
@@ -131,7 +132,7 @@ it('marks a serial number matching an existing stock level as duplicate', functi
     $product = Product::factory()->serialised()->create();
     StockLevel::factory()->create(['serial_number' => 'DUP-SERIAL']);
 
-    $component = Volt::test('stock-levels.form')
+    $component = Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->set('bulkRows', [
@@ -147,7 +148,7 @@ it('marks a serial number matching an existing stock level as duplicate', functi
 it('flags both rows that share the same asset number', function () {
     $product = Product::factory()->serialised()->create();
 
-    $component = Volt::test('stock-levels.form')
+    $component = Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->set('bulkRows', [
@@ -167,7 +168,7 @@ it('disables the submit button when a row is incomplete or duplicate, enables it
     $product = Product::factory()->serialised()->create();
 
     // Partial row (one field filled) → submit button disabled.
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->set('bulkRows', [
@@ -177,7 +178,7 @@ it('disables the submit button when a row is incomplete or duplicate, enables it
         ->assertSee('disabled', false);
 
     // All valid → button enabled (label reflects the complete count).
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->call('setEntryMode', 'bulk')
         ->set('bulkRows', [
@@ -187,7 +188,7 @@ it('disables the submit button when a row is incomplete or duplicate, enables it
         ->assertSee('Create 1 Stock Level');
 
     // Duplicate present → cannot submit (server check rejects).
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', Store::first()->id)
         ->call('setEntryMode', 'bulk')
@@ -206,7 +207,7 @@ it('ignores a trailing empty row in the submit gate (the Enter-row regression)',
     // One complete row + a trailing empty row (left after pressing Enter).
     // The submit label counts only the complete row, and a save succeeds —
     // the empty trailing row must not block submission.
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', $store->id)
         ->call('setEntryMode', 'bulk')
@@ -227,7 +228,7 @@ it('rejects a bulk save when a partial row remains', function () {
     $store = Store::first();
     $product = Product::factory()->serialised()->create();
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', $store->id)
         ->call('setEntryMode', 'bulk')
@@ -245,7 +246,7 @@ it('drops empty rows on save and creates only the complete rows', function () {
     $store = Store::first();
     $product = Product::factory()->serialised()->create(['name' => 'Serialised Camera']);
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', $store->id)
         ->call('setEntryMode', 'bulk')
@@ -271,7 +272,7 @@ it('creates one stock level per bulk row and redirects to the product stock tab'
     $store = Store::first();
     $product = Product::factory()->serialised()->create(['name' => 'Serialised Camera']);
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', $store->id)
         ->call('setEntryMode', 'bulk')
@@ -299,7 +300,7 @@ it('rejects a bulk save defensively when a duplicate is present server-side', fu
     $product = Product::factory()->serialised()->create();
     StockLevel::factory()->create(['asset_number' => 'TAKEN']);
 
-    Volt::test('stock-levels.form')
+    Livewire::test(Form::class)
         ->call('selectProduct', $product->id)
         ->set('storeId', $store->id)
         ->call('setEntryMode', 'bulk')

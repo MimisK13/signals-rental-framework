@@ -1,6 +1,7 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
 use App\Events\Availability\AvailabilityChanged;
@@ -8,7 +9,6 @@ use App\Jobs\RecalculateAvailabilityJob;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Api\WebhookService;
 use App\Services\Availability\RecalculationPipeline;

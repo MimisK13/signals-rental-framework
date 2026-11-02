@@ -2,6 +2,7 @@
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Data\Availability\OpportunityItemAvailabilityData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
@@ -9,7 +10,6 @@ use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;

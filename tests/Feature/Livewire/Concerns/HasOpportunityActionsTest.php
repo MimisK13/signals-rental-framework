@@ -14,6 +14,7 @@ use App\Data\Opportunities\AllocateAssetData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\DispatchAssetData;
 use App\Data\Opportunities\SetDealPriceData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityState;
@@ -24,7 +25,6 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -399,7 +399,7 @@ it('confirmConvert returns early when pending key is unknown', function () {
 
 it('restore refreshes archived opportunities in place', function () {
     $opportunity = covLiveOpportunity($this->owner, $this->store->id, 'Restore in place');
-    (new \App\Actions\Opportunities\DeleteOpportunity)($opportunity);
+    (new DeleteOpportunity)($opportunity);
 
     $this->actingAs($this->owner);
 

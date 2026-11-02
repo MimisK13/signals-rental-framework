@@ -3,13 +3,13 @@
 use App\Actions\Containers\CreateContainer;
 use App\Actions\Containers\CreateDurableContainer;
 use App\Data\Containers\CreateDurableContainerData;
-use App\Enums\TransactionType;
-use App\Models\Asset;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Stock\Enums\TransactionType;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Models\Container;
 use App\Models\MemberStore;
 use App\Models\Product;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

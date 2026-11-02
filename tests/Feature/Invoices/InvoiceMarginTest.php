@@ -1,33 +1,34 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
 use App\Actions\Opportunities\AddOpportunityCost;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Data\Opportunities\AddOpportunityCostData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Presentation\Livewire\Show;
+use App\Domain\Invoices\Services\InvoiceMarginCalculator;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Enums\LineItemTransactionType;
 use App\Enums\PricingRoundingDirection;
 use App\Enums\TaxBuyerType;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Invoices\InvoiceMarginCalculator;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -263,7 +264,7 @@ describe('invoice show margin UI', function () {
 
         $this->actingAs(imCostsViewUser((int) $invoice->store_id));
 
-        Volt::test('invoices.show', ['invoice' => $invoice])
+        Livewire::test(Show::class, ['invoice' => $invoice])
             ->assertSee('Margin')
             ->assertSee('40%')
             ->assertSee('33.3%');
@@ -287,7 +288,7 @@ describe('invoice show margin UI', function () {
         ]);
         $this->actingAs($user);
 
-        Volt::test('invoices.show', ['invoice' => $invoice])
+        Livewire::test(Show::class, ['invoice' => $invoice])
             ->assertDontSee('Margin')
             ->assertDontSee('40%');
     });
@@ -303,7 +304,7 @@ describe('invoice show margin UI', function () {
 
         $this->actingAs(imCostsViewUser((int) $invoice->store_id));
 
-        Volt::test('invoices.show', ['invoice' => $invoice])
+        Livewire::test(Show::class, ['invoice' => $invoice])
             ->assertSee('title="No cost data"', false);
     });
 });

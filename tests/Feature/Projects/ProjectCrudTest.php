@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Projects\CreateProject;
-use App\Actions\Projects\DeleteProject;
-use App\Actions\Projects\UpdateProject;
-use App\Data\Projects\CreateProjectData;
-use App\Data\Projects\UpdateProjectData;
+use App\Domain\Projects\Actions\CreateProject;
+use App\Domain\Projects\Actions\DeleteProject;
+use App\Domain\Projects\Actions\UpdateProject;
+use App\Domain\Projects\Data\CreateProjectData;
+use App\Domain\Projects\Data\UpdateProjectData;
+use App\Domain\Projects\Database\Seeders\ProjectSeeder;
+use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Project;
 use App\Enums\MembershipType;
-use App\Enums\ProjectStatus;
 use App\Models\Member;
-use App\Models\Project;
 use App\Models\User;
-use Database\Seeders\ProjectSeeder;
 
 beforeEach(function (): void {
     $this->actingAs(User::factory()->owner()->create());

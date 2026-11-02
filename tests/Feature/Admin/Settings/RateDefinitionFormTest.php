@@ -1,10 +1,11 @@
 <?php
 
-use App\Models\RateDefinition;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Presentation\Livewire\RateDefinitionForm;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -22,7 +23,7 @@ it('renders the create page with the preset grid and From Scratch option', funct
 });
 
 it('prefills the form when a preset is chosen', function () {
-    Volt::test('admin.settings.rate-definition-form')
+    Livewire::test(RateDefinitionForm::class)
         ->call('choosePreset', 'daily-multiplier-factor')
         ->assertSet('presetChosen', true)
         ->assertSet('name', 'Daily Multiplier and Factor')
@@ -32,14 +33,14 @@ it('prefills the form when a preset is chosen', function () {
 });
 
 it('starts blank when building from scratch', function () {
-    Volt::test('admin.settings.rate-definition-form')
+    Livewire::test(RateDefinitionForm::class)
         ->call('fromScratch')
         ->assertSet('presetChosen', true)
         ->assertSet('calculationStrategy', 'period');
 });
 
 it('creates a rate definition from a preset', function () {
-    Volt::test('admin.settings.rate-definition-form')
+    Livewire::test(RateDefinitionForm::class)
         ->call('choosePreset', 'fixed-rate')
         ->set('name', 'My Flat Rate')
         ->call('save')
@@ -54,7 +55,7 @@ it('creates a rate definition from a preset', function () {
 });
 
 it('creates a rate definition from scratch', function () {
-    Volt::test('admin.settings.rate-definition-form')
+    Livewire::test(RateDefinitionForm::class)
         ->call('fromScratch')
         ->set('name', 'Scratch Daily')
         ->call('save')
@@ -65,7 +66,7 @@ it('creates a rate definition from scratch', function () {
 });
 
 it('validates that a name is required', function () {
-    Volt::test('admin.settings.rate-definition-form')
+    Livewire::test(RateDefinitionForm::class)
         ->call('fromScratch')
         ->set('name', '')
         ->call('save')
@@ -78,7 +79,7 @@ it('populates the form when editing an existing definition', function () {
         'enabled_modifiers' => ['multiplier'],
     ]);
 
-    Volt::test('admin.settings.rate-definition-form', ['rateDefinition' => $definition])
+    Livewire::test(RateDefinitionForm::class, ['rateDefinition' => $definition])
         ->assertSet('presetChosen', true)
         ->assertSet('name', 'Existing Rate')
         ->assertSet('calculationStrategy', 'period')
@@ -88,7 +89,7 @@ it('populates the form when editing an existing definition', function () {
 it('updates an existing definition', function () {
     $definition = RateDefinition::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.rate-definition-form', ['rateDefinition' => $definition])
+    Livewire::test(RateDefinitionForm::class, ['rateDefinition' => $definition])
         ->set('name', 'New Name')
         ->call('save')
         ->assertHasNoErrors()
@@ -98,7 +99,7 @@ it('updates an existing definition', function () {
 });
 
 it('enables and disables a modifier via the checkbox binding', function () {
-    $component = Volt::test('admin.settings.rate-definition-form')
+    $component = Livewire::test(RateDefinitionForm::class)
         ->call('choosePreset', 'daily-rate')
         ->set('enabledModifiers', ['multiplier'])
         ->assertSet('enabledModifiers', ['multiplier']);
@@ -114,7 +115,7 @@ it('enables and disables a modifier via the checkbox binding', function () {
 });
 
 it('adds and removes repeater rows', function () {
-    $component = Volt::test('admin.settings.rate-definition-form')
+    $component = Livewire::test(RateDefinitionForm::class)
         ->call('choosePreset', 'daily-multiplier-factor')
         ->call('addRow', 'modifierConfigs.multiplier.tiers');
 

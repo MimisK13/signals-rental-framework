@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\BasePeriod;
-use App\Enums\CalculationStrategyType;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\CalculationStrategyType;
 
 it('has correct cases', function () {
     expect(CalculationStrategyType::cases())->toHaveCount(3);

@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Documents\QrCodeGenerator;
+use App\Domain\Documents\Services\QrCodeGenerator;
 
 describe('QrCodeGenerator', function () {
     beforeEach(function () {

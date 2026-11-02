@@ -1,10 +1,16 @@
 <?php
 
-use App\Contracts\Documents\DocumentRenderer;
-use App\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Contracts\DocumentRenderer;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Services\DocumentRenderContext;
+use App\Domain\Documents\Services\DocumentResolverRegistry;
+use App\Domain\Documents\Services\ReturnListDataResolver;
+use App\Domain\Documents\Services\StatementDataResolver;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
-use App\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
@@ -15,12 +21,6 @@ use App\Models\Store;
 use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
-use App\Services\Documents\DocumentRenderContext;
-use App\Services\Documents\DocumentResolverRegistry;
-use App\Services\Documents\ReturnListDataResolver;
-use App\Services\Documents\StatementDataResolver;
-use App\Services\Documents\SystemDocumentTemplates;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

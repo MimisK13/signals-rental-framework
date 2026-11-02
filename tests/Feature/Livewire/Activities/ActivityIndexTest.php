@@ -3,8 +3,8 @@
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Index;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

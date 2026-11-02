@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerAvailabilityMode;
 use App\Models\Container;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Containers\RepackOnReturnEligibility;
 

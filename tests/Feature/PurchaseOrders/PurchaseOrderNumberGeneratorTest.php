@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Models\Store;
-use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
 use Carbon\CarbonImmutable;
 
 describe('PurchaseOrderNumberGenerator', function () {

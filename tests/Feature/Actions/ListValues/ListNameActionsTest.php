@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\ListValues\CreateListName;
-use App\Actions\ListValues\DeleteListName;
-use App\Actions\ListValues\UpdateListName;
-use App\Data\ListValues\CreateListNameData;
-use App\Data\ListValues\UpdateListNameData;
+use App\Domain\Lists\Actions\CreateListName;
+use App\Domain\Lists\Actions\DeleteListName;
+use App\Domain\Lists\Actions\UpdateListName;
+use App\Domain\Lists\Data\CreateListNameData;
+use App\Domain\Lists\Data\UpdateListNameData;
+use App\Domain\Lists\Models\ListName;
 use App\Events\AuditableEvent;
-use App\Models\ListName;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -84,7 +84,7 @@ it('records an action_logs row when a list name is created', function () {
 
     $result = (new CreateListName)(CreateListNameData::from(['name' => 'Audited List']));
 
-    assertActionLogged('list_name.created', ListName::class, $result->id, $user->id);
+    assertActionLogged('list_name.created', (new ListName)->getMorphClass(), $result->id, $user->id);
 });
 
 it('records an action_logs row when a list name is updated', function () {
@@ -94,7 +94,7 @@ it('records an action_logs row when a list name is updated', function () {
 
     (new UpdateListName)($listName, UpdateListNameData::from(['name' => 'Renamed List']));
 
-    assertActionLogged('list_name.updated', ListName::class, $listName->id, $user->id);
+    assertActionLogged('list_name.updated', $listName->getMorphClass(), $listName->id, $user->id);
 });
 
 it('records an action_logs row when a list name is deleted', function () {
@@ -104,7 +104,7 @@ it('records an action_logs row when a list name is deleted', function () {
 
     (new DeleteListName)($listName);
 
-    assertActionLogged('list_name.deleted', ListName::class, $listName->id, $user->id);
+    assertActionLogged('list_name.deleted', $listName->getMorphClass(), $listName->id, $user->id);
 });
 
 it('rejects unauthorized list name creation', function () {

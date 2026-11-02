@@ -1,23 +1,24 @@
 <?php
 
-use App\Actions\Projects\AttachOpportunityToProject;
-use App\Actions\Projects\CreateProject;
-use App\Actions\Projects\DeleteProject;
-use App\Actions\Projects\DetachOpportunityFromProject;
-use App\Actions\Projects\MoveOpportunityToProject;
-use App\Actions\Projects\UpdateProject;
-use App\Data\Projects\CreateProjectData;
-use App\Data\Projects\UpdateProjectData;
-use App\Enums\ProjectStatus;
+use App\Domain\Projects\Actions\AttachOpportunityToProject;
+use App\Domain\Projects\Actions\CreateProject;
+use App\Domain\Projects\Actions\DeleteProject;
+use App\Domain\Projects\Actions\DetachOpportunityFromProject;
+use App\Domain\Projects\Actions\MoveOpportunityToProject;
+use App\Domain\Projects\Actions\UpdateProject;
+use App\Domain\Projects\Data\CreateProjectData;
+use App\Domain\Projects\Data\UpdateProjectData;
+use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Presentation\Livewire\Index;
 use App\Models\Member;
 use App\Models\Opportunity;
-use App\Models\Project;
 use App\Models\Store;
 use App\Models\User;
 use App\Verbs\Events\Opportunities\OpportunityProjectAssigned;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Models\VerbEvent;
 
 beforeEach(function (): void {
@@ -111,7 +112,7 @@ it('evaluates the project pagination count once per render', function (): void {
         }
     });
 
-    Volt::test('projects.index')->assertSee('Query-count project');
+    Livewire::test(Index::class)->assertSee('Query-count project');
 
     expect($countQueries)->toHaveCount(1);
 });

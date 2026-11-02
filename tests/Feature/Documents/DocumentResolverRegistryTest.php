@@ -1,8 +1,8 @@
 <?php
 
-use App\Contracts\Documents\DocumentDataResolver;
-use App\Services\Documents\DocumentResolverRegistry;
-use App\Services\Documents\OpportunityDataResolver;
+use App\Domain\Documents\Contracts\DocumentDataResolver;
+use App\Domain\Documents\Services\DocumentResolverRegistry;
+use App\Domain\Documents\Services\OpportunityDataResolver;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Model;
 

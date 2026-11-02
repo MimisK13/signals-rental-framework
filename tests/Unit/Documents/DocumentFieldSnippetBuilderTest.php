@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Documents\DocumentFieldSnippetBuilder;
+use App\Domain\Documents\Services\DocumentFieldSnippetBuilder;
 
 describe('DocumentFieldSnippetBuilder', function () {
     beforeEach(function () {

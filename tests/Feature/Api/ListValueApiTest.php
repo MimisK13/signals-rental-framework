@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -169,6 +169,21 @@ describe('List Values API (nested)', function () {
             ->assertJsonPath('list_value.name', 'High');
     });
 
+    it('rejects a parent from another list', function () {
+        $listName = ListName::factory()->hierarchical()->create();
+        $otherList = ListName::factory()->hierarchical()->create();
+        $foreignParent = ListValue::factory()->for($otherList)->create();
+        $token = $this->owner->createToken('test', ['static-data:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/list_names/{$listName->id}/list_values", [
+                'name' => 'Invalid child',
+                'parent_id' => $foreignParent->id,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('parent_id');
+    });
+
     it('updates a list value', function () {
         $listName = ListName::factory()->create();
         $value = ListValue::factory()->for($listName)->create(['name' => 'Old']);
@@ -182,6 +197,27 @@ describe('List Values API (nested)', function () {
             ->assertJsonPath('list_value.name', 'Updated');
     });
 
+    it('rejects hierarchy cycles and allows clearing a parent', function () {
+        $listName = ListName::factory()->hierarchical()->create();
+        $root = ListValue::factory()->for($listName)->create();
+        $child = ListValue::factory()->for($listName)->create(['parent_id' => $root->id]);
+        $token = $this->owner->createToken('test', ['static-data:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->putJson("/api/v1/list_names/{$listName->id}/list_values/{$root->id}", [
+                'parent_id' => $child->id,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('parent_id');
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->putJson("/api/v1/list_names/{$listName->id}/list_values/{$child->id}", [
+                'parent_id' => null,
+            ])
+            ->assertOk()
+            ->assertJsonPath('list_value.parent_id', null);
+    });
+
     it('deletes a list value', function () {
         $listName = ListName::factory()->create();
         $value = ListValue::factory()->for($listName)->create();
@@ -192,5 +228,20 @@ describe('List Values API (nested)', function () {
             ->assertNoContent();
 
         $this->assertDatabaseMissing('list_values', ['id' => $value->id]);
+    });
+
+    it('returns 404 when updating a value through another list name', function () {
+        $listName = ListName::factory()->create();
+        $otherList = ListName::factory()->create();
+        $value = ListValue::factory()->for($otherList)->create(['name' => 'Other list value']);
+        $token = $this->owner->createToken('test', ['static-data:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->putJson("/api/v1/list_names/{$listName->id}/list_values/{$value->id}", [
+                'name' => 'Changed through wrong list',
+            ])
+            ->assertNotFound();
+
+        expect($value->fresh()->name)->toBe('Other list value');
     });
 });

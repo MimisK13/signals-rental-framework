@@ -1,16 +1,16 @@
 <?php
 
-use App\Models\CreditNote;
-use App\Models\Invoice;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Policies\CreditNotePolicy;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
+use App\Domain\SupplierCosts\Policies\ProductSupplierCostPolicy;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\ProductSupplierCost;
 use App\Models\Store;
 use App\Models\User;
 use App\Policies\BundleRulePolicy;
-use App\Policies\CreditNotePolicy;
 use App\Policies\DiscountRulePolicy;
-use App\Policies\ProductSupplierCostPolicy;
 use App\Policies\SurchargeGroupPolicy;
 use App\Policies\SurchargePolicy;
 use App\Policies\TaxCategoryPolicy;

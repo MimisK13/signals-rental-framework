@@ -1,18 +1,18 @@
 <?php
 
-use App\Models\CreditNote;
-use App\Models\CustomView;
-use App\Models\DocumentTemplate;
-use App\Models\Invoice;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Services\ViewResolver;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Services\ColumnRegistryResolver;
-use App\Services\ViewResolver;
-use App\Views\PurchaseOrderColumnRegistry;
 use App\Views\VirtualStockIntakeColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

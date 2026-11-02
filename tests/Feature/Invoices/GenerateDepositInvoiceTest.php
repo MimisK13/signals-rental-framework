@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Invoices\GenerateDepositInvoice;
 use App\Actions\Opportunities\AddOpportunityItem;
-use App\Data\Invoices\GenerateDepositInvoiceData;
 use App\Data\Opportunities\AddOpportunityItemData;
-use App\Enums\InvoiceType;
+use App\Domain\Invoices\Actions\GenerateDepositInvoice;
+use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PartialInvoiceTaxPolicy;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityTotalsCalculator;

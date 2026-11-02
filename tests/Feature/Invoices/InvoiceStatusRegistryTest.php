@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Invoices\InvoiceStatusRegistry;
+use App\Domain\Invoices\Services\InvoiceStatusRegistry;
 
 describe('InvoiceStatusRegistry', function () {
     it('exposes configured statuses and transitions', function () {

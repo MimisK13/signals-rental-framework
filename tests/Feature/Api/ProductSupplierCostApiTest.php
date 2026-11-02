@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Enums\MembershipType;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -123,6 +123,19 @@ describe('GET /api/v1/products/{product}/supplier_costs/{supplierCost}', functio
             ->assertOk()
             ->assertJsonPath('supplier_cost.id', $cost->id);
     });
+
+    it('returns 404 when the cost belongs to another product', function () {
+        $otherProduct = Product::factory()->create();
+        $cost = ProductSupplierCost::factory()->create([
+            'product_id' => $otherProduct->id,
+            'supplier_id' => $this->supplier->id,
+        ]);
+        $token = $this->owner->createToken('test', ['products:read'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/v1/products/{$this->product->id}/supplier_costs/{$cost->id}")
+            ->assertNotFound();
+    });
 });
 
 describe('POST /api/v1/products/{product}/supplier_costs', function () {
@@ -159,6 +172,21 @@ describe('POST /api/v1/products/{product}/supplier_costs', function () {
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['cost_basis']);
+    });
+
+    it('rejects an unsupported currency code', function () {
+        $token = $this->owner->createToken('test', ['products:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/products/{$this->product->id}/supplier_costs", [
+                'supplier_id' => $this->supplier->id,
+                'cost_basis' => 'per_unit',
+                'cost' => '45.00',
+                'currency_code' => 'ZZZ',
+                'min_order_quantity' => '1.00',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('currency_code');
     });
 
     it('returns 403 without costs.view on write', function () {
@@ -266,5 +294,18 @@ describe('POST /api/v1/products/{product}/supplier_costs/{supplierCost}/set_pref
             ->assertJsonPath('supplier_cost.is_preferred', true);
 
         expect($existing->fresh()->is_preferred)->toBeFalse();
+    });
+
+    it('returns 404 when the cost belongs to another product', function () {
+        $otherProduct = Product::factory()->create();
+        $cost = ProductSupplierCost::factory()->create([
+            'product_id' => $otherProduct->id,
+            'supplier_id' => $this->supplier->id,
+        ]);
+        $token = $this->owner->createToken('test', ['products:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/products/{$this->product->id}/supplier_costs/{$cost->id}/set_preferred")
+            ->assertNotFound();
     });
 });

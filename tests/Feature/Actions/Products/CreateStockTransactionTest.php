@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Products\CreateStockTransaction;
-use App\Data\Products\CreateStockTransactionData;
-use App\Enums\TransactionType;
+use App\Domain\Stock\Actions\CreateStockTransaction;
+use App\Domain\Stock\Data\CreateStockTransactionData;
+use App\Domain\Stock\Enums\TransactionType;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Events\AuditableEvent;
 use App\Models\Member;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

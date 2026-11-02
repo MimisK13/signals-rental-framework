@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Models\CommunicationTemplate;
-use App\Models\DocumentTemplate;
 use App\Models\Store;
 use Database\Seeders\CommunicationTemplateSeeder;
 use Database\Seeders\DatabaseSeeder;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

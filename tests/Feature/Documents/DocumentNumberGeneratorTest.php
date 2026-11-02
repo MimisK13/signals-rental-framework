@@ -1,10 +1,10 @@
 <?php
 
-use App\Exceptions\Documents\DuplicateDocumentNumberException;
-use App\Models\Document;
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Exceptions\DuplicateDocumentNumberException;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\DocumentNumberGenerator;
 use App\Models\Store;
-use App\Services\Documents\DocumentNumberGenerator;
 use Carbon\CarbonImmutable;
 
 describe('DocumentNumberGenerator', function () {

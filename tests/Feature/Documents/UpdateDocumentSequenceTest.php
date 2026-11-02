@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Documents\UpdateDocumentSequence;
-use App\Data\Documents\UpdateDocumentSequenceData;
-use App\Models\DocumentSequence;
-use App\Models\Invoice;
+use App\Domain\Documents\Actions\UpdateDocumentSequence;
+use App\Domain\Documents\Data\UpdateDocumentSequenceData;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\SequenceAllocator;

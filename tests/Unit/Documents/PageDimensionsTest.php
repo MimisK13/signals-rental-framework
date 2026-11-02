@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Documents\PageDimensions;
+use App\Domain\Documents\Services\PageDimensions;
 
 it('resolves standard page sizes in millimetres', function () {
     expect(PageDimensions::sizeMm(['page_size' => 'A4', 'page_orientation' => 'portrait']))

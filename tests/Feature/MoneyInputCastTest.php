@@ -1,11 +1,11 @@
 <?php
 
-use App\Actions\Rates\CreateProductRate;
-use App\Data\Rates\CreateProductRateData;
-use App\Data\Rates\UpdateProductRateData;
+use App\Domain\Rates\Actions\CreateProductRate;
+use App\Domain\Rates\Data\CreateProductRateData;
+use App\Domain\Rates\Data\UpdateProductRateData;
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 

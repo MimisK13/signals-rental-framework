@@ -2,11 +2,11 @@
 
 use App\Domain\Activities\Enums\ActivityType;
 use App\Domain\Activities\Models\Activity;
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Models\Member;
 use App\Models\User;
-use Database\Seeders\ListOfValuesSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

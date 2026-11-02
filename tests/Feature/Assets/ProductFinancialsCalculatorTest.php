@@ -1,16 +1,16 @@
 <?php
 
-use App\Enums\AssetOwnershipType;
+use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetExpense;
+use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Stock\Enums\StockCategory;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Enums\StockCategory;
-use App\Models\Asset;
-use App\Models\AssetExpense;
-use App\Models\AssetUsage;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Services\Assets\ProductFinancialsCalculator;
 
 /**

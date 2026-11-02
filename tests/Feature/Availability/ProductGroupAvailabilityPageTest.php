@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\AvailabilityDailySummary;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

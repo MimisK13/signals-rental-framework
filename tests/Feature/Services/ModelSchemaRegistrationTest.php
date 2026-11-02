@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Models\ExchangeRate;
+use App\Domain\CustomViews\Models\CustomView;
 use App\Models\ActionLog;
 use App\Models\Address;
-use App\Models\Attachment;
 use App\Models\Country;
-use App\Models\CustomView;
 use App\Models\Email;
 use App\Models\Link;
 use App\Models\Phone;

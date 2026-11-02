@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Enums\CustomFieldType;
 
 it('has a label for every case', function () {
     foreach (CustomFieldType::cases() as $type) {

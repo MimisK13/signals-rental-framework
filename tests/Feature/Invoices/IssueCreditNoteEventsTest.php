@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueCreditNote;
-use App\Actions\Invoices\IssueInvoice;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Data\Invoices\IssueCreditNoteData;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueCreditNote;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Data\IssueCreditNoteData;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\PricingRoundingDirection;
 use App\Jobs\DeliverWebhook;
-use App\Models\Invoice;
 use App\Models\User;
 use App\Models\Webhook;
 use Carbon\CarbonImmutable;

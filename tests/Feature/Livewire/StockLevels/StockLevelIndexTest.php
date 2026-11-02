@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Presentation\Livewire\Index;
 use App\Livewire\Components\DataTable;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -60,17 +60,17 @@ it('lists stock levels', function () {
         'item_name' => 'LED Panel #001',
     ]);
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->assertSee('LED Panel');
 });
 
 it('shows empty state when no stock levels exist', function () {
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->assertSee('No stock levels found.');
 });
 
 it('does not show a New Stock Level button', function () {
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->assertDontSee('New Stock Level');
 });
 
@@ -83,7 +83,7 @@ it('renders the product image in the product column when the product has one', f
     ]);
     StockLevel::factory()->create(['product_id' => $product->id]);
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->assertSee('icons/product-thumb.jpg', false)
         ->assertSee('<img', false);
 });
@@ -99,7 +99,7 @@ it('renders item name and codes as links, codes monospaced, and store as a badge
         'serial_number' => 'SN-99887',
     ]);
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         // the item-name column now shows the related product's name
         ->assertSee('LED Panel')
         ->assertSee('AST-12345')
@@ -120,13 +120,13 @@ it('shows the related product name in the item-name column when item_name is nul
         'item_name' => null,
     ]);
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->assertSee('Fresnel 2K')
         ->assertSee(route('stock-levels.show', $stockLevel), false);
 });
 
 it('ignores invalid status filter', function () {
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->call('setStatusFilter', 'invalid')
         ->assertSet('statusFilter', '');
 });
@@ -138,7 +138,7 @@ it('requires authentication', function () {
 });
 
 it('maps each status filter to a real model scope (not an empty scope)', function () {
-    $scopesFor = fn (string $status) => Volt::test('stock-levels.index')
+    $scopesFor = fn (string $status) => Livewire::test(Index::class)
         ->set('statusFilter', $status)
         ->viewData('scopes');
 
@@ -152,7 +152,7 @@ it('available chip shows only available stock, not allocated or quarantined', fu
     makeStockMix();
 
     Livewire::test(DataTable::class, [
-        'columns' => [['key' => 'item_name', 'label' => 'Item', 'view' => 'livewire.stock-levels.partials.column-item-name']],
+        'columns' => [['key' => 'item_name', 'label' => 'Item', 'view' => 'stock::partials.column-item-name']],
         'model' => StockLevel::class,
         'with' => ['product', 'store'],
         'scopes' => ['available' => true],
@@ -166,7 +166,7 @@ it('allocated chip shows only fully-allocated stock, not all records', function 
     makeStockMix();
 
     Livewire::test(DataTable::class, [
-        'columns' => [['key' => 'item_name', 'label' => 'Item', 'view' => 'livewire.stock-levels.partials.column-item-name']],
+        'columns' => [['key' => 'item_name', 'label' => 'Item', 'view' => 'stock::partials.column-item-name']],
         'model' => StockLevel::class,
         'with' => ['product', 'store'],
         'scopes' => ['allocated' => true],
@@ -180,7 +180,7 @@ it('quarantined chip shows only quarantined stock, not all records', function ()
     makeStockMix();
 
     Livewire::test(DataTable::class, [
-        'columns' => [['key' => 'item_name', 'label' => 'Item', 'view' => 'livewire.stock-levels.partials.column-item-name']],
+        'columns' => [['key' => 'item_name', 'label' => 'Item', 'view' => 'stock::partials.column-item-name']],
         'model' => StockLevel::class,
         'with' => ['product', 'store'],
         'scopes' => ['quarantined' => true],
@@ -194,7 +194,7 @@ it('row actions expose Edit and Delete links', function () {
     $product = Product::factory()->serialised()->create();
     $stockLevel = StockLevel::factory()->for($product)->create(['item_name' => 'Editable Item']);
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->assertSee(route('stock-levels.edit', $stockLevel), false)
         ->assertSeeHtml('delete-stock-level-'.$stockLevel->id)
         ->assertSeeHtml('deleteStockLevel('.$stockLevel->id.')');
@@ -204,7 +204,7 @@ it('deletes a single stock level via the row-action method', function () {
     // Serialised so the "bulk products keep at least one stock level" guard does not block deletion.
     $stockLevel = StockLevel::factory()->for(Product::factory()->serialised())->create();
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->call('deleteStockLevel', $stockLevel->id);
 
     expect(StockLevel::find($stockLevel->id))->toBeNull();
@@ -216,11 +216,11 @@ it('renders the bulk delete action in the bulk bar', function () {
     Livewire::test(DataTable::class, [
         'columns' => [
             ['key' => 'checkbox', 'type' => 'checkbox'],
-            ['key' => 'item_name', 'label' => 'Item', 'view' => 'livewire.stock-levels.partials.column-item-name'],
+            ['key' => 'item_name', 'label' => 'Item', 'view' => 'stock::partials.column-item-name'],
         ],
         'model' => StockLevel::class,
         'with' => ['product', 'store'],
-        'bulkActionsView' => 'livewire.stock-levels.partials.bulk-actions',
+        'bulkActionsView' => 'stock::partials.bulk-actions',
     ])
         ->set('selected', [StockLevel::query()->value('id')])
         ->assertSee('Delete Selected');
@@ -230,7 +230,7 @@ it('bulk deletes the selected stock levels', function () {
     $a = StockLevel::factory()->for(Product::factory()->serialised())->create();
     $b = StockLevel::factory()->for(Product::factory()->serialised())->create();
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->call('deleteSelected', [$a->id, $b->id]);
 
     expect(StockLevel::find($a->id))->toBeNull()
@@ -248,7 +248,7 @@ it('bulk delete is authorised through the DeleteStockLevel gate', function () {
 
     $stockLevel = StockLevel::factory()->for(Product::factory()->serialised())->create();
 
-    Volt::test('stock-levels.index')
+    Livewire::test(Index::class)
         ->call('deleteSelected', [$stockLevel->id])
         ->assertForbidden();
 

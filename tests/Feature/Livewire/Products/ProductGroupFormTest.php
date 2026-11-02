@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Models\ProductGroup;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;

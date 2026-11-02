@@ -1,16 +1,16 @@
 <?php
 
-use App\Enums\AssetRentalRevenueAttributionStatus;
+use App\Domain\Assets\Enums\AssetRentalRevenueAttributionStatus;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Assets\Services\AssetRentalRevenueAttributor;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\CreditNoteItem;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
 use App\Enums\LineItemTransactionType;
-use App\Models\Asset;
-use App\Models\AssetUsage;
-use App\Models\CreditNote;
-use App\Models\CreditNoteItem;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Services\Assets\AssetRentalRevenueAttributor;
 use Illuminate\Support\Carbon;
 
 /**

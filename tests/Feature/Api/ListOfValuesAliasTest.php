@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -74,5 +74,18 @@ describe('List of Values alias (list_names)', function () {
             ->assertNoContent();
 
         $this->assertDatabaseMissing('list_names', ['id' => $listName->id]);
+    });
+
+    it('returns 404 when deleting another lists value through the alias', function () {
+        $listName = ListName::factory()->create();
+        $otherList = ListName::factory()->create();
+        $value = ListValue::factory()->for($otherList)->create();
+        $token = $this->owner->createToken('test', ['static-data:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->deleteJson("/api/v1/list_of_values/{$listName->id}/list_values/{$value->id}")
+            ->assertNotFound();
+
+        $this->assertModelExists($value);
     });
 });

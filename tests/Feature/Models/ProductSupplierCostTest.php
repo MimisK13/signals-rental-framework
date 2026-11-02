@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Enums\MembershipType;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
 use App\Models\Store;
 use Illuminate\Database\QueryException;
 

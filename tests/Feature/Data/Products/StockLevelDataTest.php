@@ -1,8 +1,8 @@
 <?php
 
-use App\Data\Products\StockLevelData;
+use App\Domain\Stock\Data\StockLevelData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 
 it('maps product_id to item_id key in output', function () {

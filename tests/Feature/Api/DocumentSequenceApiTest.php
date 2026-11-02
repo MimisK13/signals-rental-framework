@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentSequence;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;

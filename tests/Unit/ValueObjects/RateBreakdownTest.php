@@ -1,7 +1,7 @@
 <?php
 
-use App\ValueObjects\RateBreakdown;
-use App\ValueObjects\RateLineItem;
+use App\Domain\Rates\ValueObjects\RateBreakdown;
+use App\Domain\Rates\ValueObjects\RateLineItem;
 
 /**
  * @param  array<int, RateLineItem>  $lineItems

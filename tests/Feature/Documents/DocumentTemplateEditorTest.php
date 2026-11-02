@@ -1,15 +1,16 @@
 <?php
 
-use App\Models\DocumentTemplate;
-use App\Models\DocumentTemplateVersion;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Models\DocumentTemplateVersion;
+use App\Domain\Documents\Presentation\Livewire\Editor;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;
 use App\Models\User;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -37,14 +38,14 @@ it('renders the document template editor with three panels', function () {
 });
 
 it('loads template content and generates a preview', function () {
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->assertSet('bodyHtml', $this->template->body_html)
         ->assertSet('previewError', '')
         ->assertSet('previewHtml', fn (string $html): bool => str_contains($html, 'Sample Line Item'));
 });
 
 it('inserts scalar and collection snippets into the active editor tab', function () {
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->call('insertField', 'opportunity.subject', 'string')
         ->assertSet('bodyHtml', fn (string $html): bool => str_contains($html, '{{ $opportunity->subject }}'))
         ->call('insertField', 'items', 'collection')
@@ -54,7 +55,7 @@ it('inserts scalar and collection snippets into the active editor tab', function
 it('saves edits through the update action and bumps the version', function () {
     $originalVersion = $this->template->version;
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->set('bodyHtml', '<p>Edited body {{ $opportunity->subject }}</p>')
         ->call('save')
         ->assertHasNoErrors()
@@ -69,7 +70,7 @@ it('saves edits through the update action and bumps the version', function () {
 it('restores a previous version from the editor', function () {
     $originalBody = $this->template->body_html;
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->set('bodyHtml', '<p>Version two body</p>')
         ->call('save');
 
@@ -78,7 +79,7 @@ it('restores a previous version from the editor', function () {
         ->where('body_html', $originalBody)
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template->fresh()])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template->fresh()])
         ->set('bodyHtml', '<p>Temporary change</p>')
         ->call('restoreVersion', $version->id)
         ->assertDispatched('document-template-version-restored')
@@ -94,7 +95,7 @@ it('forbids users without document template permissions', function () {
 });
 
 it('shows sandbox render errors inline instead of failing the request', function () {
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->set('bodyHtml', "@foreach (DB::table('users')->get() as \$user){{ \$user->id }}@endforeach")
         ->call('refreshPreview')
         ->assertSet('previewHtml', '')
@@ -104,7 +105,7 @@ it('shows sandbox render errors inline instead of failing the request', function
 it('shows a diff between a historical version and the saved template body', function () {
     $originalBody = $this->template->body_html;
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->set('bodyHtml', "<p>Updated body</p>\n<p>Second line</p>")
         ->call('save');
 
@@ -113,7 +114,7 @@ it('shows a diff between a historical version and the saved template body', func
         ->where('body_html', $originalBody)
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template->fresh()])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template->fresh()])
         ->call('showDiff', $version->id)
         ->assertSet('showDiffPanel', true)
         ->assertSet('diffLeftLabel', 'Version '.$version->version)
@@ -148,7 +149,7 @@ it('shows a diff between two historical versions', function () {
         ->where('version', 11)
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->call('showDiffBetween', $left->id, $right->id)
         ->assertSet('showDiffPanel', true)
         ->assertSet('diffOps', [
@@ -179,7 +180,7 @@ it('forbids version diff for users without template edit permission', function (
         'body_html' => '<p>Older body</p>',
     ]);
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->call('showDiff', $version->id)
         ->assertForbidden();
 });
@@ -198,7 +199,7 @@ it('escapes xss-like template content in the rendered diff panel', function () {
         ->where('body_html', $malicious)
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $this->template])
+    Livewire::test(Editor::class, ['documentTemplate' => $this->template])
         ->call('showDiff', $version->id)
         ->assertSet('diffOps', fn (array $ops): bool => collect($ops)->contains(
             fn (array $op): bool => $op['type'] === 'delete'

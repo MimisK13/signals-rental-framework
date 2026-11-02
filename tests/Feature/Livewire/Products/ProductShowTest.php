@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\StockLevel;
 use App\Models\User;
 use App\Support\Formatter;
 use Livewire\Volt\Volt;

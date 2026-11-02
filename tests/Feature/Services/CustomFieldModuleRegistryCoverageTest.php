@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\CustomFields\Services\CustomFieldModuleRegistry;
 use App\Models\Member;
 use App\Models\Product;
-use App\Services\CustomFieldModuleRegistry;
 
 it('lists the module-type string keys only', function () {
     $types = app(CustomFieldModuleRegistry::class)->moduleTypes();

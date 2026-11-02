@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\CustomField;
-use App\Models\CustomFieldGroup;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldGroup;
 use App\Models\Member;
 use App\Models\User;
 use Livewire\Volt\Volt;

@@ -1,9 +1,11 @@
 <?php
 
-use App\Models\CustomField;
-use App\Models\CustomFieldGroup;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldGroup;
+use App\Domain\CustomFields\Presentation\Livewire\GroupForm;
+use App\Domain\CustomFields\Presentation\Livewire\GroupsIndex;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -21,7 +23,7 @@ it('lists custom field groups', function () {
     CustomFieldGroup::factory()->create(['name' => 'General Info']);
     CustomFieldGroup::factory()->create(['name' => 'Billing Details']);
 
-    Volt::test('admin.settings.custom-field-groups')
+    Livewire::test(GroupsIndex::class)
         ->assertSee('General Info')
         ->assertSee('Billing Details');
 });
@@ -33,7 +35,7 @@ it('renders the create form', function () {
 });
 
 it('can create a group', function () {
-    Volt::test('admin.settings.custom-field-group-form')
+    Livewire::test(GroupForm::class)
         ->set('name', 'Test Group')
         ->set('description', 'A test group')
         ->set('sortOrder', 5)
@@ -53,7 +55,7 @@ it('renders the edit form', function () {
 it('can edit a group', function () {
     $group = CustomFieldGroup::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.custom-field-group-form', ['customFieldGroup' => $group])
+    Livewire::test(GroupForm::class, ['customFieldGroup' => $group])
         ->assertSet('name', 'Old Name')
         ->set('name', 'New Name')
         ->call('save');
@@ -62,7 +64,7 @@ it('can edit a group', function () {
 });
 
 it('validates required name', function () {
-    Volt::test('admin.settings.custom-field-group-form')
+    Livewire::test(GroupForm::class)
         ->set('name', '')
         ->call('save')
         ->assertHasErrors(['name']);
@@ -71,7 +73,7 @@ it('validates required name', function () {
 it('can delete a group without fields', function () {
     $group = CustomFieldGroup::factory()->create(['name' => 'Empty Group']);
 
-    Volt::test('admin.settings.custom-field-groups')
+    Livewire::test(GroupsIndex::class)
         ->call('deleteGroup', $group->id);
 
     expect(CustomFieldGroup::where('name', 'Empty Group')->exists())->toBeFalse();
@@ -81,7 +83,7 @@ it('cannot delete a group with fields', function () {
     $group = CustomFieldGroup::factory()->create(['name' => 'Has Fields']);
     CustomField::factory()->inGroup($group)->create();
 
-    Volt::test('admin.settings.custom-field-groups')
+    Livewire::test(GroupsIndex::class)
         ->call('deleteGroup', $group->id)
         ->assertHasErrors('delete');
 

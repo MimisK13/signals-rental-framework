@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\CustomFields\Services\CustomFieldCopier;
 use App\Models\Member;
 use App\Models\Store;
-use App\Services\CustomFieldCopier;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -15,7 +15,9 @@ use Tests\TestCase;
 // transaction. With DatabaseMigrations there is no wrapping transaction, so we
 // can disable foreign keys, delete the source field without cascading, and
 // leave an orphaned value whose customField relation resolves to null.
-uses(TestCase::class, DatabaseMigrations::class);
+uses(TestCase::class);
+
+beforeEach(fn () => Artisan::call('migrate:fresh'));
 
 it('silently skips source values whose custom field row no longer exists', function () {
     $sourceMember = Member::factory()->create();

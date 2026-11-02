@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
 use App\Actions\Opportunities\ConvertToOrder;
 use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Products\CreateProduct;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
 use App\Data\Products\CreateProductData;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\PricingRoundingDirection;
 use App\Enums\ProductType;
 use App\Enums\TaxBuyerType;
 use App\Enums\TaxResultType;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Data\Rates\CreateProductRateData;
+use App\Domain\Rates\Data\CreateProductRateData;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 

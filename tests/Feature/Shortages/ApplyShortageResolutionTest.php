@@ -3,6 +3,7 @@
 use App\Actions\Shortages\ApplyShortageResolution;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Data\Shortages\ApplyResolutionData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
 use App\Enums\ShortageResolutionStatus;
@@ -10,7 +11,6 @@ use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Shortages\Resolvers\PartialFulfilmentResolver;

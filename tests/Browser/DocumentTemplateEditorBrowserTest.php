@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Models\Store;
 use App\Models\User;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Pest\Browser\Api\Webpage;

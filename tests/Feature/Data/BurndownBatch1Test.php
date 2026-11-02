@@ -1,6 +1,5 @@
 <?php
 
-use App\Data\Invoices\InvoiceData;
 use App\Data\Notifications\CommunicationLogData;
 use App\Data\Notifications\CommunicationTemplateData;
 use App\Data\Notifications\NotificationSettingData;
@@ -8,24 +7,25 @@ use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Pricing\PriceCategoryData;
 use App\Data\Products\ProductData;
-use App\Data\PurchaseOrders\PurchaseOrderData;
 use App\Data\Tax\CreateZoneTaxRuleData;
 use App\Data\Tax\TaxZoneRuleMatchRequest;
+use App\Domain\Invoices\Data\InvoiceData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\NotificationAudience;
 use App\Enums\TaxBuyerType;
 use App\Enums\TaxResultType;
 use App\Models\CommunicationLog;
 use App\Models\CommunicationTemplate;
 use App\Models\CommunicationTemplateVersion;
-use App\Models\Invoice;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
 use App\Models\PriceCategory;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\PurchaseOrder;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\TaxZone;
 

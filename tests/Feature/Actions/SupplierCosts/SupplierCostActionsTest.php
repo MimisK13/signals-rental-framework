@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\SupplierCosts\CreateSupplierCost;
-use App\Actions\SupplierCosts\DeleteSupplierCost;
-use App\Actions\SupplierCosts\SetPreferredSupplier;
-use App\Actions\SupplierCosts\UpdateSupplierCost;
-use App\Data\SupplierCosts\CreateSupplierCostData;
-use App\Data\SupplierCosts\UpdateSupplierCostData;
+use App\Domain\SupplierCosts\Actions\CreateSupplierCost;
+use App\Domain\SupplierCosts\Actions\DeleteSupplierCost;
+use App\Domain\SupplierCosts\Actions\SetPreferredSupplier;
+use App\Domain\SupplierCosts\Actions\UpdateSupplierCost;
+use App\Domain\SupplierCosts\Data\CreateSupplierCostData;
+use App\Domain\SupplierCosts\Data\UpdateSupplierCostData;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Enums\MembershipType;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -45,6 +45,20 @@ it('creates a supplier cost', function () {
         ->and($result->cost_basis)->toBe('per_unit');
 
     $this->assertDatabaseHas('product_supplier_costs', ['id' => $result->id, 'cost' => 5000]);
+});
+
+it('rejects unsupported currency codes on create and update', function () {
+    expect(fn () => (new CreateSupplierCost)(supplierCostData([
+        'currency_code' => 'ZZZ',
+    ])))->toThrow(ValidationException::class);
+
+    $cost = ProductSupplierCost::factory()->create(['currency_code' => 'GBP']);
+
+    expect(fn () => (new UpdateSupplierCost)($cost, UpdateSupplierCostData::from([
+        'currency_code' => 'ZZZ',
+    ])))->toThrow(ValidationException::class);
+
+    expect($cost->fresh()->currency_code)->toBe('GBP');
 });
 
 it('forbids creating without permission', function () {

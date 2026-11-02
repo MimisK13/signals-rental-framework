@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Planning\OpportunityItemPlanningReader;
 use Illuminate\Database\Events\QueryExecuted;

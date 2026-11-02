@@ -1,13 +1,13 @@
 <?php
 
-use App\Contracts\Documents\DocumentRenderer;
-use App\Enums\DocumentOutputFormat;
-use App\Exceptions\Documents\DocumentRenderException;
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Contracts\DocumentRenderer;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Exceptions\DocumentRenderException;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Services\DocumentStylesSanitizer;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Models\Opportunity;
 use App\Models\Store;
-use App\Services\Documents\DocumentStylesSanitizer;
-use App\Services\Documents\SystemDocumentTemplates;
 
 describe('DocumentStylesSanitizer', function () {
     beforeEach(function () {

@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\PurchaseOrders\CancelPurchaseOrder;
-use App\Actions\PurchaseOrders\CreatePurchaseOrder;
-use App\Actions\PurchaseOrders\DeleteDraftPurchaseOrder;
-use App\Actions\PurchaseOrders\SendPurchaseOrder;
-use App\Actions\PurchaseOrders\UpdateDraftPurchaseOrder;
-use App\Data\PurchaseOrders\CreatePurchaseOrderData;
-use App\Data\PurchaseOrders\UpdateDraftPurchaseOrderData;
+use App\Domain\PurchaseOrders\Actions\CancelPurchaseOrder;
+use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
+use App\Domain\PurchaseOrders\Actions\DeleteDraftPurchaseOrder;
+use App\Domain\PurchaseOrders\Actions\SendPurchaseOrder;
+use App\Domain\PurchaseOrders\Actions\UpdateDraftPurchaseOrder;
+use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
+use App\Domain\PurchaseOrders\Data\UpdateDraftPurchaseOrderData;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Models\Member;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;

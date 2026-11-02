@@ -1,11 +1,12 @@
 <?php
 
-use App\Models\CreditNote;
-use App\Models\Invoice;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Presentation\Livewire\CreditNotesIndex;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -26,8 +27,8 @@ it('renders the credit notes index page for a permitted user', function () {
 it('lists credit notes on the index page', function () {
     $creditNote = CreditNote::factory()->create(['number' => 'CN-LIST-1']);
 
-    Volt::actingAs(User::factory()->owner()->create())
-        ->test('credit-notes.index')
+    Livewire::actingAs(User::factory()->owner()->create())
+        ->test(CreditNotesIndex::class)
         ->assertSee('CN-LIST-1')
         ->assertSee($creditNote->invoice->number);
 });
@@ -49,8 +50,8 @@ it('filters credit notes by status chip', function () {
     CreditNote::factory()->create(['status' => 'issued', 'number' => 'CN-ISSUED']);
     CreditNote::factory()->create(['status' => 'applied', 'number' => 'CN-APPLIED']);
 
-    Volt::actingAs($user)
-        ->test('credit-notes.index')
+    Livewire::actingAs($user)
+        ->test(CreditNotesIndex::class)
         ->call('setStatusFilter', 'issued')
         ->assertSee('CN-ISSUED')
         ->assertDontSee('CN-APPLIED');

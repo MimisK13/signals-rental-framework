@@ -4,7 +4,7 @@
  * P4-CL4b burndown batch 4 — settings definition coverage.
  */
 
-use App\Settings\InvoiceSettings;
+use App\Domain\Invoices\Settings\InvoiceSettings;
 use App\Settings\TaxSettings;
 
 it('TaxSettings rules and types expose validation metadata', function () {

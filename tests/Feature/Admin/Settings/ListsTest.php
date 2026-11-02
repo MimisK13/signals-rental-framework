@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +24,7 @@ it('lists values for a list name', function () {
     ListValue::factory()->forList($listName)->create(['name' => 'Net 30']);
     ListValue::factory()->forList($listName)->create(['name' => 'Net 60']);
 
-    Volt::test('admin.settings.lists', ['listName' => $listName])
+    Livewire::test('admin.settings.lists', ['listName' => $listName])
         ->assertSee('Net 30')
         ->assertSee('Net 60');
 });
@@ -40,7 +40,7 @@ it('renders the create value form', function () {
 it('can create a value', function () {
     $listName = ListName::factory()->create();
 
-    Volt::test('admin.settings.list-value-form', ['listName' => $listName])
+    Livewire::test('admin.settings.list-value-form', ['listName' => $listName])
         ->set('name', 'New Value')
         ->set('sortOrder', 1)
         ->call('save');
@@ -52,7 +52,7 @@ it('can edit a value', function () {
     $listName = ListName::factory()->create();
     $value = ListValue::factory()->forList($listName)->create(['name' => 'Old Value']);
 
-    Volt::test('admin.settings.list-value-form', ['listName' => $listName, 'listValue' => $value])
+    Livewire::test('admin.settings.list-value-form', ['listName' => $listName, 'listValue' => $value])
         ->assertSet('name', 'Old Value')
         ->set('name', 'Updated Value')
         ->call('save');
@@ -60,11 +60,20 @@ it('can edit a value', function () {
     expect($value->fresh()->name)->toBe('Updated Value');
 });
 
+it('returns 404 when editing a value through another list name', function () {
+    $listName = ListName::factory()->create();
+    $otherList = ListName::factory()->create();
+    $value = ListValue::factory()->forList($otherList)->create();
+
+    $this->get(route('admin.settings.list-values.edit', [$listName, $value]))
+        ->assertNotFound();
+});
+
 it('can toggle active status', function () {
     $listName = ListName::factory()->create();
     $value = ListValue::factory()->forList($listName)->create(['is_active' => true]);
 
-    Volt::test('admin.settings.lists', ['listName' => $listName])
+    Livewire::test('admin.settings.lists', ['listName' => $listName])
         ->call('toggleActive', $value->id);
 
     expect($value->fresh()->is_active)->toBeFalse();
@@ -74,7 +83,7 @@ it('can delete a non-system value', function () {
     $listName = ListName::factory()->create();
     $value = ListValue::factory()->forList($listName)->create(['name' => 'Deletable']);
 
-    Volt::test('admin.settings.lists', ['listName' => $listName])
+    Livewire::test('admin.settings.lists', ['listName' => $listName])
         ->call('deleteValue', $value->id);
 
     expect(ListValue::where('name', 'Deletable')->exists())->toBeFalse();
@@ -84,7 +93,7 @@ it('cannot delete a system value', function () {
     $listName = ListName::factory()->create();
     $value = ListValue::factory()->forList($listName)->system()->create(['name' => 'System Value']);
 
-    Volt::test('admin.settings.lists', ['listName' => $listName])
+    Livewire::test('admin.settings.lists', ['listName' => $listName])
         ->call('deleteValue', $value->id)
         ->assertHasErrors('delete');
 

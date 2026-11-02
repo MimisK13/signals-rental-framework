@@ -1,6 +1,9 @@
 <?php
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
+use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
+use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Views\ColumnRegistry;
 use App\Views\ContainerColumnRegistry;
 use App\Views\MemberColumnRegistry;
@@ -10,11 +13,8 @@ use App\Views\OpportunityItemColumnRegistry;
 use App\Views\OpportunityVersionColumnRegistry;
 use App\Views\ProductColumnRegistry;
 use App\Views\ProductGroupColumnRegistry;
-use App\Views\ProductRateColumnRegistry;
-use App\Views\RateDefinitionColumnRegistry;
 use App\Views\SerialisedComponentColumnRegistry;
 use App\Views\ShortageResolutionColumnRegistry;
-use App\Views\StockLevelColumnRegistry;
 
 dataset('column registries', [
     'products' => [ProductColumnRegistry::class, 'products', 'name'],

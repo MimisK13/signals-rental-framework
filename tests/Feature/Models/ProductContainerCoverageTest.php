@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerAvailabilityMode;
 use App\Models\Container;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Models\StockLevel;
 
 describe('Product::componentOf relation', function () {
     it('returns kit rows where this product is used as a component', function () {

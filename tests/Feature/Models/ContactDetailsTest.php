@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Lists\Models\ListValue;
 use App\Models\Address;
 use App\Models\Country;
 use App\Models\Email;
 use App\Models\Link;
-use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\Phone;
 

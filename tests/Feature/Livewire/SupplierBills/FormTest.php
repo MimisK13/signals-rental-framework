@@ -1,9 +1,10 @@
 <?php
 
-use Livewire\Volt\Volt;
+use App\Domain\SupplierBills\Presentation\Livewire\Form;
+use Livewire\Livewire;
 
 it('can render', function () {
-    $component = Volt::test('supplier-bills.form');
+    $component = Livewire::test(Form::class);
 
     $component->assertSee('');
 });

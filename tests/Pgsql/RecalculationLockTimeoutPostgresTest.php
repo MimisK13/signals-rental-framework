@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Support\Carbon;

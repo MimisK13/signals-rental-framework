@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\DocumentTemplate;
-use App\Models\DocumentTemplateVersion;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Models\DocumentTemplateVersion;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Models\Store;
-use App\Services\Documents\SystemDocumentTemplates;
-use Database\Seeders\DocumentTemplateSeeder;
 use Illuminate\Support\Facades\Artisan;
 
 beforeEach(function () {
@@ -14,7 +14,11 @@ beforeEach(function () {
 
 function refreshSystemDocumentTemplatesMigration(): object
 {
-    return require database_path('migrations/2026_07_03_181108_refresh_system_document_templates_content.php');
+    $snapshot = require base_path('app/Domain/Documents/Database/Migrations/2026_07_03_181108_refresh_system_document_templates_content.php');
+    $refresh = require base_path('app/Domain/Documents/Database/Migrations/2026_07_03_181109_apply_system_document_templates_content.php');
+    $snapshot->up();
+
+    return $refresh;
 }
 
 it('refreshes stale system templates and snapshots the prior content', function () {
@@ -77,6 +81,6 @@ it('leaves already-current system templates untouched', function () {
 
 it('registers the refresh migration in the migration table', function () {
     expect(Artisan::call('migrate:status', [
-        '--path' => 'database/migrations/2026_07_03_181108_refresh_system_document_templates_content.php',
+        '--path' => 'app/Domain/Documents/Database/Migrations/2026_07_03_181108_refresh_system_document_templates_content.php',
     ]))->toBe(0);
 });

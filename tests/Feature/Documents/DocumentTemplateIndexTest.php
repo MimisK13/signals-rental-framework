@@ -1,13 +1,14 @@
 <?php
 
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Presentation\Livewire\Index;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Documents\SystemDocumentTemplates;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -35,7 +36,7 @@ it('duplicates a template from the index page', function () {
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    Volt::test('document-templates.index')
+    Livewire::test(Index::class)
         ->call('duplicateTemplate', $template->id);
 
     expect(DocumentTemplate::query()->where('store_id', $this->store->id)->where('slug', 'like', '%copy%')->exists())
@@ -48,7 +49,7 @@ it('creates a template from an existing template and redirects to the editor', f
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    Volt::test('document-templates.index')
+    Livewire::test(Index::class)
         ->set('createStartingPoint', 'duplicate')
         ->set('createName', 'Branched quote')
         ->set('createStoreId', (string) $this->store->id)
@@ -67,7 +68,7 @@ it('creates a template from an existing template and redirects to the editor', f
 it('creates a template from a system scaffold and redirects to the editor', function () {
     $definition = SystemDocumentTemplates::definition('invoice');
 
-    Volt::test('document-templates.index')
+    Livewire::test(Index::class)
         ->set('createStartingPoint', 'scaffold')
         ->set('createName', 'Custom invoice')
         ->set('createStoreId', (string) $this->store->id)
@@ -85,7 +86,7 @@ it('creates a template from a system scaffold and redirects to the editor', func
 });
 
 it('creates a completely empty template and redirects to the editor', function () {
-    Volt::test('document-templates.index')
+    Livewire::test(Index::class)
         ->set('createStartingPoint', 'empty')
         ->set('createName', 'Empty quote')
         ->set('createStoreId', (string) $this->store->id)
@@ -107,7 +108,7 @@ it('forbids creating templates without edit permission', function () {
     $viewer->givePermissionTo('document_templates.view');
     $this->actingAs($viewer);
 
-    Volt::test('document-templates.index')
+    Livewire::test(Index::class)
         ->set('createStartingPoint', 'empty')
         ->set('createName', 'Blocked template')
         ->set('createStoreId', (string) $this->store->id)

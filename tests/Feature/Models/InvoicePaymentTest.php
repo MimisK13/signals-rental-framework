@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\InvoicePayment;
+use App\Domain\Invoices\Models\InvoicePayment;
 
 it('uses an application-assigned non-incrementing integer primary key', function () {
     $payment = new InvoicePayment;

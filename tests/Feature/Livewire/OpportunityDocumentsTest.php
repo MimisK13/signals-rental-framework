@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;

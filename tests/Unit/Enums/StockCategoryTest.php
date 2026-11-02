@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\StockCategory;
+use App\Domain\Stock\Enums\StockCategory;
 
 it('has correct cases', function () {
     expect(StockCategory::cases())->toHaveCount(2);

@@ -2,13 +2,13 @@
 
 use App\Actions\Products\MergeProduct;
 use App\Data\Products\MergeProductData;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
 use App\Models\Accessory;
-use App\Models\Attachment;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

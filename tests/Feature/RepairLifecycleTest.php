@@ -1,23 +1,23 @@
 <?php
 
-use App\Actions\Repairs\CompleteRepair;
-use App\Actions\Repairs\SetRepairUsability;
-use App\Enums\AssetExpenseType;
+use App\Domain\Assets\Enums\AssetExpenseType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetExpense;
+use App\Domain\Assets\Services\AssetFinancialsCalculator;
+use App\Domain\Repairs\Actions\CompleteRepair;
+use App\Domain\Repairs\Actions\SetRepairUsability;
+use App\Domain\Repairs\Enums\RepairStatus;
+use App\Domain\Repairs\Models\Repair;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\SupplierBills\Models\SupplierBill;
+use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Enums\DemandPhase;
-use App\Enums\RepairStatus;
-use App\Models\Asset;
-use App\Models\AssetExpense;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\Repair;
-use App\Models\StockLevel;
 use App\Models\Store;
-use App\Models\SupplierBill;
-use App\Models\SupplierBillItem;
 use App\Models\User;
-use App\Services\Assets\AssetFinancialsCalculator;
 use App\Services\Availability\RecalculationPipeline;
 use App\Services\AvailabilityService;
 use Database\Seeders\PermissionSeeder;

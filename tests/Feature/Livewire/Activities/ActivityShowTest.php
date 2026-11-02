@@ -2,11 +2,11 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Show;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\ActionLog;
-use App\Models\CustomField;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -76,7 +76,7 @@ it('renders a stock-level regarding as a "Stock Level" badge, not the class stri
     Livewire::test(Show::class, ['activity' => $activity])
         ->assertSee('Stock Level')
         ->assertDontSee('App\\Models\\StockLevel')
-        ->assertDontSee('App\Models\StockLevel');
+        ->assertDontSee('App\Domain\Stock\Models\StockLevel');
 });
 
 // ── Tabs ────────────────────────────────────────────────────────────────────

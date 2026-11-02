@@ -1,14 +1,14 @@
 <?php
 
-use App\Enums\DocumentOutputFormat;
-use App\Enums\DocumentStatus;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Enums\DocumentStatus;
+use App\Domain\Documents\Jobs\BatchGenerateDocumentsJob;
+use App\Domain\Documents\Jobs\GenerateDocumentJob;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
-use App\Jobs\BatchGenerateDocumentsJob;
-use App\Jobs\GenerateDocumentJob;
-use App\Models\Document;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;

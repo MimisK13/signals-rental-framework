@@ -1,10 +1,10 @@
 <?php
 
-use App\Contracts\CalculationStrategy;
-use App\Enums\BasePeriod;
-use App\Enums\RateTransactionType;
-use App\Services\RateEngine\Strategies\PeriodStrategy;
-use App\ValueObjects\CalculationContext;
+use App\Domain\Rates\Contracts\CalculationStrategy;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Services\RateEngine\Strategies\PeriodStrategy;
+use App\Domain\Rates\ValueObjects\CalculationContext;
 use Illuminate\Support\Carbon;
 
 /**

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Invoice;
-use App\Services\Invoices\InvoiceStatusResolver;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Services\InvoiceStatusResolver;
 use Carbon\CarbonImmutable;
 
 beforeEach(function () {

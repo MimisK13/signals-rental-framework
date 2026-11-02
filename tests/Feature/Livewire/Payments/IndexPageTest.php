@@ -1,12 +1,13 @@
 <?php
 
-use App\Enums\PaymentMethod;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
+use App\Domain\Invoices\Enums\PaymentMethod;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Invoices\Presentation\Livewire\PaymentsIndex;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -30,8 +31,8 @@ it('lists payments on the index page', function () {
         'payment_method' => PaymentMethod::BankTransfer->value,
     ]);
 
-    Volt::actingAs(User::factory()->owner()->create())
-        ->test('payments.index')
+    Livewire::actingAs(User::factory()->owner()->create())
+        ->test(PaymentsIndex::class)
         ->assertSee('PAY-LIST-1')
         ->assertSee($payment->invoice->number)
         ->assertSee('Bank transfer');

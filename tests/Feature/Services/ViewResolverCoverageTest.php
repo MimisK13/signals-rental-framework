@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\CustomView;
-use App\Services\ViewResolver;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Services\ViewResolver;
 
 it('resolves a null custom-field module for a model that does not support custom fields', function () {
     // CustomView itself does NOT use HasCustomFields, so resolveCustomFieldModule

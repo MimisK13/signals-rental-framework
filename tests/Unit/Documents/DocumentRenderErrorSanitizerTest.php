@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Documents\DocumentRenderErrorSanitizer;
+use App\Domain\Documents\Services\DocumentRenderErrorSanitizer;
 
 it('sanitises render exceptions without file paths or stack traces', function () {
     $exception = new ErrorException(

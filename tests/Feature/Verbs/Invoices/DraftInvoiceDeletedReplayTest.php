@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Invoices\CreateDraftInvoice;
-use App\Actions\Invoices\DeleteDraftInvoice;
-use App\Data\Invoices\CreateDraftInvoiceData;
-use App\Enums\InvoiceType;
-use App\Models\Invoice;
+use App\Domain\Invoices\Actions\CreateDraftInvoice;
+use App\Domain\Invoices\Actions\DeleteDraftInvoice;
+use App\Domain\Invoices\Data\CreateDraftInvoiceData;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\Member;
 use App\Models\Store;
 use App\Models\User;

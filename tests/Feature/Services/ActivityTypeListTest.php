@@ -2,9 +2,9 @@
 
 use App\Domain\Activities\Enums\ActivityType;
 use App\Domain\Activities\Services\ActivityTypeList;
-use App\Models\ListName;
-use App\Models\ListValue;
-use Database\Seeders\ListOfValuesSeeder;
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 
 it('resolves the list id and active values for the Activity Type list', function () {
     $this->seed(ListOfValuesSeeder::class);

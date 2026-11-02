@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Documents\ExportDocumentTemplate;
-use App\Actions\Documents\ImportDocumentTemplate;
-use App\Data\Documents\ImportDocumentTemplateData;
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Actions\ExportDocumentTemplate;
+use App\Domain\Documents\Actions\ImportDocumentTemplate;
+use App\Domain\Documents\Data\ImportDocumentTemplateData;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;

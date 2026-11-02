@@ -1,12 +1,12 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityEventType;
 use App\Enums\AvailabilityResolution;
 use App\Models\AvailabilityEvent;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;

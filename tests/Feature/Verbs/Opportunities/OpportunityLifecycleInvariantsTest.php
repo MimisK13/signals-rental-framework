@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\Assets\MarkAssetMissing;
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\AllocateAsset;
 use App\Actions\Opportunities\ChangeOpportunityStatus;
@@ -20,20 +19,21 @@ use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\DispatchAssetData;
 use App\Data\Opportunities\ReturnAssetData;
 use App\Data\Opportunities\RevertAssetStatusData;
+use App\Domain\Assets\Actions\MarkAssetMissing;
+use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AssetCondition;
 use App\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Enums\ReleasePoint;
-use App\Models\Asset;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

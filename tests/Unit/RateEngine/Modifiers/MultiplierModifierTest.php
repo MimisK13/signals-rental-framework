@@ -1,12 +1,12 @@
 <?php
 
-use App\Contracts\RateModifier;
-use App\Enums\BasePeriod;
-use App\Enums\RateTransactionType;
-use App\Services\RateEngine\Modifiers\MultiplierModifier;
-use App\ValueObjects\CalculationContext;
-use App\ValueObjects\RateBreakdown;
-use App\ValueObjects\RateLineItem;
+use App\Domain\Rates\Contracts\RateModifier;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Services\RateEngine\Modifiers\MultiplierModifier;
+use App\Domain\Rates\ValueObjects\CalculationContext;
+use App\Domain\Rates\ValueObjects\RateBreakdown;
+use App\Domain\Rates\ValueObjects\RateLineItem;
 use Illuminate\Support\Carbon;
 
 /**

@@ -1,13 +1,15 @@
 <?php
 
-use App\Models\Attachment;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Attachments\Presentation\Livewire\MemberFiles;
+use App\Domain\Attachments\Presentation\Livewire\ProductFiles;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\FileService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -32,7 +34,7 @@ it('deletes an attachment when authorized', function () {
         'uploaded_by' => $this->user->id,
     ]);
 
-    Volt::test('products.files', ['product' => $product])
+    Livewire::test(ProductFiles::class, ['product' => $product])
         ->call('confirmDelete', $attachment->id)
         ->assertSet('deleteAttachmentId', $attachment->id)
         ->call('deleteAttachment')
@@ -52,7 +54,7 @@ it('rejects deletion when user lacks authorization', function () {
         'uploaded_by' => $this->user->id, // uploaded by a different user
     ]);
 
-    Volt::test('products.files', ['product' => $product])
+    Livewire::test(ProductFiles::class, ['product' => $product])
         ->call('confirmDelete', $attachment->id)
         ->call('deleteAttachment')
         ->assertDispatched('toast', type: 'error', message: 'You do not have permission to delete this file.');
@@ -67,7 +69,7 @@ it('cancels delete and resets deleteAttachmentId', function () {
         'attachable_id' => $product->id,
     ]);
 
-    Volt::test('products.files', ['product' => $product])
+    Livewire::test(ProductFiles::class, ['product' => $product])
         ->call('confirmDelete', $attachment->id)
         ->assertSet('deleteAttachmentId', $attachment->id)
         ->call('cancelDelete')
@@ -84,7 +86,7 @@ it('returns early from deleteAttachment when no attachment id is set', function 
         'attachable_id' => $member->id,
     ]);
 
-    Volt::test('members.files', ['member' => $member])
+    Livewire::test(MemberFiles::class, ['member' => $member])
         ->call('deleteAttachment')
         ->assertSet('deleteAttachmentId', null);
 
@@ -98,7 +100,7 @@ it('toasts success when deleting an attachment that was already removed', functi
         'attachable_id' => $member->id,
     ]);
 
-    $component = Volt::test('members.files', ['member' => $member])
+    $component = Livewire::test(MemberFiles::class, ['member' => $member])
         ->call('confirmDelete', $attachment->id);
 
     $attachment->delete();
@@ -120,7 +122,7 @@ it('toasts error when file deletion fails unexpectedly', function () {
         'uploaded_by' => $this->user->id,
     ]);
 
-    Volt::test('members.files', ['member' => $member])
+    Livewire::test(MemberFiles::class, ['member' => $member])
         ->call('confirmDelete', $attachment->id)
         ->call('deleteAttachment')
         ->assertDispatched('toast', type: 'error', message: 'The file could not be deleted. Please try again.');
@@ -131,7 +133,7 @@ it('toasts error when file deletion fails unexpectedly', function () {
 it('refreshes attachment counts after a file upload event', function () {
     $member = Member::factory()->create();
 
-    $component = Volt::test('members.files', ['member' => $member]);
+    $component = Livewire::test(MemberFiles::class, ['member' => $member]);
 
     Attachment::factory()->create([
         'attachable_type' => Member::class,

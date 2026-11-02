@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\AutoNumberSequence;
-use App\Models\CustomField;
 use App\Services\AutoNumberService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

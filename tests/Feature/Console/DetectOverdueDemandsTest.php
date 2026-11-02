@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityEventType;
 use App\Enums\DemandPhase;
 use App\Jobs\RecalculateAvailabilityJob;
@@ -7,7 +8,6 @@ use App\Models\AvailabilityEvent;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\RecalculationPipeline;
 use App\Services\AvailabilityService;

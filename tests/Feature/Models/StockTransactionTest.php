@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\TransactionType;
+use App\Domain\Stock\Enums\TransactionType;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Models\Member;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 
 it('creates a stock transaction with factory defaults', function () {

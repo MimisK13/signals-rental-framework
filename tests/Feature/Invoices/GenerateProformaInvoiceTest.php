@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\GenerateProformaInvoice;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Data\Invoices\GenerateProformaInvoiceData;
-use App\Enums\InvoiceType;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\GenerateProformaInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Data\GenerateProformaInvoiceData;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\PricingRoundingDirection;
-use App\Models\DocumentSequence;
-use App\Models\Invoice;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

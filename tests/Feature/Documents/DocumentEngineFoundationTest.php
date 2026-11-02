@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\DocumentStatus;
-use App\Models\Document;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
-use App\Models\DocumentTemplateVersion;
+use App\Domain\Documents\Enums\DocumentStatus;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Models\DocumentTemplateVersion;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;

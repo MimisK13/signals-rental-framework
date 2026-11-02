@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\InvoiceType;
-use App\Models\CreditNote;
-use App\Models\Invoice;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;

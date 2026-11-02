@@ -1,11 +1,11 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Invoices\Models\InvoiceTax;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\InvoiceTax;
 use App\Models\Opportunity;
 use App\Models\User;
 use Carbon\CarbonImmutable;

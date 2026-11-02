@@ -1,13 +1,14 @@
 <?php
 
-use App\Enums\StockMethod;
-use App\Enums\TransactionType;
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Enums\TransactionType;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
+use App\Domain\Stock\Presentation\Livewire\Show;
 use App\Models\Product;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +25,7 @@ it('shows the product image in the header when the product has one', function ()
     ]);
     $stockLevel = StockLevel::factory()->create(['product_id' => $product->id]);
 
-    Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
+    Livewire::test(Show::class, ['stockLevel' => $stockLevel])
         ->assertSee('icons/product-thumb.jpg', false);
 });
 
@@ -37,14 +38,14 @@ it('falls back to the product initials in the header when there is no image', fu
     ]);
     $stockLevel = StockLevel::factory()->create(['product_id' => $product->id]);
 
-    Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
+    Livewire::test(Show::class, ['stockLevel' => $stockLevel])
         ->assertSee('PP', false);
 });
 
 it('rejects a decimal transaction quantity', function () {
     $stockLevel = StockLevel::factory()->create(['quantity_held' => 0]);
 
-    Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
+    Livewire::test(Show::class, ['stockLevel' => $stockLevel])
         ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '2.5')
         ->set('transactionDescription', 'Received correction')
@@ -56,7 +57,7 @@ it('limits serialised stock transactions to a single unit', function () {
     $product = Product::factory()->create(['stock_method' => StockMethod::Serialised]);
     $stockLevel = StockLevel::factory()->create(['product_id' => $product->id]);
 
-    Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
+    Livewire::test(Show::class, ['stockLevel' => $stockLevel])
         ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '3')
         ->set('transactionDescription', 'Invalid serialized adjustment')
@@ -68,7 +69,7 @@ it('allows multiple units for bulk stock transactions', function () {
     $product = Product::factory()->create(['stock_method' => StockMethod::Bulk]);
     $stockLevel = StockLevel::factory()->create(['product_id' => $product->id, 'quantity_held' => 0]);
 
-    Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
+    Livewire::test(Show::class, ['stockLevel' => $stockLevel])
         ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '5')
         ->set('transactionDescription', 'Stock correction')
@@ -81,7 +82,7 @@ it('allows multiple units for bulk stock transactions', function () {
 it('deletes a transaction and reverses its effect through the confirm flow', function () {
     $stockLevel = StockLevel::factory()->create(['quantity_held' => 0]);
 
-    $component = Volt::test('stock-levels.show', ['stockLevel' => $stockLevel])
+    $component = Livewire::test(Show::class, ['stockLevel' => $stockLevel])
         ->set('transactionType', TransactionType::Increase->value)
         ->set('transactionQuantity', '4')
         ->set('transactionDescription', 'Stock correction')

@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Documents\GenerateDocument;
-use App\Data\Documents\GenerateDocumentData;
-use App\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Actions\GenerateDocument;
+use App\Domain\Documents\Data\GenerateDocumentData;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;

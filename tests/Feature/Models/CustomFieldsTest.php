@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
-use App\Models\CustomFieldGroup;
-use App\Models\CustomFieldValue;
-use App\Models\ListName;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldGroup;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\Lists\Models\ListName;
 use App\Models\Store;
 use Illuminate\Database\QueryException;
 

@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
-use App\Enums\StockMethod;
 use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\AvailabilityService;

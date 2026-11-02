@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Crew\Actions\Expenses\ApproveCrewExpense;
 use App\Domain\Crew\Actions\Expenses\CreateCrewExpense;
 use App\Domain\Crew\Actions\Expenses\MarkCrewExpenseReimbursed;
@@ -16,7 +17,6 @@ use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewExpense;
 use App\Domain\Crew\Models\CrewMember;
 use App\Models\ActionLog;
-use App\Models\Attachment;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

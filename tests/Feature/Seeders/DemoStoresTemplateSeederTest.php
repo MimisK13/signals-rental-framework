@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Services\DocumentSequenceDefaults;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Models\CommunicationTemplate;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
 use App\Models\Store;
-use App\Services\Documents\DocumentSequenceDefaults;
-use App\Services\Documents\SystemDocumentTemplates;
 use App\Services\Notifications\SystemCommunicationTemplates;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\StoreSeeder;

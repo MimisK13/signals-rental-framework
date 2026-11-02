@@ -2,8 +2,8 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\Opportunity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

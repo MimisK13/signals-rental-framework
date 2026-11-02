@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\Traits\HasCustomFields;
-use App\Services\CustomFieldModuleRegistry;
+use App\Domain\CustomFields\Concerns\HasCustomFields;
+use App\Domain\CustomFields\Services\CustomFieldModuleRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;

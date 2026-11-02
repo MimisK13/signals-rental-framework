@@ -1,9 +1,10 @@
 <?php
 
-use Livewire\Volt\Volt;
+use App\Domain\SupplierBills\Presentation\Livewire\Index;
+use Livewire\Livewire;
 
 it('can render', function () {
-    $component = Volt::test('supplier-bills.index');
+    $component = Livewire::test(Index::class);
 
     $component->assertSee('');
 });

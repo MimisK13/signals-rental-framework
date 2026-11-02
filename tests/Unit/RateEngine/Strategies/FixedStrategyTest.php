@@ -1,9 +1,9 @@
 <?php
 
-use App\Contracts\CalculationStrategy;
-use App\Enums\RateTransactionType;
-use App\Services\RateEngine\Strategies\FixedStrategy;
-use App\ValueObjects\CalculationContext;
+use App\Domain\Rates\Contracts\CalculationStrategy;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Services\RateEngine\Strategies\FixedStrategy;
+use App\Domain\Rates\ValueObjects\CalculationContext;
 use Illuminate\Support\Carbon;
 
 function fixedContext(

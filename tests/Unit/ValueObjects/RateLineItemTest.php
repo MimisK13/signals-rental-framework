@@ -1,6 +1,6 @@
 <?php
 
-use App\ValueObjects\RateLineItem;
+use App\Domain\Rates\ValueObjects\RateLineItem;
 
 it('exposes the supplied values as readonly properties', function () {
     $item = new RateLineItem(

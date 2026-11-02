@@ -1,12 +1,15 @@
 <?php
 
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Presentation\Livewire\Form;
+use App\Domain\PurchaseOrders\Presentation\Livewire\Index;
+use App\Domain\PurchaseOrders\Presentation\Livewire\Show;
 use App\Models\Member;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -31,7 +34,7 @@ it('lists purchase orders on the index page', function () {
 
     $po = PurchaseOrder::factory()->create(['number' => 'PO-LIST-1']);
 
-    Volt::test('purchase-orders.index')
+    Livewire::test(Index::class)
         ->assertSee('PO-LIST-1');
 });
 
@@ -48,7 +51,7 @@ it('shows send and cancel actions on the show page', function () {
 
     $po = PurchaseOrder::factory()->create(['status' => 'draft', 'number' => 'PO-SHOW-1']);
 
-    Volt::test('purchase-orders.show', ['purchaseOrder' => $po])
+    Livewire::test(Show::class, ['purchaseOrder' => $po])
         ->assertSee('PO-SHOW-1')
         ->assertSee('Send')
         ->assertSee('Cancel');
@@ -67,7 +70,7 @@ it('creates a purchase order from the form', function () {
     $store = Store::factory()->create();
     $supplier = Member::factory()->organisation()->create();
 
-    Volt::test('purchase-orders.form')
+    Livewire::test(Form::class)
         ->set('supplierId', $supplier->id)
         ->set('storeId', $store->id)
         ->set('lines.0.description', 'Test item')

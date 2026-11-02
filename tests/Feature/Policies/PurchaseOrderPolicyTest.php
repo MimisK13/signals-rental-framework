@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
-use App\Policies\PurchaseOrderPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

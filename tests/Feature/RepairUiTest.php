@@ -1,13 +1,14 @@
 <?php
 
+use App\Domain\Repairs\Models\Repair;
 use App\Models\Product;
-use App\Models\Repair;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
 beforeEach(function (): void {
+    config(['signals.installed' => true, 'signals.setup_complete' => true]);
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     $user = User::factory()->owner()->create();

@@ -1,15 +1,15 @@
 <?php
 
-use App\Enums\BasePeriod;
-use App\Enums\RateTransactionType;
-use App\Services\RateEngine\Modifiers\FactorModifier;
-use App\Services\RateEngine\Modifiers\MultiplierModifier;
-use App\Services\RateEngine\RateCalculator;
-use App\Services\RateEngine\RateEngineRegistry;
-use App\Services\RateEngine\Strategies\FixedStrategy;
-use App\Services\RateEngine\Strategies\HybridStrategy;
-use App\Services\RateEngine\Strategies\PeriodStrategy;
-use App\ValueObjects\CalculationContext;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Services\RateEngine\Modifiers\FactorModifier;
+use App\Domain\Rates\Services\RateEngine\Modifiers\MultiplierModifier;
+use App\Domain\Rates\Services\RateEngine\RateCalculator;
+use App\Domain\Rates\Services\RateEngine\RateEngineRegistry;
+use App\Domain\Rates\Services\RateEngine\Strategies\FixedStrategy;
+use App\Domain\Rates\Services\RateEngine\Strategies\HybridStrategy;
+use App\Domain\Rates\Services\RateEngine\Strategies\PeriodStrategy;
+use App\Domain\Rates\ValueObjects\CalculationContext;
 use Illuminate\Support\Carbon;
 
 it('binds the rate engine registry as a singleton', function () {

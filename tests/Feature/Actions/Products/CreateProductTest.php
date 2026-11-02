@@ -3,10 +3,10 @@
 use App\Actions\Products\CreateProduct;
 use App\Data\Products\CreateProductData;
 use App\Data\Products\ProductData;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Enums\ProductType;
 use App\Events\AuditableEvent;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use App\Models\Product;
 use App\Models\ProductTaxClass;
 use App\Models\User;

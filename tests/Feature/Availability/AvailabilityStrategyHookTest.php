@@ -2,12 +2,12 @@
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Contracts\Availability\AvailabilityStrategyContract;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\PassThroughAvailabilityStrategy;
 use App\Services\Availability\RecalculationPipeline;

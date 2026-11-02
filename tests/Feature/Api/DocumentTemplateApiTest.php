@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\DocumentTemplate;
-use App\Models\DocumentTemplateVersion;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Models\DocumentTemplateVersion;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Store;
 use App\Models\User;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;

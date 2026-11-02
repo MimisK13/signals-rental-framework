@@ -2,11 +2,11 @@
 
 use App\Actions\Members\MergeMember;
 use App\Data\Members\MergeMemberData;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
 use App\Models\Address;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use App\Models\Email;
 use App\Models\Link;
 use App\Models\Member;

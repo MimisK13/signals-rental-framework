@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Invoice;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Policies\InvoicePolicy;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\User;
-use App\Policies\InvoicePolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

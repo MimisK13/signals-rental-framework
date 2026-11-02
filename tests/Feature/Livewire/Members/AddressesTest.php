@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Livewire\Members\Addresses;
+use App\Livewire\Members\AddressForm;
 use App\Models\Address;
 use App\Models\Member;
 use App\Models\User;
-use Database\Seeders\ListOfValuesSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -32,13 +33,13 @@ it('lists addresses for a member', function () {
         'city' => 'Manchester',
     ]);
 
-    Volt::test('members.addresses', ['member' => $this->member])
+    Livewire::test(Addresses::class, ['member' => $this->member])
         ->assertSee('London')
         ->assertSee('Manchester');
 });
 
 it('shows empty state when no addresses exist', function () {
-    Volt::test('members.addresses', ['member' => $this->member])
+    Livewire::test(Addresses::class, ['member' => $this->member])
         ->assertSee('No addresses found.');
 });
 
@@ -49,7 +50,7 @@ it('shows primary badge on primary address', function () {
         'city' => 'Primary City',
     ]);
 
-    Volt::test('members.addresses', ['member' => $this->member])
+    Livewire::test(Addresses::class, ['member' => $this->member])
         ->assertSee('Primary');
 });
 
@@ -59,7 +60,7 @@ it('can delete an address', function () {
         'addressable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.addresses', ['member' => $this->member])
+    Livewire::test(Addresses::class, ['member' => $this->member])
         ->call('deleteAddress', $address->id);
 
     expect(Address::find($address->id))->toBeNull();
@@ -76,7 +77,7 @@ it('populates the type dropdown with the seeded Address Type list values', funct
     // name is 'Address Type', so the Type select rendered blank.
     $this->seed(ListOfValuesSeeder::class);
 
-    Volt::test('members.address-form', ['member' => $this->member])
+    Livewire::test(AddressForm::class, ['member' => $this->member])
         ->assertViewHas('addressTypes', fn ($types) => $types->isNotEmpty())
         ->assertSee('Billing')
         ->assertSee('Shipping')
@@ -85,7 +86,7 @@ it('populates the type dropdown with the seeded Address Type list values', funct
 });
 
 it('can create an address', function () {
-    Volt::test('members.address-form', ['member' => $this->member])
+    Livewire::test(AddressForm::class, ['member' => $this->member])
         ->set('name', 'Head Office')
         ->set('street', '123 Main St')
         ->set('city', 'London')
@@ -103,7 +104,7 @@ it('can edit an address', function () {
         'city' => 'Old City',
     ]);
 
-    Volt::test('members.address-form', ['member' => $this->member, 'address' => $address])
+    Livewire::test(AddressForm::class, ['member' => $this->member, 'address' => $address])
         ->assertSet('city', 'Old City')
         ->set('city', 'New City')
         ->call('save')
@@ -118,7 +119,7 @@ it('can set primary address', function () {
         'addressable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.address-form', ['member' => $this->member])
+    Livewire::test(AddressForm::class, ['member' => $this->member])
         ->set('city', 'New Primary City')
         ->set('isPrimary', true)
         ->call('save')
@@ -135,9 +136,9 @@ it('cannot delete another member\'s address', function () {
         'addressable_id' => $otherMember->id,
     ]);
 
-    expect(fn () => Volt::test('members.addresses', ['member' => $this->member])
+    Livewire::test(Addresses::class, ['member' => $this->member])
         ->call('deleteAddress', $otherAddress->id)
-    )->toThrow(ModelNotFoundException::class);
+        ->assertNotFound();
 
     expect(Address::find($otherAddress->id))->not->toBeNull();
 });

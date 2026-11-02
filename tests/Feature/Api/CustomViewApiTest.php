@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\CustomView;
+use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
+use App\Domain\CustomViews\Models\CustomView;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\ViewSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
@@ -82,6 +82,16 @@ describe('GET /api/v1/custom_views/{id}', function () {
 
     it('returns 404 for non-existent view', function () {
         $this->getJson('/api/v1/custom_views/99999')
+            ->assertNotFound();
+    });
+
+    it('returns 404 for another users personal view', function () {
+        $view = CustomView::factory()->create([
+            'visibility' => 'personal',
+            'user_id' => User::factory()->create()->id,
+        ]);
+
+        $this->getJson("/api/v1/custom_views/{$view->id}")
             ->assertNotFound();
     });
 
@@ -258,6 +268,29 @@ describe('POST /api/v1/custom_views', function () {
 
         expect(CustomView::where('name', 'Persisted View')->exists())->toBeTrue();
     });
+
+    it('persists the description', function () {
+        $this->postJson('/api/v1/custom_views', [
+            'name' => 'Described View',
+            'description' => 'Operational member filter',
+            'entity_type' => 'members',
+            'columns' => ['name'],
+        ])
+            ->assertCreated()
+            ->assertJsonPath('custom_view.description', 'Operational member filter');
+    });
+
+    it('requires settings manage permission to create a shared view', function () {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+
+        $this->postJson('/api/v1/custom_views', [
+            'name' => 'Shared View',
+            'entity_type' => 'members',
+            'visibility' => 'shared',
+            'columns' => ['name'],
+        ])->assertForbidden();
+    });
 });
 
 describe('PUT /api/v1/custom_views/{id}', function () {
@@ -291,6 +324,36 @@ describe('PUT /api/v1/custom_views/{id}', function () {
             ->assertOk()
             ->assertJsonPath('custom_view.name', 'New Name')
             ->assertJsonPath('custom_view.per_page', 20);
+    });
+
+    it('clears nullable fields and normalises visibility ownership', function () {
+        $view = CustomView::factory()->create([
+            'user_id' => $this->user->id,
+            'visibility' => 'personal',
+            'description' => 'Remove me',
+            'sort_column' => 'name',
+        ]);
+
+        $this->putJson("/api/v1/custom_views/{$view->id}", [
+            'visibility' => 'shared',
+            'description' => null,
+            'sort_column' => null,
+            'role_ids' => [],
+        ])
+            ->assertOk()
+            ->assertJsonPath('custom_view.visibility', 'shared')
+            ->assertJsonPath('custom_view.user_id', null)
+            ->assertJsonPath('custom_view.description', null)
+            ->assertJsonPath('custom_view.sort_column', null);
+
+        $this->putJson("/api/v1/custom_views/{$view->id}", [
+            'visibility' => 'personal',
+        ])
+            ->assertOk()
+            ->assertJsonPath('custom_view.visibility', 'personal')
+            ->assertJsonPath('custom_view.user_id', $this->user->id);
+
+        expect($view->fresh()->roles()->count())->toBe(0);
     });
 
     it('prevents other users from updating personal views', function () {
@@ -418,6 +481,16 @@ describe('POST /api/v1/custom_views/{id}/clone', function () {
             ->assertCreated();
 
         expect(CustomView::count())->toBe($countBefore + 1);
+    });
+
+    it('returns 404 when cloning another users personal view', function () {
+        $source = CustomView::factory()->create([
+            'visibility' => 'personal',
+            'user_id' => User::factory()->create()->id,
+        ]);
+
+        $this->postJson("/api/v1/custom_views/{$source->id}/clone")
+            ->assertNotFound();
     });
 });
 

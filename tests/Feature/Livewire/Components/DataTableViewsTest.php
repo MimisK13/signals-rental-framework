@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Models\UserViewPreference;
 use App\Livewire\Components\DataTable;
-use App\Models\CustomView;
 use App\Models\Member;
 use App\Models\User;
-use App\Models\UserViewPreference;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\ViewSeeder;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -106,6 +106,23 @@ describe('switchView', function () {
         expect($component->get('viewId'))->toBe($view->id)
             ->and($component->get('activeViewName'))->toBe('Organisations Only');
     });
+
+    it('rejects another users personal view', function () {
+        $view = CustomView::factory()->create([
+            'entity_type' => 'members',
+            'visibility' => 'personal',
+            'user_id' => User::factory()->create()->id,
+        ]);
+
+        $component = Livewire::test(DataTable::class, [
+            'columns' => viewColumns(),
+            'model' => Member::class,
+            'entityType' => 'members',
+        ])->call('switchView', $view->id);
+
+        expect($component->get('viewId'))->toBeNull()
+            ->and($component->get('activeViewName'))->toBeNull();
+    });
 });
 
 describe('clearView', function () {
@@ -161,6 +178,27 @@ describe('setDefaultView', function () {
         $component->call('setDefaultView');
 
         expect(UserViewPreference::count())->toBe(0);
+    });
+
+    it('does not save an invisible view as the user default', function () {
+        $view = CustomView::factory()->create([
+            'entity_type' => 'members',
+            'visibility' => 'personal',
+            'user_id' => User::factory()->create()->id,
+        ]);
+
+        Livewire::test(DataTable::class, [
+            'columns' => viewColumns(),
+            'model' => Member::class,
+            'entityType' => 'members',
+        ])
+            ->set('viewId', $view->id)
+            ->call('setDefaultView');
+
+        expect(UserViewPreference::query()
+            ->where('user_id', $this->user->id)
+            ->where('custom_view_id', $view->id)
+            ->exists())->toBeFalse();
     });
 });
 

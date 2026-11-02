@@ -2,8 +2,8 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
 use App\Events\AuditableEvent;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\NotificationType;
 use App\Models\Opportunity;

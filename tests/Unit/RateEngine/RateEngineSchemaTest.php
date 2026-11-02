@@ -1,11 +1,11 @@
 <?php
 
-use App\Services\RateEngine\Modifiers\FactorModifier;
-use App\Services\RateEngine\Modifiers\MultiplierModifier;
-use App\Services\RateEngine\RateEngineRegistry;
-use App\Services\RateEngine\Strategies\FixedStrategy;
-use App\Services\RateEngine\Strategies\HybridStrategy;
-use App\Services\RateEngine\Strategies\PeriodStrategy;
+use App\Domain\Rates\Services\RateEngine\Modifiers\FactorModifier;
+use App\Domain\Rates\Services\RateEngine\Modifiers\MultiplierModifier;
+use App\Domain\Rates\Services\RateEngine\RateEngineRegistry;
+use App\Domain\Rates\Services\RateEngine\Strategies\FixedStrategy;
+use App\Domain\Rates\Services\RateEngine\Strategies\HybridStrategy;
+use App\Domain\Rates\Services\RateEngine\Strategies\PeriodStrategy;
 use App\Support\ConfigSchema\Schema;
 use App\Support\ConfigSchema\Section;
 

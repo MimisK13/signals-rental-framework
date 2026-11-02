@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Documents\TemplateLineDiff;
+use App\Domain\Documents\Services\TemplateLineDiff;
 
 describe('TemplateLineDiff', function () {
     beforeEach(function () {

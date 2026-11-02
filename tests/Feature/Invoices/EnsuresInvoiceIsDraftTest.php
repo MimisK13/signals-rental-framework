@@ -1,8 +1,7 @@
 <?php
 
-use App\Models\Invoice;
-use App\Models\Store;
-use App\Services\Invoices\EnsuresInvoiceIsDraft;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Services\EnsuresInvoiceIsDraft;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

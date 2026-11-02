@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ProductSupplierCost;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
+use App\Domain\SupplierCosts\Policies\ProductSupplierCostPolicy;
 use App\Models\User;
-use App\Policies\ProductSupplierCostPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

@@ -1,12 +1,13 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Presentation\Livewire\ProductRateForm;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -26,12 +27,12 @@ it('renders the create rate form', function () {
 });
 
 it('defaults valid from to today on create', function () {
-    Volt::test('products.rate-form', ['product' => $this->product])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product])
         ->assertSet('validFrom', now()->toDateString());
 });
 
 it('creates a rate, converting the price to minor units, and redirects to the tab', function () {
-    Volt::test('products.rate-form', ['product' => $this->product])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product])
         ->set('rateDefinitionId', $this->definition->id)
         ->set('transactionType', 'rental')
         ->set('price', '50.00')
@@ -59,7 +60,7 @@ it('flashes a non-blocking overlap warning when the new rate overlaps', function
         'valid_to' => null,
     ]);
 
-    Volt::test('products.rate-form', ['product' => $this->product])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product])
         ->set('rateDefinitionId', $this->definition->id)
         ->set('transactionType', 'rental')
         ->set('price', '40.00')
@@ -80,7 +81,7 @@ it('populates the form when editing', function () {
         'currency' => 'GBP',
     ]);
 
-    Volt::test('products.rate-form', ['product' => $this->product, 'rate' => $rate])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product, 'rate' => $rate])
         ->assertSet('rateId', $rate->id)
         ->assertSet('price', '10.00');
 });
@@ -93,7 +94,7 @@ it('updates a rate assignment', function () {
         'currency' => 'GBP',
     ]);
 
-    Volt::test('products.rate-form', ['product' => $this->product, 'rate' => $rate])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product, 'rate' => $rate])
         ->set('price', '99.99')
         ->call('save')
         ->assertHasNoErrors()
@@ -103,7 +104,7 @@ it('updates a rate assignment', function () {
 });
 
 it('validates that a rate definition is selected', function () {
-    Volt::test('products.rate-form', ['product' => $this->product])
+    Livewire::test(ProductRateForm::class, ['product' => $this->product])
         ->set('price', '10.00')
         ->call('save')
         ->assertHasErrors(['rateDefinitionId']);

@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\AssetLifecycleEventType;
-use App\Enums\AssetLifecycleStatus;
-use App\Enums\AssetOwnershipType;
-use App\Models\Asset;
-use App\Models\AssetLifecycleEvent;
-use App\Models\AssetUsage;
+use App\Domain\Assets\Enums\AssetLifecycleEventType;
+use App\Domain\Assets\Enums\AssetLifecycleStatus;
+use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetLifecycleEvent;
+use App\Domain\Assets\Models\AssetUsage;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Services\Assets\ProductUtilizationCalculator;

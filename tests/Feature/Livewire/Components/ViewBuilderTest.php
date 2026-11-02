@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\CustomViews\Models\CustomView;
 use App\Livewire\Components\ViewBuilder;
-use App\Models\CustomView;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -52,6 +52,18 @@ it('opens the modal for editing an existing view', function () {
         ->assertSet('sortDirection', 'desc')
         ->assertSet('perPage', 48)
         ->assertSee('Edit Custom View');
+});
+
+it('forbids opening another users personal view', function () {
+    $view = CustomView::factory()->create([
+        'visibility' => 'personal',
+        'user_id' => User::factory()->create()->id,
+    ]);
+    actingAs(User::factory()->create());
+
+    Livewire::test(ViewBuilder::class, ['entityType' => 'members'])
+        ->dispatch('open-view-builder', viewId: $view->id)
+        ->assertForbidden();
 });
 
 it('normalises existing filters when opening a view for editing', function () {

@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Country;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
-use App\Models\StockLevel;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

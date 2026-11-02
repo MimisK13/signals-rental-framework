@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DemandPhase;
@@ -12,7 +13,6 @@ use App\Models\OpportunityItemAsset;
 use App\Models\OpportunityVersion;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use Illuminate\Database\Eloquent\Model;

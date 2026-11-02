@@ -1,18 +1,20 @@
 <?php
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\CustomFields\Services\CustomFieldSerializer;
 use App\Models\Member;
-use App\Services\CustomFieldSerializer;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-// Uses DatabaseMigrations (not the global RefreshDatabase transaction) so SQLite
+// Uses an explicit fresh schema (not the global RefreshDatabase transaction) so SQLite
 // honours the foreign-key toggle: we delete a custom field without cascading,
 // leaving an orphaned value whose customField relation resolves to null.
-uses(TestCase::class, DatabaseMigrations::class);
+uses(TestCase::class);
+
+beforeEach(fn () => Artisan::call('migrate:fresh'));
 
 it('skips orphaned custom field values when serialising to array', function () {
     $member = Member::factory()->create();

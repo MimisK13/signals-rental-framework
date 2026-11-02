@@ -1,10 +1,10 @@
 <?php
 
-use App\Data\Rates\CreateProductRateData;
-use App\Data\Rates\ProductRateData;
-use App\Data\Rates\UpdateProductRateData;
-use App\Enums\RateTransactionType;
-use App\Models\ProductRate;
+use App\Domain\Rates\Data\CreateProductRateData;
+use App\Domain\Rates\Data\ProductRateData;
+use App\Domain\Rates\Data\UpdateProductRateData;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Models\ProductRate;
 use Illuminate\Validation\ValidationException;
 use Spatie\LaravelData\Optional;
 

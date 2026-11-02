@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\ContainerItem;
 use App\Models\Demand;
 use App\Models\Opportunity;
@@ -7,7 +8,6 @@ use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\ShortageAcknowledgement;
 use App\Models\ShortageWaitlistMonitor;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 

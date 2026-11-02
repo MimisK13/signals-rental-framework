@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\PurchaseOrders\PurchaseOrderStatusRegistry;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderStatusRegistry;
 
 describe('PurchaseOrderStatusRegistry', function () {
     it('exposes configured statuses and transitions', function () {

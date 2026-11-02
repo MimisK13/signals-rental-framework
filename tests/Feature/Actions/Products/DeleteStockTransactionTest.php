@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Products\DeleteStockTransaction;
+use App\Domain\Stock\Actions\DeleteStockTransaction;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Events\AuditableEvent;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Api\WebhookService;

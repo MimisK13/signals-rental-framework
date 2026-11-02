@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use App\Enums\MembershipType;
 use App\Models\Country;
-use App\Models\ListName;
-use App\Models\ListValue;
 use App\Models\Member;
 use App\Models\MemberRelationship;
 use App\Models\Membership;

@@ -1,10 +1,10 @@
 <?php
 
 use App\Actions\Members\UpdateMember;
-use App\Data\Invoices\InvoicePaymentData;
 use App\Data\Members\UpdateMemberData;
+use App\Domain\Invoices\Data\InvoicePaymentData;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Jobs\DeliverWebhook;
-use App\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\User;
 use App\Models\Webhook;

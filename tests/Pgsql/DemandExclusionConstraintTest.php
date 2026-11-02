@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;

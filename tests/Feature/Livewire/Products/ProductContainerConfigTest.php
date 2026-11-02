@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

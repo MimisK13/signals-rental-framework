@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Documents\GenerateBillingIssueDocument;
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueInvoice;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
+use App\Domain\Documents\Actions\GenerateBillingIssueDocument;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Invoices\Models\InvoiceTax;
 use App\Enums\PricingRoundingDirection;
-use App\Jobs\GenerateBillingIssueDocumentJob;
-use App\Models\Document;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\InvoiceTax;
 use App\Models\User;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;

@@ -1,16 +1,16 @@
 <?php
 
+use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityEventType;
 use App\Enums\DemandPhase;
 use App\Enums\OpportunityState;
 use App\Enums\ShortageResolutionStatus;
 use App\Enums\ShortageResolutionType;
-use App\Enums\StockMethod;
 use App\Models\AvailabilityEvent;
 use App\Models\Demand;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Shortages\Resolvers\DateShiftResolver;

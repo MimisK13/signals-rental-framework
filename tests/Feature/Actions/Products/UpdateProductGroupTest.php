@@ -2,8 +2,8 @@
 
 use App\Actions\Products\UpdateProductGroup;
 use App\Data\Products\UpdateProductGroupData;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Models\ProductGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

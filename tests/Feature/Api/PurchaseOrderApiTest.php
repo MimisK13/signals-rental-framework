@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

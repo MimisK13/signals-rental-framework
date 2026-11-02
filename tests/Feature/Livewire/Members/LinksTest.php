@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
+use App\Livewire\Members\LinkForm;
+use App\Livewire\Members\Links;
 use App\Models\Link;
 use App\Models\Member;
 use App\Models\User;
-use Database\Seeders\ListOfValuesSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -34,13 +35,13 @@ it('lists links for a member', function () {
         'name' => 'Other Site',
     ]);
 
-    Volt::test('members.links', ['member' => $this->member])
+    Livewire::test(Links::class, ['member' => $this->member])
         ->assertSee('https://example.com')
         ->assertSee('https://other.com');
 });
 
 it('shows empty state when no links exist', function () {
-    Volt::test('members.links', ['member' => $this->member])
+    Livewire::test(Links::class, ['member' => $this->member])
         ->assertSee('No links found.');
 });
 
@@ -50,7 +51,7 @@ it('can delete a link', function () {
         'linkable_id' => $this->member->id,
     ]);
 
-    Volt::test('members.links', ['member' => $this->member])
+    Livewire::test(Links::class, ['member' => $this->member])
         ->call('deleteLink', $link->id);
 
     expect(Link::find($link->id))->toBeNull();
@@ -67,7 +68,7 @@ it('populates the type dropdown with the seeded Link Type list values', function
     // name is 'Link Type', so the Type select rendered blank.
     $this->seed(ListOfValuesSeeder::class);
 
-    Volt::test('members.link-form', ['member' => $this->member])
+    Livewire::test(LinkForm::class, ['member' => $this->member])
         ->assertViewHas('linkTypes', fn ($types) => $types->isNotEmpty())
         ->assertSee('Website')
         ->assertSee('LinkedIn')
@@ -75,7 +76,7 @@ it('populates the type dropdown with the seeded Link Type list values', function
 });
 
 it('can create a link', function () {
-    Volt::test('members.link-form', ['member' => $this->member])
+    Livewire::test(LinkForm::class, ['member' => $this->member])
         ->set('url', 'https://newsite.com')
         ->set('name', 'New Site')
         ->call('save')
@@ -92,7 +93,7 @@ it('can edit a link', function () {
         'name' => 'Old Site',
     ]);
 
-    Volt::test('members.link-form', ['member' => $this->member, 'link' => $link])
+    Livewire::test(LinkForm::class, ['member' => $this->member, 'link' => $link])
         ->assertSet('url', 'https://old.com')
         ->assertSet('name', 'Old Site')
         ->set('url', 'https://new.com')
@@ -105,14 +106,14 @@ it('can edit a link', function () {
 });
 
 it('validates required url', function () {
-    Volt::test('members.link-form', ['member' => $this->member])
+    Livewire::test(LinkForm::class, ['member' => $this->member])
         ->set('url', '')
         ->call('save')
         ->assertHasErrors(['url']);
 });
 
 it('validates url format', function () {
-    Volt::test('members.link-form', ['member' => $this->member])
+    Livewire::test(LinkForm::class, ['member' => $this->member])
         ->set('url', 'not-a-url')
         ->call('save')
         ->assertHasErrors(['url']);
@@ -125,9 +126,9 @@ it('cannot delete another member\'s link', function () {
         'linkable_id' => $otherMember->id,
     ]);
 
-    expect(fn () => Volt::test('members.links', ['member' => $this->member])
+    Livewire::test(Links::class, ['member' => $this->member])
         ->call('deleteLink', $otherLink->id)
-    )->toThrow(ModelNotFoundException::class);
+        ->assertNotFound();
 
     expect(Link::find($otherLink->id))->not->toBeNull();
 });

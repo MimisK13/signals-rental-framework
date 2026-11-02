@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Models\Invoice;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Services\InvoiceTotalsCalculator;
+use App\Domain\Invoices\Services\OpportunityInvoiceSnapshotter;
+use App\Domain\Rates\Database\Seeders\RateDefinitionPresetSeeder;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\User;
-use App\Services\Invoices\InvoiceTotalsCalculator;
-use App\Services\Invoices\OpportunityInvoiceSnapshotter;
 use Carbon\CarbonImmutable;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\DiscountCategorySeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\PriceCategorySeeder;
 use Database\Seeders\ProductGroupSeeder;
-use Database\Seeders\RateDefinitionPresetSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\StoreSeeder;
 use Database\Seeders\TaxCategorySeeder;

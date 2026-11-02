@@ -4,28 +4,28 @@
  * P4-CL4b burndown batch 4 — policy branch coverage.
  */
 
-use App\Enums\DocumentStatus;
+use App\Domain\Documents\Enums\DocumentStatus;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Policies\DocumentPolicy;
+use App\Domain\Documents\Policies\DocumentSequencePolicy;
+use App\Domain\Documents\Policies\DocumentTemplatePolicy;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Policies\InvoicePolicy;
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
 use App\Models\CommunicationLog;
 use App\Models\CommunicationTemplate;
-use App\Models\Document;
-use App\Models\DocumentSequence;
-use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
 use App\Policies\CommunicationLogPolicy;
 use App\Policies\CommunicationTemplatePolicy;
-use App\Policies\DocumentPolicy;
-use App\Policies\DocumentSequencePolicy;
-use App\Policies\DocumentTemplatePolicy;
-use App\Policies\InvoicePolicy;
 use App\Policies\OpportunityCostPolicy;
 use App\Policies\ProductGroupPolicy;
-use App\Policies\PurchaseOrderPolicy;
 use App\Policies\VirtualStockIntakePolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

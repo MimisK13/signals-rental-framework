@@ -1,8 +1,8 @@
 <?php
 
-use App\Exceptions\Documents\DocumentRenderException;
-use App\Services\Documents\BladeExpressionExtractor;
-use App\Services\Documents\SandboxedExpressionValidator;
+use App\Domain\Documents\Exceptions\DocumentRenderException;
+use App\Domain\Documents\Services\BladeExpressionExtractor;
+use App\Domain\Documents\Services\SandboxedExpressionValidator;
 
 describe('SandboxedExpressionValidator allowlist policy', function () {
     beforeEach(function () {

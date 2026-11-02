@@ -1,23 +1,24 @@
 <?php
 
-use App\Actions\Rates\CreateProductRate;
-use App\Actions\Rates\DeleteProductRate;
-use App\Actions\Rates\UpdateProductRate;
-use App\Data\Rates\CreateProductRateData;
-use App\Data\Rates\ProductRateData;
-use App\Data\Rates\UpdateProductRateData;
-use App\Enums\RateTransactionType;
+use App\Domain\Rates\Actions\CreateProductRate;
+use App\Domain\Rates\Actions\DeleteProductRate;
+use App\Domain\Rates\Actions\UpdateProductRate;
+use App\Domain\Rates\Data\CreateProductRateData;
+use App\Domain\Rates\Data\ProductRateData;
+use App\Domain\Rates\Data\UpdateProductRateData;
+use App\Domain\Rates\Enums\RateTransactionType;
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Services\RateEngine\ProductRateOverlapChecker;
 use App\Events\AuditableEvent;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\RateEngine\ProductRateOverlapChecker;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
@@ -52,13 +53,27 @@ it('creates a product rate', function () {
     Event::assertDispatched(AuditableEvent::class);
 });
 
+it('rejects unsupported currencies on create and update', function () {
+    expect(fn () => (new CreateProductRate)(productRateData([
+        'currency' => 'ZZZ',
+    ])))->toThrow(ValidationException::class);
+
+    $rate = ProductRate::factory()->create(['currency' => 'GBP']);
+
+    expect(fn () => (new UpdateProductRate)($rate, UpdateProductRateData::from([
+        'currency' => 'ZZZ',
+    ])))->toThrow(ValidationException::class);
+
+    expect($rate->fresh()->currency)->toBe('GBP');
+});
+
 it('records an action_logs row when a product rate is created', function () {
     $user = User::factory()->owner()->create();
     $this->actingAs($user);
 
     $result = (new CreateProductRate)(productRateData());
 
-    assertActionLogged('product_rate.created', ProductRate::class, $result->id, $user->id);
+    assertActionLogged('product_rate.created', (new ProductRate)->getMorphClass(), $result->id, $user->id);
 });
 
 it('records an action_logs row when a product rate is updated', function () {
@@ -68,7 +83,7 @@ it('records an action_logs row when a product rate is updated', function () {
 
     (new UpdateProductRate)($rate, UpdateProductRateData::from(['price' => 8000]));
 
-    assertActionLogged('product_rate.updated', ProductRate::class, $rate->id, $user->id);
+    assertActionLogged('product_rate.updated', $rate->getMorphClass(), $rate->id, $user->id);
 });
 
 it('records an action_logs row when a product rate is deleted', function () {
@@ -78,7 +93,7 @@ it('records an action_logs row when a product rate is deleted', function () {
 
     (new DeleteProductRate)($rate);
 
-    assertActionLogged('product_rate.deleted', ProductRate::class, $rate->id, $user->id);
+    assertActionLogged('product_rate.deleted', $rate->getMorphClass(), $rate->id, $user->id);
 });
 
 it('forbids creating a product rate without permission', function () {

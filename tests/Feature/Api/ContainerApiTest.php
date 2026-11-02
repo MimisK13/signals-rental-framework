@@ -1,12 +1,12 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

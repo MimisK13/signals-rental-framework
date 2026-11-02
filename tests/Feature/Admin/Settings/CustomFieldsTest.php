@@ -1,10 +1,12 @@
 <?php
 
-use App\Enums\CustomFieldType;
-use App\Models\CustomField;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Presentation\Livewire\Form;
+use App\Domain\CustomFields\Presentation\Livewire\Index;
 use App\Models\User;
 use App\Services\VisibilityRuleEvaluator;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -22,7 +24,7 @@ it('lists custom fields', function () {
     CustomField::factory()->create(['display_name' => 'PO Reference']);
     CustomField::factory()->create(['display_name' => 'Account Number']);
 
-    Volt::test('admin.settings.custom-fields')
+    Livewire::test(Index::class)
         ->assertSee('PO Reference')
         ->assertSee('Account Number');
 });
@@ -31,7 +33,7 @@ it('can filter by module type', function () {
     CustomField::factory()->forModule('Member')->create(['display_name' => 'Member Field']);
     CustomField::factory()->forModule('Opportunity')->create(['display_name' => 'Opportunity Field']);
 
-    Volt::test('admin.settings.custom-fields')
+    Livewire::test(Index::class)
         ->set('moduleFilter', 'Member')
         ->assertSee('Member Field')
         ->assertDontSee('Opportunity Field');
@@ -44,7 +46,7 @@ it('renders the create form', function () {
 });
 
 it('can create a field', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'po_reference')
         ->set('displayName', 'PO Reference')
         ->set('moduleType', 'Member')
@@ -65,7 +67,7 @@ it('renders the edit form', function () {
 it('can edit a field', function () {
     $field = CustomField::factory()->create(['name' => 'test_field', 'display_name' => 'Old Display']);
 
-    Volt::test('admin.settings.custom-field-form', ['customField' => $field])
+    Livewire::test(Form::class, ['customField' => $field])
         ->assertSet('displayName', 'Old Display')
         ->set('displayName', 'New Display')
         ->call('save')
@@ -75,7 +77,7 @@ it('can edit a field', function () {
 });
 
 it('validates required fields', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', '')
         ->set('moduleType', '')
         ->call('save')
@@ -85,7 +87,7 @@ it('validates required fields', function () {
 it('can delete a field', function () {
     $field = CustomField::factory()->create(['name' => 'to_delete']);
 
-    Volt::test('admin.settings.custom-fields')
+    Livewire::test(Index::class)
         ->call('delete', $field->id);
 
     expect(CustomField::where('name', 'to_delete')->exists())->toBeFalse();
@@ -100,7 +102,7 @@ it('returns 403 for non-admin users', function () {
 });
 
 it('renders the Phase-2 module options in the create form', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         // Module-type values (stored in custom_fields.module_type)
         ->assertSeeHtml('value="Activity"')
         ->assertSeeHtml('value="ProductGroup"')
@@ -117,7 +119,7 @@ it('does not render phantom module options for non-existent models', function ()
     // Module options are derived from CustomFieldModuleRegistry, whose source of
     // truth is the set of models using the HasCustomFields trait. Models with no
     // backing registry entry must never appear as options.
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->assertDontSeeHtml('value="Invoice"')
         ->assertDontSeeHtml('value="NonExistentModel"');
 });
@@ -125,12 +127,12 @@ it('does not render phantom module options for non-existent models', function ()
 it('renders module options for every custom-field-capable model', function () {
     // Opportunity now uses HasCustomFields and is registered, so it is a
     // legitimate module option (it used to be a phantom example).
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->assertSeeHtml('value="Opportunity"');
 });
 
 it('can create a field for a previously-missing module', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'inspection_due')
         ->set('displayName', 'Inspection Due')
         ->set('moduleType', 'StockLevel')
@@ -142,7 +144,7 @@ it('can create a field for a previously-missing module', function () {
 });
 
 it('persists string validation rules in the shape the validator consumes', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'po_reference')
         ->set('moduleType', 'Member')
         ->set('fieldType', CustomFieldType::String->value)
@@ -162,7 +164,7 @@ it('persists string validation rules in the shape the validator consumes', funct
 });
 
 it('persists numeric validation rules for number fields', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'weight_kg')
         ->set('moduleType', 'Product')
         ->set('fieldType', CustomFieldType::Number->value)
@@ -181,7 +183,7 @@ it('persists numeric validation rules for number fields', function () {
 
 it('only persists validation keys relevant to the field type', function () {
     // min_length/max_length/pattern apply to String, but min/max do not.
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'short_code')
         ->set('moduleType', 'Member')
         ->set('fieldType', CustomFieldType::String->value)
@@ -196,7 +198,7 @@ it('only persists validation keys relevant to the field type', function () {
 });
 
 it('persists null validation rules when none are set', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'plain_field')
         ->set('moduleType', 'Member')
         ->set('fieldType', CustomFieldType::String->value)
@@ -207,7 +209,7 @@ it('persists null validation rules when none are set', function () {
 });
 
 it('persists visibility rules in the exact shape VisibilityRuleEvaluator consumes', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'vat_number')
         ->set('moduleType', 'Member')
         ->set('fieldType', CustomFieldType::String->value)
@@ -235,7 +237,7 @@ it('persists visibility rules in the exact shape VisibilityRuleEvaluator consume
 });
 
 it('splits in/not_in visibility rule values into arrays', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'region_field')
         ->set('moduleType', 'Member')
         ->set('fieldType', CustomFieldType::String->value)
@@ -254,7 +256,7 @@ it('splits in/not_in visibility rule values into arrays', function () {
 });
 
 it('drops visibility rule rows with a blank field', function () {
-    Volt::test('admin.settings.custom-field-form')
+    Livewire::test(Form::class)
         ->set('name', 'blank_rule_field')
         ->set('moduleType', 'Member')
         ->set('fieldType', CustomFieldType::String->value)
@@ -269,7 +271,7 @@ it('drops visibility rule rows with a blank field', function () {
 });
 
 it('can remove a visibility rule row', function () {
-    $component = Volt::test('admin.settings.custom-field-form')
+    $component = Livewire::test(Form::class)
         ->call('addVisibilityRule')
         ->set('visibilityRules.0.field', 'first')
         ->call('addVisibilityRule')
@@ -292,7 +294,7 @@ it('loads existing validation and visibility rules back into the edit form', fun
         ],
     ]);
 
-    Volt::test('admin.settings.custom-field-form', ['customField' => $field])
+    Livewire::test(Form::class, ['customField' => $field])
         ->assertSet('validationRules.min_length', '2')
         ->assertSet('validationRules.max_length', '50')
         ->assertSet('validationRules.pattern', '/^[A-Z]+$/')
@@ -313,7 +315,7 @@ it('preserves rules round-trip when editing without changes', function () {
         'visibility_rules' => [['field' => 'status', 'operator' => 'eq', 'value' => 'active']],
     ]);
 
-    Volt::test('admin.settings.custom-field-form', ['customField' => $field])
+    Livewire::test(Form::class, ['customField' => $field])
         ->call('save')
         ->assertHasNoErrors();
 
@@ -333,7 +335,7 @@ it('clears validation and visibility rules from the edit form', function () {
         'visibility_rules' => [['field' => 'status', 'operator' => 'eq', 'value' => 'active']],
     ]);
 
-    Volt::test('admin.settings.custom-field-form', ['customField' => $field])
+    Livewire::test(Form::class, ['customField' => $field])
         ->assertSet('validationRules.min_length', '2')
         ->assertSet('validationRules.max_length', '50')
         ->assertSet('visibilityRules.0.field', 'status')

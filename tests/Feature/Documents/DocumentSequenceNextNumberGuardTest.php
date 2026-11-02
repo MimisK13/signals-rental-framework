@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\DocumentSequence;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\DocumentSequenceNextNumberGuard;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Models\Member;
 use App\Models\Store;
-use App\Services\Documents\DocumentSequenceNextNumberGuard;
 
 it('detects existing member numbers without store scoping', function () {
     Member::factory()->create(['number' => 'M-0005']);

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Invoice;
+use App\Domain\Invoices\Models\Invoice;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Assets\Enums\AssetCondition;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AssetCondition;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;

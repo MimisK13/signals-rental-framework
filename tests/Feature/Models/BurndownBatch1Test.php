@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\InboundWebhookLog;
 use App\Models\InboundWebhookSource;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\PurchaseOrderItem;
-use App\Models\ProductSupplierCost;
-use App\Models\StockLevel;
 use App\Models\TaxRule;
 use App\Models\TaxZone;
 use App\Models\TaxZoneMember;

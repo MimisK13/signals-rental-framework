@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 
 it('belongs to a list name', function () {
     $listName = ListName::factory()->create();

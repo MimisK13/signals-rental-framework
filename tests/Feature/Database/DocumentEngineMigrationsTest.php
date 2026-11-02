@@ -14,11 +14,10 @@ uses(UsesIsolatedSqliteMigrations::class);
 function documentEngineMigrationRollbackPaths(): array
 {
     return [
-        'database/migrations/2026_07_03_101151_add_store_branding_columns_to_stores_table.php',
-        'database/migrations/2026_07_03_101150_create_documents_table.php',
-        'database/migrations/2026_07_03_101149_create_document_sequences_table.php',
-        'database/migrations/2026_07_03_101148_create_document_template_versions_table.php',
-        'database/migrations/2026_07_03_101147_create_document_templates_table.php',
+        'app/Domain/Documents/Database/Migrations/2026_07_03_101150_create_documents_table.php',
+        'app/Domain/Documents/Database/Migrations/2026_07_03_101149_create_document_sequences_table.php',
+        'app/Domain/Documents/Database/Migrations/2026_07_03_101148_create_document_template_versions_table.php',
+        'app/Domain/Documents/Database/Migrations/2026_07_03_101147_create_document_templates_table.php',
     ];
 }
 
@@ -27,11 +26,7 @@ describe('document engine migrations (sqlite)', function () {
         expect(Schema::hasTable('document_templates'))->toBeTrue()
             ->and(Schema::hasTable('document_template_versions'))->toBeTrue()
             ->and(Schema::hasTable('documents'))->toBeTrue()
-            ->and(Schema::hasTable('document_sequences'))->toBeTrue()
-            ->and(Schema::hasColumn('stores', 'brand_logo_path'))->toBeTrue()
-            ->and(Schema::hasColumn('stores', 'brand_primary_colour'))->toBeTrue()
-            ->and(Schema::hasColumn('stores', 'brand_secondary_colour'))->toBeTrue()
-            ->and(Schema::hasColumn('stores', 'brand_font_family'))->toBeTrue();
+            ->and(Schema::hasTable('document_sequences'))->toBeTrue();
     });
 
     it('rolls back and re-applies document engine migrations cleanly', function () {
@@ -45,8 +40,7 @@ describe('document engine migrations (sqlite)', function () {
         expect(Schema::hasTable('document_templates'))->toBeFalse()
             ->and(Schema::hasTable('document_template_versions'))->toBeFalse()
             ->and(Schema::hasTable('documents'))->toBeFalse()
-            ->and(Schema::hasTable('document_sequences'))->toBeFalse()
-            ->and(Schema::hasColumn('stores', 'brand_logo_path'))->toBeFalse();
+            ->and(Schema::hasTable('document_sequences'))->toBeFalse();
 
         foreach (array_reverse(documentEngineMigrationRollbackPaths()) as $path) {
             Artisan::call('migrate', [
@@ -55,8 +49,7 @@ describe('document engine migrations (sqlite)', function () {
             ]);
         }
 
-        expect(Schema::hasTable('documents'))->toBeTrue()
-            ->and(Schema::hasColumn('stores', 'brand_font_family'))->toBeTrue();
+        expect(Schema::hasTable('documents'))->toBeTrue();
     });
 });
 

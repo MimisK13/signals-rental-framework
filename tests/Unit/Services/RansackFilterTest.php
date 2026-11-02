@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Models\Opportunity;
-use App\Models\ProductRate;
-use App\Models\StockTransaction;
 use App\Models\User;
 use App\Services\Api\RansackFilter;
 use Tests\TestCase;

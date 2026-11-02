@@ -1,8 +1,8 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityStrategyContract;
+use App\Domain\Stock\Models\StockLevel;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Database\QueryException;

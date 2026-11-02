@@ -1,6 +1,7 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\AvailabilityResolution;
 use App\Enums\DemandPhase;
@@ -10,7 +11,6 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\OpportunityItemDemandResolver;
 use Illuminate\Support\Carbon;

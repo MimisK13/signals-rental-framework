@@ -1,15 +1,15 @@
 <?php
 
-use App\Enums\AssetLifecycleEventType;
-use App\Enums\AssetLifecycleStatus;
-use App\Enums\AssetOwnershipType;
-use App\Models\Asset;
-use App\Models\AssetLifecycleEvent;
-use App\Models\AssetUsage;
+use App\Domain\Assets\Enums\AssetLifecycleEventType;
+use App\Domain\Assets\Enums\AssetLifecycleStatus;
+use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetLifecycleEvent;
+use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Assets\Services\AssetUtilizationCalculator;
+use App\Domain\Repairs\Models\Repair;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\Repair;
-use App\Services\Assets\AssetUtilizationCalculator;
 use Carbon\CarbonImmutable;
 
 function utilizationAsset(string $acquiredAt = '2026-01-01 00:00:00'): Asset

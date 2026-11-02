@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueInvoice;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Enums\InvoiceType;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\Invoice;
 use App\Enums\PricingRoundingDirection;
 use App\Models\ApiIdempotencyKey;
-use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Api\IdempotencyKeyService;
 use Database\Seeders\PermissionSeeder;

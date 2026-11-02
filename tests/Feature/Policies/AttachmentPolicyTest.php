@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Attachment;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Attachments\Policies\AttachmentPolicy;
 use App\Models\User;
-use App\Policies\AttachmentPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

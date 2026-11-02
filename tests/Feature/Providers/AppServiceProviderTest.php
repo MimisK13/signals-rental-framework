@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Invoice;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\User;
 use App\Services\DocsService;
 use App\Services\NotificationRegistry;

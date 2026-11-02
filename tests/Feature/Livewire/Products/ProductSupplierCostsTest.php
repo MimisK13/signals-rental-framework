@@ -1,13 +1,14 @@
 <?php
 
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
+use App\Domain\SupplierCosts\Presentation\Livewire\ProductSupplierCosts;
 use App\Enums\MembershipType;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -32,7 +33,7 @@ it('lists supplier costs on the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('products.supplier-costs', ['product' => $this->product])
+    Livewire::test(ProductSupplierCosts::class, ['product' => $this->product])
         ->assertSee($cost->supplier->name)
         ->assertSee('50.00');
 });
@@ -60,7 +61,7 @@ it('creates a supplier cost via the modal', function () {
     $this->actingAs($this->owner);
     $supplier = Member::factory()->create(['membership_type' => MembershipType::Organisation]);
 
-    Volt::test('products.supplier-costs', ['product' => $this->product])
+    Livewire::test(ProductSupplierCosts::class, ['product' => $this->product])
         ->call('openCreateModal')
         ->set('supplierId', $supplier->id)
         ->set('costBasis', 'per_day')
@@ -92,7 +93,7 @@ it('sets preferred from the tab', function () {
         'cost_basis' => 'flat',
     ]);
 
-    Volt::test('products.supplier-costs', ['product' => $this->product])
+    Livewire::test(ProductSupplierCosts::class, ['product' => $this->product])
         ->call('setPreferred', $target->id);
 
     expect($existing->fresh()->is_preferred)->toBeFalse()
@@ -103,8 +104,12 @@ it('deletes a supplier cost from the tab', function () {
     $this->actingAs($this->owner);
     $cost = ProductSupplierCost::factory()->create(['product_id' => $this->product->id]);
 
-    Volt::test('products.supplier-costs', ['product' => $this->product])
+    Livewire::test(ProductSupplierCosts::class, ['product' => $this->product])
         ->call('deleteCost', $cost->id);
 
     $this->assertDatabaseMissing('product_supplier_costs', ['id' => $cost->id]);
+});
+
+arch('SupplierCosts presentation does not depend on Volt', function (): void {
+    expect('App\Domain\SupplierCosts')->not->toUse('Livewire\Volt');
 });

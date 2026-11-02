@@ -3,10 +3,10 @@
 use App\Actions\Containers\PackContainerItem;
 use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Data\Containers\PackContainerItemData;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Models\Container;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Containers\ContainerManifestService;

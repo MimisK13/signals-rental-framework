@@ -81,12 +81,14 @@ function legacyApiTokenAbilities(): array
     ];
 }
 
-it('registers every legacy api token ability from the admin picker', function () {
+it('registers every core and domain api token ability for the admin picker', function () {
     $registry = app(AbilityRegistry::class);
 
-    expect($registry->all())->toHaveCount(count(legacyApiTokenAbilities()))
-        ->and($registry->labels())->toEqual(legacyApiTokenAbilities())
+    expect($registry->labels())->toMatchArray(legacyApiTokenAbilities())
         ->and($registry->has('products:read'))->toBeTrue()
+        ->and($registry->has('crew:read'))->toBeTrue()
+        ->and($registry->has('quotations:read'))->toBeTrue()
+        ->and($registry->has('quotations:write'))->toBeTrue()
         ->and($registry->get('products:read'))->toMatchArray([
             'key' => 'products:read',
             'label' => 'Read products & product groups',
@@ -104,8 +106,8 @@ it('groups abilities by their resource prefix', function () {
         ->toHaveKeys(['products:read', 'products:write']);
 });
 
-it('matches the core ability definition source', function () {
+it('contains every core ability definition alongside domain extensions', function () {
     $registry = app(AbilityRegistry::class);
 
-    expect(array_keys($registry->all()))->toEqual(array_keys(CoreAbilityDefinitions::all()));
+    expect(array_diff(array_keys(CoreAbilityDefinitions::all()), array_keys($registry->all())))->toBeEmpty();
 });

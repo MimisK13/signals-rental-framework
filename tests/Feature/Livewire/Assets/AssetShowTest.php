@@ -1,17 +1,18 @@
 <?php
 
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetExpense;
+use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Assets\Presentation\Livewire\Show;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Models\Asset;
-use App\Models\AssetExpense;
-use App\Models\AssetUsage;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\User;
 use App\Support\Formatter;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -70,7 +71,7 @@ it('displays the asset product and physical identifiers', function (): void {
         'barcode' => 'BAR-003',
     ]);
 
-    Volt::test('assets.show', ['asset' => $asset])
+    Livewire::test(Show::class, ['asset' => $asset])
         ->assertSee('Midas M32')
         ->assertSee('M32-003')
         ->assertSee('01293482')
@@ -92,7 +93,7 @@ it('displays acquisition and financial metrics without duplicating calculations'
         'base_amount' => 10000,
     ]);
 
-    Volt::test('assets.show', ['asset' => $asset])
+    Livewire::test(Show::class, ['asset' => $asset])
         ->assertSee('Acquisition Cost')
         ->assertSee('Investment ROI')
         ->assertSee('Cost Recovery')
@@ -108,7 +109,7 @@ it('displays acquisition and financial metrics without duplicating calculations'
 it('keeps valid zero money separate from unavailable financial values', function (): void {
     $asset = Asset::factory()->create(['base_currency_code' => 'GBP']);
 
-    Volt::test('assets.show', ['asset' => $asset])
+    Livewire::test(Show::class, ['asset' => $asset])
         ->assertSee('Rental Revenue')
         ->assertSee(app(Formatter::class)->money(0, 'GBP'))
         ->assertSee('Acquisition Cost')
@@ -122,7 +123,7 @@ it('displays zero recovery as a valid financial value', function (): void {
     ]);
     $formatter = app(Formatter::class);
 
-    Volt::test('assets.show', ['asset' => $asset])
+    Livewire::test(Show::class, ['asset' => $asset])
         ->assertSee('0.00%')
         ->assertSee($formatter->money(0, 'GBP').' of '.$formatter->money(100000, 'GBP').' recovered')
         ->assertSee($formatter->money(100000, 'GBP').' remaining to break-even')
@@ -133,7 +134,7 @@ it('displays the real cost recovery percentage while clamping only the progress 
     $fixture = createAssetUiRevenueFixture();
     $formatter = app(Formatter::class);
 
-    Volt::test('assets.show', ['asset' => $fixture['asset']])
+    Livewire::test(Show::class, ['asset' => $fixture['asset']])
         ->assertSee('200.00%')
         ->assertSee('style="width: 100%;"', false)
         ->assertSee('Acquisition cost fully recovered')
@@ -145,7 +146,7 @@ it('keeps the partial recovery explanation below break-even', function (): void 
     $fixture = createAssetUiRevenueFixture(amount: 4000, acquisition: 10000);
     $formatter = app(Formatter::class);
 
-    Volt::test('assets.show', ['asset' => $fixture['asset']])
+    Livewire::test(Show::class, ['asset' => $fixture['asset']])
         ->assertSee('40.00%')
         ->assertSee($formatter->money(4000, 'GBP').' of '.$formatter->money(10000, 'GBP').' recovered')
         ->assertSee($formatter->money(6000, 'GBP').' remaining to break-even')
@@ -156,7 +157,7 @@ it('uses the full recovery explanation at exactly break-even', function (): void
     $fixture = createAssetUiRevenueFixture(amount: 10000, acquisition: 10000);
     $formatter = app(Formatter::class);
 
-    Volt::test('assets.show', ['asset' => $fixture['asset']])
+    Livewire::test(Show::class, ['asset' => $fixture['asset']])
         ->assertSee('100.00%')
         ->assertSee('Acquisition cost fully recovered')
         ->assertSee($formatter->money(0, 'GBP').' above break-even')
@@ -176,7 +177,7 @@ it('preserves the incomplete revenue warning and unavailable metrics', function 
         'dispatched_at' => '2026-10-01 14:00:00',
     ]);
 
-    Volt::test('assets.show', ['asset' => $fixture['asset']])
+    Livewire::test(Show::class, ['asset' => $fixture['asset']])
         ->assertSee('Financial history incomplete')
         ->assertSee('cannot be reliably attributed')
         ->assertDontSee('Acquisition cost fully recovered')
@@ -194,7 +195,7 @@ it('displays actual usage history and active usage', function (): void {
         'returned_at' => null,
     ]);
 
-    Volt::test('assets.show', ['asset' => $asset])
+    Livewire::test(Show::class, ['asset' => $asset])
         ->assertSee('Actual Usage History')
         ->assertSee('Active')
         ->assertSee('History');
@@ -203,7 +204,7 @@ it('displays actual usage history and active usage', function (): void {
 it('shows an empty state when the asset has no usage history', function (): void {
     $asset = Asset::factory()->create();
 
-    Volt::test('assets.show', ['asset' => $asset])
+    Livewire::test(Show::class, ['asset' => $asset])
         ->assertSee('No usage history')
         ->assertSee('has not been recorded as physically dispatched');
 });

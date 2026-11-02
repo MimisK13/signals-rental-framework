@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\CustomFields\CreateCustomFieldGroup;
-use App\Actions\CustomFields\DeleteCustomFieldGroup;
-use App\Actions\CustomFields\UpdateCustomFieldGroup;
-use App\Data\CustomFields\CreateCustomFieldGroupData;
-use App\Data\CustomFields\UpdateCustomFieldGroupData;
+use App\Domain\CustomFields\Actions\CreateCustomFieldGroup;
+use App\Domain\CustomFields\Actions\DeleteCustomFieldGroup;
+use App\Domain\CustomFields\Actions\UpdateCustomFieldGroup;
+use App\Domain\CustomFields\Data\CreateCustomFieldGroupData;
+use App\Domain\CustomFields\Data\UpdateCustomFieldGroupData;
+use App\Domain\CustomFields\Models\CustomFieldGroup;
 use App\Events\AuditableEvent;
-use App\Models\CustomFieldGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

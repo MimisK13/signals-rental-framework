@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\SupplierBills\Models\SupplierBill;
+use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
-use App\Models\SupplierBill;
-use App\Models\SupplierBillItem;
 use App\Services\Products\ProductExternalRentalCostCalculator;
 
 it('compares expected sub-hire PO cost with an issued supplier bill', function (): void {

@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Models\Member;
 use App\Models\Product;
-use App\Models\PurchaseOrder;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;

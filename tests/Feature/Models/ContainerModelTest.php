@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\ContainerItemUnpackReason;
 use App\Enums\ContainerScanMode;
@@ -7,7 +8,6 @@ use App\Enums\ContainerStatus;
 use App\Models\Container;
 use App\Models\ContainerItem;
 use App\Models\Product;
-use App\Models\StockLevel;
 use App\Models\Store;
 use Carbon\CarbonImmutable;
 

@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\RateDefinition;
-use App\Services\RateEngine\Presets\RatePresets;
-use Database\Seeders\RateDefinitionPresetSeeder;
+use App\Domain\Rates\Database\Seeders\RateDefinitionPresetSeeder;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Services\RateEngine\Presets\RatePresets;
 
 it('seeds one preset rate definition per preset', function () {
     $this->seed(RateDefinitionPresetSeeder::class);

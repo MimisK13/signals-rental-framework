@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Rates\CreateRateDefinition;
-use App\Actions\Rates\DeleteRateDefinition;
-use App\Actions\Rates\DuplicateRateDefinition;
-use App\Actions\Rates\UpdateRateDefinition;
-use App\Data\Rates\CreateRateDefinitionData;
-use App\Data\Rates\RateDefinitionData;
-use App\Data\Rates\UpdateRateDefinitionData;
-use App\Enums\CalculationStrategyType;
+use App\Domain\Rates\Actions\CreateRateDefinition;
+use App\Domain\Rates\Actions\DeleteRateDefinition;
+use App\Domain\Rates\Actions\DuplicateRateDefinition;
+use App\Domain\Rates\Actions\UpdateRateDefinition;
+use App\Domain\Rates\Data\CreateRateDefinitionData;
+use App\Domain\Rates\Data\RateDefinitionData;
+use App\Domain\Rates\Data\UpdateRateDefinitionData;
+use App\Domain\Rates\Enums\CalculationStrategyType;
+use App\Domain\Rates\Models\RateDefinition;
 use App\Events\AuditableEvent;
-use App\Models\RateDefinition;
 use App\Models\User;
 use App\Services\Api\WebhookService;
 use Database\Seeders\PermissionSeeder;
@@ -147,7 +147,7 @@ it('records an action_logs row when a rate definition is created', function () {
 
     $result = (new CreateRateDefinition)(createDefinitionData());
 
-    assertActionLogged('rate_definition.created', RateDefinition::class, $result->id, $user->id);
+    assertActionLogged('rate_definition.created', (new RateDefinition)->getMorphClass(), $result->id, $user->id);
 });
 
 it('records an action_logs row when a rate definition is updated', function () {
@@ -159,7 +159,7 @@ it('records an action_logs row when a rate definition is updated', function () {
 
     (new UpdateRateDefinition)($definition, UpdateRateDefinitionData::from(['name' => 'Audited Rename']));
 
-    assertActionLogged('rate_definition.updated', RateDefinition::class, $definition->id, $user->id);
+    assertActionLogged('rate_definition.updated', $definition->getMorphClass(), $definition->id, $user->id);
 });
 
 it('records an action_logs row when a rate definition is deleted', function () {
@@ -169,7 +169,7 @@ it('records an action_logs row when a rate definition is deleted', function () {
 
     (new DeleteRateDefinition)($definition);
 
-    assertActionLogged('rate_definition.deleted', RateDefinition::class, $definition->id, $user->id);
+    assertActionLogged('rate_definition.deleted', $definition->getMorphClass(), $definition->id, $user->id);
 });
 
 it('records an action_logs row when a rate definition is duplicated', function () {
@@ -179,7 +179,7 @@ it('records an action_logs row when a rate definition is duplicated', function (
 
     $copy = (new DuplicateRateDefinition)($original);
 
-    assertActionLogged('rate_definition.created', RateDefinition::class, $copy->id, $user->id);
+    assertActionLogged('rate_definition.created', (new RateDefinition)->getMorphClass(), $copy->id, $user->id);
 });
 
 it('refuses to delete a preset rate definition', function () {

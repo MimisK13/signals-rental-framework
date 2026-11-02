@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\TransactionType;
+use App\Domain\Stock\Enums\TransactionType;
 
 it('has the correct transaction type values', function () {
     expect(TransactionType::Opening->value)->toBe(1)

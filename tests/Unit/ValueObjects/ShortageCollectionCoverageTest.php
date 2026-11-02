@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\StockMethod;
+use App\Domain\Stock\Enums\StockMethod;
 use App\ValueObjects\Shortage;
 use App\ValueObjects\ShortageCollection;
 use Illuminate\Support\Carbon;

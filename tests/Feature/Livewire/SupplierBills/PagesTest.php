@@ -1,13 +1,16 @@
 <?php
 
+use App\Domain\SupplierBills\Models\SupplierBill;
+use App\Domain\SupplierBills\Presentation\Livewire\Form;
+use App\Domain\SupplierBills\Presentation\Livewire\Show;
 use App\Models\Member;
-use App\Models\SupplierBill;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
+    config(['signals.installed' => true, 'signals.setup_complete' => true]);
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
     $user = User::factory()->owner()->create();
@@ -22,13 +25,13 @@ it('lists and shows supplier bills', function (): void {
     $bill = SupplierBill::factory()->create(['document_number' => 'SB-UI-1']);
 
     $this->get(route('supplier-bills.index'))->assertOk()->assertSee('Supplier Bills')->assertSee('SB-UI-1');
-    Volt::test('supplier-bills.show', ['supplierBill' => $bill])->assertSee('SB-UI-1')->assertSee('Supplier');
+    Livewire::test(Show::class, ['supplierBill' => $bill])->assertSee('SB-UI-1')->assertSee('Supplier');
 });
 
 it('creates a draft supplier bill from the UI form', function (): void {
     $supplier = Member::factory()->organisation()->create();
 
-    Volt::test('supplier-bills.form')
+    Livewire::test(Form::class)
         ->set('supplierId', $supplier->id)
         ->set('documentNumber', 'SB-UI-2')
         ->set('currencyCode', 'EUR')

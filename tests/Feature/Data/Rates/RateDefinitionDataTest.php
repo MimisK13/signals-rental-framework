@@ -1,11 +1,11 @@
 <?php
 
-use App\Data\Rates\CreateRateDefinitionData;
-use App\Data\Rates\RateDefinitionData;
-use App\Data\Rates\UpdateRateDefinitionData;
-use App\Enums\BasePeriod;
-use App\Enums\CalculationStrategyType;
-use App\Models\RateDefinition;
+use App\Domain\Rates\Data\CreateRateDefinitionData;
+use App\Domain\Rates\Data\RateDefinitionData;
+use App\Domain\Rates\Data\UpdateRateDefinitionData;
+use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\CalculationStrategyType;
+use App\Domain\Rates\Models\RateDefinition;
 use Illuminate\Validation\ValidationException;
 
 it('builds a create DTO from valid input', function () {

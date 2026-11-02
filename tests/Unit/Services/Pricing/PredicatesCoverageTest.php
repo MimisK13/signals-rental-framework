@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Rates\Enums\RateTransactionType;
 use App\Enums\DiscountRuleScope;
-use App\Enums\RateTransactionType;
 use App\Services\Pricing\Predicates\ProductGroupIdsPredicate;
 use App\Services\Pricing\Predicates\ProductIdsPredicate;
 use App\Services\Pricing\Predicates\QuantityMaxPredicate;

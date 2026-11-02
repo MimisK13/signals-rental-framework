@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CustomFieldGroup;
+use App\Domain\CustomFields\Models\CustomFieldGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Asset;
-use App\Models\AssetUsage;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\AssetUsage;
 use App\Models\Member;
 use App\Models\Store;
 use App\Models\User;

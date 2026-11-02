@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Assets\Enums\AssetLifecycleStatus;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stock\Models\StockTransaction;
 use App\Domain\Stocktakes\Actions\CompleteStocktake;
 use App\Domain\Stocktakes\Actions\CreateStocktake;
 use App\Domain\Stocktakes\Actions\RecordSerializedStocktakeObservation;
@@ -8,11 +12,7 @@ use App\Domain\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stocktakes\Models\Stocktake;
 use App\Domain\Stocktakes\Models\StocktakeObservation;
-use App\Enums\AssetLifecycleStatus;
-use App\Models\Asset;
 use App\Models\Product;
-use App\Models\StockLevel;
-use App\Models\StockTransaction;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

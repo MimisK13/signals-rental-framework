@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Models\DocumentTemplate;
 use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\UsesPostgres;
 

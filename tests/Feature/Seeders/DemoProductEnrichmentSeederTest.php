@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Stock\Models\StockLevel;
+use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\Product;
-use App\Models\ProductSupplierCost;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Models\TaxCategory;
 use App\Models\User;

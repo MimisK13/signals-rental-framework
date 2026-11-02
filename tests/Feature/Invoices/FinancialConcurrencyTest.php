@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueCreditNote;
-use App\Actions\Invoices\IssueInvoice;
-use App\Actions\Invoices\RecordPayment;
-use App\Actions\Invoices\VoidInvoice;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Data\Invoices\IssueCreditNoteData;
-use App\Data\Invoices\RecordPaymentData;
-use App\Enums\PaymentMethod;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueCreditNote;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Actions\RecordPayment;
+use App\Domain\Invoices\Actions\VoidInvoice;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Data\IssueCreditNoteData;
+use App\Domain\Invoices\Data\RecordPaymentData;
+use App\Domain\Invoices\Enums\PaymentMethod;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Invoices\Services\CreditNoteTaxMirror;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
 use App\Models\User;
-use App\Services\Invoices\CreditNoteTaxMirror;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,6 +1,7 @@
 <?php
 
 use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AvailabilityResolution;
 use App\Enums\ContainerAvailabilityMode;
 use App\Enums\DemandPhase;
@@ -9,7 +10,6 @@ use App\Models\ContainerItem;
 use App\Models\Demand;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\ContainerDemandResolver;
 use Illuminate\Database\Eloquent\Model;

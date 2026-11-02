@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
+use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
 use App\Models\Product;
-use App\Models\ProductRate;
-use App\Models\RateDefinition;
 use App\Models\User;
 use App\Services\ColumnRegistryResolver;
-use App\Views\ProductRateColumnRegistry;
-use App\Views\RateDefinitionColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
@@ -236,6 +236,20 @@ describe('POST /api/v1/products/{product}/rates', function () {
             ->postJson("/api/v1/products/{$this->product->id}/rates", [])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['rate_definition_id', 'transaction_type', 'price', 'currency']);
+    });
+
+    it('rejects an unsupported currency', function () {
+        $token = $this->owner->createToken('test', ['rates:write'])->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/v1/products/{$this->product->id}/rates", [
+                'rate_definition_id' => $this->definition->id,
+                'transaction_type' => 'rental',
+                'price' => 7500,
+                'currency' => 'ZZZ',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('currency');
     });
 
     it('requires rates:write ability', function () {

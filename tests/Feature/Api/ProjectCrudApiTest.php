@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\ProjectStatus;
+use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Models\Project;
 use App\Models\Member;
-use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

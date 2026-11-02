@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Documents\BladeExpressionExtractor;
+use App\Domain\Documents\Services\BladeExpressionExtractor;
 
 describe('BladeExpressionExtractor', function () {
     beforeEach(function () {

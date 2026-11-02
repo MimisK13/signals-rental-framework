@@ -2,7 +2,7 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
-use App\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
 use App\Enums\TaxPointPolicy;
 use App\Models\Member;
 use App\Models\Store;

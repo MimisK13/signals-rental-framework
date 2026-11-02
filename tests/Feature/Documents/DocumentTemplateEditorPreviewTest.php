@@ -1,18 +1,19 @@
 <?php
 
-use App\Models\CreditNote;
-use App\Models\DocumentTemplate;
-use App\Models\Invoice;
+use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Presentation\Livewire\Editor;
+use App\Domain\Documents\Services\DocumentSampleData;
+use App\Domain\Documents\Services\PageDimensions;
+use App\Domain\Documents\Services\PdfPageLayout;
+use App\Domain\Documents\Services\SystemDocumentTemplates;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Documents\DocumentSampleData;
-use App\Services\Documents\PageDimensions;
-use App\Services\Documents\PdfPageLayout;
-use App\Services\Documents\SystemDocumentTemplates;
-use Database\Seeders\DocumentTemplateSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -33,7 +34,7 @@ it('previews every seeded document type with sample data', function () {
             ->where('document_type', $documentType)
             ->firstOrFail();
 
-        Volt::test('document-templates.edit', ['documentTemplate' => $template])
+        Livewire::test(Editor::class, ['documentTemplate' => $template])
             ->assertSet('previewMode', 'sample')
             ->assertSet('previewError', '')
             ->assertSet('previewHtml', fn (string $html): bool => trim($html) !== '');
@@ -46,7 +47,7 @@ it('previews credit note templates with credit note sample context', function ()
         ->where('document_type', 'credit_note')
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->assertSet('previewError', '')
         ->assertSet('previewHtml', fn (string $html): bool => str_contains($html, 'CRN-0001') || str_contains($html, 'Sample'));
 });
@@ -57,7 +58,7 @@ it('shows a neutral prompt when real preview mode has no source record selected'
         ->where('document_type', 'credit_note')
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->set('previewMode', 'real')
         ->set('sourceRecordId', null)
         ->call('refreshPreview')
@@ -84,7 +85,7 @@ it('lists store credit notes and previews credit note templates with real data',
         'number' => 'CN-REAL-PREVIEW-001',
     ]);
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->assertSet('sourceRecordOptions', fn (array $options): bool => collect($options)->contains(
             fn (array $option): bool => $option['id'] === $creditNote->id
                 && str_contains($option['label'], 'CN-REAL-PREVIEW-001'),
@@ -101,7 +102,7 @@ it('shows a sanitised render error for broken template content without failing t
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->set('bodyHtml', '{{ $undefined_preview_variable_xyz }}')
         ->call('refreshPreview')
         ->assertSet('previewHtml', '')
@@ -116,7 +117,7 @@ it('round-trips page setup through template storage and pdf layout', function ()
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->set('pageConfig.page_size', 'Letter')
         ->set('pageConfig.page_orientation', 'landscape')
         ->set('pageDisplayMargins.top', 20)
@@ -149,7 +150,7 @@ it('round-trips A5 page setup through template storage and preview dimensions', 
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->set('pageConfig.page_size', 'A5')
         ->set('pageConfig.page_orientation', 'portrait')
         ->call('saveSettings')
@@ -169,7 +170,7 @@ it('round-trips custom page size in inches with canonical millimetre storage', f
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->set('pageConfig.page_size', 'Custom')
         ->set('pageConfig.display_unit', 'in')
         ->set('pageDisplayWidth', 4)
@@ -190,7 +191,7 @@ it('round-trips custom page size in inches with canonical millimetre storage', f
         ->and($template->page_config['header_height_mm'])->toBe(25.4)
         ->and($template->page_config['footer_height_mm'])->toBe(19.05);
 
-    Volt::test('document-templates.edit', ['documentTemplate' => $template->fresh()])
+    Livewire::test(Editor::class, ['documentTemplate' => $template->fresh()])
         ->assertSet('pageDisplayWidth', 4.0)
         ->assertSet('pageDisplayHeight', 6.0)
         ->assertSet('pageDisplayMargins.top', 0.5);
@@ -225,7 +226,7 @@ it('renders with a single root element for Livewire compatibility', function () 
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    $html = Volt::test('document-templates.edit', ['documentTemplate' => $template])->html();
+    $html = Livewire::test(Editor::class, ['documentTemplate' => $template])->html();
 
     $dom = new DOMDocument;
     libxml_use_internal_errors(true);
@@ -253,7 +254,7 @@ it('does not double-escape preview iframe srcdoc content', function () {
         ->where('document_type', 'quote')
         ->firstOrFail();
 
-    $html = Volt::test('document-templates.edit', ['documentTemplate' => $template])
+    $html = Livewire::test(Editor::class, ['documentTemplate' => $template])
         ->assertSet('previewHtml', fn (string $previewHtml): bool => trim($previewHtml) !== '')
         ->html();
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Attachment;
+use App\Domain\Attachments\Models\Attachment;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;

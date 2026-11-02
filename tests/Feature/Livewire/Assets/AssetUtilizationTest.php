@@ -1,10 +1,11 @@
 <?php
 
-use App\Enums\AssetOwnershipType;
-use App\Models\Asset;
+use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Presentation\Livewire\Utilization;
 use App\Models\Product;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -21,7 +22,7 @@ it('renders the asset utilization page with explicit period controls', function 
 
     $this->get(route('assets.utilization', $asset))->assertOk();
 
-    Volt::test('assets.utilization', ['asset' => $asset])
+    Livewire::test(Utilization::class, ['asset' => $asset])
         ->assertSee('Actual Utilization')
         ->assertSee('From')
         ->assertSee('Until')

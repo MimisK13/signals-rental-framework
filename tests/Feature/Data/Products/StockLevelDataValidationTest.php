@@ -1,7 +1,7 @@
 <?php
 
-use App\Data\Products\CreateStockLevelData;
-use App\Data\Products\UpdateStockLevelData;
+use App\Domain\Stock\Data\CreateStockLevelData;
+use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\Store;

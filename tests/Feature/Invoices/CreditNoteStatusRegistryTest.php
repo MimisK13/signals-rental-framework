@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Invoices\CreditNoteStatusRegistry;
+use App\Domain\Invoices\Services\CreditNoteStatusRegistry;
 
 describe('CreditNoteStatusRegistry', function () {
     it('assertKnown accepts configured statuses', function () {

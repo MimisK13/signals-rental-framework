@@ -1,9 +1,13 @@
 <?php
 
-use App\Models\Asset;
-use App\Models\InspectionPolicy;
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Assets\Models\InspectionPolicy;
 use App\Models\Product;
 use App\Models\User;
+
+beforeEach(function (): void {
+    config(['signals.installed' => true, 'signals.setup_complete' => true]);
+});
 
 it('shows inspection policies on the Product inspections page', function (): void {
     $user = User::factory()->owner()->create();

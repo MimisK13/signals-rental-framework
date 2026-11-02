@@ -7,23 +7,23 @@
  * partially covered, to flip the class to fully covered.
  */
 
+use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Services\CurrencyService;
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\CustomFields\Services\CustomFieldCopier;
+use App\Domain\CustomFields\Services\CustomFieldSerializer;
+use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\CustomViews\Services\ViewResolver;
 use App\Jobs\ExportActionLog;
 use App\Models\ActionLog;
-use App\Models\Attachment;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
-use App\Models\CustomView;
 use App\Models\EmailTemplate;
 use App\Models\Member;
 use App\Models\User;
-use App\Services\CustomFieldCopier;
-use App\Services\CustomFieldSerializer;
 use App\Services\EmailTemplateRenderer;
 use App\Services\PermissionRegistry;
-use App\Services\ViewResolver;
 use App\Support\Formatter;
 use App\Views\MemberColumnRegistry;
 use Database\Seeders\PermissionSeeder;

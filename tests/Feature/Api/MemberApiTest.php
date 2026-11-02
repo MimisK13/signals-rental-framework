@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Models\Address;
 use App\Models\Country;
-use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use App\Models\DiscountCategory;
 use App\Models\Email;
 use App\Models\Link;

@@ -1,15 +1,18 @@
 <?php
 
-use App\Actions\Documents\GenerateDocument;
-use App\Contracts\Documents\DocumentRenderer;
-use App\Data\Documents\GenerateDocumentData;
-use App\Enums\DocumentOutputFormat;
-use App\Enums\DocumentStatus;
+use App\Domain\Documents\Actions\GenerateDocument;
+use App\Domain\Documents\Contracts\DocumentRenderer;
+use App\Domain\Documents\Data\GenerateDocumentData;
+use App\Domain\Documents\Enums\DocumentOutputFormat;
+use App\Domain\Documents\Enums\DocumentStatus;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Services\Drivers\BrowsershotDriver;
+use App\Domain\Documents\Services\Drivers\DompdfDriver;
+use App\Domain\Documents\Services\PdfDriverManager;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Document;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
@@ -20,9 +23,6 @@ use App\Models\Store;
 use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
-use App\Services\Documents\Drivers\BrowsershotDriver;
-use App\Services\Documents\Drivers\DompdfDriver;
-use App\Services\Documents\PdfDriverManager;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

@@ -1,10 +1,11 @@
 <?php
 
-use App\Models\RateDefinition;
+use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Rates\Presentation\Livewire\RateDefinitions;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -34,7 +35,7 @@ it('lists rate definitions with a preset/custom badge', function () {
 it('deletes a custom rate definition', function () {
     $definition = RateDefinition::factory()->create(['name' => 'Disposable']);
 
-    Volt::test('admin.settings.rate-definitions')
+    Livewire::test(RateDefinitions::class)
         ->call('deleteDefinition', $definition->id);
 
     $this->assertDatabaseMissing('rate_definitions', ['id' => $definition->id]);

@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\CustomFieldType;
+use App\Domain\CustomFields\Enums\CustomFieldType;
+use App\Domain\CustomFields\Models\CustomField;
 use App\Models\Country;
-use App\Models\CustomField;
 use App\Models\Member;
 use App\Models\Store;
 use App\Services\FieldBuilder;
@@ -92,7 +92,7 @@ describe('FieldBuilder', function () {
             ->relation('currency', 'belongsTo', 'App\Models\Currency', 'code')
             ->crms('total_amount', 'cents_to_decimal')
             ->source('core')
-            ->model('App\Models\Invoice')
+            ->model('App\Domain\Invoices\Models\Invoice')
             ->plugin('signals/invoicing')
             ->build();
 
@@ -123,7 +123,7 @@ describe('FieldBuilder', function () {
         expect($definition->crmsFieldName)->toBe('total_amount');
         expect($definition->crmsTransform)->toBe('cents_to_decimal');
         expect($definition->source)->toBe('core');
-        expect($definition->model)->toBe('App\Models\Invoice');
+        expect($definition->model)->toBe('App\Domain\Invoices\Models\Invoice');
         expect($definition->plugin)->toBe('signals/invoicing');
     });
 });

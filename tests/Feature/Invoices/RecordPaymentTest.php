@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Invoices\CreateDraftInvoice;
-use App\Actions\Invoices\GenerateInvoiceFromOpportunity;
-use App\Actions\Invoices\IssueInvoice;
-use App\Actions\Invoices\RecordPayment;
-use App\Actions\Invoices\RecordRefund;
-use App\Data\Invoices\CreateDraftInvoiceData;
-use App\Data\Invoices\GenerateInvoiceFromOpportunityData;
-use App\Data\Invoices\RecordPaymentData;
-use App\Enums\PaymentMethod;
+use App\Domain\Invoices\Actions\CreateDraftInvoice;
+use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Actions\RecordPayment;
+use App\Domain\Invoices\Actions\RecordRefund;
+use App\Domain\Invoices\Data\CreateDraftInvoiceData;
+use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
+use App\Domain\Invoices\Data\RecordPaymentData;
+use App\Domain\Invoices\Enums\PaymentMethod;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

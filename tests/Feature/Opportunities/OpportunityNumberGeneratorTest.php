@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Models\Opportunity;
 use App\Models\Store;
-use App\Services\Documents\DocumentSequenceDefaults;
 use App\Services\Opportunities\OpportunityNumberGenerator;
 use Carbon\CarbonImmutable;
 

@@ -1,7 +1,7 @@
 <?php
 
-use App\Exceptions\Documents\DocumentRenderException;
-use App\Services\Documents\SandboxedBladeRenderer;
+use App\Domain\Documents\Exceptions\DocumentRenderException;
+use App\Domain\Documents\Services\SandboxedBladeRenderer;
 
 describe('SandboxedBladeRenderer loop support', function () {
     beforeEach(function () {

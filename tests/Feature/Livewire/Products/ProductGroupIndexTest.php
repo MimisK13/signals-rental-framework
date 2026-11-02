@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\CustomFields\Models\CustomField;
 use App\Livewire\Components\DataTable;
-use App\Models\CustomField;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\User;

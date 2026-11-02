@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Attachment;
-use App\Models\Document;
+use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Documents\Models\Document;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\FileService;

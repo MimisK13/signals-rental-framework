@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\CustomField;
-use App\Services\CustomFieldDefinitionResolver;
+use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Services\CustomFieldDefinitionResolver;
 
 it('clears cache for a specific module type', function () {
     CustomField::factory()->forModule('Member')->create(['name' => 'field_a']);

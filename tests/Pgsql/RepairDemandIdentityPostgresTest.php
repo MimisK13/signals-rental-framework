@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Assets\Models\Asset;
+use App\Domain\Repairs\Models\Repair;
+use App\Domain\Stock\Models\StockLevel;
 use App\Enums\DemandPhase;
-use App\Models\Asset;
 use App\Models\AvailabilitySnapshot;
 use App\Models\Demand;
 use App\Models\Product;
-use App\Models\Repair;
-use App\Models\StockLevel;
 use App\Models\Store;
 use App\Services\Availability\RecalculationPipeline;
 use App\Services\AvailabilityService;

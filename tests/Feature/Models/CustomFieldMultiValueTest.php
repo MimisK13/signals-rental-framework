@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\CustomFieldMultiValue;
-use App\Models\CustomFieldValue;
-use App\Models\ListName;
-use App\Models\ListValue;
+use App\Domain\CustomFields\Models\CustomFieldMultiValue;
+use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\Lists\Models\ListName;
+use App\Domain\Lists\Models\ListValue;
 use Illuminate\Database\QueryException;
 
 it('creates a custom field multi value', function () {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Documents\Services\OpportunityDataResolver;
 use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
@@ -13,7 +14,6 @@ use App\Models\Store;
 use App\Models\TaxRate;
 use App\Models\TaxRule;
 use App\Models\User;
-use App\Services\Documents\OpportunityDataResolver;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

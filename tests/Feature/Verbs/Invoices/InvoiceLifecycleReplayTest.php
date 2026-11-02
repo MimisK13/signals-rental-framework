@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\Invoices\CreateDraftInvoice;
-use App\Actions\Invoices\IssueInvoice;
-use App\Actions\Invoices\VoidInvoice;
-use App\Data\Invoices\CreateDraftInvoiceData;
-use App\Enums\InvoiceType;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\InvoiceTax;
+use App\Domain\Invoices\Actions\CreateDraftInvoice;
+use App\Domain\Invoices\Actions\IssueInvoice;
+use App\Domain\Invoices\Actions\VoidInvoice;
+use App\Domain\Invoices\Data\CreateDraftInvoiceData;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Invoices\Models\InvoiceTax;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\Store;

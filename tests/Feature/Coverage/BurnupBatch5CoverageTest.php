@@ -4,17 +4,22 @@
  * Coverage burn-up batch 5 — services, policies, and support classes.
  */
 
-use App\Contracts\Documents\DocumentRenderer;
+use App\Domain\Documents\Contracts\DocumentRenderer;
+use App\Domain\Documents\Exceptions\DocumentRenderException;
+use App\Domain\Documents\Models\Document;
+use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Policies\DocumentTemplatePolicy;
+use App\Domain\Documents\Services\ReceiptDataResolver;
+use App\Domain\Documents\Services\SandboxedLoopEnvironment;
+use App\Domain\Documents\ValueObjects\DocumentRenderResult;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
+use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\NotificationAudience;
 use App\Enums\ShortageResolutionType;
-use App\Enums\StockMethod;
-use App\Exceptions\Documents\DocumentRenderException;
 use App\Models\CommunicationTemplate;
-use App\Models\Document;
-use App\Models\DocumentSequence;
-use App\Models\DocumentTemplate;
-use App\Models\Invoice;
-use App\Models\InvoicePayment;
 use App\Models\MemberStore;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
@@ -28,17 +33,12 @@ use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Policies\CommunicationTemplatePolicy;
-use App\Policies\DocumentTemplatePolicy;
-use App\Services\Documents\ReceiptDataResolver;
-use App\Services\Documents\SandboxedLoopEnvironment;
 use App\Services\Notifications\CustomerCommunicationAttachmentResolver;
 use App\Services\Notifications\NotificationSettingsCatalog;
-use App\Services\PurchaseOrders\PurchaseOrderNumberGenerator;
 use App\Services\Shortages\CostApportionmentContext;
 use App\Services\Shortages\Resolvers\SubHireResolver;
 use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Services\VirtualStock\VirtualStockIntakeProfitAndLossBuilder;
-use App\ValueObjects\Documents\DocumentRenderResult;
 use App\ValueObjects\ResolutionOption;
 use App\ValueObjects\Shortage;
 use Database\Seeders\NotificationTypeSeeder;

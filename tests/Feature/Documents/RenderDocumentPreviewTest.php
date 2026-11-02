@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Documents\RenderDocumentPreview;
-use App\Data\Documents\RenderDocumentPreviewData;
-use App\Models\DocumentTemplate;
+use App\Domain\Documents\Actions\RenderDocumentPreview;
+use App\Domain\Documents\Data\RenderDocumentPreviewData;
+use App\Domain\Documents\Models\DocumentTemplate;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
