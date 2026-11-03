@@ -51,7 +51,7 @@ a later phase.
 
 ## 2. Current Opportunity definition
 
-`App\Models\Opportunity` is a read-optimised projection of an event-sourced
+`App\Domain\Projects\Opportunities\Models\Opportunity` is a read-optimised projection of an event-sourced
 Verbs aggregate. Its lifecycle has two axes:
 
 ```text
