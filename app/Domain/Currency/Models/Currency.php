@@ -10,7 +10,20 @@ use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property string $code
+ * @property string $name
+ * @property string $symbol
+ * @property int $decimal_places
+ * @property string $symbol_position
+ * @property string $thousand_separator
+ * @property string $decimal_separator
+ * @property bool $is_enabled
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 final class Currency extends Model implements HasSchema
 {
     /** @use HasFactory<CurrencyFactory> */

@@ -6,6 +6,7 @@ namespace App\Domain\Invoices\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Data\RecordPaymentData;
 use App\Domain\Invoices\Models\Invoice;
@@ -14,7 +15,6 @@ use App\Domain\Invoices\Services\InvoiceStatusResolver;
 use App\Domain\Invoices\Services\PaymentNumberGenerator;
 use App\Domain\Invoices\Verbs\Events\PaymentRecorded;
 use App\Domain\Numbering\Services\SequenceAllocator;
-use App\Enums\BillingCommunicationKind;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

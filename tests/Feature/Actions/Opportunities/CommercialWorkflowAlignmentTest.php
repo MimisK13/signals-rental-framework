@@ -5,6 +5,7 @@ use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -26,7 +27,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Stores\Models\Store;
-use App\Enums\LineItemTransactionType;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function (): void {

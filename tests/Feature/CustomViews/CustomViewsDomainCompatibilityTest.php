@@ -7,11 +7,12 @@ use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Models\UserViewPreference;
 use App\Domain\CustomViews\Services\ViewResolver;
 
-it('keeps the historical migration class name available without a morph map', function (): void {
+it('uses only the canonical CustomView identity', function (): void {
     $view = CustomView::factory()->create();
 
-    expect(App\Models\CustomView::query()->findOrFail($view->id))->toBeInstanceOf(CustomView::class);
-    expect($view->getMorphClass())->toBe(CustomView::class);
+    expect(class_exists('App\\Models\\CustomView'))->toBeFalse()
+        ->and(CustomView::query()->findOrFail($view->id))->toBeInstanceOf(CustomView::class)
+        ->and($view->getMorphClass())->toBe(CustomView::class);
 });
 
 it('builds user preferences with the canonical factory and relationship', function (): void {

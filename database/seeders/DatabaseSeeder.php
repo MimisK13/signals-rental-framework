@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Domain\Activities\Database\Seeders\ActivitySeeder;
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
-use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Currency\Database\Seeders\CurrencySeeder;
@@ -31,7 +32,7 @@ use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
 use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
@@ -63,12 +64,5 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             ActivitySeeder::class,
         ]);
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-        $this->call(HeavyQuotationSeeder::class);
     }
 }

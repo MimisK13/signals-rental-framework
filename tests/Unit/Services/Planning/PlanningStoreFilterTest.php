@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Projects\Planning\Services\PlanningStoreFilter;
 use App\Domain\Stores\Models\Store;
-use App\Services\Planning\PlanningStoreFilter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

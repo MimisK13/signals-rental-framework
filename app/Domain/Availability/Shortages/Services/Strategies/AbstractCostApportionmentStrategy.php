@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services\Strategies;
 
-use App\Contracts\CostApportionmentStrategyContract;
+use App\Domain\Availability\Shortages\Contracts\CostApportionmentStrategyContract;
 use App\Domain\Availability\Shortages\Services\CostApportionmentContext;
 use App\Domain\Availability\Shortages\Services\MoneyApportionment;
 use InvalidArgumentException;

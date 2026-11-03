@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Database\Factories;
 
 use App\Domain\Numbering\Services\SequenceAllocator;
+use App\Domain\Pricing\Enums\ChargePeriod;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Enums\ChargePeriod;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

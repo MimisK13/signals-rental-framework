@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
-use App\Contracts\CostApportionmentStrategyContract;
+use App\Domain\Availability\Shortages\Contracts\CostApportionmentStrategyContract;
 
 /**
  * Default no-op cost-apportionment strategy — the stub the

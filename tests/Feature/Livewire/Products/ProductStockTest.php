@@ -4,7 +4,8 @@ use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
-use Livewire\Volt\Volt;
+use App\Livewire\Components\DataTable;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -29,7 +30,7 @@ it('links the item name to the stock level show page', function () {
         'item_name' => 'Chauvet COLORado Panel Q40',
     ]);
 
-    Volt::test('components.data-table', [
+    Livewire::test(DataTable::class, [
         'columns' => [
             ['key' => 'item_name', 'label' => 'Item Name', 'sortable' => true, 'view' => 'products::partials.stock-item-name'],
         ],

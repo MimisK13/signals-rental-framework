@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Actions;
 
 use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Invoices\Data\SendMemberStatementData;
 use App\Domain\Members\Models\Member;
-use App\Enums\BillingCommunicationKind;
 use Illuminate\Support\Facades\Gate;
 
 /**

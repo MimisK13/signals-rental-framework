@@ -1,8 +1,5 @@
 <?php
 
-use App\Http\Controllers\Web\DocsController;
-use App\Http\Controllers\Web\SearchController;
-use App\Livewire\Planner\Index as PlannerIndex;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -34,38 +31,14 @@ Route::get('/', function () {
 
 Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-timeout'])->group(function () {
     Route::redirect('settings', 'settings/profile');
-
-    // Search
-    Route::get('search', SearchController::class)->name('search');
-
-    // Stock Levels
-
-    // Physical serialized asset detail and financial history.
-
-    // Invoices
-
-    // Purchase orders
-
-    // Supplier accounts-payable documents.
-
-    // Virtual stock
-
-    // Job Planner
-    //
-    // A Gantt / Overlap calendar of OPPORTUNITIES (jobs) across dates — one row
-    // (or lane-packed cluster) per opportunity, bars split into Delivery / In-Use
-    // / Collection bands derived from the lifecycle dates, coloured by workflow
-    // status. The Volt component reads the opportunity projection directly and
-    // gates on `opportunities.access` (no dedicated planner permission exists yet —
-    // it reuses the opportunities area gate, mirroring the Job Planning nav).
-    Route::get('planner', PlannerIndex::class)->name('planner');
-
-    // Calendar package sandbox
-    Route::view('calendar/sandbox', 'calendar.sandbox')->name('calendar.sandbox');
-
-    // Dense UI foundation sandbox
-    Route::view('dense/sandbox', 'dense.sandbox')->name('dense.sandbox');
 });
+
+if (app()->environment(['local', 'testing'])) {
+    Route::middleware(['signals.setup-complete', 'auth'])->group(function (): void {
+        Route::view('calendar/sandbox', 'calendar.sandbox')->name('calendar.sandbox');
+        Route::view('dense/sandbox', 'dense.sandbox')->name('dense.sandbox');
+    });
+}
 /*
 |--------------------------------------------------------------------------
 | Well-Known URLs
@@ -87,17 +60,8 @@ Route::get('.well-known/change-password', function () {
 */
 
 Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.session-timeout'])->group(function () {
-    Volt::route('admin', 'admin.index')->name('admin.index');
     Route::redirect('admin/settings', 'admin');
 
-    // System
-    // Data
-
-    // Pricing
-
-    // Pricing categories
-
-    // Documents
 });
 
 /*
@@ -166,25 +130,4 @@ Route::prefix('social')->group(function () {
     Route::view('permissions-promo', 'social.permissions-promo')->name('social.permissions-promo');
     Route::view('email-promo', 'social.email-promo')->name('social.email-promo');
     Route::view('health-promo', 'social.health-promo')->name('social.health-promo');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Documentation
-|--------------------------------------------------------------------------
-*/
-
-Route::prefix('docs')->group(function () {
-    Route::get('/', [DocsController::class, 'index'])->name('docs.index');
-    Route::get('changelog', [DocsController::class, 'changelog'])->name('docs.changelog');
-    Route::get('sitemap.xml', [DocsController::class, 'sitemap'])->name('docs.sitemap');
-    Route::get('robots.txt', [DocsController::class, 'robots'])->name('docs.robots');
-    Route::redirect('getting-started/sso', '/docs/getting-started/authentication', 301);
-    Route::redirect('getting-started/magic-link', '/docs/getting-started/authentication', 301);
-    Route::get('images/{path}', [DocsController::class, 'image'])
-        ->name('docs.image')
-        ->where('path', '.+');
-    Route::get('{section}/{page}', [DocsController::class, 'show'])
-        ->name('docs.show')
-        ->where(['section' => '[a-z0-9-]+', 'page' => '[a-z0-9-]+']);
 });

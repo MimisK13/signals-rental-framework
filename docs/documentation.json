@@ -274,7 +274,7 @@
                     "title": "Component Library",
                     "slug": "library",
                     "type": "blade",
-                    "view": "docs.components.library",
+                    "view": "documentation::components.library",
                     "description": "Browse the Signals Blade component reference with live examples.",
                     "urlSection": "development"
                 },

@@ -6,6 +6,7 @@ namespace App\Domain\Communications\Actions;
 
 use App\Domain\Communications\Data\SendBillingCustomerCommunicationData;
 use App\Domain\Communications\Data\SendCustomerCommunicationData;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Communications\Services\BillingCommunicationMergeDataBuilder;
 use App\Domain\Communications\Services\CommunicationTemplateResolver;
 use App\Domain\Documents\Actions\GenerateBillingIssueDocument;
@@ -17,7 +18,6 @@ use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Members\Models\Member;
-use App\Enums\BillingCommunicationKind;
 use Illuminate\Support\Facades\Auth;
 
 /**

@@ -11,7 +11,7 @@ use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Models\ActivityParticipant;
-use App\Services\FileService;
+use App\Domain\Attachments\Services\FileService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Data;

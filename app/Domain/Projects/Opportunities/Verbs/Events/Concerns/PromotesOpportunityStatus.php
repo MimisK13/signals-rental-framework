@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Verbs\Events\Concerns;
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
+use App\Domain\Projects\Opportunities\Enums\FulfilmentPhase;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -12,8 +14,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\AutoPromotionContext;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityStatusPromoted;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Enums\AssetAssignmentStatus;
-use App\Enums\FulfilmentPhase;
 use Brick\Math\BigDecimal;
 use Illuminate\Database\Eloquent\Collection;
 use Thunk\Verbs\Event;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\DocsService;
+use App\Domain\Documentation\Services\DocsService;
 use Illuminate\Support\Facades\App;
 
 /**

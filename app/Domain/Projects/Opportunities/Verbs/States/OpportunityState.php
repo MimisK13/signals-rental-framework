@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\States;
 
+use App\Domain\Pricing\Enums\DealPriceMode;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState as StateAxis;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
-use App\Enums\DealPriceMode;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\State;
 

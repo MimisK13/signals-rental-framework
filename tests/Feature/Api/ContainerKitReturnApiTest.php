@@ -5,6 +5,7 @@ use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
@@ -26,7 +27,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {

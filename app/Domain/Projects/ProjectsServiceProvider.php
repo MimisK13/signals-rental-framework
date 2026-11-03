@@ -32,6 +32,7 @@ use App\Domain\Projects\Opportunities\Services\Hooks\ApprovalChainRegistry;
 use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
 use App\Domain\Projects\Opportunities\Services\TransitionRuleRegistry;
 use App\Domain\Projects\Opportunities\Settings\OpportunitySettings;
+use App\Domain\Projects\Planning\Presentation\Livewire\Index as PlannerIndex;
 use App\Domain\Projects\Policies\ProjectPolicy;
 use App\Domain\Projects\Presentation\Livewire\Index;
 use App\Domain\Projects\Presentation\Livewire\Show;
@@ -81,9 +82,11 @@ final class ProjectsServiceProvider extends ServiceProvider
         Gate::policy(OpportunityCost::class, OpportunityCostPolicy::class);
 
         $this->loadViewsFrom(__DIR__.'/Presentation/Views', 'projects');
+        $this->loadViewsFrom(__DIR__.'/Planning/Presentation/Views', 'project-planning');
         $this->loadViewsFrom(__DIR__.'/Opportunities/Presentation/Views', 'project-opportunities');
         Livewire::addComponent(name: 'projects.index', class: Index::class);
         Livewire::addComponent(name: 'projects.show', class: Show::class);
+        Livewire::addComponent(name: 'planner.index', class: PlannerIndex::class);
         Livewire::addComponent(name: 'opportunities.index', class: OpportunitiesIndex::class);
         Livewire::addComponent(name: 'opportunities.form', class: Form::class);
         Livewire::addComponent(name: 'opportunities.show', class: OpportunityShow::class);

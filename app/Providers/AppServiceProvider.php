@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Domain\Administration\Models\User;
-use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
 use App\Services\ColumnRegistryResolver;
-use App\Services\DocsService;
 use App\Services\Plugins\PluginRegistrar;
 use App\Services\SchemaRegistry;
 use App\Support\Formatter;
@@ -31,7 +29,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Timezone::class);
         $this->app->singleton(Formatter::class);
-        $this->app->singleton(DocsService::class);
         $this->app->singleton(SchemaRegistry::class);
         $this->app->singleton(PluginRegistrar::class);
         $this->app->singleton(ColumnRegistryResolver::class);
@@ -48,7 +45,6 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
         $this->registerBladeDirectives();
         $this->registerVerbsMetadata();
-        $this->registerDocumentWorkflowTriggers();
 
     }
 
@@ -178,27 +174,5 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('vies-validation', function () {
             return Limit::perMinute(30);
         });
-    }
-
-    protected function registerDocumentWorkflowTriggers(): void
-    {
-        $registry = app(WorkflowTriggerRegistry::class);
-
-        foreach ([
-            'document.created',
-            'document.finalised',
-            'document.voided',
-            'document.emailed',
-            'document.public_link_created',
-            'document.public_link_accessed',
-            'document.public_link_revoked',
-            'document_template.created',
-            'document_template.updated',
-            'document_template.deleted',
-            'document_template.set_as_default',
-            'document_sequence.reset',
-        ] as $transition) {
-            $registry->register($transition, 'core-document-engine-seam');
-        }
     }
 }

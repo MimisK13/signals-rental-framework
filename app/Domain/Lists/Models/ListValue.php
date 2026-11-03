@@ -10,9 +10,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
+ * @property int $list_name_id
+ * @property string $name
+ * @property int|null $parent_id
+ * @property int $sort_order
+ * @property bool $is_system
+ * @property bool $is_active
  * @property array<string, mixed>|null $metadata
+ * @property string|null $plugin_name
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 final class ListValue extends Model
 {

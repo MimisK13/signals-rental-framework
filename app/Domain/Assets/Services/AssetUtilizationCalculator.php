@@ -6,13 +6,13 @@ namespace App\Domain\Assets\Services;
 
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Enums\AssetOwnershipType;
+use App\Domain\Assets\Enums\UtilizationCompleteness;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetLifecycleEvent;
 use App\Domain\Assets\Models\AssetUsage;
 use App\Domain\Assets\Repairs\Models\Repair;
+use App\Domain\Assets\Support\Intervals\TimeInterval;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Enums\UtilizationCompleteness;
-use App\Support\Intervals\TimeInterval;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;

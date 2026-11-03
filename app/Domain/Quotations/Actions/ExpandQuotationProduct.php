@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Actions;
 
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Data\AddQuotationItemData;
 use App\Domain\Quotations\Enums\QuotationItemType;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Facades\DB;
 
 final readonly class ExpandQuotationProduct

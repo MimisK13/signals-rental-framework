@@ -1,6 +1,6 @@
 <?php
 
-use App\Mail\TestEmail;
+use App\Domain\Communications\Mail\TestEmail;
 use Illuminate\Mail\Mailable;
 
 it('has the correct subject including app name', function () {
@@ -11,10 +11,10 @@ it('has the correct subject including app name', function () {
     $mailable->assertHasSubject('Test Email from Signals');
 });
 
-it('uses the emails.test markdown view', function () {
+it('uses the Communications markdown view', function () {
     $mailable = new TestEmail;
 
-    expect($mailable->content()->markdown)->toBe('emails.test');
+    expect($mailable->content()->markdown)->toBe('communications::emails.test');
 });
 
 it('is a valid mailable', function () {

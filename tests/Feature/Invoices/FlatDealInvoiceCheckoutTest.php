@@ -7,6 +7,8 @@ use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\DealPriceMode;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -21,8 +23,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Stores\Models\Store;
-use App\Enums\DealPriceMode;
-use App\Enums\LineItemTransactionType;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

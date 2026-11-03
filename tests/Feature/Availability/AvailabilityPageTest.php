@@ -4,13 +4,14 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Presentation\Livewire\Index;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -34,7 +35,7 @@ afterEach(function () {
 it('renders the availability page for a user with availability.view', function () {
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->assertOk()
         ->assertSee('Equipment Availability')
         ->assertSee('Product Group')
@@ -45,13 +46,13 @@ it('renders the availability page for a user with availability.view', function (
 it('forbids the page for a user without availability.view', function () {
     $this->actingAs(User::factory()->create());
 
-    Volt::test('availability.index')->assertForbidden();
+    Livewire::test(Index::class)->assertForbidden();
 });
 
 it('defaults to today, all stores, and a 30-day period', function () {
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->assertSet('storeIds', [])
         ->assertSet('from', '2026-06-20')
         ->assertSet('daysPeriod', 30);
@@ -69,7 +70,7 @@ it('re-renders without error when the store availability changes', function () {
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('availability.index')->call('initializeGrid')->set('groupId', $group->id);
+    $component = Livewire::test(Index::class)->call('initializeGrid')->set('groupId', $group->id);
     $component->assertOk();
 
     AvailabilityDailySummary::factory()

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Services\Investment;
 
-use App\Data\InvestmentComponentCompleteness;
-use App\Data\InvestmentSignal;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Services\AssetFinancialsResult;
 use App\Domain\Assets\Services\AssetUtilizationResult;
-use App\Enums\InvestmentGuidance;
+use App\Domain\Products\Investment\Data\InvestmentComponentCompleteness;
+use App\Domain\Products\Investment\Data\InvestmentSignal;
+use App\Domain\Products\Investment\Enums\InvestmentGuidance;
 use Carbon\CarbonImmutable;
 
 final readonly class AssetInvestmentIntelligenceResult

@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header
+    <x-auth::auth-header
         title="Accept invitation"
         :description="'Welcome, ' . $user->name . ' — set a password to finish creating your account.'"
     />

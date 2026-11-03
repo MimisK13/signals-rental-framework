@@ -14,6 +14,7 @@ use App\Domain\Currency\CurrencyServiceProvider;
 use App\Domain\CustomFields\CustomFieldsServiceProvider;
 use App\Domain\CustomViews\CustomViewsServiceProvider;
 use App\Domain\Dashboard\DashboardServiceProvider;
+use App\Domain\Documentation\DocumentationServiceProvider;
 use App\Domain\Documents\DocumentsServiceProvider;
 use App\Domain\Invoices\InvoicesServiceProvider;
 use App\Domain\Lists\ListsServiceProvider;
@@ -27,6 +28,7 @@ use App\Domain\PurchaseOrders\PurchaseOrdersServiceProvider;
 use App\Domain\Quotations\QuotationsServiceProvider;
 use App\Domain\Rates\RatesServiceProvider;
 use App\Domain\ReferenceData\ReferenceDataServiceProvider;
+use App\Domain\Search\SearchServiceProvider;
 use App\Domain\Settings\SettingsServiceProvider;
 use App\Domain\Setup\SetupServiceProvider;
 use App\Domain\Stock\StockServiceProvider;
@@ -55,6 +57,7 @@ return [
     CommunicationsServiceProvider::class,
     CustomViewsServiceProvider::class,
     DashboardServiceProvider::class,
+    DocumentationServiceProvider::class,
     CustomFieldsServiceProvider::class,
     DocumentsServiceProvider::class,
     ActivitiesServiceProvider::class,
@@ -73,6 +76,7 @@ return [
     PricingServiceProvider::class,
     PurchaseOrdersServiceProvider::class,
     ReferenceDataServiceProvider::class,
+    SearchServiceProvider::class,
     QuotationsServiceProvider::class,
     RatesServiceProvider::class,
     SetupServiceProvider::class,

@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Rates\Enums\BasePeriod;
-use App\ValueObjects\RentalPeriod;
+use App\Domain\Rates\ValueObjects\RentalPeriod;
 use Illuminate\Support\Carbon;
 
 it('yields zero clock minutes for an inverted window, floored to one unit', function () {

@@ -12,8 +12,8 @@ use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityItem;
 use App\Domain\Projects\Opportunities\Data\ChangeItemQuantityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Planning\Services\OpportunityItemPlanningReader;
 use App\Domain\Stores\Models\Store;
-use App\Services\Planning\OpportunityItemPlanningReader;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function (): void {

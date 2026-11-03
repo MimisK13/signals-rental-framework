@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Actions;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Data\DocumentData;
 use App\Domain\Documents\Data\GenerateDocumentData;
@@ -18,7 +19,6 @@ use App\Domain\Members\Models\Member;
 use App\Domain\Numbering\Services\DocumentNumberGenerator;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Quotations\Models\Quotation;
-use App\Services\FileService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

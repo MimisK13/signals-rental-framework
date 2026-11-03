@@ -2,8 +2,10 @@
 
 use App\Domain\Availability\Enums\DemandDateSource;
 use App\Domain\Availability\Shortages\Enums\WaitlistMonitorStatus;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Pricing\Enums\DealPriceMode;
 use App\Domain\Products\Enums\KitComponentBinding;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Tax\Enums\TaxBuyerType;
@@ -12,8 +14,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerDispatchVerdict;
 use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
 use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
-use App\Enums\BillingCommunicationKind;
-use App\Enums\DealPriceMode;
 
 describe('ContainerAvailabilityMode::holdsContentsIndefinitely', function () {
     it('is true only for kit mode', function () {

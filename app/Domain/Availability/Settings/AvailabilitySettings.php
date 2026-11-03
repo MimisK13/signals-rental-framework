@@ -7,9 +7,9 @@ namespace App\Domain\Availability\Settings;
 use App\Domain\Availability\Contracts\AvailabilityDataPresence;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Enums\DemandDateSource;
+use App\Domain\Availability\Enums\ReleasePoint;
 use App\Domain\Settings\Services\SettingsService;
 use App\Domain\Settings\Settings\SettingsDefinition;
-use App\Enums\ReleasePoint;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 

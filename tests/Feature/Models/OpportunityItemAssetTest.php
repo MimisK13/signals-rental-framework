@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AssetAssignmentStatus;
 
 it('belongs to an opportunity item', function () {
     $item = OpportunityItem::factory()->create();

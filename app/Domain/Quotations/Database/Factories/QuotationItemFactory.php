@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Database\Factories;
 
 use App\Domain\Numbering\Services\SequenceAllocator;
+use App\Domain\Pricing\Enums\ChargePeriod;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Quotations\Enums\QuotationItemType;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Enums\ChargePeriod;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<QuotationItem> */

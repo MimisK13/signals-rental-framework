@@ -30,6 +30,7 @@ use App\Domain\Documents\Services\ReturnListDataResolver;
 use App\Domain\Documents\Services\SandboxedBladeCompiler;
 use App\Domain\Documents\Services\SandboxedBladeRenderer;
 use App\Domain\Documents\Services\StatementDataResolver;
+use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -85,6 +86,24 @@ final class DocumentsServiceProvider extends ServiceProvider
 
         Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(DocumentTemplate::class, DocumentTemplatePolicy::class);
+
+        $workflowTriggers = app(WorkflowTriggerRegistry::class);
+        foreach ([
+            'document.created',
+            'document.finalised',
+            'document.voided',
+            'document.emailed',
+            'document.public_link_created',
+            'document.public_link_accessed',
+            'document.public_link_revoked',
+            'document_template.created',
+            'document_template.updated',
+            'document_template.deleted',
+            'document_template.set_as_default',
+            'document_sequence.reset',
+        ] as $transition) {
+            $workflowTriggers->register($transition, 'core-document-engine-seam');
+        }
 
         Livewire::addComponent(name: 'document-templates.index', class: Index::class);
         Livewire::addComponent(name: 'document-templates.edit', class: Editor::class);

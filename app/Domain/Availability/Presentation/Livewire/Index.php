@@ -9,7 +9,7 @@ use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
-use App\Services\Planning\PlanningStoreFilter;
+use App\Domain\Projects\Planning\Services\PlanningStoreFilter;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;

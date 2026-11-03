@@ -10,6 +10,7 @@ use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
 use App\Domain\Projects\Opportunities\Actions\Concerns\ResolvesOpportunityAssets;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Data\QuickBookOutData;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
@@ -17,7 +18,6 @@ use App\Domain\Projects\Opportunities\Services\AutoPromotionContext;
 use App\Domain\Projects\Opportunities\Verbs\Events\AssetDispatched;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PromotesOpportunityStatus;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityStatusPromoted;
-use App\Enums\AssetAssignmentStatus;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 

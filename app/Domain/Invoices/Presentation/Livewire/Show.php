@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Presentation\Livewire;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
 use App\Domain\Documents\Models\Document;
@@ -19,9 +21,7 @@ use App\Domain\Invoices\Data\RecordPaymentData;
 use App\Domain\Invoices\Enums\PaymentMethod;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Services\InvoiceMarginCalculator;
-use App\Enums\BillingCommunicationKind;
 use App\Livewire\Concerns\HandlesVerbsStateErrors;
-use App\Services\FileService;
 use App\Support\CostVisibility;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;

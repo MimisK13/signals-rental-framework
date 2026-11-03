@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Data;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Services\FileService;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Data;
 

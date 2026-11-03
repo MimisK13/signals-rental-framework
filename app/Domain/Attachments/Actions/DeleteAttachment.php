@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Actions;
 
 use App\Domain\Attachments\Models\Attachment;
-use App\Services\FileService;
+use App\Domain\Attachments\Services\FileService;
 use Illuminate\Support\Facades\Gate;
 
 final class DeleteAttachment

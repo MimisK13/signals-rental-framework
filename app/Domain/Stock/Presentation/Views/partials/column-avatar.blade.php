@@ -2,7 +2,7 @@
     $iconSrc = null;
     if ($item->product?->icon_thumb_url) {
         try {
-            $iconSrc = app(\App\Services\FileService::class)->signedUrl($item->product->icon_thumb_url);
+            $iconSrc = app(\App\Domain\Attachments\Services\FileService::class)->signedUrl($item->product->icon_thumb_url);
         } catch (\Throwable) {
             // Fall back to the placeholder graphic
         }

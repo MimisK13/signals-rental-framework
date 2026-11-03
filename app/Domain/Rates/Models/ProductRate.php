@@ -18,11 +18,21 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
+ * @property int $product_id
+ * @property int $rate_definition_id
+ * @property int|null $store_id
  * @property CarbonInterface|null $valid_from
  * @property CarbonInterface|null $valid_to
  * @property int|null $price_category_id
+ * @property RateTransactionType $transaction_type
+ * @property int $price
+ * @property string $currency
+ * @property int $priority
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 #[ObservedBy(ProductRateObserver::class)]
 final class ProductRate extends Model implements HasSchema

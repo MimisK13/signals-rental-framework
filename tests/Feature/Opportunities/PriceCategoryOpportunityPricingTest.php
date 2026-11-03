@@ -4,6 +4,7 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Models\PriceCategory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -17,7 +18,6 @@ use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stores\Models\Store;
-use App\Enums\LineItemTransactionType;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

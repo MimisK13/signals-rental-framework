@@ -15,7 +15,7 @@ function documentEngineMigrationRollbackPaths(): array
 {
     return [
         'app/Domain/Documents/Database/Migrations/2026_07_03_101150_create_documents_table.php',
-        'app/Domain/Documents/Database/Migrations/2026_07_03_101149_create_document_sequences_table.php',
+        'app/Domain/Numbering/Database/Migrations/2026_07_03_101149_create_document_sequences_table.php',
         'app/Domain/Documents/Database/Migrations/2026_07_03_101148_create_document_template_versions_table.php',
         'app/Domain/Documents/Database/Migrations/2026_07_03_101147_create_document_templates_table.php',
     ];

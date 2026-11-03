@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Enums\AssetAssignmentStatus;
 use Illuminate\Support\Collection;
 
 /**

@@ -7,11 +7,11 @@ use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stores\Models\Store;
-use App\Support\Database\StoreNumberUniqueConstraintPreflight;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\UsesIsolatedSqliteMigrations;
+use Tests\Support\StoreNumberUniqueConstraintPreflight;
 
 uses(UsesIsolatedSqliteMigrations::class);
 

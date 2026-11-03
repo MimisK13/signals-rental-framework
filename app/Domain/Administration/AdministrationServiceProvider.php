@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Administration;
 
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Presentation\Livewire\AdminIndex;
 use App\Domain\Administration\Presentation\Livewire\Permissions;
 use App\Domain\Administration\Presentation\Livewire\RoleForm;
 use App\Domain\Administration\Presentation\Livewire\Roles;
@@ -37,6 +38,7 @@ final class AdministrationServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/Presentation/Routes/api.php');
 
         Livewire::addComponent(name: 'admin.settings.users', class: Users::class);
+        Livewire::addComponent(name: 'admin.index', class: AdminIndex::class);
         Livewire::addComponent(name: 'admin.settings.user-form', class: UserForm::class);
         Livewire::addComponent(name: 'admin.settings.roles', class: Roles::class);
         Livewire::addComponent(name: 'admin.settings.role-form', class: RoleForm::class);

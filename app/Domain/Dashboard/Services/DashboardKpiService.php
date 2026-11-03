@@ -8,12 +8,12 @@ use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
-use App\Enums\AssetAssignmentStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -48,8 +48,7 @@ final class DashboardKpiService
         ?User $user = null,
         bool $includeOpportunities = true,
         bool $includeInvoices = true,
-    ): array
-    {
+    ): array {
         $user ??= auth()->user();
         $now = Carbon::now('UTC');
         $monthStart = $now->copy()->startOfMonth();

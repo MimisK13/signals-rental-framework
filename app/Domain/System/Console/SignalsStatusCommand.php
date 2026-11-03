@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\System\Console;
 
-use App\Console\Commands\Concerns\HasSignalsBranding;
+use App\Domain\System\Console\Concerns\HasSignalsBranding;
 use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
 use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
 use App\Domain\System\Services\ConnectionTesters\S3ConnectionTester;

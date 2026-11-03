@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Rates\Enums\BasePeriod;
-use App\Enums\DayType;
-use App\ValueObjects\RentalPeriod;
+use App\Domain\Rates\Enums\DayType;
+use App\Domain\Rates\ValueObjects\RentalPeriod;
 use Illuminate\Support\Carbon;
 
 function period(string $start, string $end): RentalPeriod

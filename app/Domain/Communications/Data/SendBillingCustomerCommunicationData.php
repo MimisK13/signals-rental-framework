@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Data;
 
-use App\Enums\BillingCommunicationKind;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use Spatie\LaravelData\Data;
 
 /**

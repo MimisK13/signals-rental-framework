@@ -7,7 +7,7 @@ namespace App\Domain\CustomFields\Services;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
-use App\ValueObjects\CopyResult;
+use App\Domain\CustomFields\ValueObjects\CopyResult;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 

@@ -6,12 +6,12 @@ namespace App\Domain\Projects\Opportunities\Models;
 
 use App\Contracts\HasSchema;
 use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Pricing\Enums\ChargePeriod;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunityItemFactory;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Stores\Models\Store;
-use App\Enums\ChargePeriod;
-use App\Enums\LineItemTransactionType;
 use App\Models\Traits\FormatsMoney;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

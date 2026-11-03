@@ -11,18 +11,17 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\PurchaseOrders\Presentation\Livewire\Show as PurchaseOrderShow;
 use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
 use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
 use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
 use App\Domain\VirtualStock\Data\ReturnVirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Domain\VirtualStock\Presentation\Livewire\Show;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeProfitAndLossBuilder;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeReturnGuard;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -231,11 +230,11 @@ it('renders return-to-supplier affordances on virtual stock and purchase order p
     app(ConfirmVirtualStockIntake::class)($intake);
     app(ReceiveVirtualStockIntake::class)($intake->refresh());
 
-    Livewire::test(Show::class, ['virtualStockIntake' => $intake->refresh()])
+    Livewire::test(PurchaseOrderShow::class, ['virtualStockIntake' => $intake->refresh()])
         ->assertSee('Return to supplier')
         ->assertSee('Cost apportionment');
 
-    Volt::test('purchase-orders.show', ['purchaseOrder' => $po->refresh()])
+    Livewire::test(PurchaseOrderShow::class, ['purchaseOrder' => $po->refresh()])
         ->assertSee('Virtual stock intakes')
         ->assertSee($intake->number)
         ->assertSee('Return to supplier');

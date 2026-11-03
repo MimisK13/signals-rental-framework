@@ -14,6 +14,7 @@ use App\Domain\Projects\Opportunities\Data\ParticipantData;
 use App\Domain\Projects\Opportunities\Data\ProductSearchAccessoryData;
 use App\Domain\Projects\Opportunities\Data\VersionDiffData;
 use App\Domain\Projects\Opportunities\Data\VersionDiffItemData;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
@@ -24,7 +25,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AssetAssignmentStatus;
 
 it('maps OpportunityData from a model with decimal-string money and state labels', function () {
     $member = Member::factory()->organisation()->create(['name' => 'Acme Hire']);

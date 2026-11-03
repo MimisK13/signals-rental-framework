@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Services;
 
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Services\QuantityMinorArithmetic;
 use App\Domain\Pricing\Services\RoundingStrategy;
 use App\Domain\Products\Models\Product;
@@ -16,7 +17,6 @@ use App\Domain\Rates\Services\RateEngine\RateCalculator;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
 use App\Domain\Rates\ValueObjects\CalculationContext;
 use App\Domain\Tax\Contracts\TaxResolver;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Carbon;
 
 final readonly class QuotationLinePriceCalculator

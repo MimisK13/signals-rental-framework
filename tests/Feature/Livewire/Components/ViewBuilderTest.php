@@ -4,7 +4,7 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Models\CustomView;
-use App\Livewire\Components\ViewBuilder;
+use App\Domain\CustomViews\Presentation\Livewire\ViewBuilder;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;

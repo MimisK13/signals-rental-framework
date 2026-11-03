@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Presentation\Livewire;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Actions\ConfigureDocumentPublicLink;
 use App\Domain\Documents\Actions\CreateDocumentPublicLink;
 use App\Domain\Documents\Actions\GenerateDocument;
@@ -17,7 +18,6 @@ use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\QrCodeGenerator;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Presentation\Concerns\HasOpportunityActions;
-use App\Services\FileService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

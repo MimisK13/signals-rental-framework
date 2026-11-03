@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header title="Log in" :description="config('signals.tenant') ? 'Signing in to ' . config('signals.tenant') : 'Welcome back.'" />
+    <x-auth::auth-header title="Log in" :description="config('signals.tenant') ? 'Signing in to ' . config('signals.tenant') : 'Welcome back.'" />
 
     @if (session('status'))
         <x-signals.alert type="success">{{ session('status') }}</x-signals.alert>

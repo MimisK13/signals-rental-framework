@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Enums\FulfilmentPhase;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
-use App\Enums\FulfilmentPhase;
 
 it('backs each phase with the expected string value', function () {
     expect(FulfilmentPhase::NotStarted->value)->toBe('not_started')

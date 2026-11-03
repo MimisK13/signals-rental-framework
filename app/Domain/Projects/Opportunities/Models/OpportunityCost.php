@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunityCostFactory;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Enums\LineItemTransactionType;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasCostVisibility;
 use App\Services\SchemaBuilder;

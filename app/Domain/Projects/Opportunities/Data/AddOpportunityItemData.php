@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Data;
 
 use App\Data\Casts\MoneyInput;
+use App\Domain\Pricing\Enums\ChargePeriod;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
-use App\Enums\ChargePeriod;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Spatie\LaravelData\Attributes\WithCast;

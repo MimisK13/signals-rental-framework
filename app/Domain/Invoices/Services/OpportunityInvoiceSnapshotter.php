@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Services;
 
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
+use App\Domain\Pricing\Enums\DealPriceMode;
 use App\Domain\Pricing\Services\QuantityMinorArithmetic;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
@@ -14,7 +15,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Services\TaxCalculator;
-use App\Enums\DealPriceMode;
 use Illuminate\Support\Collection;
 
 /**

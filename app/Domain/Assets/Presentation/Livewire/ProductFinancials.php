@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Presentation\Livewire;
 
+use App\Domain\Assets\Services\ProductFinancialsCalculator;
+use App\Domain\Assets\Services\ProductFinancialsResult;
 use App\Domain\Products\Models\Product;
-use App\Services\Assets\ProductFinancialsCalculator;
-use App\Services\Assets\ProductFinancialsResult;
-use App\Services\Products\ProductExternalRentalCostCalculator;
-use App\Services\Products\ProductExternalRentalCostResult;
+use App\Domain\Products\Services\ProductExternalRentalCostCalculator;
+use App\Domain\Products\Services\ProductExternalRentalCostResult;
 use App\Support\Formatter;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

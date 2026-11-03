@@ -6,6 +6,7 @@ namespace App\Domain\Projects\Opportunities\Services;
 
 use App\Domain\Availability\Data\OpportunityItemAvailabilityData;
 use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Projects\Opportunities\Data\OpportunityItemReadContext;
 use App\Domain\Projects\Opportunities\Data\PreparedProductInputs;
 use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
@@ -15,7 +16,6 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Enums\LineItemTransactionType;
 use App\Support\Formatter;
 use Illuminate\Support\Collection;
 

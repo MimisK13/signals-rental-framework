@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\DocsService;
+use App\Domain\Documentation\Services\DocsService;
 
 test('getNavigation returns display sections with pages or nested api reference', function () {
     $service = app(DocsService::class);
@@ -28,7 +28,7 @@ test('display sections expose platform pages under new groupings', function () {
     expect(array_column($crm['pages'], 'slug'))->toBe(['members', 'activities', 'calendar']);
 
     $jobPlanning = $sections->firstWhere('slug', 'job-planning');
-    expect(array_column($jobPlanning['pages'], 'slug'))->toBe(['opportunities', 'availability', 'shortages', 'planner']);
+    expect(array_column($jobPlanning['pages'], 'slug'))->toBe(['crew', 'opportunities', 'projects', 'availability', 'shortages', 'planner']);
 
     $resources = $sections->firstWhere('slug', 'resources');
     expect(array_column($resources['pages'], 'slug'))->toBe([
@@ -362,7 +362,7 @@ test('getPage returns blade metadata for blade-type pages', function () {
 
     expect($page)->toBeArray()
         ->and($page['type'])->toBe('blade')
-        ->and($page['view'])->toBe('docs.components.library')
+        ->and($page['view'])->toBe('documentation::components.library')
         ->and($page['title'])->toBe('Component Library')
         ->and($page['html'])->toBeNull()
         ->and($page['toc'])->toBeEmpty();

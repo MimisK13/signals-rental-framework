@@ -17,7 +17,7 @@ it('keeps shared settings implementation inside the Settings domain', function (
         ->and(file_exists(app_path('Http/Controllers/Api/V1/SettingsController.php')))->toBeFalse()
         ->and(file_exists(resource_path('views/livewire/admin/settings/company.blade.php')))->toBeFalse()
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('admin/settings/company")
-        ->and(file_get_contents(base_path('routes/api.php')))->not->toContain('SettingsController');
+        ->and(file_exists(base_path('routes/api.php')))->toBeFalse();
 });
 
 it('keeps every Settings migration scoped to at most one table', function (): void {

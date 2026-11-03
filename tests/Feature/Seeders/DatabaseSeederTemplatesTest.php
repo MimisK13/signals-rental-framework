@@ -58,3 +58,11 @@ it('includes template seeders in DatabaseSeeder call list', function () {
     expect($source)->toContain('DocumentTemplateSeeder::class')
         ->and($source)->toContain('CommunicationTemplateSeeder::class');
 });
+
+it('keeps the default DatabaseSeeder free of test users and heavy demo data', function () {
+    $source = file_get_contents((new ReflectionClass(DatabaseSeeder::class))->getFileName());
+
+    expect($source)
+        ->not->toContain('test@example.com')
+        ->not->toContain('HeavyQuotationSeeder::class');
+});

@@ -2,8 +2,8 @@
 
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Enums\RoleLevel;
 use App\Domain\Administration\Models\User;
-use App\Enums\RoleLevel;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

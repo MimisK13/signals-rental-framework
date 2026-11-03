@@ -6,8 +6,8 @@ namespace App\Domain\Projects\Opportunities\Models;
 
 use App\Domain\Assets\Enums\AssetCondition;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunityItemAssetFactory;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AssetAssignmentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -6,9 +6,9 @@ use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Attachments\Presentation\Livewire\MemberFiles;
 use App\Domain\Attachments\Presentation\Livewire\ProductFiles;
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
-use App\Services\FileService;
 use Livewire\Livewire;
 
 beforeEach(function () {

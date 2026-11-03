@@ -8,7 +8,17 @@ use App\Domain\Lists\Database\Factories\ListNameFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property string $name
+ * @property string|null $description
+ * @property bool $is_system
+ * @property bool $is_hierarchical
+ * @property string|null $plugin_name
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 final class ListName extends Model
 {
     /** @use HasFactory<ListNameFactory> */

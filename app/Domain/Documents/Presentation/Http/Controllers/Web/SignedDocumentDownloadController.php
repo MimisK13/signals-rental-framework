@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Presentation\Http\Controllers\Web;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Stores\Scopes\StoreScope;
-use App\Services\FileService;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 

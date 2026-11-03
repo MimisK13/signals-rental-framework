@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Livewire\ProductGroups;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Presentation\Concerns\LoadsCustomFieldValues;
 use App\Domain\CustomFields\Presentation\Concerns\ReKeysCustomFieldErrors;
@@ -13,7 +14,6 @@ use App\Domain\Products\Actions\UpdateProductGroup;
 use App\Domain\Products\Data\CreateProductGroupData;
 use App\Domain\Products\Data\UpdateProductGroupData;
 use App\Domain\Products\Models\ProductGroup;
-use App\Services\FileService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;

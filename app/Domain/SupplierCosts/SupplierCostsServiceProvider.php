@@ -15,6 +15,8 @@ final class SupplierCostsServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+
         Gate::policy(ProductSupplierCost::class, ProductSupplierCostPolicy::class);
 
         $this->loadViewsFrom(__DIR__.'/Presentation/Views', 'supplier-costs');

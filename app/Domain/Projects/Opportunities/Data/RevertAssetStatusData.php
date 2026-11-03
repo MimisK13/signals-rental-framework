@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Data;
 
-use App\Enums\AssetAssignmentStatus;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use Illuminate\Validation\Rules\Enum;
 use Spatie\LaravelData\Data;
 

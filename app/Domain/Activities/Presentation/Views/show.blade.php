@@ -191,7 +191,7 @@
                                 <x-dense::avatar
                                     size="sm"
                                     :initials="$ownerInitials"
-                                    :src="app(\App\Services\FileService::class)->signedUrlOrNull(
+                                    :src="app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull(
                                         $activity->owner->member?->icon_thumb_url,
                                     )"
                                     :color="$ownerColor"
@@ -229,7 +229,7 @@
                                 <x-dense::avatar
                                     size="sm"
                                     :initials="$pInitials"
-                                    :src="app(\App\Services\FileService::class)->signedUrlOrNull(
+                                    :src="app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull(
                                         $participant->member?->icon_thumb_url,
                                     )"
                                     :color="$pColor"

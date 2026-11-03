@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Pricing\Enums\DealPriceMode;
 use App\Domain\Pricing\Services\DealPriceProportionalDistributor;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
@@ -16,7 +17,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\DealPriceSet;
 use App\Domain\Projects\Opportunities\Verbs\Events\GroupDealPriceCleared;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemDealPriceDiscountSet;
-use App\Enums\DealPriceMode;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

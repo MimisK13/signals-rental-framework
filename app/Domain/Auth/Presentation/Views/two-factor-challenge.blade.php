@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header
+    <x-auth::auth-header
         title="Two-factor authentication"
         description="{{ $useRecovery ? __('Enter one of your recovery codes to continue.') : __('Enter the authentication code from your app to continue.') }}"
     />

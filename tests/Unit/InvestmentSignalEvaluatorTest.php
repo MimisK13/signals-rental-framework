@@ -2,14 +2,14 @@
 
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Enums\AssetRentalRevenueAttributionStatus;
+use App\Domain\Assets\Enums\UtilizationCompleteness;
 use App\Domain\Assets\Services\AssetFinancialsResult;
 use App\Domain\Assets\Services\AssetUtilizationResult;
-use App\Enums\InvestmentGuidance;
-use App\Enums\InvestmentIntelligenceCompleteness;
-use App\Enums\InvestmentSignalType;
-use App\Enums\UtilizationCompleteness;
-use App\Services\Assets\ProductUtilizationResult;
-use App\Services\Investment\InvestmentSignalEvaluator;
+use App\Domain\Assets\Services\ProductUtilizationResult;
+use App\Domain\Products\Investment\Enums\InvestmentGuidance;
+use App\Domain\Products\Investment\Enums\InvestmentIntelligenceCompleteness;
+use App\Domain\Products\Investment\Enums\InvestmentSignalType;
+use App\Domain\Products\Investment\Services\InvestmentSignalEvaluator;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
 

@@ -1,9 +1,9 @@
 <?php
 
 use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Enums\ReleasePoint;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
-use App\Enums\ReleasePoint;
 
 it('maps each status to its owning state', function (OpportunityStatus $status, OpportunityState $state) {
     expect($status->state())->toBe($state);

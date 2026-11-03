@@ -132,7 +132,7 @@
                     <flux:input wire:model="tokenName" label="Token Name" placeholder="e.g. CI/CD Pipeline" required />
 
                     <div>
-                        @include('livewire.admin.settings.partials.ability-picker', ['model' => 'selectedAbilities', 'groups' => $abilityGroups])
+                        @include('api::partials.ability-picker', ['model' => 'selectedAbilities', 'groups' => $abilityGroups])
                         @error('selectedAbilities') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -152,7 +152,7 @@
 
                 <form wire:submit="updateToken" class="space-y-4">
                     <div>
-                        @include('livewire.admin.settings.partials.ability-picker', ['model' => 'editAbilities', 'groups' => $abilityGroups])
+                        @include('api::partials.ability-picker', ['model' => 'editAbilities', 'groups' => $abilityGroups])
                         @error('editAbilities') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
 

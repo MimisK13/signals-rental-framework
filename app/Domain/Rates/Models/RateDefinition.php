@@ -16,13 +16,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
+ * @property string $name
+ * @property string|null $description
  * @property CalculationStrategyType $calculation_strategy
  * @property BasePeriod|null $base_period
  * @property list<string> $enabled_modifiers
  * @property array<string, mixed> $strategy_config
  * @property array<string, array<string, mixed>> $modifier_configs
+ * @property bool $is_preset
+ * @property string|null $preset_slug
+ * @property int|null $cloned_from_id
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 #[ObservedBy(RateDefinitionObserver::class)]
 final class RateDefinition extends Model implements HasSchema

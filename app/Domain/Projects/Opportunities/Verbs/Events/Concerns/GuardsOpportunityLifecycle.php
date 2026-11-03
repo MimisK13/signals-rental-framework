@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\Events\Concerns;
 
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
-use App\Enums\AssetAssignmentStatus;
 use Brick\Math\BigDecimal;
 use Thunk\Verbs\Event;
 

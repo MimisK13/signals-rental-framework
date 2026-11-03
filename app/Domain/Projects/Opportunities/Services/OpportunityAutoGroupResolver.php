@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Services;
 
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Enums\LineItemTransactionType;
 
 /**
  * Resolves the revenue-group classification + display label for an opportunity

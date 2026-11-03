@@ -6,7 +6,7 @@ namespace App\Domain\Communications\Jobs;
 
 use App\Domain\Communications\Actions\SendBillingCustomerCommunication as SendBillingCustomerCommunicationAction;
 use App\Domain\Communications\Data\SendBillingCustomerCommunicationData;
-use App\Enums\BillingCommunicationKind;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Thunk\Verbs\Facades\Verbs;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pricing\Services;
 
 use App\Domain\Pricing\Enums\DiscountRuleScope;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Models\DiscountRule;
 use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
 use App\Domain\Products\Models\Product;
@@ -12,7 +13,6 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Rates\Enums\RateTransactionType;
-use App\Enums\LineItemTransactionType;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 

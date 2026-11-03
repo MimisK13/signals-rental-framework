@@ -133,7 +133,7 @@
                         <x-dense::avatar
                             size="xs"
                             :initials="$selectedOwner->initials()"
-                            :src="app(\App\Services\FileService::class)->signedUrlOrNull(
+                            :src="app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull(
                                 $selectedOwner->member?->icon_thumb_url,
                             )"
                             :color="str_replace('s-avatar-', '', $colorResolver->for($selectedOwner->id))"
@@ -160,7 +160,7 @@
                             <x-dense::avatar
                                 size="xs"
                                 :initials="$member->initials()"
-                                :src="app(\App\Services\FileService::class)->signedUrlOrNull(
+                                :src="app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull(
                                     $member->member?->icon_thumb_url,
                                 )"
                                 :color="str_replace('s-avatar-', '', $colorResolver->for($member->id))"
@@ -211,7 +211,7 @@
                             <x-dense::avatar
                                 size="xs"
                                 :initials="$member->initials()"
-                                :src="app(\App\Services\FileService::class)->signedUrlOrNull(
+                                :src="app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull(
                                     $member->member?->icon_thumb_url,
                                 )"
                                 :color="str_replace('s-avatar-', '', $colorResolver->for($member->id))"

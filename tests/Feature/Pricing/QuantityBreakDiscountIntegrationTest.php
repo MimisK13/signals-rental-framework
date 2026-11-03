@@ -5,6 +5,7 @@ use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Pricing\Enums\DiscountRuleScope;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Models\DiscountCategory;
 use App\Domain\Pricing\Models\DiscountRule;
 use App\Domain\Products\Models\Product;
@@ -18,7 +19,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\ReferenceData\Models\RevenueGroup;
 use App\Domain\Stores\Models\Store;
-use App\Enums\LineItemTransactionType;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

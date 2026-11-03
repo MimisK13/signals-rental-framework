@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Currency\Models\Currency;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\Members\Models\Member;
@@ -89,7 +90,7 @@ describe('FieldBuilder', function () {
             ->required()
             ->nullable(false)
             ->rules(['numeric', 'min:0'])
-            ->relation('currency', 'belongsTo', 'App\Models\Currency', 'code')
+            ->relation('currency', 'belongsTo', Currency::class, 'code')
             ->crms('total_amount', 'cents_to_decimal')
             ->source('core')
             ->model('App\Domain\Invoices\Models\Invoice')
@@ -118,7 +119,7 @@ describe('FieldBuilder', function () {
         expect($definition->rules)->toBe(['numeric', 'min:0']);
         expect($definition->relationName)->toBe('currency');
         expect($definition->relationType)->toBe('belongsTo');
-        expect($definition->relatedModel)->toBe('App\Models\Currency');
+        expect($definition->relatedModel)->toBe(Currency::class);
         expect($definition->relatedField)->toBe('code');
         expect($definition->crmsFieldName)->toBe('total_amount');
         expect($definition->crmsTransform)->toBe('cents_to_decimal');

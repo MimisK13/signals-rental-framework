@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header
+    <x-auth::auth-header
         title="Confirm password"
         description="Confirm your password to continue."
     />

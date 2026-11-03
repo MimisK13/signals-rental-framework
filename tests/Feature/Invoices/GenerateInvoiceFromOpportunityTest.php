@@ -13,6 +13,7 @@ use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Services\InvoiceSourceStateRule;
 use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -28,7 +29,6 @@ use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxResultType;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

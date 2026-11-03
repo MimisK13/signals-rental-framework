@@ -4,16 +4,16 @@
     @include('project-opportunities::partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'assets'])
 
     @php
-        $statusBadge = fn (\App\Enums\AssetAssignmentStatus $s, ?\App\Domain\Assets\Enums\AssetLifecycleStatus $lifecycle = null) => match (true) {
+        $statusBadge = fn (\App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus $s, ?\App\Domain\Assets\Enums\AssetLifecycleStatus $lifecycle = null) => match (true) {
             $lifecycle === \App\Domain\Assets\Enums\AssetLifecycleStatus::Lost => 's-status-red',
             $lifecycle === \App\Domain\Assets\Enums\AssetLifecycleStatus::Missing => 's-status-amber',
             default => match ($s) {
-            \App\Enums\AssetAssignmentStatus::Allocated => 's-status-zinc',
-            \App\Enums\AssetAssignmentStatus::Prepared => 's-status-blue',
-            \App\Enums\AssetAssignmentStatus::Dispatched => 's-status-amber',
-            \App\Enums\AssetAssignmentStatus::OnHire => 's-status-amber',
-            \App\Enums\AssetAssignmentStatus::CheckedIn => 's-status-blue',
-            \App\Enums\AssetAssignmentStatus::Finalised => 's-status-green',
+            \App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus::Allocated => 's-status-zinc',
+            \App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus::Prepared => 's-status-blue',
+            \App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus::Dispatched => 's-status-amber',
+            \App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus::OnHire => 's-status-amber',
+            \App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus::CheckedIn => 's-status-blue',
+            \App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus::Finalised => 's-status-green',
             },
         };
 

@@ -5,7 +5,7 @@ use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Presentation\Livewire\Form;
 use App\Domain\CustomFields\Presentation\Livewire\Index;
-use App\Services\VisibilityRuleEvaluator;
+use App\Domain\CustomFields\Services\VisibilityRuleEvaluator;
 use Livewire\Livewire;
 
 beforeEach(function () {

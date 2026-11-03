@@ -6,9 +6,10 @@ use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Actions\SendTestTemplateEmail;
 use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Domain\Communications\Models\EmailTemplate;
+use App\Domain\Communications\Presentation\Livewire\EmailTemplates;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Mail;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -61,7 +62,7 @@ it('rejects unauthorized users', function () {
 it('validates email and template in the page component', function () {
     Mail::fake();
 
-    Volt::test('admin.settings.email-templates')
+    Livewire::test(EmailTemplates::class)
         ->set('testTemplateId', null)
         ->set('testRecipient', 'not-an-email')
         ->call('sendTest')
@@ -73,7 +74,7 @@ it('validates email and template in the page component', function () {
 it('rejects a non-existent template in the page component', function () {
     Mail::fake();
 
-    Volt::test('admin.settings.email-templates')
+    Livewire::test(EmailTemplates::class)
         ->set('testTemplateId', 99999)
         ->set('testRecipient', 'valid@example.com')
         ->call('sendTest')
@@ -90,7 +91,7 @@ it('sends from the page component on valid input', function () {
         'body_markdown' => 'Body content',
     ]);
 
-    Volt::test('admin.settings.email-templates')
+    Livewire::test(EmailTemplates::class)
         ->set('testTemplateId', $template->id)
         ->set('testRecipient', 'valid@example.com')
         ->call('sendTest')

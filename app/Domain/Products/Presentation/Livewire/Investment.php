@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Livewire;
 
+use App\Domain\Products\Investment\Services\ProductInvestmentIntelligenceReader;
+use App\Domain\Products\Investment\Services\ProductInvestmentIntelligenceResult;
 use App\Domain\Products\Models\Product;
-use App\Services\Investment\ProductInvestmentIntelligenceReader;
-use App\Services\Investment\ProductInvestmentIntelligenceResult;
 use App\Support\Formatter;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

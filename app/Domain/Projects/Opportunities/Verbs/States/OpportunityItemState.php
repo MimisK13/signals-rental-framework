@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\States;
 
+use App\Domain\Pricing\Enums\ChargePeriod;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
-use App\Enums\ChargePeriod;
-use App\Enums\LineItemTransactionType;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\State;
 

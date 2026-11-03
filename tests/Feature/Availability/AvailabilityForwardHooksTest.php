@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Availability\Enums\ReleasePoint;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Settings\AvailabilitySettings;
@@ -8,7 +9,6 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stores\Models\Store;
-use App\Enums\ReleasePoint;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 

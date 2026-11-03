@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
+use App\Domain\Pricing\Enums\DealPriceMode;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityItemState;
-use App\Enums\DealPriceMode;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

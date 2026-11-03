@@ -14,8 +14,7 @@ it('keeps shared API infrastructure inside the API domain', function (): void {
         ->and(file_exists(resource_path('views/livewire/api')))->toBeFalse()
         ->and(file_exists(resource_path('views/components/api')))->toBeFalse()
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('api")
-        ->and(file_get_contents(base_path('routes/api.php')))->not->toContain('UsageController')
-        ->and(file_get_contents(base_path('routes/api.php')))->not->toContain('RequestLogController');
+        ->and(file_exists(base_path('routes/api.php')))->toBeFalse();
 });
 
 it('keeps every API migration scoped to one table', function (): void {

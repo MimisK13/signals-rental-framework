@@ -2,8 +2,8 @@
 
 use App\Domain\Assets\Enums\AssetCondition;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
+use App\Domain\Pricing\Enums\ChargePeriod;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
-use App\Enums\ChargePeriod;
 
 describe('AssetCondition::label', function () {
     it('labels every condition', function () {

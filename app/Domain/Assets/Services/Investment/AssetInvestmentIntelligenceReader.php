@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Services\Investment;
 
-use App\Data\InvestmentComponentCompleteness;
+use App\Domain\Assets\Enums\UtilizationCompleteness;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Services\AssetFinancialsCalculator;
 use App\Domain\Assets\Services\AssetFinancialsResult;
 use App\Domain\Assets\Services\AssetUtilizationCalculator;
-use App\Enums\InvestmentIntelligenceCompleteness;
-use App\Enums\UtilizationCompleteness;
-use App\Services\Investment\InvestmentSignalEvaluator;
+use App\Domain\Products\Investment\Data\InvestmentComponentCompleteness;
+use App\Domain\Products\Investment\Enums\InvestmentIntelligenceCompleteness;
+use App\Domain\Products\Investment\Services\InvestmentSignalEvaluator;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;

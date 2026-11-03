@@ -37,7 +37,7 @@
                 </footer>
             </div>
 
-            <x-auth-montage />
+            <x-auth::auth-montage />
         </div>
         @fluxScripts
     </body>

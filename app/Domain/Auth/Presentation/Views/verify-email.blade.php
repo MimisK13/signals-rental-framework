@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header
+    <x-auth::auth-header
         title="Verify your email"
         description="Click the verification link we've just emailed you."
     />

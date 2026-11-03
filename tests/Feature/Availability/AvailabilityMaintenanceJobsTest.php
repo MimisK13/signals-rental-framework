@@ -15,7 +15,6 @@ use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
-use App\Jobs\ExpirePutAsides;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -163,13 +162,5 @@ describe('VerifySnapshotIntegrity', function () {
 
         expect(fn () => (new VerifySnapshotIntegrity)->handle(app(RecalculationPipeline::class)))
             ->not->toThrow(Exception::class);
-    });
-});
-
-describe('ExpirePutAsides', function () {
-    it('is a safe no-op while the put_aside source is deferred', function () {
-        Queue::fake();
-
-        expect(fn () => (new ExpirePutAsides)->handle())->not->toThrow(Exception::class);
     });
 });

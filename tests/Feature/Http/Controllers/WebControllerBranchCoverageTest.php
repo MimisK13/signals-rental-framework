@@ -3,10 +3,10 @@
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
+use App\Domain\Documentation\Services\DocsService;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Services\DocsService;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;

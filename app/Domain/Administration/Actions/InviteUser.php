@@ -6,12 +6,12 @@ namespace App\Domain\Administration\Actions;
 
 use App\Domain\Administration\Data\InviteUserData;
 use App\Domain\Administration\Data\UserData;
+use App\Domain\Administration\Enums\RoleLevel;
 use App\Domain\Administration\Models\User;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Notifications\UserInvitedNotification;
 use App\Domain\Webhooks\Services\WebhookService;
-use App\Enums\RoleLevel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

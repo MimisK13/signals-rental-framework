@@ -8,12 +8,12 @@ use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

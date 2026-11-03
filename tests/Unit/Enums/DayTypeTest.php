@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\DayType;
+use App\Domain\Rates\Enums\DayType;
 
 it('has correct cases', function () {
     expect(DayType::cases())->toHaveCount(2);

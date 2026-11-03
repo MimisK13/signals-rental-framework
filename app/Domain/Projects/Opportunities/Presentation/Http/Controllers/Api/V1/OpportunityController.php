@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Presentation\Http\Controllers\Api\V1;
 
-use App\Data\Planning\OpportunityItemPlanningData;
 use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
 use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
 use App\Domain\API\Presentation\Http\Controllers\Controller;
@@ -125,7 +124,8 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
 use App\Domain\Projects\Opportunities\Services\OpportunityActionDescriber;
-use App\Services\Planning\OpportunityItemPlanningReader;
+use App\Domain\Projects\Planning\Data\OpportunityItemPlanningData;
+use App\Domain\Projects\Planning\Services\OpportunityItemPlanningReader;
 use Closure;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Data;
 
 use App\Data\Casts\MoneyInput;
-use App\Enums\DealPriceMode;
+use App\Domain\Pricing\Enums\DealPriceMode;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 

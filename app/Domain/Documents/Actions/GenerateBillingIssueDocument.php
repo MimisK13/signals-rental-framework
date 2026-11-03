@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Actions;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Data\DocumentData;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
@@ -16,7 +17,6 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Members\Models\Member;
 use App\Domain\Numbering\Services\DocumentNumberGenerator;
-use App\Services\FileService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 

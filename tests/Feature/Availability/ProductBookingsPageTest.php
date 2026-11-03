@@ -5,6 +5,8 @@ use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Presentation\Livewire\Bookings;
+use App\Domain\Availability\Presentation\Livewire\Index;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -14,7 +16,7 @@ use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -53,7 +55,7 @@ it('renders the product bookings page for a user with availability.view', functi
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 28,
@@ -93,7 +95,7 @@ it('shifts the bookings date window from the grid header navigation', function (
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 7,
@@ -125,7 +127,7 @@ it('links back to the main availability page preserving filters', function () {
         'group' => $group->id,
     ]);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 28,
@@ -140,7 +142,7 @@ it('forbids the product bookings page without availability.view', function () {
 
     $this->actingAs(User::factory()->create());
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 28,
@@ -152,7 +154,7 @@ it('builds the full day grid when no availability or booking data exists', funct
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('availability.bookings', [
+    $component = Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-10-26',
         'days' => 30,
@@ -205,7 +207,7 @@ it('shows opportunity rows for bulk demands in the window', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 28,
@@ -262,7 +264,7 @@ it('colours bulk opportunity rows by delivery in-use and collection phases', fun
 
     $this->actingAs($this->user);
 
-    $rows = Volt::test('availability.bookings', [
+    $rows = Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-07-01',
         'days' => 7,
@@ -343,7 +345,7 @@ it('colours registry-labelled booking rows and asset rows from the parent opport
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('availability.bookings', [
+    $component = Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-07-01',
         'days' => 7,
@@ -395,7 +397,7 @@ it('links from the group grid day cells to the bookings page using the view star
         'stores' => [$this->store->id],
     ]);
 
-    Volt::test('availability.index')
+    Livewire::test(Index::class)
         ->set('groupId', $group->id)
         ->set('storeIds', [$this->store->id])
         ->set('from', '2026-06-28')
@@ -431,7 +433,7 @@ it('links from the group grid product name to the bookings page', function () {
         'stores' => [$this->store->id],
     ]);
 
-    Volt::test('availability.index')
+    Livewire::test(Index::class)
         ->set('groupId', $group->id)
         ->set('storeIds', [$this->store->id])
         ->set('from', '2026-06-28')
@@ -447,7 +449,7 @@ it('syncs storeIds from store tag names and redirects when stores change', funct
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 7,
@@ -468,7 +470,7 @@ it('defaults invalid day counts to thirty on mount', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 99,
@@ -499,7 +501,7 @@ it('colours summary availability cells consistently with the group grid', functi
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.bookings', [
+    Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 2,
@@ -526,7 +528,7 @@ it('aggregates gantt data across multiple selected stores', function () {
 
     $this->actingAs($this->user);
 
-    $gantt = Volt::test('availability.bookings', [
+    $gantt = Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 7,
@@ -544,7 +546,7 @@ it('exposes opportunity phase legend entries on the bookings grid', function () 
 
     $this->actingAs($this->user);
 
-    $legend = Volt::test('availability.bookings', [
+    $legend = Livewire::test(Bookings::class, [
         'product' => $product,
         'from' => '2026-06-28',
         'days' => 7,

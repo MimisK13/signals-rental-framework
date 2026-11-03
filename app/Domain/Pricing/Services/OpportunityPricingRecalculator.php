@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pricing\Services;
 
+use App\Domain\Pricing\Enums\DealPriceMode;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
@@ -12,7 +13,6 @@ use App\Domain\Projects\Opportunities\Verbs\Events\ItemDealPriceDiscountSet;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemDiscountSet;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemPriceOverridden;
 use App\Domain\Projects\Opportunities\Verbs\Events\PricingRecalculated;
-use App\Enums\DealPriceMode;
 
 /**
  * Orchestrates opportunity repricing with optional reset toggles and active deal

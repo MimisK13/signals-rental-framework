@@ -4,11 +4,11 @@ use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\CustomFields\Services\CustomFieldCopier;
+use App\Domain\CustomFields\ValueObjects\CopyResult;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
 use App\Domain\Members\Models\Member;
 use App\Domain\Stores\Models\Store;
-use App\ValueObjects\CopyResult;
 
 describe('CustomFieldCopier', function () {
     beforeEach(function () {

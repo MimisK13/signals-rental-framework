@@ -6,9 +6,9 @@ use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetLifecycleEvent;
 use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Assets\Services\ProductUtilizationCalculator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Services\Assets\ProductUtilizationCalculator;
 use Carbon\CarbonImmutable;
 
 it('weights product utilization by asset-time instead of averaging percentages', function (): void {

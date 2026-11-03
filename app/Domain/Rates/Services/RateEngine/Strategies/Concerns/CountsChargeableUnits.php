@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Rates\Services\RateEngine\Strategies\Concerns;
 
 use App\Domain\Rates\Enums\BasePeriod;
+use App\Domain\Rates\Enums\DayType;
 use App\Domain\Rates\ValueObjects\CalculationContext;
-use App\Enums\DayType;
+use App\Domain\Rates\ValueObjects\RentalPeriod;
 use App\Support\ConfigSchema\Field;
 use App\Support\ConfigSchema\Fields\GroupField;
 use App\Support\ConfigSchema\Fields\NumberField;
 use App\Support\ConfigSchema\Fields\SelectField;
 use App\Support\ConfigSchema\Fields\TimeField;
-use App\ValueObjects\RentalPeriod;
 
 /**
  * Shared helpers for strategies that translate a rental window into a count of

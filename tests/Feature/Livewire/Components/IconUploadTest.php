@@ -3,10 +3,10 @@
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
+use App\Domain\Attachments\Presentation\Livewire\IconUpload;
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\ProductGroup;
-use App\Livewire\Components\IconUpload;
-use App\Services\FileService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;

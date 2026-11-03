@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Actions;
 
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Communications\Jobs\SendBillingCustomerCommunication;
-use App\Enums\BillingCommunicationKind;
 use Thunk\Verbs\Facades\Verbs;
 
 /**

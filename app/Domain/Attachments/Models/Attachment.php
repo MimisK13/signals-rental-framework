@@ -15,6 +15,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * @property string $uuid
+ * @property string $disk
+ * @property string $file_path
+ * @property string|null $thumb_path
+ */
 final class Attachment extends Model implements HasSchema
 {
     /** @use HasFactory<AttachmentFactory> */

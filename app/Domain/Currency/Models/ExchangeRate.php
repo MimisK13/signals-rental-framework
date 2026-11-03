@@ -12,6 +12,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
+/**
+ * @property string $source_currency_code
+ * @property string $target_currency_code
+ * @property string $rate
+ * @property string $inverse_rate
+ * @property string|null $source
+ * @property Carbon $effective_at
+ * @property Carbon|null $expires_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 final class ExchangeRate extends Model implements HasSchema
 {
     /** @use HasFactory<ExchangeRateFactory> */

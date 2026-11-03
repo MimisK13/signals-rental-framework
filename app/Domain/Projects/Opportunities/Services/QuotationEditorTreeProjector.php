@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Services;
 
-use App\Data\Planning\OpportunityItemPlanningData;
+use App\Domain\Projects\Planning\Data\OpportunityItemPlanningData;
 use Illuminate\Support\Collection;
 
 final class QuotationEditorTreeProjector

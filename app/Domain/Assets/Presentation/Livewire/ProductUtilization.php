@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Presentation\Livewire;
 
+use App\Domain\Assets\Services\ProductUtilizationCalculator;
+use App\Domain\Assets\Services\ProductUtilizationResult;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Services\Assets\ProductUtilizationCalculator;
-use App\Services\Assets\ProductUtilizationResult;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;

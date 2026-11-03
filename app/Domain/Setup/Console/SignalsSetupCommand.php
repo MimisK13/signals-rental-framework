@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Setup\Console;
 
+use App\Domain\ReferenceData\Data\CountryData;
 use App\Domain\Setup\Actions\CheckInfrastructure;
 use App\Domain\Setup\Actions\CompleteSetup;
-use App\Console\Commands\Concerns\HasSignalsBranding;
-use App\Domain\ReferenceData\Data\CountryData;
 use App\Domain\Setup\Data\CompleteSetupData;
 use App\Domain\Setup\Enums\FeatureProfile;
+use App\Domain\System\Console\Concerns\HasSignalsBranding;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;

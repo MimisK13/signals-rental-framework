@@ -4,6 +4,7 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
@@ -21,7 +22,6 @@ use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
 use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\UsesPostgres;
 

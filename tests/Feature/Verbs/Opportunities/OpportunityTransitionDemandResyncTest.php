@@ -6,6 +6,7 @@ use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\AvailabilityEvent;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
@@ -19,7 +20,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityConvertedToOrder;
 use App\Domain\Stores\Models\Store;
-use App\Enums\LineItemTransactionType;
 use Thunk\Verbs\Exceptions\EventNotValid;
 use Thunk\Verbs\Facades\Verbs;
 

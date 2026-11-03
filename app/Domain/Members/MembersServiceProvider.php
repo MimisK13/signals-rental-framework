@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Members;
 
+use App\Domain\Members\Console\BackfillUserMembers;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Policies\MemberPolicy;
 use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
@@ -43,6 +44,7 @@ final class MembersServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->commands([BackfillUserMembers::class]);
         $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/Presentation/Views', 'members');
         $this->loadRoutesFrom(__DIR__.'/Presentation/Routes/web.php');

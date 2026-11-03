@@ -7,7 +7,7 @@ namespace App\Domain\Projects\Opportunities\Verbs\Events;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\GuardsAssetAssignment;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
-use App\Verbs\States\AssetAssignmentState;
+use App\Domain\Projects\Opportunities\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

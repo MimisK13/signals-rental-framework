@@ -3,7 +3,6 @@
 use App\Domain\Availability\Jobs\PruneAvailabilityData;
 use App\Domain\Availability\Jobs\VerifySnapshotIntegrity;
 use App\Domain\Availability\Shortages\Jobs\ExpireWaitlistMonitors;
-use App\Jobs\ExpirePutAsides;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -103,13 +102,6 @@ Schedule::job(new PruneAvailabilityData)
 // and repairs+logs any snapshot drift.
 Schedule::job(new VerifySnapshotIntegrity)
     ->dailyAt('03:30')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-// Release expired put-aside holds. No-op until the put_aside demand source is
-// built (the job early-returns); scheduled now so the entry is in place.
-Schedule::job(new ExpirePutAsides)
-    ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
 

@@ -63,7 +63,7 @@
                                     $rIconSrc = null;
                                     if ($related->icon_thumb_url) {
                                         try {
-                                            $rIconSrc = app(\App\Services\FileService::class)->signedUrl($related->icon_thumb_url);
+                                            $rIconSrc = app(\App\Domain\Attachments\Services\FileService::class)->signedUrl($related->icon_thumb_url);
                                         } catch (\Throwable) {
                                             // Fall back to initials
                                         }

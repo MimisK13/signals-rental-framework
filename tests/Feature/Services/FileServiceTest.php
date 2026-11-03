@@ -2,9 +2,9 @@
 
 use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Members\Models\Member;
-use App\Services\FileService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 

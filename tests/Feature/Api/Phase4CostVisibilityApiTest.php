@@ -6,19 +6,18 @@ use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Products\Models\Product;
-use App\Domain\Products\Presentation\Livewire\Show;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Presentation\Livewire\Costs;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\PurchaseOrders\Presentation\Livewire\Show as PurchaseOrderShow;
 use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Support\Formatter;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -248,7 +247,7 @@ describe('Phase 4 cost visibility', function () {
         $product = Product::factory()->create(['purchase_price' => 123400]);
         $formatted = app(Formatter::class)->money(123400);
 
-        Livewire::test(Show::class, ['product' => $product])
+        Livewire::test(PurchaseOrderShow::class, ['product' => $product])
             ->assertDontSee('Purchase Price')
             ->assertDontSee($formatted);
     });
@@ -291,7 +290,7 @@ describe('Phase 4 cost visibility', function () {
             'total' => 6000,
         ]);
 
-        Volt::test('purchase-orders.show', ['purchaseOrder' => $po->load('items')])
+        Livewire::test(PurchaseOrderShow::class, ['purchaseOrder' => $po->load('items')])
             ->assertSee('PO-COST-HIDE')
             ->assertSee('Visible line item')
             ->assertDontSee('Unit cost')
@@ -319,7 +318,7 @@ describe('Phase 4 cost visibility', function () {
             'total' => 6000,
         ]);
 
-        Volt::test('purchase-orders.show', ['purchaseOrder' => $po->load('items')])
+        Livewire::test(PurchaseOrderShow::class, ['purchaseOrder' => $po->load('items')])
             ->assertSee('Unit cost')
             ->assertSee('Subtotal')
             ->assertSee(app(Formatter::class)->money(12000));

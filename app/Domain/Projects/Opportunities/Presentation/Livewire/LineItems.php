@@ -56,7 +56,7 @@ use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
 use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Domain\Projects\Opportunities\Services\OpportunityLineItemTreeRevision;
 use App\Domain\Projects\Opportunities\Services\ProductSearchService;
-use App\Services\Planning\OpportunityItemPlanningReader;
+use App\Domain\Projects\Planning\Services\OpportunityItemPlanningReader;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

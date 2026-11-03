@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\Intervals\TimeInterval;
+use App\Domain\Assets\Support\Intervals\TimeInterval;
 use Carbon\CarbonImmutable;
 
 function interval(string $start, string $end): TimeInterval

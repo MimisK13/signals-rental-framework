@@ -8,7 +8,7 @@
 
     $iconSrc = null;
     $iconFullSrc = null;
-    $fileService = app(\App\Services\FileService::class);
+    $fileService = app(\App\Domain\Attachments\Services\FileService::class);
 
     if ($model->icon_thumb_url ?? null) {
         try {

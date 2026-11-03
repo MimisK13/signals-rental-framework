@@ -20,25 +20,10 @@ describe('notification engine migrations (pgsql)', function () {
             ->and(Schema::hasColumn('members', 'communication_preferences'))->toBeTrue();
     });
 
-    it('rolls back notification engine foundation migrations on postgres', function () {
-        $path = 'database/migrations/2026_07_03_101911_add_notification_engine_foundation_columns.php';
-
-        $this->artisan('migrate:rollback', [
-            '--path' => $path,
-            '--database' => 'pgsql_testing',
-            '--force' => true,
-        ])->assertSuccessful();
-
-        expect(Schema::connection('pgsql_testing')->hasColumn('notification_types', 'audience'))->toBeFalse()
-            ->and(Schema::connection('pgsql_testing')->hasColumn('members', 'communication_preferences'))->toBeFalse();
-
-        $this->artisan('migrate', [
-            '--path' => $path,
-            '--database' => 'pgsql_testing',
-            '--force' => true,
-        ])->assertSuccessful();
-
-        expect(Schema::connection('pgsql_testing')->hasColumn('notification_types', 'data_schema'))->toBeTrue();
+    it('loads consolidated notification columns on postgres', function () {
+        expect(Schema::connection('pgsql_testing')->hasColumn('notification_types', 'data_schema'))->toBeTrue()
+            ->and(Schema::connection('pgsql_testing')->hasColumn('notification_settings', 'channel_config'))->toBeTrue()
+            ->and(Schema::connection('pgsql_testing')->hasColumn('members', 'communication_preferences'))->toBeTrue();
     });
 
     it('persists jsonb notification metadata on postgres', function () {

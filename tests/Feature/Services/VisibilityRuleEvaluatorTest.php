@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\VisibilityRuleEvaluator;
+use App\Domain\CustomFields\Services\VisibilityRuleEvaluator;
 
 describe('VisibilityRuleEvaluator', function () {
     it('returns true when rules are null', function () {

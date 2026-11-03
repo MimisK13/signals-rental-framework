@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header title="Forgot password" description="We'll email you a reset link." />
+    <x-auth::auth-header title="Forgot password" description="We'll email you a reset link." />
 
     @if (session('status'))
         <x-signals.alert type="success">{{ session('status') }}</x-signals.alert>

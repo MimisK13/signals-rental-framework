@@ -23,6 +23,7 @@ use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Data\ReceivePurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\PurchaseOrders\Presentation\Livewire\Show;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
@@ -40,7 +41,7 @@ use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -458,7 +459,7 @@ it('smokes the receive modal on the purchase order show page', function () {
     $user->givePermissionTo(['costs.view', 'purchase_orders.access', 'purchase_orders.view', 'purchase_orders.receive']);
     $this->actingAs($user);
 
-    Volt::test('purchase-orders.show', ['purchaseOrder' => $po])
+    Livewire::test(Show::class, ['purchaseOrder' => $po])
         ->assertSee('Receive')
         ->call('openReceiveModal')
         ->assertSet('showReceiveModal', true)

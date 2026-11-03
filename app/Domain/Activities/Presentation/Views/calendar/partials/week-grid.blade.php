@@ -12,7 +12,7 @@
     $staffPhotos = $this->staff
         ->mapWithKeys(
             fn($u) => [
-                (int) $u->id => app(\App\Services\FileService::class)->signedUrlOrNull($u->member?->icon_thumb_url),
+                (int) $u->id => app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull($u->member?->icon_thumb_url),
             ],
         )
         ->all();

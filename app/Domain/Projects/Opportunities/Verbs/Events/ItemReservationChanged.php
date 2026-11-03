@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
@@ -11,7 +12,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PricesOpportunityItems;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityItemState;
-use App\Enums\LineItemTransactionType;
 use Brick\Math\BigDecimal;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

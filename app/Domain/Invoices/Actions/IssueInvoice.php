@@ -6,6 +6,7 @@ namespace App\Domain\Invoices\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
+use App\Domain\Communications\Enums\BillingCommunicationKind;
 use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
 use App\Domain\Documents\Services\DocumentTemplateResolver;
 use App\Domain\Invoices\Data\InvoiceData;
@@ -14,7 +15,6 @@ use App\Domain\Invoices\Services\InvoiceStatusRegistry;
 use App\Domain\Invoices\Verbs\Events\InvoiceIssued;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityLocksApplied;
-use App\Enums\BillingCommunicationKind;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;

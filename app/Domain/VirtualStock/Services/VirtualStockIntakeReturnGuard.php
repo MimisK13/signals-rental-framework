@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\VirtualStock\Services;
 
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AssetAssignmentStatus;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Brick\Math\BigDecimal;
 

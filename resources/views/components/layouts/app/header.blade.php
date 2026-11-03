@@ -252,20 +252,6 @@
                                     </a>
                                 @endcan
                             @endif
-                            <a href="#" class="mega-item">
-                                <flux:icon.wrench-screwdriver class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Labour</span>
-                                    <span class="mega-item-desc">Time &amp; labour charges</span>
-                                </div>
-                            </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.truck class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Vehicles</span>
-                                    <span class="mega-item-desc">Fleet &amp; transport scheduling</span>
-                                </div>
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -358,34 +344,6 @@
                                     </div>
                                 </a>
                             @endcan
-                            <a href="#" class="mega-item">
-                                <flux:icon.arrow-path class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Processing</span>
-                                    <span class="mega-item-desc">Pick, pack &amp; dispatch</span>
-                                </div>
-                            </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.squares-2x2 class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Prep Bays</span>
-                                    <span class="mega-item-desc">Staging &amp; preparation areas</span>
-                                </div>
-                            </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.rectangle-stack class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Shelf</span>
-                                    <span class="mega-item-desc">Storage locations &amp; bins</span>
-                                </div>
-                            </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.qr-code class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Global Check-in</span>
-                                    <span class="mega-item-desc">Scan &amp; receive returns</span>
-                                </div>
-                            </a>
                             @can('viewAny', App\Domain\Warehouse\Containers\Models\Container::class)
                                 <a href="{{ route('containers.index') }}"
                                     class="mega-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}"
@@ -400,20 +358,6 @@
                         </div>
                         <div>
                             <div class="mega-group-label">Inspections</div>
-                            <a href="#" class="mega-item">
-                                <flux:icon.clipboard-document-check class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Testing</span>
-                                    <span class="mega-item-desc">Inspections &amp; safety checks</span>
-                                </div>
-                            </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.shield-check class="mega-item-icon" />
-                                <div class="flex flex-col gap-px">
-                                    <span class="mega-item-label">Certificates</span>
-                                    <span class="mega-item-desc">Certifications &amp; compliance</span>
-                                </div>
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -454,14 +398,6 @@
                     </button>
                     <div class="mega-dropdown mega-dropdown-end">
                         <div class="grid grid-cols-1 gap-y-1">
-                            <a href="#" class="mega-item">
-                                <flux:icon.bolt class="mega-item-icon" />
-                                <span class="mega-item-label">Workflows</span>
-                            </a>
-                            <a href="#" class="mega-item">
-                                <flux:icon.puzzle-piece class="mega-item-icon" />
-                                <span class="mega-item-label">Plugin</span>
-                            </a>
                             @can('api.access')
                                 <a href="{{ route('api.index') }}" class="mega-item {{ $isApiArea ? 'active' : '' }}"
                                     wire:navigate.hover>
@@ -499,7 +435,7 @@
                     $userThumbPath = auth()->user()?->member?->icon_thumb_url;
                     if ($userThumbPath) {
                         try {
-                            $userAvatarSrc = app(\App\Services\FileService::class)->signedUrl($userThumbPath);
+                            $userAvatarSrc = app(\App\Domain\Attachments\Services\FileService::class)->signedUrl($userThumbPath);
                         } catch (\Throwable $e) {
                             report($e);
                         }
@@ -738,12 +674,6 @@
                     </a>
                 @endcan
             @endif
-            <a class="sidebar-item" href="#">
-                <flux:icon.wrench-screwdriver class="!size-[15px]" /> Labour
-            </a>
-            <a class="sidebar-item" href="#">
-                <flux:icon.truck class="!size-[15px]" /> Vehicles
-            </a>
 
             @can('invoices.access')
                 <div class="sidebar-group-label">Finance</div>
@@ -776,18 +706,6 @@
                     <flux:icon.clipboard-document-list class="!size-[15px]" /> Warehouse
                 </a>
             @endcan
-            <a class="sidebar-item" href="#">
-                <flux:icon.arrow-path class="!size-[15px]" /> Processing
-            </a>
-            <a class="sidebar-item" href="#">
-                <flux:icon.squares-2x2 class="!size-[15px]" /> Prep Bays
-            </a>
-            <a class="sidebar-item" href="#">
-                <flux:icon.rectangle-stack class="!size-[15px]" /> Shelf
-            </a>
-            <a class="sidebar-item" href="#">
-                <flux:icon.qr-code class="!size-[15px]" /> Global Check-in
-            </a>
             @can('viewAny', App\Domain\Warehouse\Containers\Models\Container::class)
                 <a class="sidebar-item {{ ActiveRoute::is('containers.*') ? 'active' : '' }}"
                     href="{{ route('containers.index') }}" wire:navigate.hover x-on:click="mobileNav = false">
@@ -796,17 +714,8 @@
             @endcan
 
             <div class="sidebar-group-label">Operations</div>
-            <a class="sidebar-item" href="#">
-                <flux:icon.clipboard-document-check class="!size-[15px]" /> Testing
-            </a>
-            <a class="sidebar-item" href="#">
-                <flux:icon.shield-check class="!size-[15px]" /> Certificates
-            </a>
 
             <div class="sidebar-group-label">Reports</div>
-            <a class="sidebar-item" href="#">
-                <flux:icon.chart-pie class="!size-[15px]" /> Reports
-            </a>
 
             <div class="flex-1"></div>
             <div class="mx-2 my-1 h-px bg-[var(--sidebar-border)]"></div>

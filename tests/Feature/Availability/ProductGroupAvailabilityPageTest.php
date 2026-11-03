@@ -4,13 +4,14 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Presentation\Livewire\Index;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -80,7 +81,7 @@ function seedGroupProduct(ProductGroup $group, Store $store, string $name, int $
 it('defaults to a 30-day period and all stores', function () {
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->assertSet('daysPeriod', 30)
         ->assertSet('storeIds', []);
 });
@@ -88,14 +89,14 @@ it('defaults to a 30-day period and all stores', function () {
 it('defaults to today when from is empty on mount', function () {
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->assertSet('from', '2026-06-20');
 });
 
 it('forbids the page for a user without availability.view', function () {
     $this->actingAs(User::factory()->create());
 
-    Volt::test('availability.index')->assertForbidden();
+    Livewire::test(Index::class)->assertForbidden();
 });
 
 it('renders a group product row with available and held figures', function () {
@@ -104,7 +105,7 @@ it('renders a group product row with available and held figures', function () {
     $this->actingAs($this->user);
 
     // available=4, held = total stock (10) - available (4) = 6.
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertOk()
         ->assertSee('JBL EON615')
@@ -119,7 +120,7 @@ it('shows nothing until a group is selected', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->assertOk()
         ->assertSee('Select a product group')
         ->assertDontSee('JBL EON615');
@@ -131,7 +132,7 @@ it('filters rows to shortages only', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('shortagesOnly', true)
         ->assertSee('grow-'.$shorted->id, false)
@@ -145,7 +146,7 @@ it('filters rows to warnings only', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('warningsOnly', true)
         ->assertSee('grow-'.$warning->id, false)
@@ -165,7 +166,7 @@ it('filters products by product type', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('productType', 'sale')
         ->assertSee('grow-'.$sale->id, false)
@@ -178,7 +179,7 @@ it('honours the days-period in the rendered column count', function () {
     $this->actingAs($this->user);
 
     // A 7-day period from 2026-06-20 includes 2026-06-26 but not 2026-06-27.
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('daysPeriod', 7)
         ->assertSee('ghead-2026-06-26', false)
@@ -191,7 +192,7 @@ it('colours a fully-booked cell as booked (teal) not shortage', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertSee('s-avail-group-cell--booked', false)
         ->assertDontSee('Select a product group');
@@ -203,7 +204,7 @@ it('renders a usage fill percentage on cells with held stock', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertSee('--used-pct: 60%', false);
 });
@@ -213,7 +214,7 @@ it('shifts the date window from the grid header navigation', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('from', '2026-06-20')
         ->set('daysPeriod', 7)
@@ -254,7 +255,7 @@ it('sums availability across multiple selected stores', function () {
     $this->actingAs($this->user);
 
     // available=6 across stores, held = (10+6) - 6 = 10.
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('storeIds', [$this->store->id, $otherStore->id])
         ->assertSee('Multi Store Speaker')
@@ -266,7 +267,7 @@ it('renders toggle switches and grid skeleton markup', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertSeeHtml('s-toggle')
         ->assertSeeHtml('erp-store-picker')
@@ -279,7 +280,7 @@ it('renders the RMS-style quantity key legend', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertSee('Key')
         ->assertSee('quantity available')
@@ -292,7 +293,7 @@ it('marks month-start day columns with a thick border class', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->set('from', '2026-06-28')
         ->set('daysPeriod', 30)
@@ -304,7 +305,7 @@ it('syncs storeIds from store tag names', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->call('syncStoreIdsFromTags', ['North Depot'])
         ->assertSet('storeIds', [$depot->id]);
 });
@@ -314,7 +315,7 @@ it('subscribes to reverb channels for each resolved store via availability chang
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('storeIds', [$this->store->id, $otherStore->id])
         ->call('onStoreAvailabilityChanged')
         ->assertSet('storeIds', [$this->store->id, $otherStore->id]);
@@ -326,7 +327,7 @@ it('colours shortage and warning cells on the group grid', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('availability.index')->call('initializeGrid')
+    Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', $this->group->id)
         ->assertSee('s-avail-group-cell--shortage', false)
         ->assertSee('s-avail-group-cell--warning', false);
@@ -335,7 +336,7 @@ it('colours shortage and warning cells on the group grid', function () {
 it('returns empty rows for an unknown product group id', function () {
     $this->actingAs($this->user);
 
-    $grid = Volt::test('availability.index')->call('initializeGrid')
+    $grid = Livewire::test(Index::class)->call('initializeGrid')
         ->set('groupId', 99999)
         ->get('groupRows');
 

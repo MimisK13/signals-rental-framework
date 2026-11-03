@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Enums;
 
 use App\Domain\Availability\Enums\DemandPhase;
-use App\Enums\ReleasePoint;
+use App\Domain\Availability\Enums\ReleasePoint;
 use ValueError;
 
 /**

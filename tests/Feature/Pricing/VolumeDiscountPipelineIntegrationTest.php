@@ -4,6 +4,7 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Pricing\Models\BundleRule;
 use App\Domain\Pricing\Models\Surcharge;
@@ -30,7 +31,6 @@ use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Services\DocumentTaxBreakdown;
-use App\Enums\LineItemTransactionType;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

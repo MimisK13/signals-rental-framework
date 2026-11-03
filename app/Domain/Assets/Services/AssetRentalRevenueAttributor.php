@@ -11,8 +11,8 @@ use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\CreditNoteItem;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

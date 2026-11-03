@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Presentation\Concerns;
 
 use App\Domain\Attachments\Models\Attachment;
-use App\Services\FileService;
+use App\Domain\Attachments\Services\FileService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

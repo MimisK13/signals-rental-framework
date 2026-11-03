@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Data;
 
+use App\Domain\Pricing\Enums\ChargePeriod;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Quotations\Enums\QuotationItemType;
-use App\Enums\ChargePeriod;
-use App\Enums\LineItemTransactionType;
 use Spatie\LaravelData\Data;
 
 final class AddQuotationItemData extends Data

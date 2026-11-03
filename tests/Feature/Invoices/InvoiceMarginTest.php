@@ -10,6 +10,7 @@ use App\Domain\Invoices\Presentation\Livewire\Show;
 use App\Domain\Invoices\Services\InvoiceMarginCalculator;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityCost;
@@ -26,7 +27,6 @@ use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\Tax\Enums\TaxBuyerType;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 

@@ -1,10 +1,12 @@
 <?php
 
 use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Enums\ReleasePoint;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
@@ -13,8 +15,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
-use App\Enums\AssetAssignmentStatus;
-use App\Enums\ReleasePoint;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 

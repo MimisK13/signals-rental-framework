@@ -15,14 +15,15 @@ it('keeps user and permission administration inside the Administration domain', 
         ->and(file_exists(app_path('Models/User.php')))->toBeFalse()
         ->and(file_exists(app_path('Services/PermissionRegistry.php')))->toBeFalse()
         ->and(file_exists(resource_path('views/livewire/admin/settings/users.blade.php')))->toBeFalse()
+        ->and(file_exists(resource_path('views/livewire/admin/index.blade.php')))->toBeFalse()
         ->and(file_exists(resource_path('views/livewire/settings/profile.blade.php')))->toBeFalse()
         ->and(file_exists(resource_path('views/livewire/settings/delete-user-form.blade.php')))->toBeFalse()
         ->and(file_exists(resource_path('views/livewire/settings/appearance.blade.php')))->toBeFalse()
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('admin/settings/users")
+        ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('admin'")
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('settings/profile")
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('settings/appearance")
-        ->and(file_get_contents(base_path('routes/api.php')))->not->toContain('UserController')
-        ->and(file_get_contents(base_path('routes/api.php')))->not->toContain('RoleController');
+        ->and(file_exists(base_path('routes/api.php')))->toBeFalse();
 });
 
 it('keeps every Administration migration scoped to at most one table', function (): void {

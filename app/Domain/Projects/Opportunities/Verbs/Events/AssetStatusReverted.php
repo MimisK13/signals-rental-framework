@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
+use App\Domain\Projects\Opportunities\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\AdjustsStockAllocation;
@@ -11,8 +12,7 @@ use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\GuardsAssetAssignmen
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PromotesOpportunityStatus;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\SyncsAssetDemands;
-use App\Enums\AssetAssignmentStatus;
-use App\Verbs\States\AssetAssignmentState;
+use App\Domain\Projects\Opportunities\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

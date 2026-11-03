@@ -2,7 +2,7 @@
     $iconSrc = null;
     if ($item->icon_thumb_url) {
         try {
-            $iconSrc = app(\App\Services\FileService::class)->signedUrl($item->icon_thumb_url);
+            $iconSrc = app(\App\Domain\Attachments\Services\FileService::class)->signedUrl($item->icon_thumb_url);
         } catch (\Throwable) {}
     }
 @endphp

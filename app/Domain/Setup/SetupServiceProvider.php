@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Setup;
 
+use App\Domain\Setup\Console\SignalsInstallCommand;
 use App\Domain\Setup\Console\SignalsSetupCommand;
 use App\Domain\Setup\Presentation\Livewire\Wizard;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +17,7 @@ final class SetupServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/Presentation/Views', 'setup');
         $this->loadRoutesFrom(__DIR__.'/Presentation/Routes/web.php');
 
-        $this->commands([SignalsSetupCommand::class]);
+        $this->commands([SignalsInstallCommand::class, SignalsSetupCommand::class]);
         Livewire::addComponent(name: 'setup.wizard', class: Wizard::class);
     }
 }

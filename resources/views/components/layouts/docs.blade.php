@@ -1,6 +1,6 @@
 @props(['pageTitle' => '', 'pageDescription' => '', 'canonicalUrl' => '', 'currentSection' => '', 'landing' => false])
 
-@inject('docsService', \App\Services\DocsService::class)
+@inject('docsService', \App\Domain\Documentation\Services\DocsService::class)
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Products\Services\ProductExternalRentalCostCalculator;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Domain\SupplierBills\Models\SupplierBillItem;
-use App\Services\Products\ProductExternalRentalCostCalculator;
 
 it('compares expected sub-hire PO cost with an issued supplier bill', function (): void {
     $product = Product::factory()->create();

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
@@ -19,7 +20,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
-use App\Enums\LineItemTransactionType;
 
 /**
  * @return array{

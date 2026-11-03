@@ -2,6 +2,7 @@
 
 use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeItemReservation;
@@ -23,7 +24,6 @@ use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
 use Tests\Concerns\UsesPostgres;

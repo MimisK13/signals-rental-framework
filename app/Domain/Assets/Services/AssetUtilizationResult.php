@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Services;
 
-use App\Enums\UtilizationCompleteness;
+use App\Domain\Assets\Enums\UtilizationCompleteness;
 use Carbon\CarbonImmutable;
 
 final readonly class AssetUtilizationResult

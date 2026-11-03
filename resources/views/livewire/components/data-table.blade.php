@@ -10,7 +10,7 @@
 
         <div class="flex items-center gap-2 ml-auto">
             @if($entityType)
-                @include('livewire.components.partials.view-selector')
+                @include('custom-views::components.partials.view-selector')
             @endif
             @if($activeFilterCount > 0)
                 <button wire:click="clearAllFilters" class="s-btn s-btn-ghost s-btn-xs">

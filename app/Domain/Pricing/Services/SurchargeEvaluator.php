@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pricing\Services;
 
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
@@ -15,7 +16,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItemSurcharge;
 use App\Domain\Projects\Opportunities\Models\OpportunitySurchargeGroup;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Enums\LineItemTransactionType;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 

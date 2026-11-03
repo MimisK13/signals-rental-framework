@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Services;
 
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Pricing\Enums\DealPriceMode;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Pricing\Services\BundlePricingApplicator;
 use App\Domain\Pricing\Services\DiscountSourceRegistry;
 use App\Domain\Pricing\Services\OpportunityItemDiscountPercentFilterRegistry;
@@ -30,8 +32,6 @@ use App\Domain\Tax\Services\TaxCalculator;
 use App\Domain\Tax\Services\TaxPointDateResolver;
 use App\Domain\Tax\Services\TaxResolutionContext;
 use App\Domain\Tax\Services\TaxResolutionContextHolder;
-use App\Enums\DealPriceMode;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

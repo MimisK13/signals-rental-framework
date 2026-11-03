@@ -183,7 +183,7 @@
                         <x-dense::avatar
                             size="xs"
                             :initials="$member->initials()"
-                            :src="app(\App\Services\FileService::class)->signedUrlOrNull(
+                            :src="app(\App\Domain\Attachments\Services\FileService::class)->signedUrlOrNull(
                                 $member->member?->icon_thumb_url,
                             )"
                             :color="str_replace(

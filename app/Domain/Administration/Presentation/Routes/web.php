@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Presentation\Livewire\AdminIndex;
 use App\Domain\Administration\Presentation\Livewire\Permissions;
 use App\Domain\Administration\Presentation\Livewire\RoleForm;
 use App\Domain\Administration\Presentation\Livewire\Roles;
@@ -17,6 +18,7 @@ Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'signals.sess
 });
 
 Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'admin', 'signals.session-timeout'])->group(function (): void {
+    Route::livewire('admin', AdminIndex::class)->name('admin.index');
     Route::livewire('admin/settings/users', Users::class)->name('admin.settings.users');
     Route::livewire('admin/settings/users/{user}/edit', UserForm::class)->name('admin.settings.users.edit');
     Route::livewire('admin/settings/roles', Roles::class)->name('admin.settings.roles');

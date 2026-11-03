@@ -24,7 +24,7 @@ it('seeds demo stores', function () {
 
     expect(Store::where('name', 'London Warehouse')->exists())->toBeTrue();
     expect(Store::where('name', 'Manchester Depot')->exists())->toBeTrue();
-    expect(Store::where('name', 'Edinburgh Office')->exists())->toBeTrue();
+    expect(Store::where('name', 'Edinburgh Warehouse')->exists())->toBeTrue();
 });
 
 it('records demo_seeded_at timestamp', function () {

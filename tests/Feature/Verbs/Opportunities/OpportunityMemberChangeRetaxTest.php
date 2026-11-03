@@ -4,6 +4,7 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -22,7 +23,6 @@ use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Enums\LineItemTransactionType;
 
 /**
  * R-A master M12 (B6): a member change shifts the organisation tax class, so the

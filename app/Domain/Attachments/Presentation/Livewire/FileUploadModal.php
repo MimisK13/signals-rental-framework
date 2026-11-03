@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Presentation\Livewire;
 
 use App\Domain\Assets\Models\AssetInspection;
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Lists\Models\ListName;
-use App\Services\FileService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Gate;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Presentation\Http\Controllers\Web;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Actions\RecordDocumentPublicView;
 use App\Domain\Documents\Models\Document;
-use App\Services\FileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

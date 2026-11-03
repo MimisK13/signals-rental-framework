@@ -11,7 +11,7 @@ class CountrySeeder extends Seeder
 {
     public function run(): void
     {
-        $path = database_path('data/countries.json');
+        $path = dirname(__DIR__).'/Data/countries.json';
 
         if (! file_exists($path)) {
             $this->command->warn('countries.json not found, skipping CountrySeeder.');

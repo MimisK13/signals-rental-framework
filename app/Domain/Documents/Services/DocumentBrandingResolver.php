@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Services;
 
+use App\Domain\Attachments\Services\FileService;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Stores\Models\Store;
-use App\Services\FileService;
 
 /**
  * Resolves effective branding for a document render (template → store → defaults).

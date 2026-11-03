@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\DocsService;
+use App\Domain\Documentation\Services\DocsService;
 
 use function Pest\Laravel\get;
 
@@ -83,7 +83,7 @@ test('manifest-only page without markdown file returns 404', function () {
 test('docs index renders the landing page', function () {
     get(route('docs.index'))
         ->assertOk()
-        ->assertViewIs('docs.index')
+        ->assertViewIs('documentation::index')
         ->assertSee('class="docs-landing"', false)
         ->assertSee('Browse Signals Rental Framework documentation', false)
         ->assertSee('CRM', false)
@@ -153,7 +153,7 @@ test('docs index returns 404 when grouped sections contain no pages', function (
 test('valid documentation page returns 200', function () {
     get(route('docs.show', ['getting-started', 'introduction']))
         ->assertOk()
-        ->assertViewIs('docs.show')
+        ->assertViewIs('documentation::show')
         ->assertSee('What is Signals Rental Framework?');
 });
 
@@ -280,7 +280,7 @@ test('docs image route blocks path traversal', function () {
 test('changelog route returns 200', function () {
     get(route('docs.changelog'))
         ->assertOk()
-        ->assertViewIs('docs.changelog');
+        ->assertViewIs('documentation::changelog');
 });
 
 test('changelog page displays version numbers', function () {
@@ -293,7 +293,7 @@ test('changelog page displays version numbers', function () {
 test('resolves the api-console platform documentation page', function () {
     get(route('docs.show', ['platform', 'api-console']))
         ->assertOk()
-        ->assertViewIs('docs.show')
+        ->assertViewIs('documentation::show')
         ->assertSee('API Console')
         ->assertSee('api.explorer.use');
 });
@@ -308,7 +308,7 @@ test('lists api-console in the operations navigation sidebar', function () {
 test('resolves the usage API documentation page', function () {
     get(route('docs.show', ['api', 'usage']))
         ->assertOk()
-        ->assertViewIs('docs.show')
+        ->assertViewIs('documentation::show')
         ->assertSee('Usage &amp; Metering API', false)
         ->assertSee('api-usage:read');
 });
@@ -431,7 +431,7 @@ test('changelog page does not include breadcrumb json-ld', function () {
 test('blade-type docs page returns 200 with blade view', function () {
     get(route('docs.show', ['development', 'library']))
         ->assertOk()
-        ->assertViewIs('docs.blade')
+        ->assertViewIs('documentation::blade')
         ->assertSee('Component Reference');
 });
 
@@ -454,7 +454,7 @@ test('blade-type docs page includes pagination', function () {
 test('development getting-started page returns 200', function () {
     get(route('docs.show', ['development', 'getting-started']))
         ->assertOk()
-        ->assertViewIs('docs.show')
+        ->assertViewIs('documentation::show')
         ->assertSee('Component System Overview');
 });
 

@@ -3,9 +3,9 @@
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Planning\Services\OpportunityItemPlanningReader;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
-use App\Services\Planning\OpportunityItemPlanningReader;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesPostgres;

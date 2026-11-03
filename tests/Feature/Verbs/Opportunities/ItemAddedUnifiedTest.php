@@ -5,6 +5,7 @@ use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Numbering\Services\SequenceAllocator;
+use App\Domain\Pricing\Enums\LineItemTransactionType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
@@ -13,7 +14,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
 use App\Domain\Stores\Models\Store;
-use App\Enums\LineItemTransactionType;
 use Illuminate\Support\Facades\DB;
 use Thunk\Verbs\Facades\Verbs;
 

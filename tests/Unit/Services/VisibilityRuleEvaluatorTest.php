@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\VisibilityRuleEvaluator;
+use App\Domain\CustomFields\Services\VisibilityRuleEvaluator;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
