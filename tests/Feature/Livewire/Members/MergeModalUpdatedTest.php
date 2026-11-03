@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\Members\MergeModal;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\MergeModal;
 use App\Models\User;
 use Livewire\Livewire;
 

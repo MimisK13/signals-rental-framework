@@ -1,8 +1,8 @@
 <?php
 
 use App\Contracts\HasSchema;
-use App\Models\InboundWebhookSource;
-use App\Models\RequestLog;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Services\SchemaBuilder;
 use App\Services\SchemaRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;

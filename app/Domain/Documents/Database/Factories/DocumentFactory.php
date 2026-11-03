@@ -8,7 +8,7 @@ use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

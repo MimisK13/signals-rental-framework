@@ -1,8 +1,5 @@
 <?php
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetLifecycleEvent;
@@ -24,10 +21,13 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\CreateVirtualStockIntake;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Enums\LineItemTransactionType;
-use App\Models\Store;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;

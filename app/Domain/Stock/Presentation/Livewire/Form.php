@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Presentation\Livewire;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\CreateStockLevel;
 use App\Domain\Stock\Actions\UpdateStockLevel;
@@ -11,8 +12,7 @@ use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
-use App\Services\Api\RansackFilter;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;

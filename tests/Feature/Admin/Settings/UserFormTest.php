@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Notifications\Notifications\UserInvitedNotification;
 use App\Models\User;
-use App\Notifications\UserInvitedNotification;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;

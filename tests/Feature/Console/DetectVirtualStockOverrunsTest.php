@@ -1,9 +1,9 @@
 <?php
 
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
-use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

@@ -9,9 +9,9 @@ use App\Domain\Projects\Opportunities\Actions\Concerns\RebuildsAvailabilitySnaps
 use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
 use App\Domain\Projects\Opportunities\Data\ReturnAssetData;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Projects\Opportunities\Verbs\Events\AssetReturned;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Services\KitContainerReturnCompletion;
-use App\Domain\Projects\Opportunities\Verbs\Events\AssetReturned;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 

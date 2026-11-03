@@ -7,9 +7,9 @@ namespace App\Domain\Documents\Services;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
-use App\Models\Member;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 

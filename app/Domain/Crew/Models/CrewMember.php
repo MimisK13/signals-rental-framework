@@ -9,7 +9,7 @@ use App\Domain\Crew\Database\Factories\CrewMemberFactory;
 use App\Domain\Crew\Enums\CrewEngagementType;
 use App\Domain\Crew\Enums\CrewMemberStatus;
 use App\Domain\CustomFields\Concerns\HasCustomFields;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

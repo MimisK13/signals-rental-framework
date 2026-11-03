@@ -1,9 +1,9 @@
 <?php
 
-use App\Jobs\DeliverWebhook;
-use App\Models\Webhook;
-use App\Models\WebhookLog;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\Middleware\ThrottlesExceptions;
 use Illuminate\Support\Facades\Http;

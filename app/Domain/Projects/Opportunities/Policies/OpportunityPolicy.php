@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Policies;
 
 use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
-use App\Policies\Traits\ChecksStoreAccess;
 
 class OpportunityPolicy
 {

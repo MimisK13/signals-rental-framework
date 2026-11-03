@@ -8,7 +8,7 @@ use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierBills\Database\Factories\SupplierBillItemFactory;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

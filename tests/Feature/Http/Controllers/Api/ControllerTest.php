@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\Controller;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
 it('respondAccepted returns 202 with message only when no jobId given', function () {

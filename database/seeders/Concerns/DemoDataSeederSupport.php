@@ -2,12 +2,12 @@
 
 namespace Database\Seeders\Concerns;
 
-use App\Actions\Stores\CreateStore;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
+use App\Domain\Stores\Actions\CreateStore;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\TaxZone;
-use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 

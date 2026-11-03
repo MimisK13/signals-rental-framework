@@ -2,10 +2,10 @@
 
 use App\Actions\Admin\InviteUser;
 use App\Data\Admin\InviteUserData;
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Notifications\UserInvitedNotification;
 use App\Models\User;
-use App\Notifications\UserInvitedNotification;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

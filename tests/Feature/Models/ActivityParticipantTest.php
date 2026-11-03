@@ -2,7 +2,7 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Models\ActivityParticipant;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 
 it('belongs to an activity', function () {
     $participant = ActivityParticipant::factory()->create();

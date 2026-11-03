@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Members\MergeMember;
-use App\Data\Members\MergeMemberData;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
-use App\Events\AuditableEvent;
-use App\Jobs\DeliverWebhook;
-use App\Models\Address;
-use App\Models\Email;
-use App\Models\Link;
-use App\Models\Member;
-use App\Models\MemberRelationship;
-use App\Models\Membership;
-use App\Models\Phone;
-use App\Models\Store;
+use App\Domain\Members\Actions\MergeMember;
+use App\Domain\Members\Data\MergeMemberData;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Email;
+use App\Domain\Members\Models\Link;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Models\Membership;
+use App\Domain\Members\Models\Phone;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
 use App\Models\User;
-use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

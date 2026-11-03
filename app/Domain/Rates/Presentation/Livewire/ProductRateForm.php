@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Rates\Presentation\Livewire;
 
 use App\Domain\Currency\Models\Currency;
+use App\Domain\Pricing\Models\PriceCategory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Actions\CreateProductRate;
 use App\Domain\Rates\Actions\UpdateProductRate;
@@ -15,8 +16,7 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Rules\EnsureProductRateCurrencyIsValid;
 use App\Domain\Rates\Services\RateEngine\ProductRateOverlapChecker;
-use App\Models\PriceCategory;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Facades\Gate;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Models\RequestLog;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\RequestLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 

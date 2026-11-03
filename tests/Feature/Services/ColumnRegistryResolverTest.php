@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Models\User;
 use App\Services\ColumnRegistryResolver;
 use App\Views\Column;
 use App\Views\ColumnRegistry;
-use App\Views\MemberColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;

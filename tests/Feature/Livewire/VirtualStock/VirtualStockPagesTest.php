@@ -1,17 +1,20 @@
 <?php
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\SetVirtualStockCostOverride;
-use App\Data\VirtualStock\SetVirtualStockCostOverrideData;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\SetVirtualStockCostOverride;
+use App\Domain\VirtualStock\Data\SetVirtualStockCostOverrideData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Presentation\Livewire\Form;
+use App\Domain\VirtualStock\Presentation\Livewire\Index;
+use App\Domain\VirtualStock\Presentation\Livewire\Show;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -26,7 +29,7 @@ it('renders the virtual stock index page', function () {
     $this->get(route('virtual-stock.index'))
         ->assertOk();
 
-    Volt::test('virtual-stock.index')
+    Livewire::test(Index::class)
         ->assertSee('Virtual Stock')
         ->assertSee('Catalogue');
 });
@@ -34,7 +37,7 @@ it('renders the virtual stock index page', function () {
 it('renders the virtual stock show page', function () {
     $intake = createTestVirtualStockIntake();
 
-    Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake])
+    Livewire::test(Show::class, ['virtualStockIntake' => $intake])
         ->assertSee($intake->number);
 });
 
@@ -53,7 +56,7 @@ it('shows cost apportionment panel after confirm', function () {
 
     app(ConfirmVirtualStockIntake::class)($intake->refresh());
 
-    Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake->refresh()])
+    Livewire::test(Show::class, ['virtualStockIntake' => $intake->refresh()])
         ->assertSee('Cost apportionment')
         ->assertSee('Primary job');
 });
@@ -82,13 +85,13 @@ it('shows a warning when manual overrides do not sum to the intake total', funct
         ]),
     );
 
-    Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake->refresh()])
+    Livewire::test(Show::class, ['virtualStockIntake' => $intake->refresh()])
         ->assertSee('Manual cost overrides do not sum to the intake total');
 });
 
 it('renders the create form', function () {
     $this->get(route('virtual-stock.create'))->assertOk();
 
-    Volt::test('virtual-stock.form')
+    Livewire::test(Form::class)
         ->assertSee('New Virtual Stock Intake');
 });

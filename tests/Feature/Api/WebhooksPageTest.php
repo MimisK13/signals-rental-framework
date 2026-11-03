@@ -1,13 +1,14 @@
 <?php
 
-use App\Models\InboundWebhookLog;
-use App\Models\InboundWebhookSource;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
+use App\Domain\Webhooks\Presentation\Livewire\Index;
 use App\Models\User;
-use App\Models\Webhook;
-use App\Models\WebhookLog;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -35,14 +36,6 @@ it('forbids the webhooks page without webhooks.manage', function () {
         ->assertForbidden();
 });
 
-it('redirects the old admin webhooks route to api webhooks', function () {
-    $owner = User::factory()->owner()->create();
-
-    $this->actingAs($owner)
-        ->get(route('admin.settings.webhooks'))
-        ->assertRedirect('/api/webhooks');
-});
-
 it('does not show webhooks in the admin sidebar', function () {
     $owner = User::factory()->owner()->create();
 
@@ -51,7 +44,7 @@ it('does not show webhooks in the admin sidebar', function () {
         ->assertOk()
         ->getContent();
 
-    expect(preg_match('/s-admin-nav-item[^>]*href="'.preg_quote(route('admin.settings.webhooks'), '/').'"/', $html))
+    expect(preg_match('/s-admin-nav-item[^>]*href="'.preg_quote(route('api.webhooks'), '/').'"/', $html))
         ->toBe(0);
 });
 
@@ -71,7 +64,7 @@ describe('outbound webhooks', function () {
     });
 
     it('can create a webhook', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['user.created', 'user.updated'])
             ->call('createWebhook')
@@ -83,7 +76,7 @@ describe('outbound webhooks', function () {
     });
 
     it('shows the secret after creation', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['user.created'])
             ->call('createWebhook')
@@ -92,7 +85,7 @@ describe('outbound webhooks', function () {
     });
 
     it('dispatches event on webhook creation', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['user.created'])
             ->call('createWebhook')
@@ -100,7 +93,7 @@ describe('outbound webhooks', function () {
     });
 
     it('validates webhook creation requires url', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', '')
             ->set('createEvents', ['user.created'])
             ->call('createWebhook')
@@ -108,7 +101,7 @@ describe('outbound webhooks', function () {
     });
 
     it('validates webhook creation requires events', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', [])
             ->call('createWebhook')
@@ -116,7 +109,7 @@ describe('outbound webhooks', function () {
     });
 
     it('validates webhook creation requires valid url', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'not-a-url')
             ->set('createEvents', ['user.created'])
             ->call('createWebhook')
@@ -124,7 +117,7 @@ describe('outbound webhooks', function () {
     });
 
     it('validates webhook creation rejects invalid events', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['invalid.event'])
             ->call('createWebhook')
@@ -134,7 +127,7 @@ describe('outbound webhooks', function () {
     it('can edit a webhook', function () {
         $webhook = Webhook::factory()->create(['user_id' => $this->user->id]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('openEditModal', $webhook->id)
             ->set('editUrl', 'https://new-url.com/hook')
             ->set('editEvents', ['role.created', 'role.deleted'])
@@ -148,7 +141,7 @@ describe('outbound webhooks', function () {
     it('dispatches event on webhook update', function () {
         $webhook = Webhook::factory()->create(['user_id' => $this->user->id]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('openEditModal', $webhook->id)
             ->set('editUrl', 'https://new-url.com/hook')
             ->call('updateWebhook')
@@ -163,7 +156,7 @@ describe('outbound webhooks', function () {
             'is_active' => true,
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('openEditModal', $webhook->id)
             ->assertSet('editUrl', 'https://original.com/hook')
             ->assertSet('editEvents', ['user.created', 'settings.updated'])
@@ -173,7 +166,7 @@ describe('outbound webhooks', function () {
     it('can delete a webhook', function () {
         $webhook = Webhook::factory()->create(['user_id' => $this->user->id]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('confirmDelete', $webhook->id)
             ->call('deleteWebhook')
             ->assertHasNoErrors();
@@ -184,7 +177,7 @@ describe('outbound webhooks', function () {
     it('dispatches event on webhook deletion', function () {
         $webhook = Webhook::factory()->create(['user_id' => $this->user->id]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('confirmDelete', $webhook->id)
             ->call('deleteWebhook')
             ->assertDispatched('webhook-deleted');
@@ -196,7 +189,7 @@ describe('outbound webhooks', function () {
             'consecutive_failures' => 18,
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('reenableWebhook', $webhook->id)
             ->assertHasNoErrors();
 
@@ -211,7 +204,7 @@ describe('outbound webhooks', function () {
             'consecutive_failures' => 18,
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('reenableWebhook', $webhook->id)
             ->assertDispatched('webhook-reenabled');
     });
@@ -220,7 +213,7 @@ describe('outbound webhooks', function () {
         $webhook = Webhook::factory()->create(['user_id' => $this->user->id]);
         WebhookLog::factory()->count(5)->create(['webhook_id' => $webhook->id]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('viewLogs', $webhook->id)
             ->assertSet('showLogsModal', true)
             ->assertSet('viewingLogsWebhookId', $webhook->id);
@@ -229,7 +222,7 @@ describe('outbound webhooks', function () {
     it('can close the logs modal', function () {
         $webhook = Webhook::factory()->create(['user_id' => $this->user->id]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('viewLogs', $webhook->id)
             ->assertSet('showLogsModal', true)
             ->call('closeLogsModal')
@@ -238,7 +231,7 @@ describe('outbound webhooks', function () {
     });
 
     it('can dismiss secret display', function () {
-        $component = Volt::test('api.webhooks')
+        $component = Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['user.created'])
             ->call('createWebhook');
@@ -251,7 +244,7 @@ describe('outbound webhooks', function () {
     });
 
     it('assigns webhook to current user on creation', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['user.created'])
             ->call('createWebhook');
@@ -260,7 +253,7 @@ describe('outbound webhooks', function () {
     });
 
     it('groups available events by resource prefix', function () {
-        Volt::test('api.webhooks')->tap(function ($component) {
+        Livewire::test(Index::class)->tap(function ($component) {
             /** @var array<string, array{label: string, events: list<string>}> $groups */
             $groups = $component->instance()->eventGroups();
 
@@ -272,7 +265,7 @@ describe('outbound webhooks', function () {
     });
 
     it('headline-cases multi-word event group labels', function () {
-        Volt::test('api.webhooks')->tap(function ($component) {
+        Livewire::test(Index::class)->tap(function ($component) {
             /** @var array<string, array{label: string, events: list<string>}> $groups */
             $groups = $component->instance()->eventGroups();
 
@@ -284,7 +277,7 @@ describe('outbound webhooks', function () {
     });
 
     it('groups a webhook\'s subscribed events for display', function () {
-        Volt::test('api.webhooks')->tap(function ($component) {
+        Livewire::test(Index::class)->tap(function ($component) {
             /** @var array<string, list<string>> $grouped */
             $grouped = $component->instance()->groupedEvents([
                 'member.created',
@@ -300,7 +293,7 @@ describe('outbound webhooks', function () {
     });
 
     it('groups the wildcard event under All', function () {
-        Volt::test('api.webhooks')->tap(function ($component) {
+        Livewire::test(Index::class)->tap(function ($component) {
             /** @var array<string, list<string>> $grouped */
             $grouped = $component->instance()->groupedEvents(['*']);
 
@@ -314,7 +307,7 @@ describe('outbound webhooks', function () {
             'events' => ['member.created', 'member.updated', 'user.deleted'],
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->assertSee('3 events')
             ->assertSee('Member:')
             ->assertSee('User:');
@@ -326,12 +319,12 @@ describe('outbound webhooks', function () {
             'events' => ['member.created'],
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->assertSee('1 event');
     });
 
     it('can create a webhook selecting events through the grouped picker model', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createUrl', 'https://example.com/webhook')
             ->set('createEvents', ['member.created', 'member.archived'])
             ->call('createWebhook')
@@ -346,7 +339,7 @@ describe('outbound webhooks', function () {
             'events' => ['user.created'],
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('openEditModal', $webhook->id)
             ->set('editEvents', ['stock_level.created', 'stock_level.updated'])
             ->call('updateWebhook')
@@ -358,13 +351,13 @@ describe('outbound webhooks', function () {
 
 describe('inbound webhook sources', function () {
     it('shows empty state when no inbound sources exist', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('setTab', 'inbound')
             ->assertSee('No inbound sources');
     });
 
     it('can create an inbound source with secret shown once', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createInboundName', 'Stripe Payments')
             ->set('createInboundSlug', 'stripe-payments')
             ->set('createInboundPriceWeight', 2)
@@ -381,7 +374,7 @@ describe('inbound webhook sources', function () {
     });
 
     it('auto-slugs the inbound source name on create', function () {
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createInboundName', 'My External Service')
             ->assertSet('createInboundSlug', 'my-external-service');
     });
@@ -389,7 +382,7 @@ describe('inbound webhook sources', function () {
     it('validates inbound slug uniqueness', function () {
         InboundWebhookSource::factory()->create(['slug' => 'existing-source']);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->set('createInboundName', 'Existing Source')
             ->set('createInboundSlug', 'existing-source')
             ->call('createInboundSource')
@@ -403,7 +396,7 @@ describe('inbound webhook sources', function () {
             'price_weight' => 1,
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('openInboundEditModal', $source->id)
             ->set('editInboundName', 'Updated Name')
             ->set('editInboundPriceWeight', 3)
@@ -418,7 +411,7 @@ describe('inbound webhook sources', function () {
         $source = InboundWebhookSource::factory()->create();
         $originalSecret = $source->secret;
 
-        $component = Volt::test('api.webhooks')
+        $component = Livewire::test(Index::class)
             ->call('rotateInboundSecret', $source->id)
             ->assertSet('showInboundSecret', true);
 
@@ -429,13 +422,13 @@ describe('inbound webhook sources', function () {
     it('can toggle inbound source active state', function () {
         $source = InboundWebhookSource::factory()->create(['is_active' => true]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('toggleInboundActive', $source->id)
             ->assertHasNoErrors();
 
         expect($source->fresh()->is_active)->toBeFalse();
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('toggleInboundActive', $source->id);
 
         expect($source->fresh()->is_active)->toBeTrue();
@@ -444,7 +437,7 @@ describe('inbound webhook sources', function () {
     it('can delete an inbound source', function () {
         $source = InboundWebhookSource::factory()->create();
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('confirmInboundDelete', $source->id)
             ->call('deleteInboundSource')
             ->assertHasNoErrors();
@@ -455,7 +448,7 @@ describe('inbound webhook sources', function () {
     it('shows the receive URL for an inbound source', function () {
         InboundWebhookSource::factory()->create(['slug' => 'stripe-payments']);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('setTab', 'inbound')
             ->assertSee('/webhooks/receive/stripe-payments');
     });
@@ -466,14 +459,14 @@ describe('inbound webhook sources', function () {
             'inbound_webhook_source_id' => $source->id,
         ]);
 
-        Volt::test('api.webhooks')
+        Livewire::test(Index::class)
             ->call('viewInboundLogs', $source->id)
             ->assertSet('showInboundLogsModal', true)
             ->assertSet('viewingInboundLogsSourceId', $source->id);
     });
 
     it('can dismiss inbound secret display', function () {
-        $component = Volt::test('api.webhooks')
+        $component = Livewire::test(Index::class)
             ->set('createInboundName', 'Test Source')
             ->set('createInboundSlug', 'test-source')
             ->call('createInboundSource');

@@ -2,7 +2,7 @@
 
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 describe('OpportunityItem store override relations', function () {
     it('resolves dispatchStore and returnStore belongsTo relations', function () {

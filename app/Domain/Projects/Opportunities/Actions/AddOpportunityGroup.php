@@ -11,8 +11,8 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\ItemTreeService;
 use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
-use App\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
+use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 
 /**

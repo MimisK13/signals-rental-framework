@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\NotificationAudience;
-use App\Models\NotificationPreference;
-use App\Models\NotificationSetting;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Enums\NotificationAudience;
+use App\Domain\Notifications\Models\NotificationPreference;
+use App\Domain\Notifications\Models\NotificationSetting;
+use App\Domain\Notifications\Models\NotificationType;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

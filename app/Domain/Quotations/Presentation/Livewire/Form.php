@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Presentation\Livewire;
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Quotations\Actions\CreateQuotation;
 use App\Domain\Quotations\Data\CreateQuotationData;
 use App\Domain\Quotations\Models\Quotation;
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

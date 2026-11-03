@@ -8,7 +8,7 @@ use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stock\Stocktakes\Enums\StocktakeStatus;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Facades\Gate;
 
 final class CreateStocktake

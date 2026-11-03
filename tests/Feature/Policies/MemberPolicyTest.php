@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Policies\MemberPolicy;
 use App\Models\User;
-use App\Policies\MemberPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

@@ -1,13 +1,13 @@
 <?php
 
 use App\Domain\Invoices\Presentation\Livewire\OpportunityInvoices;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

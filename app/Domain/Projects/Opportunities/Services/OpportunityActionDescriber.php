@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Services;
 
-use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Enums\AssetAssignmentStatus;
 use Closure;
 use Illuminate\Support\Facades\Gate;
 

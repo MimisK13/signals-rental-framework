@@ -5,7 +5,7 @@ use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;

@@ -4,6 +4,7 @@
  * Coverage burn-up batch 2 (part 2) — services, data, policies, middleware, models.
  */
 
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Data\ChannelSendData;
@@ -20,6 +21,11 @@ use App\Domain\Documents\Services\TemplateLineDiff;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\CreditNoteTax;
 use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Services\NotificationLinkResolver;
+use App\Domain\Pricing\Services\DiscountRuleEvaluator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
@@ -31,17 +37,11 @@ use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Services\VirtualStockNumberGenerator;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
-use App\Http\Middleware\LogApiRequest;
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\NotificationType;
-use App\Models\Store;
 use App\Models\User;
-use App\Services\Notifications\NotificationLinkResolver;
-use App\Services\Pricing\DiscountRuleEvaluator;
-use App\Services\VirtualStock\VirtualStockNumberGenerator;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -247,18 +247,18 @@ it('NotificationLinkResolver resolve returns null for missing classes and delete
     $resolver = app(NotificationLinkResolver::class);
 
     $notification = new DatabaseNotification;
-    $notification->data = ['payload' => [
+    $notification->setAttribute('data', ['payload' => [
         'subject_type' => 'App\\Models\\DefinitelyMissingModel',
         'subject_id' => 1,
-    ]];
+    ]]);
 
     expect($resolver->resolve($notification))->toBeNull();
 
     $member = Member::factory()->create();
-    $notification->data = ['payload' => [
+    $notification->setAttribute('data', ['payload' => [
         'subject_type' => Member::class,
         'subject_id' => $member->id,
-    ]];
+    ]]);
     $member->delete();
 
     expect($resolver->resolve($notification))->toBeNull();
@@ -319,7 +319,7 @@ it('NotificationLinkResolver resolve prefers opportunity payload links', functio
     $opportunity = Opportunity::factory()->create();
 
     $notification = new DatabaseNotification;
-    $notification->data = ['payload' => ['opportunity' => ['id' => $opportunity->id]]];
+    $notification->setAttribute('data', ['payload' => ['opportunity' => ['id' => $opportunity->id]]]);
 
     expect($resolver->resolve($notification))->toBe(route('opportunities.show', $opportunity));
 });

@@ -9,10 +9,10 @@ use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
-use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityStatusChanged;
 use Illuminate\Support\Facades\Gate;
 

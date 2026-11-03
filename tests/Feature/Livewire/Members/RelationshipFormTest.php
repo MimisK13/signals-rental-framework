@@ -1,9 +1,10 @@
 <?php
 
-use App\Models\Member;
-use App\Models\MemberRelationship;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Presentation\Livewire\RelationshipForm;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -31,7 +32,7 @@ it('can create a relationship from a contact to an organisation', function () {
     $contact = Member::factory()->contact()->create();
     $org = Member::factory()->organisation()->create(['name' => 'Target Org']);
 
-    Volt::test('members.relationship-form', ['member' => $contact])
+    Livewire::test(RelationshipForm::class, ['member' => $contact])
         ->set('relatedMemberId', $org->id)
         ->set('relationshipType', 'Employee')
         ->call('save')
@@ -48,7 +49,7 @@ it('can create a relationship from an organisation to a contact', function () {
     $org = Member::factory()->organisation()->create();
     $contact = Member::factory()->contact()->create(['name' => 'Target Contact']);
 
-    Volt::test('members.relationship-form', ['member' => $org])
+    Livewire::test(RelationshipForm::class, ['member' => $org])
         ->set('relatedMemberId', $contact->id)
         ->set('relationshipType', 'Contractor')
         ->call('save')
@@ -65,7 +66,7 @@ it('can create a relationship from an organisation to a contact', function () {
 it('validates required related member', function () {
     $contact = Member::factory()->contact()->create();
 
-    Volt::test('members.relationship-form', ['member' => $contact])
+    Livewire::test(RelationshipForm::class, ['member' => $contact])
         ->set('relatedMemberId', null)
         ->call('save')
         ->assertHasErrors(['relatedMemberId']);
@@ -75,7 +76,7 @@ it('can create a primary relationship', function () {
     $contact = Member::factory()->contact()->create();
     $org = Member::factory()->organisation()->create();
 
-    Volt::test('members.relationship-form', ['member' => $contact])
+    Livewire::test(RelationshipForm::class, ['member' => $contact])
         ->set('relatedMemberId', $org->id)
         ->set('relationshipType', 'Employee')
         ->set('isPrimary', true)
@@ -99,7 +100,7 @@ it('unsets previous primary when creating a new primary relationship', function 
         'related_member_id' => $org1->id,
     ]);
 
-    Volt::test('members.relationship-form', ['member' => $contact])
+    Livewire::test(RelationshipForm::class, ['member' => $contact])
         ->set('relatedMemberId', $org2->id)
         ->set('isPrimary', true)
         ->call('save')

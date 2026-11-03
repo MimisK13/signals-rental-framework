@@ -1,10 +1,11 @@
 <?php
 
-use App\Actions\Setup\CheckInfrastructure;
-use App\Models\Store;
+use App\Domain\Setup\Actions\CheckInfrastructure;
+use App\Domain\Setup\Presentation\Livewire\Wizard;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $envPath = base_path('.env');
@@ -46,13 +47,13 @@ it('renders the setup wizard on step 1', function () {
 });
 
 it('displays all country options', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->assertSee('United Kingdom')
         ->assertSee('United States');
 });
 
 it('auto-fills defaults when country is selected', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('countryCode', 'GB')
         ->assertSet('timezone', 'Europe/London')
         ->assertSet('currency', 'GBP')
@@ -63,13 +64,13 @@ it('auto-fills defaults when country is selected', function () {
 });
 
 it('auto-fills store country code when country is selected', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('countryCode', 'US')
         ->assertSet('stores.0.country_code', 'US');
 });
 
 it('navigates to step 2 after validating step 1', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('countryCode', 'GB')
         ->set('companyName', 'Test Co')
         ->set('timezone', 'Europe/London')
@@ -85,7 +86,7 @@ it('navigates to step 2 after validating step 1', function () {
 });
 
 it('validates required fields on step 1', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('companyName', '')
         ->set('countryCode', '')
         ->call('nextStep')
@@ -94,7 +95,7 @@ it('validates required fields on step 1', function () {
 });
 
 it('can add and remove stores', function () {
-    $component = Volt::test('setup.wizard');
+    $component = Livewire::test(Wizard::class);
 
     // Starts with 1 store from mount()
     expect($component->get('stores'))->toHaveCount(1);
@@ -107,7 +108,7 @@ it('can add and remove stores', function () {
 });
 
 it('prevents removing the last store', function () {
-    $component = Volt::test('setup.wizard');
+    $component = Livewire::test(Wizard::class);
 
     expect($component->get('stores'))->toHaveCount(1);
 
@@ -116,7 +117,7 @@ it('prevents removing the last store', function () {
 });
 
 it('reassigns default when default store is removed', function () {
-    $component = Volt::test('setup.wizard')
+    $component = Livewire::test(Wizard::class)
         ->call('addStore')
         ->call('setDefaultStore', 1);
 
@@ -131,7 +132,7 @@ it('reassigns default when default store is removed', function () {
 });
 
 it('navigates backward', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('countryCode', 'GB')
         ->set('companyName', 'Test Co')
         ->set('timezone', 'Europe/London')
@@ -147,13 +148,13 @@ it('navigates backward', function () {
 });
 
 it('does not navigate backward from step 1', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->call('previousStep')
         ->assertSet('currentStep', 1);
 });
 
 it('allows jumping back to completed steps', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('countryCode', 'GB')
         ->set('companyName', 'Test Co')
         ->set('timezone', 'Europe/London')
@@ -169,13 +170,13 @@ it('allows jumping back to completed steps', function () {
 });
 
 it('does not allow jumping forward to unvisited steps', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->call('goToStep', 3)
         ->assertSet('currentStep', 1);
 });
 
 it('validates store name on step 2', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 2)
         ->set('stores', [['name' => '', 'street' => '', 'city' => '', 'county' => '', 'postcode' => '', 'country_code' => 'GB', 'is_default' => true]])
         ->call('nextStep')
@@ -184,7 +185,7 @@ it('validates store name on step 2', function () {
 });
 
 it('validates profile selection on step 3', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 3)
         ->set('profile', 'invalid_profile')
         ->call('nextStep')
@@ -193,7 +194,7 @@ it('validates profile selection on step 3', function () {
 });
 
 it('validates branding colours on step 4', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 4)
         ->set('primaryColour', 'not-a-colour')
         ->call('nextStep')
@@ -202,7 +203,7 @@ it('validates branding colours on step 4', function () {
 });
 
 it('validates admin fields on step 5', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 5)
         ->set('adminName', '')
         ->set('adminEmail', 'not-an-email')
@@ -214,7 +215,7 @@ it('validates admin fields on step 5', function () {
 });
 
 it('shows the review step with all data', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 6)
         ->set('companyName', 'Review Co')
         ->set('countryCode', 'GB')
@@ -226,7 +227,7 @@ it('shows the review step with all data', function () {
 });
 
 it('completes setup and redirects to dashboard', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 6)
         ->set('countryCode', 'GB')
         ->set('companyName', 'Final Test Co')
@@ -255,7 +256,7 @@ it('completes setup and redirects to dashboard', function () {
 });
 
 it('displays profile options with descriptions', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 3)
         ->assertSee('Dry Hire')
         ->assertSee('Full Service')
@@ -264,7 +265,7 @@ it('displays profile options with descriptions', function () {
 });
 
 it('shows enabled modules for selected profile', function () {
-    Volt::test('setup.wizard')
+    Livewire::test(Wizard::class)
         ->set('currentStep', 3)
         ->set('profile', 'dry_hire')
         ->assertSee('Opportunities')

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Presentation\Livewire;
 
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

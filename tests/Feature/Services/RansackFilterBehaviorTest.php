@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Services\Api\RansackFilter;
+use App\Domain\API\Services\RansackFilter;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 
 beforeEach(function () {
     $this->filter = app(RansackFilter::class);

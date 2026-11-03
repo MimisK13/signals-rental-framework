@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Documents\Data\DocumentData;
 use App\Domain\Documents\Data\DocumentSequenceData;
 use App\Domain\Documents\Data\DocumentTemplateData;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Thunk\Verbs\Facades\Verbs;
 
 /**
  * Bridges document-domain mutations onto the audit log and outbound webhook bus.
  *
  * Document models are intentionally NOT handled by
- * {@see App\Listeners\DispatchWebhookForAuditableEvent}; this dispatcher is
+ * {@see App\Domain\Webhooks\Listeners\DispatchWebhookForAuditableEvent}; this dispatcher is
  * their sole webhook emitter, mirroring the Phase-2 member/product action pattern.
  */
 class DocumentEventDispatcher

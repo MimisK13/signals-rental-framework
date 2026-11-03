@@ -3,7 +3,7 @@
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Data\StockLevelData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 it('maps product_id to item_id key in output', function () {
     $product = Product::factory()->create();

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\NotificationType;
-use App\Services\NotificationRegistry;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Services\NotificationRegistry;
 
 beforeEach(function () {
     $this->registry = new NotificationRegistry;

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewAssignmentController;
 use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewAvailabilityController;
 use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewMemberController;
@@ -9,8 +11,6 @@ use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewReportControll
 use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewRequestController;
 use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewShiftController;
 use App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew\CrewTimesheetController;
-use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/crew')->name('api.v1.crew.')->middleware(['api', ForceJsonResponse::class, 'throttle:api', 'auth:sanctum', LogApiRequest::class, 'signals.active-user', 'module:crew', 'can:crew.access'])->group(function (): void {

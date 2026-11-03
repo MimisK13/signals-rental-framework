@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Database\Factories;
 
 use App\Domain\Attachments\Models\Attachment;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Attachment> */

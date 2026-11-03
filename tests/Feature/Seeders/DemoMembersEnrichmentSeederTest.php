@@ -1,16 +1,16 @@
 <?php
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Database\Seeders\DiscountCategorySeeder;
+use App\Domain\Pricing\Database\Seeders\PriceCategorySeeder;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
 use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Models\TaxZone;
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
-use Database\Seeders\DiscountCategorySeeder;
 use Database\Seeders\PermissionSeeder;
-use Database\Seeders\PriceCategorySeeder;
 use Database\Seeders\RoleSeeder;
 
 require_once __DIR__.'/../../Support/DemoSeederTestHelpers.php';

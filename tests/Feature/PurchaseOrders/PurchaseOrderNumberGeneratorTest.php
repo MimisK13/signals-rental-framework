@@ -2,7 +2,7 @@
 
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Carbon\CarbonImmutable;
 
 describe('PurchaseOrderNumberGenerator', function () {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomFields\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\Gate;
 
 class DeleteCustomFieldGroup

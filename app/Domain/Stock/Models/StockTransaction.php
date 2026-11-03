@@ -7,7 +7,7 @@ namespace App\Domain\Stock\Models;
 use App\Contracts\HasSchema;
 use App\Domain\Stock\Database\Factories\StockTransactionFactory;
 use App\Domain\Stock\Enums\TransactionType;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

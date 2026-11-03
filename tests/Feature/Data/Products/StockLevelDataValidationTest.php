@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Data\UpdateStockLevelData;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Validation\ValidationException;
 
 it('accepts an active member id when creating a stock level', function () {

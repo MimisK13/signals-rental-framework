@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Models;
 
 use App\Domain\Documents\Database\Factories\DocumentSequenceFactory;
-use App\Models\Store;
-use App\Models\Traits\HasStoreScoping;
+use App\Domain\Stores\Concerns\HasStoreScoping;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

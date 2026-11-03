@@ -10,7 +10,7 @@ use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceItem;
 use App\Domain\Invoices\Models\InvoiceTax;
-use App\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -7,7 +7,7 @@ use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\DocumentStylesSanitizer;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 describe('DocumentStylesSanitizer', function () {
     beforeEach(function () {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
-use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemDatesChanged;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ApportionVirtualStockCost;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Thunk\Verbs\Facades\Verbs;

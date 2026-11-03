@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Stores\CreateStore;
-use App\Actions\Stores\DeleteStore;
-use App\Actions\Stores\UpdateStore;
-use App\Data\Stores\CreateStoreData;
-use App\Data\Stores\UpdateStoreData;
-use App\Events\AuditableEvent;
-use App\Models\Store;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Stores\Actions\CreateStore;
+use App\Domain\Stores\Actions\DeleteStore;
+use App\Domain\Stores\Actions\UpdateStore;
+use App\Domain\Stores\Data\CreateStoreData;
+use App\Domain\Stores\Data\UpdateStoreData;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

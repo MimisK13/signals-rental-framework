@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Livewire;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Products\Actions\UpdateProductContainerConfig;
 use App\Domain\Products\Data\UpdateProductContainerConfigData;
 use App\Domain\Products\Enums\KitComponentBinding;
@@ -12,7 +13,6 @@ use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Services\Api\RansackFilter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

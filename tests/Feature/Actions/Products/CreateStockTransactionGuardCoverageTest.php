@@ -6,7 +6,7 @@ use App\Domain\Stock\Data\CreateStockTransactionData;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

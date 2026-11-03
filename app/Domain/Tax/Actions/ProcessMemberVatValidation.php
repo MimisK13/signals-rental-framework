@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Actions;
 
-use App\Data\Members\MemberData;
+use App\Domain\Members\Data\MemberData;
+use App\Domain\Members\Models\Member;
 use App\Domain\Tax\Contracts\VatNumberValidator;
-use App\Models\Member;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 
 final class ProcessMemberVatValidation
 {

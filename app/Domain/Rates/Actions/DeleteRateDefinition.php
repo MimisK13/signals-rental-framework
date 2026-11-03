@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Rates\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Rates\Models\RateDefinition;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

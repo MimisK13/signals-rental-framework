@@ -1,7 +1,7 @@
 <?php
 
-use App\Data\Members\MergeMemberData;
-use App\Models\Member;
+use App\Domain\Members\Data\MergeMemberData;
+use App\Domain\Members\Models\Member;
 use Illuminate\Validation\ValidationException;
 
 it('valid data passes validation', function () {

@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Pricing\Models\BundleRule;
 use App\Domain\Products\Models\Product;
-use App\Models\BundleRule;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

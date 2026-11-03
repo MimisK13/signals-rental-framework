@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
-use App\Livewire\Members\Addresses;
-use App\Livewire\Members\AddressForm;
-use App\Models\Address;
-use App\Models\Member;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\Addresses;
+use App\Domain\Members\Presentation\Livewire\AddressForm;
 use App\Models\User;
 use Livewire\Livewire;
 

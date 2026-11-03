@@ -8,7 +8,7 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

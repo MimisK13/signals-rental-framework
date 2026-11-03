@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Stock\Actions\DeleteStockTransaction;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Events\AuditableEvent;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Models\User;
-use App\Services\Api\WebhookService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

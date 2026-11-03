@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Verbs\Events\Concerns;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Invoices\Models\Invoice;
-use App\Events\AuditableEvent;
 use Thunk\Verbs\Event;
 use Thunk\Verbs\Models\VerbEvent;
 

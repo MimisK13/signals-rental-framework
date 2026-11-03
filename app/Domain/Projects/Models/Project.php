@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Models;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Database\Factories\ProjectFactory;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Quotations\Models\Quotation;
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

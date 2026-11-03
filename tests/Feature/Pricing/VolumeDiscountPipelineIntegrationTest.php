@@ -1,5 +1,10 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\BundleRule;
+use App\Domain\Pricing\Models\Surcharge;
+use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -13,6 +18,8 @@ use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\ReferenceData\Models\RevenueGroup;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
 use App\Domain\Tax\Models\OrganisationTaxClass;
@@ -21,12 +28,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Services\DocumentTaxBreakdown;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PricingRoundingDirection;
-use App\Models\BundleRule;
-use App\Models\Member;
-use App\Models\Store;
-use App\Models\Surcharge;
-use App\Models\SurchargeGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -85,6 +86,7 @@ it('orders bundle then discount then surcharge before grouped tax', function () 
         'ends_at' => '2026-07-02T17:00:00Z',
     ]));
     $opportunity = Opportunity::query()->whereKey($created->id)->firstOrFail();
+    $revenueGroup = RevenueGroup::factory()->create();
 
     foreach ([$productA, $productB] as $product) {
         (new AddOpportunityItem)($opportunity, AddOpportunityItemData::from([
@@ -93,7 +95,7 @@ it('orders bundle then discount then surcharge before grouped tax', function () 
             'itemable_type' => Product::class,
             'quantity' => '1',
             'transaction_type' => LineItemTransactionType::Rental->value,
-            'revenue_group_id' => 7,
+            'revenue_group_id' => $revenueGroup->id,
         ]));
         $opportunity = $opportunity->fresh('items');
     }

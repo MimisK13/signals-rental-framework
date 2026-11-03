@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
@@ -9,6 +10,7 @@ use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Models\OrganisationTaxClass;
@@ -18,8 +20,6 @@ use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
 use App\Enums\LineItemTransactionType;
-use App\Models\Member;
-use App\Models\Store;
 
 /**
  * @return array{

@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
@@ -16,8 +18,6 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Enums\LineItemTransactionType;
-use App\Enums\MembershipType;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

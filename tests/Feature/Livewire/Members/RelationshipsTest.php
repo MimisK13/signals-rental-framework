@@ -1,9 +1,10 @@
 <?php
 
-use App\Models\Member;
-use App\Models\MemberRelationship;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Presentation\Livewire\Relationships;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -37,7 +38,7 @@ it('lists related organisations for a contact', function () {
         'relationship_type' => 'Employee',
     ]);
 
-    Volt::test('members.relationships', ['member' => $contact])
+    Livewire::test(Relationships::class, ['member' => $contact])
         ->assertSee('Acme Corp')
         ->assertSee('Employee');
 });
@@ -52,7 +53,7 @@ it('lists related contacts for an organisation', function () {
         'relationship_type' => 'Director',
     ]);
 
-    Volt::test('members.relationships', ['member' => $org])
+    Livewire::test(Relationships::class, ['member' => $org])
         ->assertSee('John Smith')
         ->assertSee('Director');
 });
@@ -69,17 +70,17 @@ it('displays a relationship on both members regardless of direction', function (
         'relationship_type' => 'Director',
     ]);
 
-    Volt::test('members.relationships', ['member' => $contact])
+    Livewire::test(Relationships::class, ['member' => $contact])
         ->assertSee('Acme Corp');
 
-    Volt::test('members.relationships', ['member' => $org])
+    Livewire::test(Relationships::class, ['member' => $org])
         ->assertSee('Jane Doe');
 });
 
 it('shows empty state when no relationships exist', function () {
     $member = Member::factory()->contact()->create();
 
-    Volt::test('members.relationships', ['member' => $member])
+    Livewire::test(Relationships::class, ['member' => $member])
         ->assertSee('No relationships found.');
 });
 
@@ -92,7 +93,7 @@ it('shows primary badge on primary relationship', function () {
         'related_member_id' => $org->id,
     ]);
 
-    Volt::test('members.relationships', ['member' => $contact])
+    Livewire::test(Relationships::class, ['member' => $contact])
         ->assertSee('Primary');
 });
 
@@ -105,7 +106,7 @@ it('can delete a relationship', function () {
         'related_member_id' => $org->id,
     ]);
 
-    Volt::test('members.relationships', ['member' => $contact])
+    Livewire::test(Relationships::class, ['member' => $contact])
         ->call('deleteRelationship', $relationship->id);
 
     expect(MemberRelationship::find($relationship->id))->toBeNull();

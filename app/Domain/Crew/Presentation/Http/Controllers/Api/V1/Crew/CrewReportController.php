@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Crew\Data\Planning\MatchCrewCandidatesData;
 use App\Domain\Crew\Data\Planning\UtilisationFilterData;
 use App\Domain\Crew\Data\Planning\WorkHistoryFilterData;
@@ -20,7 +21,6 @@ use App\Domain\Crew\Queries\CrewCoverageQuery;
 use App\Domain\Crew\Queries\CrewUtilisationQuery;
 use App\Domain\Crew\Queries\CrewWorkHistoryQuery;
 use App\Domain\Projects\Models\Project;
-use App\Http\Controllers\Api\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Members\Actions;
+
+use App\Domain\CustomFields\Services\CustomFieldValidator;
+use App\Domain\Members\Data\CreateMemberData;
+use App\Domain\Members\Data\MemberData;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Services\MemberNumberGenerator;
+use App\Domain\Tax\Services\MemberVatValidationService;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Webhooks\Services\WebhookService;
+use Illuminate\Support\Facades\Gate;
+
+class CreateMember
+{
+    public function __invoke(CreateMemberData $data): MemberData
+    {
+        Gate::authorize('members.create');
+
+        app(CustomFieldValidator::class)->validate('Member', $data->custom_fields, enforceRequired: true);
+
+        MemberPriceCategoryTierValidator::assertTierBelongsToCategory(
+            $data->price_category_tier_id,
+            $data->price_category_id,
+        );
+
+        $number = app(MemberNumberGenerator::class)->nextOrCreate();
+
+        $member = Member::create([
+            'number' => $number,
+            'name' => $data->name,
+            'membership_type' => $data->membership_type,
+            'is_active' => $data->is_active,
+            'description' => $data->description,
+            'locale' => $data->locale,
+            'default_currency_code' => $data->default_currency_code,
+            'bookable' => $data->bookable,
+            'location_type' => $data->location_type,
+            'day_cost' => $data->day_cost,
+            'hour_cost' => $data->hour_cost,
+            'distance_cost' => $data->distance_cost,
+            'flat_rate_cost' => $data->flat_rate_cost,
+            'lawful_basis_type_id' => $data->lawful_basis_type_id,
+            'sale_tax_class_id' => $data->sale_tax_class_id,
+            'purchase_tax_class_id' => $data->purchase_tax_class_id,
+            'tag_list' => $data->tag_list,
+            'mapping_id' => $data->mapping_id,
+            'account_number' => $data->account_number,
+            'tax_number' => $data->tax_number,
+            'is_cash' => $data->is_cash,
+            'is_on_stop' => $data->is_on_stop,
+            'rating' => $data->rating,
+            'owned_by' => $data->owned_by,
+            'price_category_id' => $data->price_category_id,
+            'price_category_tier_id' => $data->price_category_tier_id,
+            'discount_category_id' => $data->discount_category_id,
+            'invoice_term_id' => $data->invoice_term_id,
+            'invoice_term_length' => $data->invoice_term_length,
+            'peppol_id' => $data->peppol_id,
+            'chamber_of_commerce_number' => $data->chamber_of_commerce_number,
+            'global_location_number' => $data->global_location_number,
+            'title' => $data->title,
+            'department' => $data->department,
+        ]);
+
+        $member->syncCustomFields($data->custom_fields, applyDefaults: true);
+
+        if ($data->tax_number !== null && trim($data->tax_number) !== '') {
+            app(MemberVatValidationService::class)->handleTaxNumberChange($member, null);
+            $member->refresh();
+        }
+
+        event(new AuditableEvent($member, 'member.created'));
+
+        app(WebhookService::class)->dispatch('member.created', [
+            'member' => MemberData::fromModel($member)->toArray(),
+        ]);
+
+        return MemberData::fromModel($member);
+    }
+}

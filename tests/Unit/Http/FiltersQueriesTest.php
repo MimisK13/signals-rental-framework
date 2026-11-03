@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Traits\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
 use Illuminate\Http\Request;
 
 /**

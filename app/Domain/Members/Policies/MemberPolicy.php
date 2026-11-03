@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Members\Policies;
+
+use App\Domain\Members\Models\Member;
+use App\Models\User;
+use App\Policies\Traits\AuthorizesByPermission;
+
+class MemberPolicy
+{
+    use AuthorizesByPermission;
+
+    protected function viewPermission(): string
+    {
+        return 'members.view';
+    }
+
+    protected function managePermission(): string
+    {
+        return 'members.create';
+    }
+
+    protected function createPermission(): string
+    {
+        return 'members.create';
+    }
+
+    protected function editPermission(): string
+    {
+        return 'members.edit';
+    }
+
+    protected function deletePermission(): string
+    {
+        return 'members.delete';
+    }
+
+    public function sendCommunication(User $user, Member $member): bool
+    {
+        return $user->can('notifications.manage');
+    }
+}

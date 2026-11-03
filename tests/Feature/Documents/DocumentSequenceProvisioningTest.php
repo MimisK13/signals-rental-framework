@@ -1,7 +1,5 @@
 <?php
 
-use App\Actions\Stores\CreateStore;
-use App\Data\Stores\CreateStoreData;
 use App\Domain\Documents\Actions\GenerateDocument;
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
@@ -11,7 +9,9 @@ use App\Domain\Documents\Services\DocumentNumberGenerator;
 use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Domain\Invoices\Enums\InvoiceType;
-use App\Models\Store;
+use App\Domain\Stores\Actions\CreateStore;
+use App\Domain\Stores\Data\CreateStoreData;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

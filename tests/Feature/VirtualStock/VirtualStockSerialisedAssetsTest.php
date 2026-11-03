@@ -1,12 +1,5 @@
 <?php
 
-use App\Actions\VirtualStock\CancelVirtualStockIntake;
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Actions\VirtualStock\DeleteDraftVirtualStockIntake;
-use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
-use App\Actions\VirtualStock\ReturnVirtualStockIntake;
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Models\Demand;
@@ -26,11 +19,18 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\CancelVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\CreateVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\DeleteDraftVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Enums\LineItemTransactionType;
 use App\Models\Sequence;
-use App\Models\Store;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

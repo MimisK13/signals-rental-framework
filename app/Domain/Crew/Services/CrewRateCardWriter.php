@@ -6,7 +6,7 @@ namespace App\Domain\Crew\Services;
 
 use App\Domain\Crew\Enums\CrewEngagementType;
 use App\Domain\Crew\Models\CrewRateCard;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Brick\Money\Currency;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Illuminate\Support\Facades\Validator;

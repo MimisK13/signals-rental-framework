@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Currency\Models\Currency;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Tax\Contracts\TaxResolver;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
@@ -11,7 +12,6 @@ use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Services\DocumentTaxBreakdown;
 use App\Domain\Tax\Services\TaxCalculator;
 use App\Domain\Tax\Services\ZoneAwareTaxResolver;
-use App\Enums\PricingRoundingDirection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

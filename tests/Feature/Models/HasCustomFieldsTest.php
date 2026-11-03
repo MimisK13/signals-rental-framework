@@ -5,7 +5,7 @@ use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 beforeEach(function () {
     // Create custom fields for the Store module type

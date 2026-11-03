@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

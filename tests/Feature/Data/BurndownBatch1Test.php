@@ -1,7 +1,5 @@
 <?php
 
-use App\Data\Notifications\NotificationSettingData;
-use App\Data\Pricing\PriceCategoryData;
 use App\Domain\Communications\Data\CommunicationLogData;
 use App\Domain\Communications\Data\CommunicationTemplateData;
 use App\Domain\Communications\Models\CommunicationLog;
@@ -9,6 +7,11 @@ use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Models\CommunicationTemplateVersion;
 use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Notifications\Data\NotificationSettingData;
+use App\Domain\Notifications\Enums\NotificationAudience;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Pricing\Data\PriceCategoryData;
+use App\Domain\Pricing\Models\PriceCategory;
 use App\Domain\Products\Data\ProductData;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
@@ -19,15 +22,12 @@ use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Data\CreateZoneTaxRuleData;
 use App\Domain\Tax\Data\TaxZoneRuleMatchRequest;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\TaxZone;
-use App\Enums\NotificationAudience;
-use App\Models\NotificationType;
-use App\Models\PriceCategory;
-use App\Models\Store;
 
 it('maps InvoiceData opportunity reference to null when no opportunity is linked', function () {
     $invoice = Invoice::factory()->create(['opportunity_id' => null]);

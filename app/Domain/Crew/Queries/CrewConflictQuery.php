@@ -10,7 +10,7 @@ use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewAvailability;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewShift;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Stores\Scopes\StoreScope;
 use Carbon\CarbonImmutable;
 
 final class CrewConflictQuery

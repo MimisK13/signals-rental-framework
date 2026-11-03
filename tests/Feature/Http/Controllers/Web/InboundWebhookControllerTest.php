@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Events\InboundWebhookReceived;
-use App\Models\InboundWebhookLog;
-use App\Models\InboundWebhookSource;
-use App\Models\UsageDaily;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\Webhooks\Events\InboundWebhookReceived;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;

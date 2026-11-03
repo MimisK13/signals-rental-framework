@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
+use App\Domain\API\Support\Attributes\PriceWeight;
 use App\Domain\Documents\Actions\CreateDocumentTemplate;
 use App\Domain\Documents\Actions\DeleteDocumentTemplate;
 use App\Domain\Documents\Actions\DuplicateDocumentTemplate;
@@ -19,9 +22,6 @@ use App\Domain\Documents\Data\ImportDocumentTemplateData;
 use App\Domain\Documents\Data\UpdateDocumentTemplateData;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Support\Api\Attributes\PriceWeight;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

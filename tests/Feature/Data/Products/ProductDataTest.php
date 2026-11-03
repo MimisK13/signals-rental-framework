@@ -4,10 +4,10 @@ use App\Domain\Products\Data\ProductData;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
+use App\Domain\ReferenceData\Models\CostGroup;
+use App\Domain\ReferenceData\Models\RevenueGroup;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\CostGroup;
-use App\Models\RevenueGroup;
 
 it('maps is_active to active key in output', function () {
     $product = Product::factory()->create(['is_active' => true]);

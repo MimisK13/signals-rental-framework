@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Setup\CheckInfrastructure;
+use App\Domain\Setup\Actions\CheckInfrastructure;
 use App\Services\ConnectionTesters\PostgresConnectionTester;
 use App\Services\ConnectionTesters\RedisConnectionTester;
 use Illuminate\Support\Facades\Schema;

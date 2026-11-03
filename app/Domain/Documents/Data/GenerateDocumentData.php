@@ -6,9 +6,9 @@ namespace App\Domain\Documents\Data;
 
 use App\Domain\Documents\Enums\DocumentOutputFormat;
 use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Quotations\Models\Quotation;
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Exists;

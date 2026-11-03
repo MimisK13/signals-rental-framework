@@ -77,7 +77,7 @@
             @endcan { group: 'Admin', label: 'Email Settings', icon: 'mail', url: '{{ route('admin.settings.email') }}', keywords: 'smtp email sending' },
         { group: 'Admin', label: 'Email Templates', icon: 'template', url: '{{ route('admin.settings.email-templates') }}', keywords: 'templates email notifications' },
         { group: 'Admin', label: 'Notifications', icon: 'bell', url: '{{ route('admin.settings.notifications') }}', keywords: 'notifications channels alerts' },
-        { group: 'Admin', label: 'Webhooks', icon: 'bolt', url: '{{ route('admin.settings.webhooks') }}', keywords: 'webhooks api integrations' },
+        { group: 'Admin', label: 'Webhooks', icon: 'bolt', url: '{{ route('api.webhooks') }}', keywords: 'webhooks api integrations' },
         { group: 'Admin', label: 'Action Log', icon: 'clipboard', url: '{{ route('admin.settings.action-log') }}', keywords: 'audit log history actions' },
         { group: 'Admin', label: 'System Health', icon: 'heart', url: '{{ route('admin.settings.system-health') }}', keywords: 'health status monitoring' },
         { group: 'Admin', label: 'Countries', icon: 'globe', url: '{{ route('admin.settings.countries') }}', keywords: 'countries regions' },

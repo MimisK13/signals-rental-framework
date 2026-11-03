@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Collection;

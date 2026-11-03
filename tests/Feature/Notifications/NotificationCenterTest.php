@@ -1,11 +1,13 @@
 <?php
 
+use App\Domain\Notifications\Notifications\TestPipelineNotification;
+use App\Domain\Notifications\Presentation\Livewire\Bell;
+use App\Domain\Notifications\Presentation\Livewire\Pane;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\User;
-use App\Notifications\TestPipelineNotification;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -30,7 +32,7 @@ test('notification pane lists unread notifications for the authenticated member'
         ],
     ));
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->call('refreshNotifications')
         ->assertSee('Opportunity updated')
         ->assertSee('Something changed.')
@@ -45,14 +47,14 @@ test('notification bell shows unread badge count', function () {
         payload: ['title' => 'Ping', 'body' => 'Hello'],
     ));
 
-    Volt::test('notifications.bell')
+    Livewire::test(Bell::class)
         ->assertSee('1');
 });
 
 test('notification pane refreshes when opened and stays consistent with bell', function () {
     $this->actingAs($this->user);
 
-    $pane = Volt::test('notifications.pane')
+    $pane = Livewire::test(Pane::class)
         ->assertSet('unreadCount', 0);
 
     $this->member->notify(new TestPipelineNotification(
@@ -63,7 +65,7 @@ test('notification pane refreshes when opened and stays consistent with bell', f
 
     $pane->set('items', [])->set('unreadCount', 0);
 
-    Volt::test('notifications.bell')
+    Livewire::test(Bell::class)
         ->call('refreshCount')
         ->assertSet('unreadCount', 1);
 
@@ -78,10 +80,10 @@ test('notification pane refreshes when bell polling detects a new unread count',
 
     $this->member->notifications()->delete();
 
-    $bell = Volt::test('notifications.bell')
+    $bell = Livewire::test(Bell::class)
         ->assertSet('unreadCount', 0);
 
-    $pane = Volt::test('notifications.pane')
+    $pane = Livewire::test(Pane::class)
         ->assertSet('unreadCount', 0);
 
     $this->member->notify(new TestPipelineNotification(
@@ -112,10 +114,10 @@ test('mark read decrements unread count and notifies bell to refresh', function 
 
     $notificationId = $this->member->fresh()->notifications->first()->id;
 
-    $bell = Volt::test('notifications.bell')
+    $bell = Livewire::test(Bell::class)
         ->assertSet('unreadCount', 1);
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->call('markRead', $notificationId)
         ->assertSet('unreadCount', 0)
         ->assertDispatched('notifications-count-stale');
@@ -137,10 +139,10 @@ test('mark all read clears unread count and notifies bell to refresh', function 
         payload: ['title' => 'Two', 'body' => 'B'],
     ));
 
-    $bell = Volt::test('notifications.bell')
+    $bell = Livewire::test(Bell::class)
         ->assertSet('unreadCount', 2);
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->call('markAllRead')
         ->assertSet('unreadCount', 0)
         ->assertDispatched('notifications-count-stale');
@@ -152,7 +154,7 @@ test('mark all read clears unread count and notifies bell to refresh', function 
 test('notification pane prepends on broadcast listener refresh', function () {
     $this->actingAs($this->user);
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->call('onBroadcastNotificationCreated')
         ->assertSet('unreadCount', 0);
 
@@ -162,7 +164,7 @@ test('notification pane prepends on broadcast listener refresh', function () {
         payload: ['title' => 'Live ping', 'body' => 'From Echo'],
     ));
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->call('onBroadcastNotificationCreated')
         ->assertSee('Live ping')
         ->assertSet('unreadCount', 1);
@@ -182,7 +184,7 @@ test('notification link resolves opportunity show route from payload', function 
         ],
     ));
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->call('refreshNotifications')
         ->assertSee(route('opportunities.show', $opportunity, absolute: false));
 });
@@ -190,7 +192,7 @@ test('notification link resolves opportunity show route from payload', function 
 test('notification pane exposes preferences in its header', function () {
     $this->actingAs($this->user);
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->assertSee('app-notifications-mount', false)
         ->assertSee('Notification preferences')
         ->assertSee('title="Notification preferences"', false)
@@ -200,7 +202,7 @@ test('notification pane exposes preferences in its header', function () {
 test('notification pane is controlled by the header bell', function () {
     $this->actingAs($this->user);
 
-    Volt::test('notifications.pane')
+    Livewire::test(Pane::class)
         ->assertSee('app-notifications-mount', false)
         ->assertSee('app-notifications-pane', false)
         ->assertSee('x-show="notificationsOpen"', false)

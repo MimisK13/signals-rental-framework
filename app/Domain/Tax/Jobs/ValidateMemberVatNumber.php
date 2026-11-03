@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Jobs;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Tax\Actions\ProcessMemberVatValidation;
 use App\Domain\Tax\Exceptions\ViesServiceUnavailableException;
-use App\Models\Member;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

@@ -1,13 +1,15 @@
 <?php
 
-use App\Actions\Pricing\CreateSurchargeGroup;
-use App\Data\Pricing\CreateSurchargeGroupData;
+use App\Domain\Pricing\Actions\CreateSurchargeGroup;
+use App\Domain\Pricing\Data\CreateSurchargeGroupData;
+use App\Domain\Pricing\Models\SurchargeGroup;
+use App\Domain\Pricing\Presentation\Livewire\SurchargeGroupForm;
+use App\Domain\Pricing\Presentation\Livewire\SurchargeGroups;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\SurchargeGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);
@@ -18,14 +20,14 @@ beforeEach(function () {
 it('shows the surcharge groups admin index', function () {
     SurchargeGroup::factory()->create(['name' => 'Cleaning']);
 
-    Volt::test('admin.settings.pricing.surcharge-groups')
+    Livewire::test(SurchargeGroups::class)
         ->assertSee('Cleaning');
 });
 
 it('creates a surcharge group with nested surcharges from the admin form', function () {
     $taxClass = ProductTaxClass::factory()->create(['name' => 'Reduced']);
 
-    Volt::test('admin.settings.pricing.surcharge-group-form')
+    Livewire::test(SurchargeGroupForm::class)
         ->set('name', 'Insurance')
         ->set('isDefault', true)
         ->set('surcharges', [[

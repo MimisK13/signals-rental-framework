@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\BundleRule;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -11,11 +14,9 @@ use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\ReferenceData\Models\RevenueGroup;
+use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PricingRoundingDirection;
-use App\Models\BundleRule;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -26,6 +27,7 @@ beforeEach(function () {
     $this->actingAs(User::factory()->owner()->create());
     settings()->set('pricing.rounding_direction', PricingRoundingDirection::HalfUp->value);
     $this->store = Store::factory()->create(['timezone' => 'UTC']);
+    $this->revenueGroup = RevenueGroup::factory()->create();
 });
 
 function bundleFlatProduct(int $priceMinor = 10_000): Product
@@ -71,7 +73,7 @@ function createBundleOpportunity(array $lines): Opportunity
             'itemable_type' => Product::class,
             'quantity' => (string) ($line['quantity'] ?? 1),
             'transaction_type' => LineItemTransactionType::Rental->value,
-            'revenue_group_id' => $line['revenue_group_id'] ?? 7,
+            'revenue_group_id' => $line['revenue_group_id'] ?? test()->revenueGroup->id,
         ]));
         $opportunity = $opportunity->fresh('items');
     }
@@ -116,10 +118,11 @@ it('does not bundle lines in different revenue groups', function () {
     $productB = bundleFlatProduct(10_000);
 
     BundleRule::factory()->forProducts([$productA->id, $productB->id])->fixed(12_000)->create();
+    $otherRevenueGroup = RevenueGroup::factory()->create();
 
     $opportunity = createBundleOpportunity([
-        ['product' => $productA, 'revenue_group_id' => 1],
-        ['product' => $productB, 'revenue_group_id' => 2],
+        ['product' => $productA, 'revenue_group_id' => $this->revenueGroup->id],
+        ['product' => $productB, 'revenue_group_id' => $otherRevenueGroup->id],
     ]);
 
     expect($opportunity->items->sum('total'))->toBe(20_000);

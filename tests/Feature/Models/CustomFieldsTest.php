@@ -5,7 +5,7 @@ use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Lists\Models\ListName;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\QueryException;
 
 it('creates a custom field group', function () {

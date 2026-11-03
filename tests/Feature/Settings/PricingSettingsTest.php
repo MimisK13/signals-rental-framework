@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Settings\PricingSettings;
 use App\Services\SettingsRegistry;
-use App\Settings\PricingSettings;
 use Illuminate\Support\Facades\Validator;
 
 describe('PricingSettings definition', function () {

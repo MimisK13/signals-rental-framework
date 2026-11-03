@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;
@@ -14,9 +13,10 @@ use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

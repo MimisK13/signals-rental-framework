@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Actions\Auth\ResolveSsoUser;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Exceptions\Auth\SsoAccessDeniedException;
 use App\Http\Controllers\Auth\Concerns\HandlesPasswordlessTwoFactor;
 use App\Http\Controllers\Controller;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierBills\Models;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Stores\Concerns\HasStoreScoping;
+use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierBills\Database\Factories\SupplierBillFactory;
 use App\Domain\SupplierBills\Enums\SupplierBillStatus;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\Traits\FormatsMoney;
-use App\Models\Traits\HasStoreScoping;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

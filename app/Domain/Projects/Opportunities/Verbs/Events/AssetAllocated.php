@@ -15,8 +15,8 @@ use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAu
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\SyncsAssetDemands;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\VirtualStock\Services\VirtualAssetStatusRegistry;
 use App\Enums\AssetAssignmentStatus;
-use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\Verbs\States\AssetAssignmentState;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

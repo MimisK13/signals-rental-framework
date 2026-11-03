@@ -1,10 +1,11 @@
 <?php
 
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Presentation\Livewire\DiscountCategoryForm;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
-use App\Models\DiscountCategory;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -15,7 +16,7 @@ it('can create a discount category with rules from the form', function () {
     $group = ProductGroup::factory()->create(['name' => 'Lighting']);
     $product = Product::factory()->create(['name' => 'PAR Can']);
 
-    Volt::test('admin.settings.pricing.discount-category-form')
+    Livewire::test(DiscountCategoryForm::class)
         ->set('name', 'Trade')
         ->set('rules', [[
             'discount_percent' => '15.00',
@@ -49,7 +50,7 @@ it('can edit rules on an existing discount category', function () {
         'sort_order' => 0,
     ]);
 
-    Volt::test('admin.settings.pricing.discount-category-form', ['discountCategory' => $category])
+    Livewire::test(DiscountCategoryForm::class, ['discountCategory' => $category])
         ->set('rules.0.discount_percent', '22.50')
         ->call('save');
 
@@ -57,7 +58,7 @@ it('can edit rules on an existing discount category', function () {
 });
 
 it('can add and remove rules on the form', function () {
-    Volt::test('admin.settings.pricing.discount-category-form')
+    Livewire::test(DiscountCategoryForm::class)
         ->call('addRule')
         ->assertCount('rules', 1)
         ->call('removeRule', 0)
@@ -72,7 +73,7 @@ it('loads existing rules when editing', function () {
         'sort_order' => 0,
     ]);
 
-    Volt::test('admin.settings.pricing.discount-category-form', ['discountCategory' => $category])
+    Livewire::test(DiscountCategoryForm::class, ['discountCategory' => $category])
         ->assertSet('rules.0.discount_percent', '10.00')
         ->assertSet('rules.0.tag_names', 'lighting');
 });

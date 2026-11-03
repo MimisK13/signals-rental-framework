@@ -6,7 +6,7 @@ use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
 use App\Domain\Availability\Models\AvailabilityEvent;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Thunk\Verbs\Lifecycle\Broker;

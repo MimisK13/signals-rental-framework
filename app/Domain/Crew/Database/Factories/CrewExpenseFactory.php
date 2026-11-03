@@ -9,7 +9,7 @@ use App\Domain\Crew\Enums\CrewExpenseStatus;
 use App\Domain\Crew\Models\CrewExpense;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Projects\Models\Project;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<CrewExpense> */

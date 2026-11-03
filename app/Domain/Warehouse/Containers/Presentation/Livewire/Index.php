@@ -6,6 +6,7 @@ namespace App\Domain\Warehouse\Containers\Presentation\Livewire;
 
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Actions\CreateContainer;
 use App\Domain\Warehouse\Containers\Actions\StartRepackOnReturn;
 use App\Domain\Warehouse\Containers\Data\CreateContainerData;
@@ -15,7 +16,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
 use App\Domain\Warehouse\Containers\Services\RepackOnReturnEligibility;
-use App\Models\Store;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;

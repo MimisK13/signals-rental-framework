@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Stock\Actions\CreateStockLevel;
 use App\Domain\Stock\Actions\DeleteStockLevel;
 use App\Domain\Stock\Actions\UpdateStockLevel;
@@ -11,9 +14,6 @@ use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Data\StockLevelData;
 use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Http\Traits\ResourceActions;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

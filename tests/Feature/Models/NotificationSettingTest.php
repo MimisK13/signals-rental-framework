@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\NotificationSetting;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Models\NotificationSetting;
+use App\Domain\Notifications\Models\NotificationType;
 
 it('casts channels to array', function () {
     $type = NotificationType::factory()->create();

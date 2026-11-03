@@ -2,9 +2,9 @@
 
 use App\Actions\Auth\RequestMagicLink;
 use App\Data\Auth\RequestMagicLinkData;
+use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
 use App\Models\MagicLinkToken;
 use App\Models\User;
-use App\Notifications\MagicLinkLoginNotification;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;

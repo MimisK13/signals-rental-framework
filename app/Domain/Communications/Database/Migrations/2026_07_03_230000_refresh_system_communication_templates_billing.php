@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
-use App\Models\Store;
-use App\Services\NotificationRegistry;
-use Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Services\NotificationRegistry;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration

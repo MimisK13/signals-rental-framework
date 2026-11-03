@@ -3,18 +3,18 @@
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Policies\CreditNotePolicy;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Pricing\Policies\BundleRulePolicy;
+use App\Domain\Pricing\Policies\DiscountRulePolicy;
+use App\Domain\Pricing\Policies\SurchargeGroupPolicy;
+use App\Domain\Pricing\Policies\SurchargePolicy;
+use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\SupplierCosts\Policies\ProductSupplierCostPolicy;
 use App\Domain\Tax\Policies\TaxCategoryPolicy;
 use App\Domain\Tax\Policies\TaxZonePolicy;
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\Store;
 use App\Models\User;
-use App\Policies\BundleRulePolicy;
-use App\Policies\DiscountRulePolicy;
-use App\Policies\SurchargeGroupPolicy;
-use App\Policies\SurchargePolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

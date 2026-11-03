@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Communications\Actions;
 
 use App\Domain\Communications\Services\CommunicationPreferences;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 
 /**
  * Record a member opt-out from a notification type via the public unsubscribe flow (P27).

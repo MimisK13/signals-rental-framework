@@ -2,7 +2,7 @@
 
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\DocumentTemplateResolver;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

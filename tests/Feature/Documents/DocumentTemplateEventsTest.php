@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Documents\Actions\CreateDocumentTemplate;
 use App\Domain\Documents\Actions\DeleteDocumentTemplate;
 use App\Domain\Documents\Actions\DuplicateDocumentTemplate;
@@ -9,12 +10,11 @@ use App\Domain\Documents\Data\CreateDocumentTemplateData;
 use App\Domain\Documents\Data\UpdateDocumentTemplateData;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Events\AuditableEvent;
-use App\Jobs\DeliverWebhook;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Models\User;
-use App\Models\Webhook;
-use App\Services\Api\WebhookService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Event;

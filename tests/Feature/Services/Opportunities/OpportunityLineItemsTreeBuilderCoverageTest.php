@@ -11,7 +11,7 @@ use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
 use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use App\Support\Formatter;
 use Database\Seeders\PermissionSeeder;

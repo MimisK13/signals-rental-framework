@@ -1,6 +1,7 @@
 <?php
 
 use App\Concerns\LocksModelsForMutation;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\ReceivePurchaseOrder;
@@ -9,6 +10,7 @@ use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Data\ReceivePurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
@@ -16,8 +18,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

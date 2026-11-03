@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Domain\Stock\Data\StockLevelData;
 use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

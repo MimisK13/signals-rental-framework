@@ -1,7 +1,7 @@
 <?php
 
-use App\Data\Api\ActionLogData;
-use App\Models\ActionLog;
+use App\Domain\AuditLog\Data\ActionLogData;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\Cache;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Api\ApiEndpointCatalogue;
+use App\Domain\API\Services\ApiEndpointCatalogue;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -29,6 +29,16 @@ it('includes weight and required ability metadata for a known route', function (
         ->and($endpoint['price_weight'])->toBe(1)
         ->and($endpoint['method'])->toBe('GET')
         ->and($endpoint['uri'])->toContain('products');
+});
+
+it('preserves the active request method while generating OpenAPI metadata', function () {
+    request()->setMethod('POST');
+    $catalogue = app(ApiEndpointCatalogue::class);
+    $catalogue->invalidateAll();
+
+    $catalogue->all();
+
+    expect(request()->getMethod())->toBe('POST');
 });
 
 it('invalidates cached catalogue data when routes are cleared', function () {

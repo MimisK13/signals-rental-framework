@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRequest;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Models\Project;
-use App\Models\MemberStore;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 

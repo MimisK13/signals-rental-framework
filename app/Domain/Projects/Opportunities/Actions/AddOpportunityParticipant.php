@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Projects\Opportunities\Data\AddOpportunityParticipantData;
 use App\Domain\Projects\Opportunities\Data\ParticipantData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Presentation\Livewire;
 
 use App\Domain\Attachments\Presentation\Concerns\HasFileActions;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;

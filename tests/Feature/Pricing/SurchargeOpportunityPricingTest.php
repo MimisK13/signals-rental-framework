@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\Surcharge;
+use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeItemQuantity;
@@ -21,6 +25,7 @@ use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
 use App\Domain\Tax\Models\OrganisationTaxClass;
@@ -29,11 +34,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Services\DocumentTaxBreakdown;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PricingRoundingDirection;
-use App\Models\Member;
-use App\Models\Store;
-use App\Models\Surcharge;
-use App\Models\SurchargeGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

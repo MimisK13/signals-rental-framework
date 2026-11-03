@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomFields\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Data\CustomFieldData;
 use App\Domain\CustomFields\Data\UpdateCustomFieldData;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Services\CustomFieldDefinitionResolver;
-use App\Events\AuditableEvent;
 use App\Services\SchemaRegistry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Policies;
 
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
-use App\Policies\Traits\ChecksStoreAccess;
 use Illuminate\Database\Eloquent\Model;
 
 class InvoicePolicy

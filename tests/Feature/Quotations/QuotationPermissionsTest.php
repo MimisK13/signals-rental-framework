@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Services\AbilityRegistry;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Policies\QuotationPolicy;
 use App\Models\User;
-use App\Services\Api\AbilityRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Gate;

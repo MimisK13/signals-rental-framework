@@ -8,10 +8,10 @@ use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 
 beforeEach(function () {

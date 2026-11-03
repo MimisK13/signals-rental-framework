@@ -7,7 +7,7 @@ namespace App\Domain\Crew\Models;
 use App\Domain\Crew\Database\Factories\CrewTimeEntryFactory;
 use App\Domain\Crew\Enums\CrewTimeEntryKind;
 use App\Domain\Crew\Enums\CrewTimesheetStatus;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Stores\Scopes\StoreScope;
 use App\Models\Traits\FormatsMoney;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

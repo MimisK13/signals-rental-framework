@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
-use App\Enums\MembershipType;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesIsolatedSqliteMigrations;

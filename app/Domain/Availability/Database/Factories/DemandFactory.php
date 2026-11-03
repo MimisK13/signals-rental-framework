@@ -7,7 +7,7 @@ namespace App\Domain\Availability\Database\Factories;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Console;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Tax\Jobs\ValidateMemberVatNumber;
 use App\Domain\Tax\Services\MemberVatValidationService;
-use App\Models\Member;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 

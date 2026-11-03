@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\API\Presentation\Http\Controllers\V1\SchemaController;
+use App\Domain\API\Services\PriceWeightResolver;
+use App\Domain\API\Support\Attributes\PriceWeight;
 use App\Domain\Products\Presentation\Http\Controllers\Api\V1\ProductController;
-use App\Http\Controllers\Api\V1\SchemaController;
-use App\Services\Api\PriceWeightResolver;
-use App\Support\Api\Attributes\PriceWeight;
 use Tests\TestCase;
 
 uses(TestCase::class);

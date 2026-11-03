@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
-use App\Jobs\DeliverWebhook;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\CreateVirtualStockIntake;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
 use App\Models\User;
-use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;

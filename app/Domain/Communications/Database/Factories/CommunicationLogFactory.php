@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Communications\Database\Factories;
 
 use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

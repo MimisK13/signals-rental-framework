@@ -5,7 +5,7 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Services\SchemaBuilder;
 use Carbon\CarbonInterface;
 

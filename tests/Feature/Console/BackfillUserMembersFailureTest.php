@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 

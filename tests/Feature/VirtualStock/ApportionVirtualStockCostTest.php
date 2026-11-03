@@ -1,13 +1,5 @@
 <?php
 
-use App\Actions\VirtualStock\ApportionVirtualStockCost;
-use App\Actions\VirtualStock\CancelVirtualStockIntake;
-use App\Actions\VirtualStock\ClearVirtualStockCostOverride;
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
-use App\Actions\VirtualStock\ReturnVirtualStockIntake;
-use App\Actions\VirtualStock\SetVirtualStockCostOverride;
-use App\Data\VirtualStock\SetVirtualStockCostOverrideData;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Projects\Opportunities\Actions\UpdateOpportunityCost;
@@ -16,6 +8,14 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\VirtualStock\Actions\ApportionVirtualStockCost;
+use App\Domain\VirtualStock\Actions\CancelVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ClearVirtualStockCostOverride;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\SetVirtualStockCostOverride;
+use App\Domain\VirtualStock\Data\SetVirtualStockCostOverrideData;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Presentation\Livewire\Accessories;
-use App\Events\AuditableEvent;
-use App\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

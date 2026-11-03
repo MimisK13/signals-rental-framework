@@ -6,7 +6,7 @@ namespace App\Domain\Communications\Data;
 
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Documents\Models\Document;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\Data;
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Stock\Data\CreateStockTransactionData;
 use App\Domain\Stock\Data\StockTransactionData;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

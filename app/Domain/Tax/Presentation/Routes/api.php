@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Tax\Presentation\Http\Controllers\Api\V1\OrganisationTaxClassController;
 use App\Domain\Tax\Presentation\Http\Controllers\Api\V1\ProductTaxClassController;
 use App\Domain\Tax\Presentation\Http\Controllers\Api\V1\TaxCategoryController;
 use App\Domain\Tax\Presentation\Http\Controllers\Api\V1\TaxRateController;
 use App\Domain\Tax\Presentation\Http\Controllers\Api\V1\TaxRuleController;
 use App\Domain\Tax\Presentation\Http\Controllers\Api\V1\TaxZoneController;
-use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1')

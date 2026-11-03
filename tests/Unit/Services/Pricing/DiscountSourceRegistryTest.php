@@ -1,9 +1,9 @@
 <?php
 
-use App\Contracts\Pricing\DiscountSource;
+use App\Domain\Pricing\Contracts\DiscountSource;
+use App\Domain\Pricing\Services\DiscountSourceRegistry;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Services\Pricing\DiscountSourceRegistry;
 use Carbon\CarbonInterface;
 
 it('registers discount sources by key', function () {

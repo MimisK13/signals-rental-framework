@@ -4,7 +4,7 @@ use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Presentation\Livewire\Index;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

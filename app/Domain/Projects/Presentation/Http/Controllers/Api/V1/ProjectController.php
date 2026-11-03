@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Projects\Actions\CreateProject;
 use App\Domain\Projects\Actions\DeleteProject;
 use App\Domain\Projects\Actions\UpdateProject;
@@ -13,9 +16,6 @@ use App\Domain\Projects\Data\UpdateProjectData;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Presentation\Http\Requests\CreateProjectRequest;
 use App\Domain\Projects\Presentation\Http\Requests\UpdateProjectRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Http\Traits\ResourceActions;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

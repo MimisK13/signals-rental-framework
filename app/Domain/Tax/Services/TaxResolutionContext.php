@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Services;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxUnresolvedZoneFallback;
-use App\Models\Member;
-use App\Models\Store;
 
 /**
  * Seller/buyer zone context for zone-aware tax resolution during document tax.

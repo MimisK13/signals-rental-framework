@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Stock\Policies;
 
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
-use App\Policies\Traits\ChecksStoreAccess;
 
 class StockLevelPolicy
 {

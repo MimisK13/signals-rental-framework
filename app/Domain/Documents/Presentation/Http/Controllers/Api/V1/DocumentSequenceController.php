@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
+use App\Domain\API\Support\Attributes\PriceWeight;
 use App\Domain\Documents\Actions\UpdateDocumentSequence;
 use App\Domain\Documents\Data\DocumentSequenceData;
 use App\Domain\Documents\Data\UpdateDocumentSequenceData;
 use App\Domain\Documents\Models\DocumentSequence;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Support\Api\Attributes\PriceWeight;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

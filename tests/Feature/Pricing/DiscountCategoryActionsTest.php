@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Pricing\CreateDiscountCategory;
-use App\Actions\Pricing\DeleteDiscountCategory;
-use App\Actions\Pricing\UpdateDiscountCategory;
-use App\Data\Pricing\CreateDiscountCategoryData;
-use App\Data\Pricing\UpdateDiscountCategoryData;
-use App\Events\AuditableEvent;
-use App\Models\DiscountCategory;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Pricing\Actions\CreateDiscountCategory;
+use App\Domain\Pricing\Actions\DeleteDiscountCategory;
+use App\Domain\Pricing\Actions\UpdateDiscountCategory;
+use App\Domain\Pricing\Data\CreateDiscountCategoryData;
+use App\Domain\Pricing\Data\UpdateDiscountCategoryData;
+use App\Domain\Pricing\Models\DiscountCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

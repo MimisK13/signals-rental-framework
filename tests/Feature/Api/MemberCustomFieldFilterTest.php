@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\CustomFields\Models\CustomField;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

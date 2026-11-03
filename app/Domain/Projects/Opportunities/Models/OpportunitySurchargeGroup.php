@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Models;
 
+use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunitySurchargeGroupFactory;
-use App\Models\SurchargeGroup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

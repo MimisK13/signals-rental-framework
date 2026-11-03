@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Lists\Actions\CreateListValue;
 use App\Domain\Lists\Actions\DeleteListValue;
 use App\Domain\Lists\Actions\UpdateListValue;
@@ -7,7 +8,6 @@ use App\Domain\Lists\Data\CreateListValueData;
 use App\Domain\Lists\Data\UpdateListValueData;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
-use App\Events\AuditableEvent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

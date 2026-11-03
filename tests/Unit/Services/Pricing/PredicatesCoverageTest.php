@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Pricing\Enums\DiscountRuleScope;
+use App\Domain\Pricing\Services\Predicates\ProductGroupIdsPredicate;
+use App\Domain\Pricing\Services\Predicates\ProductIdsPredicate;
+use App\Domain\Pricing\Services\Predicates\QuantityMaxPredicate;
+use App\Domain\Pricing\Services\Predicates\QuantityMinPredicate;
+use App\Domain\Pricing\Services\Predicates\TagNamesPredicate;
+use App\Domain\Pricing\Services\Predicates\TransactionTypesPredicate;
+use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
 use App\Domain\Rates\Enums\RateTransactionType;
-use App\Enums\DiscountRuleScope;
-use App\Services\Pricing\Predicates\ProductGroupIdsPredicate;
-use App\Services\Pricing\Predicates\ProductIdsPredicate;
-use App\Services\Pricing\Predicates\QuantityMaxPredicate;
-use App\Services\Pricing\Predicates\QuantityMinPredicate;
-use App\Services\Pricing\Predicates\TagNamesPredicate;
-use App\Services\Pricing\Predicates\TransactionTypesPredicate;
-use App\ValueObjects\Pricing\DiscountCriteriaContext;
 
 it('product group ids predicate rejects lines without a product group', function () {
     $predicate = new ProductGroupIdsPredicate;

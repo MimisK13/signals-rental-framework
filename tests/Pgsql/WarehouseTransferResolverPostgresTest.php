@@ -11,7 +11,7 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

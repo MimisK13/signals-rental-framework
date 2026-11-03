@@ -9,7 +9,7 @@ use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Jobs\SendChannelNotification;
 use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Domain\Communications\Services\ChannelProviderRegistry;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Services\Plugins\PluginRegistrar;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;

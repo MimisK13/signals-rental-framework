@@ -6,8 +6,8 @@ namespace App\Domain\Crew\Services;
 
 use App\Domain\Crew\Enums\CrewEngagementType;
 use App\Domain\Crew\Models\CrewMember;
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;

@@ -2,9 +2,10 @@
 
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\CustomFields;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -20,13 +21,13 @@ it('renders the custom fields page', function () {
 });
 
 it('renders the shared member header with the member name and Custom Fields subpage', function () {
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('Test Member')
         ->assertSee('Custom Fields');
 });
 
 it('shows message when no custom fields are configured', function () {
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('No custom fields have been configured for members.');
 });
 
@@ -36,7 +37,7 @@ it('shows custom field groups', function () {
         'display_name' => 'Company Number',
     ]);
 
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('Business Info')
         ->assertSee('Company Number');
 });
@@ -47,7 +48,7 @@ it('shows fields under General when no group is assigned', function () {
         'custom_field_group_id' => null,
     ]);
 
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('General')
         ->assertSee('Ungrouped Field');
 });
@@ -62,7 +63,7 @@ it('shows field values when set', function () {
         'value_string' => 'PO-12345',
     ]);
 
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('PO Reference')
         ->assertSee('PO-12345');
 });
@@ -72,7 +73,7 @@ it('shows Not set for empty fields', function () {
         'display_name' => 'Empty Field',
     ]);
 
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('Empty Field')
         ->assertSee('Not set');
 });
@@ -87,7 +88,7 @@ it('shows boolean field as Yes when true', function () {
         'value_boolean' => true,
     ]);
 
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertSee('VIP Customer')
         ->assertSee('Yes');
 });
@@ -97,7 +98,7 @@ it('does not show inactive custom fields', function () {
         'display_name' => 'Hidden Field',
     ]);
 
-    Volt::test('members.custom-fields', ['member' => $this->member])
+    Livewire::test(CustomFields::class, ['member' => $this->member])
         ->assertDontSee('Hidden Field');
 });
 

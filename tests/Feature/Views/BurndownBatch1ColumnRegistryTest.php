@@ -5,9 +5,9 @@ use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoiceColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoicePaymentColumnRegistry;
 use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
+use App\Domain\VirtualStock\Presentation\Columns\VirtualStockIntakeColumnRegistry;
 use App\Models\User;
 use App\Views\ColumnRegistry;
-use App\Views\VirtualStockIntakeColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

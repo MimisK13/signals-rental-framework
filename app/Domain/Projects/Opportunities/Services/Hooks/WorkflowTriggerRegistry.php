@@ -10,10 +10,10 @@ namespace App\Domain\Projects\Opportunities\Services\Hooks;
  *
  * The no-code automation engine (workflows.md) is not built yet. Every committed
  * opportunity Verbs mutation already reaches the Laravel bus as an
- * {@see App\Events\AuditableEvent} (the M2 audit bridge), so the workflow engine
+ * {@see App\Domain\AuditLog\Events\AuditableEvent} (the M2 audit bridge), so the workflow engine
  * can subscribe to that bus to trigger on transitions WITHOUT any change to the
  * event or guard layer — exactly as the webhook bridge
- * ({@see App\Listeners\DispatchWebhookForAuditableEvent}) already does.
+ * ({@see App\Domain\Webhooks\Listeners\DispatchWebhookForAuditableEvent}) already does.
  *
  * This registry is the declarative seam for binding a transition key to a workflow
  * trigger so the future engine can register its triggers here at boot. It is empty

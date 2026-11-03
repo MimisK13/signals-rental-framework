@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Availability\Shortages\Actions\AcknowledgeOpportunityShortages;
 use App\Domain\Availability\Shortages\Actions\ApplyBatchShortageResolution;
 use App\Domain\Availability\Shortages\Actions\ApplyShortageResolution;
@@ -31,8 +33,6 @@ use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

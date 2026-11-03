@@ -12,7 +12,7 @@ use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\CreditNoteItem;
 use App\Domain\Invoices\Models\CreditNoteTax;
 use App\Domain\Invoices\Models\Invoice;
-use App\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

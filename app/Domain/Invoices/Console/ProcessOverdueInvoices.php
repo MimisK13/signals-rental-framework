@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Console;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Invoices\Models\Invoice;
-use App\Events\AuditableEvent;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Symfony\Component\Console\Attribute\AsCommand;

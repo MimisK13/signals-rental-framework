@@ -3,7 +3,7 @@
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Services\EntityNumberSchemeCatalog;
 use App\Domain\Invoices\Models\Invoice;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

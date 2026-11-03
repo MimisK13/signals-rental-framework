@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Country;
+use App\Domain\ReferenceData\Models\Country;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

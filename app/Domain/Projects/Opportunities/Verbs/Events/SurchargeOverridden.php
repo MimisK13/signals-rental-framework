@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
+use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemSurcharge;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PricesOpportunityItems;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityItemState;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\Surcharge;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

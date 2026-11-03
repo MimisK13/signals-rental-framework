@@ -5,16 +5,16 @@ declare(strict_types=1);
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\Domain\Documents\Services\DocumentTypeRegistry;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Services\EventNotificationMapRegistry;
+use App\Domain\Notifications\Services\NotificationRegistry;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationDataResolver;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use App\Models\User;
-use App\Services\Api\WebhookEventRegistry;
-use App\Services\NotificationRegistry;
-use App\Services\Notifications\EventNotificationMapRegistry;
 use Database\Seeders\PermissionSeeder;
 
 beforeEach(function (): void {

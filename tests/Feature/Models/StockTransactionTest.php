@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 it('creates a stock transaction with factory defaults', function () {
     $txn = StockTransaction::factory()->create();

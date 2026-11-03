@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Actions\CreateProjectFromAcceptedQuotation;
 use App\Domain\Projects\Data\CreateProjectFromQuotationData;
 use App\Domain\Projects\Models\Project;
@@ -18,7 +19,6 @@ use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationAudit;
 use App\Domain\Quotations\Verbs\Events\QuotationVersionAccepted;
 use App\Domain\Quotations\Verbs\Events\QuotationVersionSuperseded;
-use App\Models\Member;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

@@ -7,9 +7,9 @@ namespace App\Domain\Projects\Opportunities\Actions;
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Data\SetItemDiscountData;
-use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\DiscountManuallyOverridden;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemDiscountSet;
 

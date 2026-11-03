@@ -1,8 +1,8 @@
 <?php
 
-use App\Events\AuditableEvent;
-use App\Listeners\LogAction;
-use App\Models\ActionLog;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\AuditLog\Listeners\LogAction;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 

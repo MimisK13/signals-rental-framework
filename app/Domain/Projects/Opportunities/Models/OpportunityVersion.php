@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunityVersionFactory;
 use App\Domain\Projects\Opportunities\Enums\VersionStatus;
 use App\Domain\Projects\Opportunities\Enums\VersionType;
-use App\Models\Member;
 use App\Models\Traits\FormatsMoney;
 use App\Models\User;
 use App\Services\SchemaBuilder;

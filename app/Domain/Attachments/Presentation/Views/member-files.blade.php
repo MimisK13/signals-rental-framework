@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.members.partials.member-header', ['member' => $member, 'subpage' => 'Files'])
-    @include('livewire.members.partials.member-tabs', ['member' => $member, 'activeTab' => 'files'])
+    @include('members::partials.member-header', ['member' => $member, 'subpage' => 'Files'])
+    @include('members::partials.member-tabs', ['member' => $member, 'activeTab' => 'files'])
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="mb-4 flex items-center justify-between">
@@ -16,5 +16,5 @@
         @include('attachments::file-browser', ['entityLabel' => 'member'])
     </div>
 
-    <livewire:components.file-upload-modal :model-type="\App\Models\Member::class" :model-id="$member->id" />
+    <livewire:components.file-upload-modal :model-type="\App\Domain\Members\Models\Member::class" :model-id="$member->id" />
 </section>

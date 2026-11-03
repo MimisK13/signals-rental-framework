@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Database\Factories;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

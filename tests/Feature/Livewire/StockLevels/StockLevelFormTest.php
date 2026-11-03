@@ -3,7 +3,7 @@
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Presentation\Livewire\Form;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Livewire\Livewire;
 

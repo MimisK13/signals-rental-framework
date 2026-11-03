@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Pricing\Services\DealPriceProportionalDistributor;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
-use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
-use App\Services\Pricing\DealPriceProportionalDistributor;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\GroupDealPriceCleared;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemDealPriceDiscountSet;
 use Illuminate\Support\Facades\Gate;

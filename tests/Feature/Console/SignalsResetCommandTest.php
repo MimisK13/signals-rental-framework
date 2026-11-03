@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Stores\Models\Store;
 use App\Models\Setting;
-use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 

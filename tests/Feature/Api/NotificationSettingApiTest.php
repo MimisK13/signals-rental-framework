@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\NotificationSetting;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Models\NotificationSetting;
+use App\Domain\Notifications\Models\NotificationType;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

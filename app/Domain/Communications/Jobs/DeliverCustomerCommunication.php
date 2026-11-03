@@ -10,7 +10,7 @@ use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Notifications\CustomerCommunication;
 use App\Domain\Communications\Services\CommunicationPreferences;
 use App\Domain\Documents\Models\Document;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

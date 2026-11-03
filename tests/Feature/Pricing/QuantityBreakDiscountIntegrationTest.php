@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\DiscountRuleScope;
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Models\DiscountRule;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeItemQuantity;
@@ -9,12 +13,9 @@ use App\Domain\Projects\Opportunities\Data\ChangeItemQuantityData;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Enums\DiscountRuleScope;
+use App\Domain\ReferenceData\Models\RevenueGroup;
+use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Models\DiscountCategory;
-use App\Models\DiscountRule;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -153,6 +154,8 @@ it('applies aggregate_group volume discounts within the same revenue group only'
     $member = Member::factory()->organisation()->create(['discount_category_id' => $category->id]);
     $productA = Product::factory()->rental()->create();
     $productB = Product::factory()->rental()->create();
+    $revenueGroup = RevenueGroup::factory()->create();
+    $otherRevenueGroup = RevenueGroup::factory()->create();
 
     $created = (new CreateOpportunity)(CreateOpportunityData::from([
         'subject' => 'Aggregate group',
@@ -168,7 +171,7 @@ it('applies aggregate_group volume discounts within the same revenue group only'
         'itemable_id' => $productA->id,
         'itemable_type' => Product::class,
         'quantity' => '3',
-        'revenue_group_id' => 55,
+        'revenue_group_id' => $revenueGroup->id,
         'unit_price' => 1000,
     ]));
 
@@ -177,7 +180,7 @@ it('applies aggregate_group volume discounts within the same revenue group only'
         'itemable_id' => $productB->id,
         'itemable_type' => Product::class,
         'quantity' => '5',
-        'revenue_group_id' => 55,
+        'revenue_group_id' => $revenueGroup->id,
         'unit_price' => 1000,
     ]));
 
@@ -186,13 +189,13 @@ it('applies aggregate_group volume discounts within the same revenue group only'
         'itemable_id' => $productA->id,
         'itemable_type' => Product::class,
         'quantity' => '3',
-        'revenue_group_id' => 99,
+        'revenue_group_id' => $otherRevenueGroup->id,
         'unit_price' => 1000,
     ]));
 
     $items = $opportunity->fresh('items')->items;
-    $inGroup = $items->where('revenue_group_id', 55);
-    $outside = $items->firstWhere('revenue_group_id', 99);
+    $inGroup = $items->where('revenue_group_id', $revenueGroup->id);
+    $outside = $items->firstWhere('revenue_group_id', $otherRevenueGroup->id);
 
     expect($inGroup)->toHaveCount(2)
         ->and($inGroup->every(fn ($item) => $item->discount_percent === '12.00'))->toBeTrue()

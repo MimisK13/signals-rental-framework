@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Thunk\Verbs\Facades\Verbs;
 
 /**

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Communications\Models\CommunicationLog;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\ActionLog;
 use Illuminate\Support\Facades\DB;
 
 function opportunityIdentityMigration(string $sequence): object

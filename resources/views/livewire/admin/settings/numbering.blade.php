@@ -3,7 +3,7 @@
 use App\Domain\Documents\Actions\UpdateDocumentSequence;
 use App\Domain\Documents\Data\UpdateDocumentSequenceData;
 use App\Domain\Documents\Models\DocumentSequence;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Documents\Services\DocumentNumberGenerator;
 use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\EntityNumberSchemeCatalog;

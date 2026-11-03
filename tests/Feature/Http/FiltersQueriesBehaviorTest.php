@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
 use App\Domain\CustomViews\Models\CustomView;
-use App\Enums\MembershipType;
-use App\Http\Traits\FiltersQueries;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeItemDates;
 use App\Domain\Projects\Opportunities\Actions\ChangeItemQuantity;
@@ -21,7 +22,6 @@ use App\Domain\Projects\Opportunities\Data\SetItemDiscountData;
 use App\Domain\Projects\Opportunities\Data\SubstituteItemData;
 use App\Domain\Projects\Opportunities\Data\ToggleItemOptionalData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\ActionLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

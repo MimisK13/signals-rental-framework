@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
@@ -15,10 +16,9 @@ use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Models\User;
-use App\Services\Api\RansackFilter;
-use App\Services\Api\WebhookService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;

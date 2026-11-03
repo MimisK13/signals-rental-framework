@@ -9,12 +9,12 @@ use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Domain\Availability\Shortages\Services\ShortageAutoResolver;
 use App\Domain\Availability\Shortages\Services\ShortageConfirmationGate;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
-use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Enums\VersionStatus;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\Rules\ShortageConfirmationRule;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityConvertedToOrder;
 use App\Domain\Projects\Opportunities\Verbs\Events\VersionSuperseded;
 

@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Presentation\Livewire\Form;
 use App\Domain\PurchaseOrders\Presentation\Livewire\Index;
 use App\Domain\PurchaseOrders\Presentation\Livewire\Show;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

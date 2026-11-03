@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Products\Data\SerialisedComponentData;
 use App\Domain\Products\Data\UpdateSerialisedComponentData;
 use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\Gate;
 
 /**

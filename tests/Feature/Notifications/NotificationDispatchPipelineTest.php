@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Notifications\DispatchNotification;
-use App\Data\Notifications\DispatchNotificationData;
 use App\Domain\Communications\Actions\LogCommunication;
 use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Actions\DispatchNotification;
+use App\Domain\Notifications\Data\DispatchNotificationData;
+use App\Domain\Notifications\Jobs\SendNotification;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Notifications\FailingTestPipelineNotification;
+use App\Domain\Notifications\Notifications\TestPipelineNotification;
+use App\Domain\Notifications\Services\NotificationChannelResolver;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Jobs\SendNotification;
-use App\Models\Member;
-use App\Models\NotificationType;
-use App\Notifications\FailingTestPipelineNotification;
-use App\Notifications\TestPipelineNotification;
-use App\Services\Notifications\NotificationChannelResolver;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Products\Actions\CreateProductGroup;
 use App\Domain\Products\Actions\DeleteProductGroup;
 use App\Domain\Products\Actions\UpdateProductGroup;
@@ -11,9 +14,6 @@ use App\Domain\Products\Data\CreateProductGroupData;
 use App\Domain\Products\Data\ProductGroupData;
 use App\Domain\Products\Data\UpdateProductGroupData;
 use App\Domain\Products\Models\ProductGroup;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Http\Traits\ResourceActions;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

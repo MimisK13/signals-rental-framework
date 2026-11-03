@@ -11,9 +11,9 @@ use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityNumberGenerator;
-use App\Models\Store;
-use App\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityCreated;
+use App\Domain\Stores\Models\Store;
+use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

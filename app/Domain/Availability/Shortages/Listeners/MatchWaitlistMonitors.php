@@ -24,7 +24,7 @@ use Thunk\Verbs\Facades\Verbs;
  *
  * Notification on match: `shortage.waitlist.matched` is mapped in
  * {@see config/notifications.php} and dispatched by
- * {@see App\Listeners\NotificationDispatchListener} through the P24 pipeline.
+ * {@see App\Domain\Notifications\Listeners\NotificationDispatchListener} through the P24 pipeline.
  *
  * Replay-safe: {@see AvailabilityChanged} is never dispatched during replay, and
  * this listener short-circuits on replay as a guard.

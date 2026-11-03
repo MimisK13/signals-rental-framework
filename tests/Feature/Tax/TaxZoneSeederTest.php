@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
 use App\Domain\Tax\Services\TaxZoneResolver;
-use App\Models\Country;
 
 beforeEach(function () {
     $this->resolver = app(TaxZoneResolver::class);

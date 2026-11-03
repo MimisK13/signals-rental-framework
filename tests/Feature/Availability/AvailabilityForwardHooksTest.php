@@ -7,8 +7,8 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Stores\Models\Store;
 use App\Enums\ReleasePoint;
-use App\Models\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 

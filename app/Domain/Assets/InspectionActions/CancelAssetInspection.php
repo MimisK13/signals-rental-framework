@@ -6,7 +6,7 @@ namespace App\Domain\Assets\InspectionActions;
 
 use App\Domain\Assets\Enums\InspectionStatus;
 use App\Domain\Assets\Models\AssetInspection;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

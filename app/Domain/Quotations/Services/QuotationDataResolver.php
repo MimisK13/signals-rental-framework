@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Services;
 
 use App\Domain\Documents\Contracts\DocumentDataResolver;
+use App\Domain\Members\Models\Member;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationItem;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Services\FieldBuilder;
 use App\Services\SchemaBuilder;
 use Brick\Money\Currency;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Crew\Actions\Timesheets\AddCrewTimeEntry;
 use App\Domain\Crew\Actions\Timesheets\ApproveCrewTimesheet;
 use App\Domain\Crew\Actions\Timesheets\CreateCrewTimesheet;
@@ -24,8 +26,6 @@ use App\Domain\Crew\Presentation\Http\Requests\Crew\ApproveCrewTimesheetRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\CreateCrewTimesheetRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\ExportToFinanceRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\RejectCrewTimesheetRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

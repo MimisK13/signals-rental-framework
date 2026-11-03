@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\InboundWebhookLog;
-use App\Models\InboundWebhookSource;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
 
 beforeEach(function () {
     config([

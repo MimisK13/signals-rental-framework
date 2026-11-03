@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Products\Actions\ArchiveProduct;
 use App\Domain\Products\Models\Product;
-use App\Events\AuditableEvent;
-use App\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
 use App\Models\User;
-use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

@@ -6,8 +6,8 @@ namespace App\Domain\Assets\Repairs\Actions;
 
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Repairs\Models\Repair;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

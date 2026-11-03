@@ -8,16 +8,16 @@ use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoiceColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoicePaymentColumnRegistry;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
+use App\Domain\VirtualStock\Presentation\Columns\VirtualStockIntakeColumnRegistry;
 use App\Domain\Warehouse\Containers\Presentation\Columns\ContainerColumnRegistry;
 use App\Models\User;
 use App\Support\CostVisibility;
 use App\Views\ColumnRegistry;
-use App\Views\MemberColumnRegistry;
-use App\Views\VirtualStockIntakeColumnRegistry;
 use Illuminate\Validation\ValidationException;
 
 /**

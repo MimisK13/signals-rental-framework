@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Actions;
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Data\ProjectData;
 use App\Domain\Projects\Data\UpdateProjectData;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
-use App\Enums\MembershipType;
-use App\Models\Member;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Lists\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Lists\Actions\CreateListValue;
 use App\Domain\Lists\Actions\DeleteListValue;
 use App\Domain\Lists\Actions\UpdateListValue;
@@ -13,8 +15,6 @@ use App\Domain\Lists\Data\UpdateListValueData;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
 use App\Domain\Lists\Presentation\Http\Requests\CreateListValueRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

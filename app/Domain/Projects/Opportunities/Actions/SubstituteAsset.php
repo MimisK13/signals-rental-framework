@@ -10,8 +10,8 @@ use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
 use App\Domain\Projects\Opportunities\Data\SubstituteAssetData;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
-use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Projects\Opportunities\Verbs\Events\AssetSubstituted;
+use App\Domain\Stock\Models\StockLevel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 

@@ -4,8 +4,6 @@
  * Coverage burn-up batch 4 — part 2 (Verbs event handle/apply/validate branches).
  */
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\IssueInvoice;
@@ -14,6 +12,7 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Verbs\Events\DraftInvoiceDeleted;
 use App\Domain\Invoices\Verbs\Events\InvoiceVoided;
 use App\Domain\Invoices\Verbs\States\InvoiceState;
+use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
@@ -52,15 +51,16 @@ use App\Domain\Projects\Opportunities\Verbs\States\OpportunityVersionState;
 use App\Domain\PurchaseOrders\Actions\SendPurchaseOrder;
 use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderReceiptRecorded;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeReceived;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsProvisioned;
+use App\Domain\VirtualStock\Verbs\States\VirtualStockIntakeState;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\Store;
-use App\Models\Surcharge;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeReceived;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsProvisioned;
 use App\Verbs\States\AssetAssignmentState;
-use App\Verbs\States\VirtualStockIntakeState;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Setup\CheckInfrastructure;
-use App\Data\Reference\CountryData;
-use App\Enums\FeatureProfile;
-use App\Models\Store;
+use App\Domain\ReferenceData\Data\CountryData;
+use App\Domain\Setup\Actions\CheckInfrastructure;
+use App\Domain\Setup\Enums\FeatureProfile;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;

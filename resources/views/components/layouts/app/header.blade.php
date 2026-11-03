@@ -226,7 +226,7 @@
                                         </div>
                                     </a>
                                 @endcan
-                                @can('viewAny', App\Models\VirtualStockIntake::class)
+                                @can('viewAny', App\Domain\VirtualStock\Models\VirtualStockIntake::class)
                                     <a href="{{ route('virtual-stock.index') }}"
                                         class="mega-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}"
                                         wire:navigate.hover>
@@ -616,7 +616,7 @@
                     <flux:icon.calculator class="!size-[15px]" /> Pricing
                 </a>
             @endcan
-            <a class="sidebar-item {{ ActiveRoute::is('admin.settings.action-log', 'admin.settings.system-health', 'admin.settings.infrastructure', 'admin.settings.seeders', 'admin.settings.webhooks') ? 'active' : '' }}"
+            <a class="sidebar-item {{ ActiveRoute::is('admin.settings.action-log', 'admin.settings.system-health', 'admin.settings.infrastructure', 'admin.settings.seeders') ? 'active' : '' }}"
                 href="{{ route('admin.settings.action-log') }}" wire:navigate.hover x-on:click="mobileNav = false">
                 <flux:icon.server-stack class="!size-[15px]" /> System
             </a>
@@ -721,7 +721,7 @@
                         <flux:icon.archive-box class="!size-[15px]" /> Stock Levels
                     </a>
                 @endcan
-                @can('viewAny', App\Models\VirtualStockIntake::class)
+                @can('viewAny', App\Domain\VirtualStock\Models\VirtualStockIntake::class)
                     <a class="sidebar-item {{ ActiveRoute::is('virtual-stock.*') ? 'active' : '' }}"
                         href="{{ route('virtual-stock.index') }}" wire:navigate.hover x-on:click="mobileNav = false">
                         <flux:icon.arrow-down-circle class="!size-[15px]" /> Virtual Stock
@@ -894,7 +894,7 @@
                         </a>
                     @endcan
 
-                    <a class="sidebar-item {{ ActiveRoute::is('admin.settings.action-log', 'admin.settings.system-health', 'admin.settings.infrastructure', 'admin.settings.seeders', 'admin.settings.webhooks') ? 'active' : '' }}"
+                    <a class="sidebar-item {{ ActiveRoute::is('admin.settings.action-log', 'admin.settings.system-health', 'admin.settings.infrastructure', 'admin.settings.seeders') ? 'active' : '' }}"
                         href="{{ route('admin.settings.action-log') }}" wire:navigate.hover>
                         <flux:icon.server-stack class="!size-[15px]" />
                         <span class="sidebar-label" x-show="sidebarOpen" x-cloak>System</span>

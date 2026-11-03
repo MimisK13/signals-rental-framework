@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Documents\Actions\ConfigureDocumentPublicLink;
 use App\Domain\Documents\Actions\CreateDocumentPublicLink;
 use App\Domain\Documents\Actions\FinaliseDocument;
@@ -18,8 +20,6 @@ use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Jobs\BatchGenerateDocumentsJob;
 use App\Domain\Documents\Jobs\GenerateDocumentJob;
 use App\Domain\Documents\Models\Document;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

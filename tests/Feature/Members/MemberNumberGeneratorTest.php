@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Members\CreateMember;
-use App\Data\Members\CreateMemberData;
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Services\DocumentSequenceDefaults;
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Members\Actions\CreateMember;
+use App\Domain\Members\Data\CreateMemberData;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Services\MemberNumberGenerator;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
-use App\Services\Members\MemberNumberGenerator;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

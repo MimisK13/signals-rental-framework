@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Services;
 
+use App\Domain\Pricing\Services\QuantityMinorArithmetic;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Enums\LineItemTransactionType;
-use App\Services\Pricing\QuantityMinorArithmetic;
 use Illuminate\Validation\ValidationException;
 
 /**

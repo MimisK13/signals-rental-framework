@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Database\Seeders;
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
-use App\Enums\MembershipType;
-use App\Models\Member;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 

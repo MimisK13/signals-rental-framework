@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Member;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 

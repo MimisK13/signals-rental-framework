@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Crew\Actions\Assignments\CancelCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\ConfirmCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\InviteCrewAssignment;
@@ -21,8 +23,6 @@ use App\Domain\Crew\Presentation\Http\Requests\Crew\CancelCrewAssignmentRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\ProposeCrewAssignmentRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\RejectCrewAssignmentRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\SubstituteCrewAssignmentRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

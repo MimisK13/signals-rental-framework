@@ -8,8 +8,8 @@ use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\KitAvailabilityCalculator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
-use App\Models\Store;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

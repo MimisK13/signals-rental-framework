@@ -2,19 +2,16 @@
 
 namespace App\Providers;
 
+use App\Domain\Communications\Settings\NotificationSettings;
 use App\Domain\Invoices\Settings\InvoiceSettings;
 use App\Domain\Tax\Settings\TaxSettings;
 use App\Services\SettingsRegistry;
 use App\Services\SettingsService;
-use App\Settings\ActionLogSettings;
-use App\Settings\ApiSettings;
 use App\Settings\CompanySettings;
 use App\Settings\EmailSettings;
 use App\Settings\FinanceSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
-use App\Settings\NotificationSettings;
-use App\Settings\PricingSettings;
 use App\Settings\SchedulingSettings;
 use App\Settings\SecuritySettings;
 use App\Settings\SsoSettings;
@@ -30,8 +27,6 @@ class SettingsServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsRegistry::class, function (): SettingsRegistry {
             $registry = new SettingsRegistry;
 
-            $registry->register(new ActionLogSettings);
-            $registry->register(new ApiSettings);
             $registry->register(new CompanySettings);
             $registry->register(new EmailSettings);
             $registry->register(new FinanceSettings);
@@ -39,7 +34,6 @@ class SettingsServiceProvider extends ServiceProvider
             $registry->register(new IntegrationSettings);
             $registry->register(new InvoiceSettings);
             $registry->register(new NotificationSettings);
-            $registry->register(new PricingSettings);
             $registry->register(new SchedulingSettings);
             $registry->register(new SecuritySettings);
             $registry->register(new SsoSettings);

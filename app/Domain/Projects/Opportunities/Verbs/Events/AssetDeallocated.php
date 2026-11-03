@@ -10,8 +10,8 @@ use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\GuardsAssetAssignmen
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\SyncsAssetDemands;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\VirtualStock\Services\VirtualAssetStatusRegistry;
 use App\Enums\AssetAssignmentStatus;
-use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;

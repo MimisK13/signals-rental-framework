@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\SupplierCosts\Data;
 
 use App\Data\Casts\MoneyInput;
-use App\Enums\MembershipType;
+use App\Domain\Members\Enums\MembershipType;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;

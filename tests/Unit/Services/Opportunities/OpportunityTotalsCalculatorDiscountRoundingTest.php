@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
@@ -7,8 +9,6 @@ use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Enums\PricingRoundingDirection;
-use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

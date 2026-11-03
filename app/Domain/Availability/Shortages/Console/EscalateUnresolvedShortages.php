@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Console;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Events\AuditableEvent;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Symfony\Component\Console\Attribute\AsCommand;

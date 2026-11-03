@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration

@@ -6,7 +6,7 @@ namespace App\Domain\Crew\Models;
 
 use App\Domain\Crew\Database\Factories\CrewRateCardFactory;
 use App\Domain\Crew\Enums\CrewEngagementType;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\Traits\FormatsMoney;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

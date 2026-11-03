@@ -6,7 +6,7 @@ namespace App\Domain\Documents\Actions;
 
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Services\DocumentEventDispatcher;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Stores\Scopes\StoreScope;
 
 class RecordDocumentPublicView
 {

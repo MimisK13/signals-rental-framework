@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Projects\Opportunities\Presentation\Http\Controllers\Api\V1\OpportunityController;
 use App\Domain\Projects\Opportunities\Presentation\Http\Controllers\Api\V1\OpportunityVersionController;
-use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1')

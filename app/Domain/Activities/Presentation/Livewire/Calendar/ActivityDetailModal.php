@@ -10,7 +10,7 @@ use App\Domain\Activities\Data\ActivityData;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Models\ActivityParticipant;
 use App\Domain\Activities\Services\Calendar\OwnerColorResolver;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use App\Services\FileService;
 use Illuminate\Support\Str;

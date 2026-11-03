@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Products\Models\Product;
-use App\Services\Api\RansackFilter;
 
 beforeEach(function () {
     $this->filter = app(RansackFilter::class);

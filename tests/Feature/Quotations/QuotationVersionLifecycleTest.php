@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Quotations\Actions\AcceptQuotationVersion;
@@ -22,8 +23,7 @@ use App\Domain\Quotations\Enums\QuotationVersionType;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

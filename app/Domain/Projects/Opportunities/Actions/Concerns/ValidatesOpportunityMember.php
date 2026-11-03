@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Actions\Concerns;
 
-use App\Enums\MembershipType;
-use App\Models\Address;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Member;
 use Illuminate\Validation\ValidationException;
 
 /**

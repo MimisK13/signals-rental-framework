@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\Api\AbilityRegistry;
-use App\Services\Api\CoreAbilityDefinitions;
+use App\Domain\API\Services\AbilityRegistry;
+use App\Domain\API\Services\CoreAbilityDefinitions;
 
 it('registers invoice and payment sanctum abilities', function () {
     $registry = app(AbilityRegistry::class);

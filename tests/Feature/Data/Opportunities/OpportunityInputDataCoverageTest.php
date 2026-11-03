@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Data\AddOpportunityCostData;
 use App\Domain\Projects\Opportunities\Data\ChangeVersionLabelData;
 use App\Domain\Projects\Opportunities\Data\MergeOpportunityItemsData;
@@ -13,7 +14,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\Member;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Attachments\Policies\AttachmentPolicy;
 use App\Domain\Attachments\Presentation\Livewire\MemberFiles;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 

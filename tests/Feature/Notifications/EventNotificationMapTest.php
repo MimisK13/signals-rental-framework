@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Services\EventNotificationConditionEvaluator;
+use App\Domain\Notifications\Services\EventNotificationMapRegistry;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Events\AuditableEvent;
-use App\Models\Member;
-use App\Services\Notifications\EventNotificationConditionEvaluator;
-use App\Services\Notifications\EventNotificationMapRegistry;
 
 describe('EventNotificationMapRegistry', function () {
     it('resolves core opportunity.created mapping from config', function () {

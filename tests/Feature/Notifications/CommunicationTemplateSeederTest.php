@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Stores\CreateStore;
-use App\Data\Stores\CreateStoreData;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Services\SystemCommunicationTemplates;
-use App\Models\NotificationType;
-use App\Models\Store;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Stores\Actions\CreateStore;
+use App\Domain\Stores\Data\CreateStoreData;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
-use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

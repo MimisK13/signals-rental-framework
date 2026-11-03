@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Quotations\Actions\AcceptQuotationVersion;
 use App\Domain\Quotations\Actions\ActivateQuotationVersion;
 use App\Domain\Quotations\Actions\CreateQuotationVersion;
@@ -15,7 +16,6 @@ use App\Domain\Quotations\Data\DeclineQuotationVersionData;
 use App\Domain\Quotations\Data\SendQuotationVersionData;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Http\Controllers\Api\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -1,9 +1,10 @@
 <?php
 
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\Form;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -26,14 +27,14 @@ it('renders the create form with pre-populated type', function () {
 it('renders the edit form with populated data', function () {
     $member = Member::factory()->contact()->create(['name' => 'John Smith']);
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->assertSet('name', 'John Smith')
         ->assertSet('membershipType', MembershipType::Contact->value)
         ->assertSet('isActive', true);
 });
 
 it('can create a member', function () {
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', 'New Member')
         ->set('membershipType', MembershipType::Contact->value)
         ->set('isActive', true)
@@ -46,7 +47,7 @@ it('can create a member', function () {
 it('can edit a member', function () {
     $member = Member::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->set('name', 'New Name')
         ->call('save')
         ->assertRedirect();
@@ -55,7 +56,7 @@ it('can edit a member', function () {
 });
 
 it('validates required name', function () {
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', '')
         ->set('membershipType', MembershipType::Contact->value)
         ->call('save')
@@ -63,7 +64,7 @@ it('validates required name', function () {
 });
 
 it('validates required membership type', function () {
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', 'Test Member')
         ->set('membershipType', '')
         ->call('save')
@@ -71,7 +72,7 @@ it('validates required membership type', function () {
 });
 
 it('validates invalid membership type', function () {
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', 'Test Member')
         ->set('membershipType', 'invalid_type')
         ->call('save')
@@ -85,7 +86,7 @@ it('does not offer the User membership type in the create form', function () {
 });
 
 it('rejects creating a user-type member via the form', function () {
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', 'Sneaky User')
         ->set('membershipType', MembershipType::User->value)
         ->call('save')
@@ -99,13 +100,13 @@ it('ignores a query string requesting the user type', function () {
         ->assertOk();
 
     // Defaults back to contact rather than honouring ?type=user.
-    Volt::test('members.form')->assertSet('membershipType', 'contact');
+    Livewire::test(Form::class)->assertSet('membershipType', 'contact');
 });
 
 it('keeps the name read-only for a user-type member on edit', function () {
     $member = Member::factory()->user()->create(['name' => 'Staff Member']);
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->set('name', 'Hacked Name')
         ->call('save')
         ->assertRedirect();
@@ -117,7 +118,7 @@ it('keeps the name read-only for a user-type member on edit', function () {
 it('shows the managed-from-profile hint and profile-settings link for a user-type member', function () {
     $member = Member::factory()->user()->create();
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->assertSee("Managed from the user's profile")
         ->assertSee('Edit in profile settings')
         ->assertSee(route('settings.profile'), false);
@@ -129,7 +130,7 @@ it('keeps active state and location type read-only for a user-type member on edi
         'location_type' => 3,
     ]);
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->set('isActive', false)
         ->set('locationTypeId', 7)
         ->call('save')
@@ -142,7 +143,7 @@ it('keeps active state and location type read-only for a user-type member on edi
 });
 
 it('can create an inactive member', function () {
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', 'Inactive Member')
         ->set('membershipType', MembershipType::Organisation->value)
         ->set('isActive', false)
@@ -163,7 +164,7 @@ it('prevents non-owner from creating a member', function () {
     $regularUser = User::factory()->create();
     $this->actingAs($regularUser);
 
-    Volt::test('members.form')
+    Livewire::test(Form::class)
         ->set('name', 'Unauthorized Member')
         ->set('membershipType', MembershipType::Contact->value)
         ->call('save')
@@ -177,7 +178,7 @@ it('prevents non-owner from editing a member', function () {
     $member = Member::factory()->create(['name' => 'Original Name']);
     $this->actingAs($regularUser);
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->set('name', 'Changed Name')
         ->call('save')
         ->assertForbidden();

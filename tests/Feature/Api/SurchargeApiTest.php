@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Pricing\Models\Surcharge;
+use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\Surcharge;
-use App\Models\SurchargeGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

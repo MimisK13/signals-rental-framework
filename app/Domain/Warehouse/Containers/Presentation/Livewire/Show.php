@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Presentation\Livewire;
 
+use App\Domain\AuditLog\Presentation\Concerns\HasAuditTimeline;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
 use App\Domain\Warehouse\Containers\Actions\DissolveContainer;
@@ -30,7 +31,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
 use App\Domain\Warehouse\Containers\Exceptions\ContainerDispatchAmendmentRequiredException;
 use App\Domain\Warehouse\Containers\Exceptions\ContainerPackConflictException;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Livewire\Concerns\HasAuditTimeline;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

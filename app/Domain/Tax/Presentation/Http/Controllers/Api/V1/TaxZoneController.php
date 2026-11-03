@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Tax\Actions\CreateTaxZone;
 use App\Domain\Tax\Actions\DeleteTaxZone;
 use App\Domain\Tax\Actions\UpdateTaxZone;
@@ -11,9 +14,6 @@ use App\Domain\Tax\Data\CreateTaxZoneData;
 use App\Domain\Tax\Data\TaxZoneData;
 use App\Domain\Tax\Data\UpdateTaxZoneData;
 use App\Domain\Tax\Models\TaxZone;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Http\Traits\ResourceActions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

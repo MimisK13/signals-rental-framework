@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Database\Factories;
 
 use App\Domain\Documents\Models\DocumentSequence;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -7,7 +7,7 @@ use App\Domain\CustomFields\Services\CustomFieldDefinitionResolver;
 use App\Domain\CustomFields\Services\CustomFieldSerializer;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 

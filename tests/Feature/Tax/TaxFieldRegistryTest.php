@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Schemas\DocumentTaxGroupSchema;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use App\Services\SchemaRegistry;
 use Database\Seeders\RoleSeeder;

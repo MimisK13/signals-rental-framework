@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
 use App\Domain\Projects\Opportunities\Enums\OpportunityState as StateAxis;
+use App\Domain\Projects\Opportunities\Enums\VersionStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityVersionState;
-use App\Domain\Projects\Opportunities\Enums\VersionStatus;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

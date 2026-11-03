@@ -6,9 +6,9 @@ namespace App\Domain\Invoices\Models;
 
 use App\Contracts\HasSchema;
 use App\Domain\Invoices\Database\Factories\CreditNoteFactory;
-use App\Models\Store;
+use App\Domain\Stores\Concerns\HasStoreScoping;
+use App\Domain\Stores\Models\Store;
 use App\Models\Traits\FormatsMoney;
-use App\Models\Traits\HasStoreScoping;
 use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;

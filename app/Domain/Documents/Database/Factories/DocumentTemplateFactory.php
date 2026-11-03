@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Database\Factories;
 
 use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

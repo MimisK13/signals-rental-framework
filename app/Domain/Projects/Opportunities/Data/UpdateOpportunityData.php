@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Data;
 
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

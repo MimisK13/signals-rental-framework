@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Products\Data\AccessoryData;
 use App\Domain\Products\Data\UpdateAccessoryData;
 use App\Domain\Products\Models\Accessory;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\Gate;
 
 class UpdateAccessory

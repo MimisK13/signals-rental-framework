@@ -1,19 +1,19 @@
 <?php
 
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Email;
+use App\Domain\Members\Models\Link;
+use App\Domain\Members\Models\Phone;
+use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Models\ActionLog;
-use App\Models\Address;
-use App\Models\Country;
-use App\Models\Email;
-use App\Models\Link;
-use App\Models\Phone;
+use App\Domain\Webhooks\Models\Webhook;
 use App\Models\User;
-use App\Models\Webhook;
 use App\Services\SchemaRegistry;
 
 describe('Phase 1 Model Schema Registration', function () {

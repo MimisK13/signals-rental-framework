@@ -4,8 +4,8 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\OpportunityAutoGroupResolver;
+use App\Domain\ReferenceData\Models\RevenueGroup;
 use App\Enums\LineItemTransactionType;
-use App\Models\RevenueGroup;
 
 it('returns null revenue group and Other for non-product lines', function () {
     $item = new OpportunityItem([

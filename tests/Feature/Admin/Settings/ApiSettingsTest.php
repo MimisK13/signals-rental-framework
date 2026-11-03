@@ -1,7 +1,8 @@
 <?php
 
+use App\Domain\API\Presentation\Livewire\TokenManagement;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -21,7 +22,7 @@ it('shows empty state when no tokens exist', function () {
 });
 
 it('can create a new api token', function () {
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->set('tokenName', 'My Token')
         ->set('selectedAbilities', ['users:read', 'settings:read'])
         ->call('createToken')
@@ -35,7 +36,7 @@ it('can create a new api token', function () {
 });
 
 it('shows the token value after creation', function () {
-    $component = Volt::test('admin.settings.api')
+    $component = Livewire::test(TokenManagement::class)
         ->set('tokenName', 'My Token')
         ->set('selectedAbilities', ['users:read'])
         ->call('createToken');
@@ -45,7 +46,7 @@ it('shows the token value after creation', function () {
 });
 
 it('requires token name', function () {
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->set('tokenName', '')
         ->set('selectedAbilities', ['users:read'])
         ->call('createToken')
@@ -53,7 +54,7 @@ it('requires token name', function () {
 });
 
 it('requires at least one ability', function () {
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->set('tokenName', 'My Token')
         ->set('selectedAbilities', [])
         ->call('createToken')
@@ -61,7 +62,7 @@ it('requires at least one ability', function () {
 });
 
 it('validates ability values', function () {
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->set('tokenName', 'My Token')
         ->set('selectedAbilities', ['invalid:ability'])
         ->call('createToken')
@@ -71,7 +72,7 @@ it('validates ability values', function () {
 it('can revoke a token', function () {
     $token = $this->owner->createToken('Test', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('revokeToken', $token->accessToken->id)
         ->assertHasNoErrors();
 
@@ -88,7 +89,7 @@ it('lists existing tokens', function () {
 });
 
 it('dispatches event on token creation', function () {
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->set('tokenName', 'My Token')
         ->set('selectedAbilities', ['users:read'])
         ->call('createToken')
@@ -98,13 +99,13 @@ it('dispatches event on token creation', function () {
 it('dispatches event on token revocation', function () {
     $token = $this->owner->createToken('Test', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('revokeToken', $token->accessToken->id)
         ->assertDispatched('token-revoked');
 });
 
 it('clears token display on dismiss', function () {
-    $component = Volt::test('admin.settings.api')
+    $component = Livewire::test(TokenManagement::class)
         ->set('tokenName', 'My Token')
         ->set('selectedAbilities', ['users:read'])
         ->call('createToken');
@@ -127,7 +128,7 @@ it('requires admin access', function () {
 it('allows creating a token with phase-2, rate and currency abilities', function () {
     $abilities = ['products:read', 'products:write', 'stock:read', 'stock:write', 'activities:read', 'rates:read', 'rates:write', 'schema:read', 'currencies:read', 'exchange_rates:read', 'exchange_rates:write'];
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->set('tokenName', 'Phase 2 Token')
         ->set('selectedAbilities', $abilities)
         ->call('createToken')
@@ -139,7 +140,7 @@ it('allows creating a token with phase-2, rate and currency abilities', function
 it('pre-fills abilities when opening the edit modal', function () {
     $token = $this->owner->createToken('Editable', ['users:read', 'settings:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('openEditModal', $token->accessToken->id)
         ->assertSet('showEditModal', true)
         ->assertSet('editingTokenId', $token->accessToken->id)
@@ -149,7 +150,7 @@ it('pre-fills abilities when opening the edit modal', function () {
 it('can update an existing token\'s abilities', function () {
     $token = $this->owner->createToken('Editable', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('openEditModal', $token->accessToken->id)
         ->set('editAbilities', ['users:read', 'products:read', 'rates:write'])
         ->call('updateToken')
@@ -162,7 +163,7 @@ it('can update an existing token\'s abilities', function () {
 it('requires at least one ability when editing', function () {
     $token = $this->owner->createToken('Editable', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('openEditModal', $token->accessToken->id)
         ->set('editAbilities', [])
         ->call('updateToken')
@@ -172,7 +173,7 @@ it('requires at least one ability when editing', function () {
 it('validates ability values when editing', function () {
     $token = $this->owner->createToken('Editable', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('openEditModal', $token->accessToken->id)
         ->set('editAbilities', ['invalid:ability'])
         ->call('updateToken')
@@ -182,7 +183,7 @@ it('validates ability values when editing', function () {
 it('dispatches event on token update', function () {
     $token = $this->owner->createToken('Editable', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('openEditModal', $token->accessToken->id)
         ->set('editAbilities', ['users:read', 'products:read'])
         ->call('updateToken')
@@ -193,7 +194,7 @@ it('only edits the authenticated user\'s own tokens', function () {
     $otherUser = User::factory()->owner()->create();
     $otherToken = $otherUser->createToken('Foreign', ['users:read']);
 
-    Volt::test('admin.settings.api')
+    Livewire::test(TokenManagement::class)
         ->call('openEditModal', $otherToken->accessToken->id)
         ->assertSet('showEditModal', false)
         ->assertSet('editingTokenId', null);

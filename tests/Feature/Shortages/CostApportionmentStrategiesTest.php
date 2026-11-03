@@ -11,9 +11,9 @@ use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityCo
 use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\VirtualStock\Models\VirtualStockCostOverride;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\User;
-use App\Models\VirtualStockCostOverride;
-use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

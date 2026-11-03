@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Presentation\Livewire;
 
+use App\Domain\Pricing\Services\RoundingStrategy;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Actions\AcceptQuotationVersion;
@@ -37,7 +38,6 @@ use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationEditorReadModel;
 use App\Domain\Quotations\Services\QuotationProductCatalogue;
 use App\Enums\LineItemTransactionType;
-use App\Services\Pricing\RoundingStrategy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;

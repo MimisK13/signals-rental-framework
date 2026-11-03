@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Products\Data\MergeProductData;
 use App\Domain\Products\Data\ProductData;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

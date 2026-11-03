@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Shortages\Services\Strategies;
 
 use App\Domain\Availability\Shortages\Services\CostApportionmentContext;
-use App\Models\VirtualStockCostOverride;
+use App\Domain\VirtualStock\Models\VirtualStockCostOverride;
 use InvalidArgumentException;
 
 /**

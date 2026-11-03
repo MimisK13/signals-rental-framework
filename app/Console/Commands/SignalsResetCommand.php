@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Console\Commands\Concerns\HasSignalsBranding;
+use App\Domain\Stores\Models\Store;
 use App\Models\Setting;
-use App\Models\Store;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Env;

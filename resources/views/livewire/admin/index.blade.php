@@ -89,7 +89,7 @@ new #[Layout('components.layouts.app')] #[Title('System Administration')] class 
                     ['label' => 'System Health', 'description' => 'Service status and diagnostics', 'icon' => 'server-stack', 'route' => 'admin.settings.system-health'],
                     ['label' => 'Infrastructure', 'description' => 'Server and environment details', 'icon' => 'wrench-screwdriver', 'route' => 'admin.settings.infrastructure', 'gate' => 'owner'],
                     ['label' => 'Database Seeders', 'description' => 'Seed demo and reference data', 'icon' => 'circle-stack', 'route' => 'admin.settings.seeders'],
-                    ['label' => 'Webhooks', 'description' => 'Outgoing webhook subscriptions', 'icon' => 'signal', 'route' => 'admin.settings.webhooks'],
+                    ['label' => 'Webhooks', 'description' => 'Outgoing webhook subscriptions', 'icon' => 'signal', 'route' => 'api.webhooks'],
                 ],
             ],
         ];

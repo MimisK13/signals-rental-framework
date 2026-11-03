@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Livewire;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Products\Actions\CreateAccessory;
 use App\Domain\Products\Actions\DeleteAccessory;
 use App\Domain\Products\Data\CreateAccessoryData;
 use App\Domain\Products\Models\Product;
-use App\Services\Api\RansackFilter;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

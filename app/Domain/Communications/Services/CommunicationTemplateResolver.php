@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Communications\Services;
 
 use App\Domain\Communications\Models\CommunicationTemplate;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Models\NotificationType;
 
 /**
  * Resolves the active default communication template for a store and notification type.

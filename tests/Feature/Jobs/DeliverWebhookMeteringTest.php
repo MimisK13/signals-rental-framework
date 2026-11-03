@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Jobs\DeliverWebhook;
-use App\Models\UsageDaily;
-use App\Models\Webhook;
-use App\Models\WebhookLog;
-use App\Services\Api\WebhookEventRegistry;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use Illuminate\Support\Facades\Http;
 
 it('meters outbound webhook delivery on the first attempt only', function () {

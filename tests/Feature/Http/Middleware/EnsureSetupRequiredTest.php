@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Setup\CheckInfrastructure;
+use App\Domain\Setup\Actions\CheckInfrastructure;
 
 beforeEach(function () {
     $this->mock(CheckInfrastructure::class, function ($mock) {

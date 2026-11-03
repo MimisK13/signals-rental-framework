@@ -1,0 +1,150 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\AuditLog\Models;
+
+use App\Contracts\HasSchema;
+use App\Domain\AuditLog\Database\Factories\ActionLogFactory;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Models\User;
+use App\Services\SchemaBuilder;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property int $id
+ * @property int|null $user_id
+ * @property string $action
+ * @property string $auditable_type
+ * @property int $auditable_id
+ * @property array<string, mixed>|null $old_values
+ * @property array<string, mixed>|null $new_values
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property array<string, mixed>|null $metadata
+ * @property int|null $verb_event_id
+ * @property Carbon|null $created_at
+ */
+class ActionLog extends Model implements HasSchema
+{
+    /** @use HasFactory<ActionLogFactory> */
+    use HasFactory;
+
+    protected static function newFactory(): ActionLogFactory
+    {
+        return ActionLogFactory::new();
+    }
+
+    public const UPDATED_AT = null;
+
+    protected $fillable = [
+        'user_id',
+        'action',
+        'auditable_type',
+        'auditable_id',
+        'old_values',
+        'new_values',
+        'ip_address',
+        'user_agent',
+        'metadata',
+        'verb_event_id',
+        'created_at',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'old_values' => 'array',
+            'new_values' => 'array',
+            'metadata' => 'array',
+            'verb_event_id' => 'integer',
+        ];
+    }
+
+    public static function defineSchema(SchemaBuilder $builder): void
+    {
+        $builder->string('action')->label('Action')->required()->filterable()->sortable()->groupable();
+        $builder->string('auditable_type')->label('Entity Type')->filterable()->groupable();
+        $builder->integer('auditable_id')->label('Entity ID')->filterable();
+        $builder->relation('user_id')->label('User')
+            ->relation('user', 'belongsTo', User::class, 'name')
+            ->filterable();
+        $builder->string('ip_address')->label('IP Address')->filterable();
+        $builder->datetime('created_at')->label('Created')->sortable()->filterable();
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return MorphTo<Model, $this>
+     */
+    public function auditable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * @param  Builder<ActionLog>  $query
+     * @return Builder<ActionLog>
+     */
+    public function scopeForEntity(Builder $query, string $type, ?int $id = null): Builder
+    {
+        $query->where('auditable_type', $type);
+
+        if ($id !== null) {
+            $query->where('auditable_id', $id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param  Builder<ActionLog>  $query
+     * @return Builder<ActionLog>
+     */
+    public function scopeForOpportunity(Builder $query, int $opportunityId): Builder
+    {
+        return $query->forEntity(Opportunity::class, $opportunityId);
+    }
+
+    /**
+     * @param  Builder<ActionLog>  $query
+     * @return Builder<ActionLog>
+     */
+    public function scopeForUser(Builder $query, int $userId): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    /**
+     * @param  Builder<ActionLog>  $query
+     * @return Builder<ActionLog>
+     */
+    public function scopeForAction(Builder $query, string $action): Builder
+    {
+        return $query->where('action', $action);
+    }
+
+    /**
+     * @param  Builder<ActionLog>  $query
+     * @return Builder<ActionLog>
+     */
+    public function scopeCreatedBetween(Builder $query, string $from, string $to): Builder
+    {
+        return $query->whereBetween('created_at', [$from, $to]);
+    }
+}

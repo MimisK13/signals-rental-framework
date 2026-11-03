@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\PricingRoundingDirection;
-use App\Services\Pricing\QuantityMinorArithmetic;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Services\QuantityMinorArithmetic;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -1,16 +1,16 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Services\InAppNotificationContentBuilder;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Events\AuditableEvent;
-use App\Models\Member;
-use App\Models\NotificationType;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
-use App\Services\Notifications\InAppNotificationContentBuilder;
-use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
@@ -87,7 +87,7 @@ test('creating an opportunity stores an event-specific in-app notification body'
 
     $notification = $owner->fresh()->notifications()->firstOrFail();
     /** @var array<string, mixed> $data */
-    $data = $notification->data;
+    $data = $notification->getAttribute('data');
 
     expect($data['body'])->toContain('Arena Tour Production Package')
         ->and($data['body'])->toContain('Cartwright LLC')

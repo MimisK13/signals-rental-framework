@@ -3,9 +3,9 @@
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Data\CreateDraftInvoiceData;
 use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

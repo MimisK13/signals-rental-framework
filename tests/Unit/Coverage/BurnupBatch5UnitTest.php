@@ -4,12 +4,12 @@
  * Coverage burn-up batch 5 — unit tests for pure/service helpers.
  */
 
+use App\Domain\Pricing\Enums\DiscountRuleScope;
+use App\Domain\Pricing\Services\Predicates\QuantityMinPredicate;
+use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Services\DocumentTaxBreakdown;
-use App\Enums\DiscountRuleScope;
-use App\Services\Pricing\Predicates\QuantityMinPredicate;
 use App\Support\BrandColour;
-use App\ValueObjects\Pricing\DiscountCriteriaContext;
 use Tests\TestCase;
 
 uses(TestCase::class);

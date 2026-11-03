@@ -1,8 +1,10 @@
 <?php
 
-use App\Models\DiscountCategory;
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Presentation\Livewire\DiscountCategories;
+use App\Domain\Pricing\Presentation\Livewire\DiscountCategoryForm;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -19,7 +21,7 @@ it('lists discount categories', function () {
     DiscountCategory::factory()->create(['name' => 'Trade']);
     DiscountCategory::factory()->create(['name' => 'Staff']);
 
-    Volt::test('admin.settings.pricing.discount-categories')
+    Livewire::test(DiscountCategories::class)
         ->assertSee('Trade')
         ->assertSee('Staff');
 });
@@ -31,7 +33,7 @@ it('renders the create form', function () {
 });
 
 it('can create a discount category', function () {
-    Volt::test('admin.settings.pricing.discount-category-form')
+    Livewire::test(DiscountCategoryForm::class)
         ->set('name', 'Preferred')
         ->set('description', 'Preferred customer band')
         ->call('save');
@@ -42,7 +44,7 @@ it('can create a discount category', function () {
 it('can edit a discount category', function () {
     $category = DiscountCategory::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.pricing.discount-category-form', ['discountCategory' => $category])
+    Livewire::test(DiscountCategoryForm::class, ['discountCategory' => $category])
         ->assertSet('name', 'Old Name')
         ->set('name', 'New Name')
         ->call('save');
@@ -53,14 +55,14 @@ it('can edit a discount category', function () {
 it('can delete a discount category', function () {
     $category = DiscountCategory::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('admin.settings.pricing.discount-categories')
+    Livewire::test(DiscountCategories::class)
         ->call('deleteCategory', $category->id);
 
     expect(DiscountCategory::find($category->id))->toBeNull();
 });
 
 it('validates required name', function () {
-    Volt::test('admin.settings.pricing.discount-category-form')
+    Livewire::test(DiscountCategoryForm::class)
         ->set('name', '')
         ->call('save')
         ->assertHasErrors(['name']);

@@ -3,9 +3,9 @@
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Domain\Communications\Models\EmailTemplate;
+use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
 use App\Models\MagicLinkToken;
 use App\Models\User;
-use App\Notifications\MagicLinkLoginNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;

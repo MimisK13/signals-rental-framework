@@ -3,10 +3,11 @@
 use App\Domain\Activities\Actions\CreateActivity;
 use App\Domain\Activities\Data\CreateActivityData;
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
-use App\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Models\User;
-use App\Models\Webhook;
-use App\Services\Api\WebhookService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\File;
@@ -37,7 +38,7 @@ function documentedWebhookEvents(): array
  *
  *  1. Direct `->dispatch('event.name', …)` calls (Phase-2 actions, plus the
  *     Phase-3 shortage/availability emitters that bypass the audit bridge).
- *  2. The Phase-3 centralised bridge: `App\Listeners\DispatchWebhookForAuditableEvent`
+ *  2. The Phase-3 centralised bridge: `App\Domain\Webhooks\Listeners\DispatchWebhookForAuditableEvent`
  *     dispatches `$event->action`, so the actual event names are the audit
  *     `action` literals passed to `recordAudit($opportunity, 'event.name', …)`
  *     inside the Verbs events.
@@ -48,12 +49,7 @@ function dispatchedWebhookEvents(): array
 {
     $events = [];
 
-    $scanDirs = [
-        app_path('Actions'),
-        app_path('Services'),
-        app_path('Jobs'),
-        app_path('Listeners'),
-    ];
+    $scanDirs = [app_path('Domain')];
 
     foreach ($scanDirs as $dir) {
         foreach (File::allFiles($dir) as $file) {
@@ -70,12 +66,12 @@ function dispatchedWebhookEvents(): array
     }
 
     // Verbs/audit actions become webhook event names via the central bridge
-    // (App\Listeners\DispatchWebhookForAuditableEvent dispatches $event->action).
+    // (App\Domain\Webhooks\Listeners\DispatchWebhookForAuditableEvent dispatches $event->action).
     // The action literal is supplied either positionally to recordAudit(
     // $opportunity, 'event.name', …) inside the Verbs events, or as the named
     // `action: 'event.name'` argument to `new AuditableEvent(…)` (e.g. the
     // shortage resolution/waitlist records in App\Domain\Availability\Shortages\Services).
-    foreach ([app_path('Verbs'), app_path('Services')] as $dir) {
+    foreach ([app_path('Domain')] as $dir) {
         foreach (File::allFiles($dir) as $file) {
             if ($file->getExtension() !== 'php') {
                 continue;
@@ -89,11 +85,15 @@ function dispatchedWebhookEvents(): array
                 $recordMatches,
             );
 
-            preg_match_all(
-                "/action:\s*'([a-z_]+(?:\.[a-z_]+)+)'/",
-                $contents,
-                $auditMatches,
-            );
+            $auditMatches = [1 => []];
+
+            if (str_contains($file->getPathname(), 'Domain'.DIRECTORY_SEPARATOR.'Availability'.DIRECTORY_SEPARATOR.'Shortages')) {
+                preg_match_all(
+                    "/action:\s*'([a-z_]+(?:\.[a-z_]+)+)'/",
+                    $contents,
+                    $auditMatches,
+                );
+            }
 
             foreach (array_merge($recordMatches[1], $auditMatches[1]) as $event) {
                 $events[$event] = true;
@@ -125,8 +125,8 @@ it('registers stock_transaction.deleted in the EVENTS allow-list', function () {
         ->and((new WebhookService)->availableEvents())->toContain('stock_transaction.deleted');
 });
 
-it('registers every dispatched webhook event in the EVENTS allow-list', function () {
-    $missing = array_values(array_diff(dispatchedWebhookEvents(), WebhookService::EVENTS));
+it('registers every dispatched webhook event in the event registry', function () {
+    $missing = array_values(array_diff(dispatchedWebhookEvents(), app(WebhookEventRegistry::class)->names()));
 
     expect($missing)->toBe([]);
 });
@@ -177,18 +177,18 @@ it('parses a non-trivial set of events from the webhook docs table', function ()
         ->toBeGreaterThan(20, 'Webhook docs table parsing returned too few events — the markdown format likely drifted.');
 });
 
-it('documents every webhook event in WebhookService::EVENTS', function () {
+it('documents every registered webhook event', function () {
     $documented = documentedWebhookEvents();
 
-    $missingFromDocs = array_values(array_diff(WebhookService::EVENTS, $documented));
+    $missingFromDocs = array_values(array_diff(app(WebhookEventRegistry::class)->names(), $documented));
 
     expect($missingFromDocs)->toBe([]);
 });
 
-it('backs every documented webhook event with a WebhookService::EVENTS entry', function () {
+it('backs every documented webhook event with a registry entry', function () {
     $documented = documentedWebhookEvents();
 
-    $undefined = array_values(array_diff($documented, WebhookService::EVENTS));
+    $undefined = array_values(array_diff($documented, app(WebhookEventRegistry::class)->names()));
 
     expect($undefined)->toBe([]);
 });

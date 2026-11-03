@@ -4,12 +4,12 @@ namespace App\Actions\Admin;
 
 use App\Data\Admin\InviteUserData;
 use App\Data\Api\UserData;
-use App\Enums\MembershipType;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Notifications\UserInvitedNotification;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Enums\RoleLevel;
-use App\Models\Member;
 use App\Models\User;
-use App\Notifications\UserInvitedNotification;
-use App\Services\Api\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

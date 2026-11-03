@@ -11,10 +11,10 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\ReleasePoint;
-use App\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 

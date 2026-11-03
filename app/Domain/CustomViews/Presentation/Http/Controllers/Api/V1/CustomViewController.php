@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomViews\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\CustomViews\Actions\CloneCustomView;
 use App\Domain\CustomViews\Actions\CreateCustomView;
 use App\Domain\CustomViews\Actions\DeleteCustomView;
@@ -12,7 +13,6 @@ use App\Domain\CustomViews\Data\CreateCustomViewData;
 use App\Domain\CustomViews\Data\CustomViewData;
 use App\Domain\CustomViews\Data\UpdateCustomViewData;
 use App\Domain\CustomViews\Models\CustomView;
-use App\Http\Controllers\Api\Controller;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Dedoc\Scramble\Attributes\IgnoreResponse;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Lists\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Lists\Models\ListValue;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\Gate;
 
 final class DeleteListValue

@@ -10,7 +10,7 @@ use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Validation\ValidationException;
 
 /**

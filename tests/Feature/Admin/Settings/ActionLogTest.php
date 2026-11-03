@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\ActionLog;
+use App\Domain\AuditLog\Models\ActionLog;
+use App\Domain\AuditLog\Presentation\Livewire\Admin\Index;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -19,7 +20,7 @@ it('renders the action log page', function () {
 it('displays action log entries', function () {
     ActionLog::factory()->count(3)->create();
 
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->assertViewHas('logs', fn ($logs) => $logs->total() === 3);
 });
 
@@ -28,7 +29,7 @@ it('filters by action', function () {
     ActionLog::factory()->create(['action' => 'updated']);
     ActionLog::factory()->create(['action' => 'deleted']);
 
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->set('filterAction', 'created')
         ->assertViewHas('logs', fn ($logs) => $logs->total() === 1);
 });
@@ -37,7 +38,7 @@ it('filters by entity type', function () {
     ActionLog::factory()->create(['auditable_type' => 'App\\Models\\User']);
     ActionLog::factory()->create(['auditable_type' => 'App\\Models\\Role']);
 
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->set('filterEntityType', 'App\\Models\\User')
         ->assertViewHas('logs', fn ($logs) => $logs->total() === 1);
 });
@@ -48,7 +49,7 @@ it('filters by user name', function () {
     ActionLog::factory()->forUser($alice)->create();
     ActionLog::factory()->forUser($bob)->create();
 
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->set('filterUser', 'Alice')
         ->assertViewHas('logs', fn ($logs) => $logs->total() === 1);
 });
@@ -59,7 +60,7 @@ it('expands a row to show details', function () {
         ['name' => 'New Name'],
     )->create();
 
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->call('toggleRow', $log->id)
         ->assertSet('expandedRow', $log->id)
         ->assertSee('Old Name')
@@ -69,7 +70,7 @@ it('expands a row to show details', function () {
 it('collapses an expanded row', function () {
     $log = ActionLog::factory()->create();
 
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->call('toggleRow', $log->id)
         ->assertSet('expandedRow', $log->id)
         ->call('toggleRow', $log->id)
@@ -77,7 +78,7 @@ it('collapses an expanded row', function () {
 });
 
 it('clears all filters', function () {
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->set('filterAction', 'created')
         ->set('filterUser', 'test')
         ->call('clearFilters')
@@ -86,7 +87,7 @@ it('clears all filters', function () {
 });
 
 it('shows empty state when no entries', function () {
-    Volt::test('admin.settings.action-log')
+    Livewire::test(Index::class)
         ->assertSee('No action log entries found.');
 });
 

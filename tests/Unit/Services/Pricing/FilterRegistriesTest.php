@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Pricing\Services\OpportunityItemDiscountPercentFilterRegistry;
+use App\Domain\Pricing\Services\OpportunityItemSurchargeAmountFilterRegistry;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
-use App\Services\Pricing\OpportunityItemSurchargeAmountFilterRegistry;
 
 it('exposes registered discount percent filters via all()', function () {
     $registry = new OpportunityItemDiscountPercentFilterRegistry;

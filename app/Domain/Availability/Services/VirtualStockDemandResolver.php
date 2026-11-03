@@ -9,7 +9,7 @@ use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;

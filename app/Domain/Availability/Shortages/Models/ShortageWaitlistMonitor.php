@@ -8,7 +8,7 @@ use App\Domain\Availability\Shortages\Database\Factories\ShortageWaitlistMonitor
 use App\Domain\Availability\Shortages\Enums\WaitlistMonitorStatus;
 use App\Domain\Availability\Shortages\Services\Resolvers\WaitlistResolver;
 use App\Domain\Products\Models\Product;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

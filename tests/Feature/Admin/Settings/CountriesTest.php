@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\Country;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\ReferenceData\Presentation\Livewire\Admin\Countries;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -20,7 +21,7 @@ it('lists countries', function () {
     Country::factory()->create(['name' => 'United Kingdom']);
     Country::factory()->create(['name' => 'France']);
 
-    Volt::test('admin.settings.countries')
+    Livewire::test(Countries::class)
         ->assertSee('United Kingdom')
         ->assertSee('France');
 });
@@ -28,7 +29,7 @@ it('lists countries', function () {
 it('can toggle active status', function () {
     $country = Country::factory()->create(['is_active' => true]);
 
-    Volt::test('admin.settings.countries')
+    Livewire::test(Countries::class)
         ->call('toggleActive', $country->id);
 
     expect($country->fresh()->is_active)->toBeFalse();
@@ -38,7 +39,7 @@ it('can search countries', function () {
     Country::factory()->create(['name' => 'United Kingdom']);
     Country::factory()->create(['name' => 'France']);
 
-    Volt::test('admin.settings.countries')
+    Livewire::test(Countries::class)
         ->set('search', 'United')
         ->assertSee('United Kingdom')
         ->assertDontSee('France');
@@ -47,7 +48,7 @@ it('can search countries', function () {
 it('can toggle country back to active', function () {
     $country = Country::factory()->create(['is_active' => false]);
 
-    Volt::test('admin.settings.countries')
+    Livewire::test(Countries::class)
         ->call('toggleActive', $country->id);
 
     expect($country->fresh()->is_active)->toBeTrue();

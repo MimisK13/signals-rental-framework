@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Attachments\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Attachments\Actions\CreateAttachment;
 use App\Domain\Attachments\Actions\DeleteAttachment;
 use App\Domain\Attachments\Data\AttachmentData;
 use App\Domain\Attachments\Data\CreateAttachmentData;
 use App\Domain\Attachments\Models\Attachment;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Dedoc\Scramble\Attributes\IgnoreResponse;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;

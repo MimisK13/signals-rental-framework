@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Presentation\Livewire;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Actions\CreateDurableContainer;
 use App\Domain\Warehouse\Containers\Data\CreateDurableContainerData;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\Store;
-use App\Services\Api\RansackFilter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

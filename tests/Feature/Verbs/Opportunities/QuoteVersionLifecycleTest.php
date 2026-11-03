@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
 use App\Domain\Projects\Opportunities\Actions\ActivateVersion;
@@ -31,8 +32,7 @@ use App\Domain\Projects\Opportunities\Enums\VersionType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

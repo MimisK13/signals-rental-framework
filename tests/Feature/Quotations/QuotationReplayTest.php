@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Quotations\Actions\CreateQuotation;
 use App\Domain\Quotations\Data\CreateQuotationData;
 use App\Domain\Quotations\Models\Quotation;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

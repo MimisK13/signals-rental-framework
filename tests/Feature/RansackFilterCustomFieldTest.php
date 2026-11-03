@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
-use App\Models\Member;
-use App\Services\Api\RansackFilter;
+use App\Domain\Members\Models\Member;
 
 beforeEach(function () {
     $this->filter = new RansackFilter;

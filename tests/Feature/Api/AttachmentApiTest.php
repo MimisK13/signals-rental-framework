@@ -2,7 +2,7 @@
 
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Attachments\Presentation\Http\Controllers\Api\V1\AttachmentController;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

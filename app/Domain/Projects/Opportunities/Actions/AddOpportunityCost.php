@@ -8,8 +8,8 @@ use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Projects\Opportunities\Data\AddOpportunityCostData;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Verbs\Events\CostAdded;
+use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 
 /**

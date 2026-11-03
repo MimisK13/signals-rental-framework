@@ -2,8 +2,8 @@
 
 namespace App\Actions\Admin;
 
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Services\PermissionRegistry;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;

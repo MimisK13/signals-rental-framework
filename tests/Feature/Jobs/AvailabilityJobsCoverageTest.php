@@ -7,7 +7,7 @@ use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
 use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Availability\Services\RecalculationResult;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;

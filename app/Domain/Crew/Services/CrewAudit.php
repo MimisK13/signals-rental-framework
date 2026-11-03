@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Crew\Events\CrewDomainEvent;
-use App\Events\AuditableEvent;
 use Illuminate\Database\Eloquent\Model;
 
 final class CrewAudit

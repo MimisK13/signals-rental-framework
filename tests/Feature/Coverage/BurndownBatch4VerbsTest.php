@@ -4,8 +4,6 @@
  * P4-CL4b burndown batch 4 — Verbs events and concern branches.
  */
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\IssueInvoice;
@@ -15,6 +13,7 @@ use App\Domain\Invoices\Verbs\Events\DraftInvoiceDeleted;
 use App\Domain\Invoices\Verbs\Events\InvoiceGenerated;
 use App\Domain\Invoices\Verbs\Events\InvoiceIssued;
 use App\Domain\Invoices\Verbs\Events\InvoiceVoided;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
@@ -41,17 +40,18 @@ use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderReceiptRecorded;
 use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderSent;
 use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderUpdated;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeConfirmed;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeDeleted;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsProvisioned;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsRetired;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSupplyAdjusted;
+use App\Domain\VirtualStock\Verbs\States\VirtualStockIntakeState;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeDeleted;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsProvisioned;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsRetired;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSupplyAdjusted;
-use App\Verbs\States\VirtualStockIntakeState;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

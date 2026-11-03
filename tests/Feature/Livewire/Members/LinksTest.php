@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
-use App\Livewire\Members\LinkForm;
-use App\Livewire\Members\Links;
-use App\Models\Link;
-use App\Models\Member;
+use App\Domain\Members\Models\Link;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\LinkForm;
+use App\Domain\Members\Presentation\Livewire\Links;
 use App\Models\User;
 use Livewire\Livewire;
 

@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Domain\SupplierBills\Presentation\Livewire\Form;
 use App\Domain\SupplierBills\Presentation\Livewire\Show;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

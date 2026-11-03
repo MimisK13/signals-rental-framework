@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\API\Services\ApiEndpointCatalogue;
 use App\Domain\Products\Models\Product;
-use App\Enums\MeteringChannel;
-use App\Models\RequestLog;
-use App\Models\UsageDaily;
 use App\Models\User;
-use App\Services\Api\ApiEndpointCatalogue;
 use Database\Seeders\PermissionSeeder;
 use Laravel\Sanctum\PersonalAccessToken;
 

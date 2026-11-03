@@ -6,7 +6,7 @@ namespace App\Domain\Crew\Listeners;
 
 use App\Domain\Crew\Events\CrewDomainEvent;
 use App\Domain\Crew\Services\CrewEventDefinitions;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 
 final class DispatchCrewWebhook
 {

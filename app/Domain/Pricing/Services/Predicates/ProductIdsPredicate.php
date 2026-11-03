@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Pricing\Services\Predicates;
+
+use App\Domain\Pricing\Contracts\DiscountCriteriaPredicate;
+use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
+
+class ProductIdsPredicate implements DiscountCriteriaPredicate
+{
+    public function key(): string
+    {
+        return 'product_ids';
+    }
+
+    public function matches(mixed $criterionValue, DiscountCriteriaContext $context): bool
+    {
+        if (! is_array($criterionValue) || $criterionValue === []) {
+            return true;
+        }
+
+        if ($context->product_id === null) {
+            return false;
+        }
+
+        $ids = array_map(intval(...), $criterionValue);
+
+        return in_array($context->product_id, $ids, true);
+    }
+}

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Presentation\Livewire;
 
+use App\Domain\API\Services\RansackFilter;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityParticipant;
 use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityParticipant;
 use App\Domain\Projects\Opportunities\Actions\UpdateOpportunityParticipant;
@@ -12,9 +15,6 @@ use App\Domain\Projects\Opportunities\Data\UpdateOpportunityParticipantData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
 use App\Domain\Projects\Opportunities\Presentation\Concerns\HasOpportunityActions;
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Services\Api\RansackFilter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

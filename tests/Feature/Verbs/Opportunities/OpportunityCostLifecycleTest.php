@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityCost;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
@@ -21,7 +22,6 @@ use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

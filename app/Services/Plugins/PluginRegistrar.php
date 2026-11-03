@@ -2,7 +2,6 @@
 
 namespace App\Services\Plugins;
 
-use App\Contracts\Notifications\RecipientResolver;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Services\ChannelProviderRegistry;
 use App\Domain\Communications\Services\MergeFieldFilterRegistry;
@@ -13,6 +12,9 @@ use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\Domain\Documents\Services\DocumentTypeRegistry;
 use App\Domain\Documents\Services\PdfDriverManager;
 use App\Domain\Documents\Services\PluginDocumentTemplateSeederRegistry;
+use App\Domain\Notifications\Contracts\RecipientResolver;
+use App\Domain\Notifications\Services\RecipientResolverRegistry;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Events\BeforeContainerDispatched;
 use App\Domain\Warehouse\Containers\Events\BeforeContainerDissolved;
 use App\Domain\Warehouse\Containers\Events\BeforeContainerItemTransferred;
@@ -25,8 +27,6 @@ use App\Domain\Warehouse\Containers\Events\ContainerItemTransferred;
 use App\Domain\Warehouse\Containers\Events\ContainerPacked;
 use App\Domain\Warehouse\Containers\Events\ContainerRepackStarted;
 use App\Domain\Warehouse\Containers\Events\ContainerSealed;
-use App\Models\Store;
-use App\Services\Notifications\RecipientResolverRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 

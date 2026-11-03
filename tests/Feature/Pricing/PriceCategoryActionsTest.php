@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Pricing\CreatePriceCategory;
-use App\Actions\Pricing\DeletePriceCategory;
-use App\Actions\Pricing\UpdatePriceCategory;
-use App\Data\Pricing\CreatePriceCategoryData;
-use App\Data\Pricing\UpdatePriceCategoryData;
-use App\Events\AuditableEvent;
-use App\Models\PriceCategory;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Pricing\Actions\CreatePriceCategory;
+use App\Domain\Pricing\Actions\DeletePriceCategory;
+use App\Domain\Pricing\Actions\UpdatePriceCategory;
+use App\Domain\Pricing\Data\CreatePriceCategoryData;
+use App\Domain\Pricing\Data\UpdatePriceCategoryData;
+use App\Domain\Pricing\Models\PriceCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -7,8 +7,8 @@ namespace App\Domain\Activities\Actions;
 use App\Domain\Activities\Data\ActivityData;
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Models\Activity;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

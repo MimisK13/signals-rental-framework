@@ -2,9 +2,9 @@
 
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
-use App\Models\Country;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Members\Models\Member;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\Stores\Models\Store;
 use App\Services\FieldBuilder;
 use App\Services\SchemaBuilder;
 use App\Services\SchemaRegistry;

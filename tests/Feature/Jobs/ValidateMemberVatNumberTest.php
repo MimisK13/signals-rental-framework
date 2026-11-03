@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Tax\Actions\ProcessMemberVatValidation;
 use App\Domain\Tax\Contracts\VatNumberValidator;
 use App\Domain\Tax\Exceptions\ViesServiceUnavailableException;
 use App\Domain\Tax\Jobs\ValidateMemberVatNumber;
 use App\Domain\Tax\ValueObjects\VatValidationResult;
-use App\Models\Member;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Queue\Middleware\ThrottlesExceptions;
 

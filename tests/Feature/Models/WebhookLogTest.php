@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Webhook;
-use App\Models\WebhookLog;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
 use Carbon\CarbonImmutable;
 
 it('belongs to a webhook', function () {

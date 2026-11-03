@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Warehouse\Containers\Database\Factories;
 
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerBulkMembership;
-use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

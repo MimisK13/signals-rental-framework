@@ -6,9 +6,9 @@ namespace App\Domain\Documents\Services;
 
 use App\Domain\Documents\Contracts\DocumentDataResolver;
 use App\Domain\Invoices\Models\InvoicePayment;
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Stores\Models\Store;
 use App\Services\FieldBuilder;
 use App\Services\SchemaBuilder;
 use App\Support\Timezone;

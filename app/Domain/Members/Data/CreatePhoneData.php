@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Members\Data;
+
+use Spatie\LaravelData\Attributes\Validation\Required;
+use Spatie\LaravelData\Data;
+
+class CreatePhoneData extends Data
+{
+    public function __construct(
+        #[Required]
+        public string $number,
+        public ?string $country_code = null,
+        public ?int $type_id = null,
+        public bool $is_primary = false,
+    ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function rules(): array
+    {
+        return [
+            'number' => ['required', 'string', 'max:50'],
+            'country_code' => ['sometimes', 'nullable', 'string', 'size:2'],
+            'type_id' => ['sometimes', 'nullable', 'integer', 'exists:list_values,id'],
+            'is_primary' => ['sometimes', 'boolean'],
+        ];
+    }
+}

@@ -1,14 +1,15 @@
 <?php
 
+use App\Domain\Pricing\Enums\DiscountRuleScope;
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Models\DiscountRule;
+use App\Domain\Pricing\Services\DiscountRuleEvaluator;
+use App\Domain\Pricing\Services\QuantityContextResolver;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Enums\DiscountRuleScope;
+use App\Domain\ReferenceData\Models\RevenueGroup;
 use App\Enums\LineItemTransactionType;
-use App\Models\DiscountCategory;
-use App\Models\DiscountRule;
-use App\Services\Pricing\DiscountRuleEvaluator;
-use App\Services\Pricing\QuantityContextResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -137,11 +138,12 @@ it('uses aggregate_group quantity within a revenue group', function () {
     $productA = Product::factory()->rental()->create();
     $productB = Product::factory()->rental()->create();
     $opportunity = Opportunity::factory()->create();
-    $groupId = 42;
+    $groupId = RevenueGroup::factory()->create()->id;
+    $otherGroupId = RevenueGroup::factory()->create()->id;
 
     $lineA = quantityLineItem($opportunity, $productA, 3, $groupId);
     $lineB = quantityLineItem($opportunity, $productB, 5, $groupId);
-    $otherGroup = quantityLineItem($opportunity, $productA, 5, 99);
+    $otherGroup = quantityLineItem($opportunity, $productA, 5, $otherGroupId);
 
     $evaluator = app(DiscountRuleEvaluator::class);
     $maps = app(QuantityContextResolver::class)->resolve($opportunity, collect([$lineA, $lineB, $otherGroup]));

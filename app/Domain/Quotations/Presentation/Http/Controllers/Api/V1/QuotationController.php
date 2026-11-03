@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Quotations\Actions\ClearQuotationDealPrice;
 use App\Domain\Quotations\Actions\CreateQuotation;
 use App\Domain\Quotations\Actions\SetQuotationDealPrice;
@@ -12,7 +13,6 @@ use App\Domain\Quotations\Data\QuotationData;
 use App\Domain\Quotations\Data\SetQuotationDealPriceData;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Http\Controllers\Api\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

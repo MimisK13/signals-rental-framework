@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Services;
 
+use App\Domain\Pricing\Services\RoundingStrategy;
 use App\Domain\Tax\Contracts\TaxResolver;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\ValueObjects\TaxResult;
-use App\Services\Pricing\RoundingStrategy;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierBills\Policies;
 
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Domain\SupplierBills\Enums\SupplierBillStatus;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Models\User;
-use App\Policies\Traits\ChecksStoreAccess;
 use Illuminate\Database\Eloquent\Model;
 
 class SupplierBillPolicy

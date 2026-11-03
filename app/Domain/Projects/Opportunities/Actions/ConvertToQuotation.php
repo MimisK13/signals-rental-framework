@@ -6,9 +6,9 @@ namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
-use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityQuoted;
 
 /**

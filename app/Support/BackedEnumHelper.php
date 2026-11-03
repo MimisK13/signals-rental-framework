@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Rates\Enums\RateTransactionType;
-use App\Services\Api\RansackFilter;
 use BackedEnum;
 
 /**

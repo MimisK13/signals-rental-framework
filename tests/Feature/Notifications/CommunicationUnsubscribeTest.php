@@ -2,7 +2,7 @@
 
 use App\Domain\Communications\Services\CommunicationPreferences;
 use App\Domain\Communications\Services\CustomerCommunicationUnsubscribeUrl;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Warehouse\Containers\Services;
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 
 /**

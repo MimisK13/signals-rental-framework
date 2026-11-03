@@ -1,7 +1,7 @@
 <?php
 
-use App\Data\Stores\UpdateStoreData;
-use App\Models\Country;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\Stores\Data\UpdateStoreData;
 use Illuminate\Validation\ValidationException;
 
 describe('UpdateStoreData', function () {

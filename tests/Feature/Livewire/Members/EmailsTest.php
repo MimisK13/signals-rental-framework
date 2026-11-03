@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
-use App\Livewire\Members\EmailForm;
-use App\Livewire\Members\Emails;
-use App\Models\Email;
-use App\Models\Member;
+use App\Domain\Members\Models\Email;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\EmailForm;
+use App\Domain\Members\Presentation\Livewire\Emails;
 use App\Models\User;
 use Livewire\Livewire;
 

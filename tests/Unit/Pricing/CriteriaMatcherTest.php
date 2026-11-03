@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\Pricing\CriteriaMatcher;
-use App\ValueObjects\Pricing\DiscountCriteriaContext;
+use App\Domain\Pricing\Services\CriteriaMatcher;
+use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
 use Tests\TestCase;
 
 uses(TestCase::class);

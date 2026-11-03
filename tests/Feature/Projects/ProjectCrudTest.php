@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Actions\CreateProject;
 use App\Domain\Projects\Actions\DeleteProject;
 use App\Domain\Projects\Actions\UpdateProject;
@@ -8,8 +10,6 @@ use App\Domain\Projects\Data\UpdateProjectData;
 use App\Domain\Projects\Database\Seeders\ProjectSeeder;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
-use App\Enums\MembershipType;
-use App\Models\Member;
 use App\Models\User;
 
 beforeEach(function (): void {

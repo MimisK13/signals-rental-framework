@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Products\Actions\CreateAccessory;
 use App\Domain\Products\Actions\DeleteAccessory;
 use App\Domain\Products\Actions\UpdateAccessory;
@@ -12,7 +13,6 @@ use App\Domain\Products\Data\CreateAccessoryData;
 use App\Domain\Products\Data\UpdateAccessoryData;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
-use App\Http\Controllers\Api\Controller;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

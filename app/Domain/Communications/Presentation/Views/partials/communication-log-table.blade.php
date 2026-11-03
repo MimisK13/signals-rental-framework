@@ -24,7 +24,7 @@
                         <td class="text-[11px]">{{ $log->channel }}</td>
                         <td><span class="s-status s-status-neutral">{{ $statuses[$log->status]['label'] ?? $log->status }}</span></td>
                         <td class="text-[11px]">
-                            @if($log->notifiable instanceof \App\Models\Member)
+                            @if($log->notifiable instanceof \App\Domain\Members\Models\Member)
                                 {{ $log->notifiable->name }}
                             @else
                                 {{ $log->recipient_address ?? '—' }}

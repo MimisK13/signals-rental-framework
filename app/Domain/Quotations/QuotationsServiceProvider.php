@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations;
 
+use App\Domain\API\Services\AbilityRegistry;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\Domain\Documents\Services\DocumentTypeRegistry;
+use App\Domain\Notifications\Services\EventNotificationMapRegistry;
+use App\Domain\Notifications\Services\NotificationRegistry;
 use App\Domain\Quotations\Events\QuotationDomainEvent;
 use App\Domain\Quotations\Listeners\DispatchQuotationWebhook;
 use App\Domain\Quotations\Models\Quotation;
@@ -13,10 +16,7 @@ use App\Domain\Quotations\Policies\QuotationPolicy;
 use App\Domain\Quotations\Presentation\Livewire\Editor;
 use App\Domain\Quotations\Presentation\Livewire\Form;
 use App\Domain\Quotations\Presentation\Livewire\Index;
-use App\Services\Api\AbilityRegistry;
-use App\Services\Api\WebhookEventRegistry;
-use App\Services\NotificationRegistry;
-use App\Services\Notifications\EventNotificationMapRegistry;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;

@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Lists\Actions\CreateListName;
 use App\Domain\Lists\Actions\DeleteListName;
 use App\Domain\Lists\Actions\UpdateListName;
 use App\Domain\Lists\Data\CreateListNameData;
 use App\Domain\Lists\Data\UpdateListNameData;
 use App\Domain\Lists\Models\ListName;
-use App\Events\AuditableEvent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

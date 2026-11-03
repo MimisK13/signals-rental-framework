@@ -4,9 +4,14 @@
  * P4-CL4b burndown batch 5 — classes 1–18 (cheapest-first slice).
  */
 
-use App\Actions\Notifications\MarkNotificationRead;
-use App\Actions\Pricing\DeleteSurcharge;
-use App\Actions\VirtualStock\ApportionVirtualStockCost;
+use App\Domain\API\Jobs\ExportApiUsage;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
+use App\Domain\API\Queries\UsageQuery;
+use App\Domain\API\Services\PriceWeightResolver;
+use App\Domain\API\Services\UsageRecorder;
+use App\Domain\API\Support\MeteringBodyRedactor;
 use App\Domain\Communications\Actions\LogCommunication;
 use App\Domain\Communications\Actions\SendBillingCustomerCommunication;
 use App\Domain\Communications\Data\CreateCommunicationLogData;
@@ -30,6 +35,14 @@ use App\Domain\Invoices\Presentation\Http\Controllers\Api\V1\CreditNoteControlle
 use App\Domain\Lists\Actions\UpdateListName;
 use App\Domain\Lists\Data\UpdateListNameData;
 use App\Domain\Lists\Presentation\Http\Controllers\Api\V1\ListNameController;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Members\Presentation\Http\Controllers\Api\V1\MemberController;
+use App\Domain\Notifications\Actions\MarkNotificationRead;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Pricing\Actions\DeleteSurcharge;
+use App\Domain\Pricing\Models\Surcharge;
+use App\Domain\Pricing\Presentation\Http\Controllers\Api\V1\SurchargeController;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -46,6 +59,8 @@ use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Data\UpdateDraftPurchaseOrderData;
 use App\Domain\PurchaseOrders\Presentation\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\ApportionVirtualStockCost;
 use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
 use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
 use App\Domain\Warehouse\Containers\Data\DispatchContainerData;
@@ -53,22 +68,7 @@ use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\BillingCommunicationKind;
-use App\Http\Controllers\Api\V1\MemberController;
-use App\Http\Controllers\Api\V1\SurchargeController;
-use App\Http\Middleware\LogApiRequest;
-use App\Jobs\ExportApiUsage;
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\NotificationType;
-use App\Models\RequestLog;
-use App\Models\Store;
-use App\Models\Surcharge;
-use App\Models\UsageDaily;
 use App\Models\User;
-use App\Queries\Api\UsageQuery;
-use App\Services\Api\PriceWeightResolver;
-use App\Services\Api\UsageRecorder;
-use App\Support\Api\MeteringBodyRedactor;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -396,17 +396,17 @@ it('MarkNotificationRead requires a member profile and existing notification id'
 
     $notification = $member->notifications()->create([
         'id' => (string) str()->uuid(),
-        'type' => 'App\Notifications\TestPipelineNotification',
+        'type' => 'App\Domain\Notifications\Notifications\TestPipelineNotification',
         'data' => ['title' => 'Unread'],
     ]);
 
     (new MarkNotificationRead)($user, $notification->id);
 
-    expect($notification->fresh()->read_at)->not->toBeNull();
+    expect($notification->fresh()->getAttribute('read_at'))->not->toBeNull();
 
     $member->notifications()->create([
         'id' => (string) str()->uuid(),
-        'type' => 'App\Notifications\TestPipelineNotification',
+        'type' => 'App\Domain\Notifications\Notifications\TestPipelineNotification',
         'data' => ['title' => 'Also unread'],
     ]);
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Tax\Actions\CreateOrganisationTaxClass;
 use App\Domain\Tax\Actions\CreateProductTaxClass;
 use App\Domain\Tax\Actions\DeleteOrganisationTaxClass;
@@ -10,7 +11,6 @@ use App\Domain\Tax\Data\CreateTaxClassData;
 use App\Domain\Tax\Data\UpdateTaxClassData;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Events\AuditableEvent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

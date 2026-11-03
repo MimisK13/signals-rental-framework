@@ -6,9 +6,9 @@ namespace App\Domain\Documents\Policies;
 
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
-use App\Policies\Traits\ChecksStoreAccess;
 use Illuminate\Database\Eloquent\Model;
 
 class DocumentPolicy

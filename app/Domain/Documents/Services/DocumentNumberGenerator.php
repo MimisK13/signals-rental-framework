@@ -8,7 +8,7 @@ use App\Domain\Documents\Enums\DocumentSequenceResetFrequency;
 use App\Domain\Documents\Exceptions\DuplicateDocumentNumberException;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentSequence;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Stores\Scopes\StoreScope;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Closure;

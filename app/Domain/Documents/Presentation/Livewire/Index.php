@@ -15,7 +15,7 @@ use App\Domain\Documents\Data\UpdateDocumentTemplateData;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

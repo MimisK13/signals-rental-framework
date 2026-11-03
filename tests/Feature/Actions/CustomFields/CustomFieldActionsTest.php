@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Actions\CreateCustomField;
 use App\Domain\CustomFields\Actions\DeleteCustomField;
 use App\Domain\CustomFields\Actions\UpdateCustomField;
@@ -7,8 +8,7 @@ use App\Domain\CustomFields\Data\CreateCustomFieldData;
 use App\Domain\CustomFields\Data\UpdateCustomFieldData;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
-use App\Events\AuditableEvent;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use App\Services\SchemaRegistry;
 use Database\Seeders\PermissionSeeder;

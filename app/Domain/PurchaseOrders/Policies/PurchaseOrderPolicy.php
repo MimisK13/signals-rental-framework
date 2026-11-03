@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\PurchaseOrders\Policies;
 
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Models\User;
-use App\Policies\Traits\ChecksStoreAccess;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrderPolicy

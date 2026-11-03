@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Models\UsageDaily;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\UsageDaily;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

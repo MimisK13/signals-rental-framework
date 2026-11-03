@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemsRestructured;
+use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Models\ActionLog;
-use App\Models\Store;
 use App\Models\User;
 use App\Services\SequenceAllocator;
 use Database\Seeders\PermissionSeeder;

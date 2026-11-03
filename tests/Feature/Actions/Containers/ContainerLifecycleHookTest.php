@@ -2,6 +2,7 @@
 
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
 use App\Domain\Warehouse\Containers\Actions\TransferContainerItem;
 use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
@@ -10,7 +11,6 @@ use App\Domain\Warehouse\Containers\Events\BeforeContainerItemTransferred;
 use App\Domain\Warehouse\Containers\Events\BeforeContainerPacked;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

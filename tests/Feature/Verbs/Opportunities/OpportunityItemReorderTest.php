@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Actions\RestructureOpportunityItems;
@@ -9,7 +10,6 @@ use App\Domain\Projects\Opportunities\Data\OpportunityItemData;
 use App\Domain\Projects\Opportunities\Data\RestructureOpportunityItemsData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\ActionLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

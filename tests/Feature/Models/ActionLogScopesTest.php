@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\ActionLog;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Models\User;
 
 describe('scopeForEntity', function () {

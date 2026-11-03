@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Policies;
 
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\User;
-use App\Policies\Traits\ChecksStoreAccess;
 
 final class ContainerPolicy
 {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew;
 
+use App\Domain\API\Services\AbilityRegistry;
 use App\Domain\Crew\Console\AnonymiseExpiredCrewContacts;
 use App\Domain\Crew\Console\ExpireCrewInvitations;
 use App\Domain\Crew\Console\ScanCrewQualifications;
@@ -40,11 +41,10 @@ use App\Domain\Crew\Services\CrewEventDefinitions;
 use App\Domain\Crew\Services\CrewRecipientResolver;
 use App\Domain\Crew\Services\CrewStatusRegistry;
 use App\Domain\Crew\Settings\CrewSettings;
+use App\Domain\Notifications\Services\EventNotificationMapRegistry;
+use App\Domain\Notifications\Services\RecipientResolverRegistry;
 use App\Domain\Projects\Models\Project;
-use App\Services\Api\AbilityRegistry;
-use App\Services\Api\WebhookEventRegistry;
-use App\Services\Notifications\EventNotificationMapRegistry;
-use App\Services\Notifications\RecipientResolverRegistry;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use App\Services\SettingsRegistry;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Factories\Factory;

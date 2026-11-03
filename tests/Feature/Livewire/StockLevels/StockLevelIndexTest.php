@@ -3,8 +3,8 @@
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Presentation\Livewire\Index;
+use App\Domain\Stores\Models\Store;
 use App\Livewire\Components\DataTable;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

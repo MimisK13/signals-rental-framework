@@ -2,6 +2,7 @@
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Domain\Products\Presentation\Columns\ProductColumnRegistry;
 use App\Domain\Products\Presentation\Columns\ProductGroupColumnRegistry;
 use App\Domain\Products\Presentation\Columns\SerialisedComponentColumnRegistry;
@@ -14,7 +15,6 @@ use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Domain\Warehouse\Containers\Presentation\Columns\ContainerColumnRegistry;
 use App\Views\ColumnRegistry;
-use App\Views\MemberColumnRegistry;
 
 dataset('column registries', [
     'products' => [ProductColumnRegistry::class, 'products', 'name'],

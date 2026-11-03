@@ -1,10 +1,11 @@
 <?php
 
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Stores\Presentation\Livewire\Admin\Stores;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -27,7 +28,7 @@ it('lists existing stores', function () {
     Store::factory()->create(['name' => 'London Warehouse']);
     Store::factory()->create(['name' => 'Manchester Depot']);
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->assertSee('London Warehouse')
         ->assertSee('Manchester Depot');
 });
@@ -35,7 +36,7 @@ it('lists existing stores', function () {
 it('can create a store', function () {
     settings()->set('company.country_code', 'GB');
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('openCreateModal')
         ->assertDispatched('open-store-modal')
         ->set('storeName', 'New Store')
@@ -50,7 +51,7 @@ it('can create a store', function () {
 it('sets first store as default automatically', function () {
     settings()->set('company.country_code', 'GB');
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('openCreateModal')
         ->set('storeName', 'First Store')
         ->set('storeCountryCode', 'GB')
@@ -63,7 +64,7 @@ it('can set a store as default', function () {
     $store1 = Store::factory()->default()->create(['name' => 'Store A']);
     $store2 = Store::factory()->create(['name' => 'Store B']);
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('setDefault', $store2->id);
 
     expect($store1->fresh()->is_default)->toBeFalse();
@@ -71,7 +72,7 @@ it('can set a store as default', function () {
 });
 
 it('validates required fields when creating a store', function () {
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('openCreateModal')
         ->set('storeName', '')
         ->set('storeCountryCode', '')
@@ -82,7 +83,7 @@ it('validates required fields when creating a store', function () {
 it('can edit a store', function () {
     $store = Store::factory()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('openEditModal', $store->id)
         ->assertSet('storeName', 'Old Name')
         ->set('storeName', 'New Name')
@@ -95,7 +96,7 @@ it('can delete a non-default store', function () {
     Store::factory()->default()->create();
     $store = Store::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('deleteStore', $store->id);
 
     expect(Store::where('name', 'To Delete')->exists())->toBeFalse();
@@ -104,7 +105,7 @@ it('can delete a non-default store', function () {
 it('cannot delete the default store and shows error', function () {
     $store = Store::factory()->default()->create(['name' => 'Default Store']);
 
-    Volt::test('admin.settings.stores')
+    Livewire::test(Stores::class)
         ->call('deleteStore', $store->id)
         ->assertHasErrors('deleteStore');
 

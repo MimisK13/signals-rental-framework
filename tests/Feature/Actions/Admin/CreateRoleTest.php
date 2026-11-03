@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\Admin\CreateRole;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

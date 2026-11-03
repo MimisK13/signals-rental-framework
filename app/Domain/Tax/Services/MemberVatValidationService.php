@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Services;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Tax\Jobs\ValidateMemberVatNumber;
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 

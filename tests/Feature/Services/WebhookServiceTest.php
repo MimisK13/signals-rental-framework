@@ -1,8 +1,9 @@
 <?php
 
-use App\Jobs\DeliverWebhook;
-use App\Models\Webhook;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -76,10 +77,10 @@ it('logs error and continues when individual dispatch fails', function () {
     app(WebhookService::class)->dispatch('user.created', ['id' => 1]);
 });
 
-it('returns available events constant', function () {
+it('returns all registered events', function () {
     $service = new WebhookService;
 
-    expect($service->availableEvents())->toBe(WebhookService::EVENTS);
+    expect($service->availableEvents())->toBe(app(WebhookEventRegistry::class)->names());
     expect($service->availableEvents())->toContain('user.created');
     expect($service->availableEvents())->toContain('settings.updated');
 });

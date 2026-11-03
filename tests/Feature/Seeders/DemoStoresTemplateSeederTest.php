@@ -6,9 +6,9 @@ use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
-use App\Models\Store;
-use Database\Seeders\NotificationTypeSeeder;
-use Database\Seeders\StoreSeeder;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Stores\Database\Seeders\StoreSeeder;
+use App\Domain\Stores\Models\Store;
 
 require_once __DIR__.'/../../Support/DemoSeederTestHelpers.php';
 

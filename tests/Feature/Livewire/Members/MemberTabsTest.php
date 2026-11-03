@@ -1,13 +1,15 @@
 <?php
 
-use App\Models\Address;
-use App\Models\Email;
-use App\Models\Link;
-use App\Models\Member;
-use App\Models\MemberRelationship;
-use App\Models\Phone;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Email;
+use App\Domain\Members\Models\Link;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Models\Phone;
+use App\Domain\Members\Presentation\Livewire\Information;
+use App\Domain\Quotations\Models\Quotation;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -15,13 +17,17 @@ beforeEach(function () {
     $this->actingAs($this->user);
 });
 
-describe('stub tab pages', function () {
-    it('renders the quotes tab', function () {
+describe('member related tabs', function () {
+    it('lists only quotations for the member', function () {
         $member = Member::factory()->create();
+        $otherMember = Member::factory()->create();
+        Quotation::factory()->create(['member_id' => $member->id, 'subject' => 'Member quotation']);
+        Quotation::factory()->create(['member_id' => $otherMember->id, 'subject' => 'Other quotation']);
 
         $this->get("/members/{$member->id}/quotes")
             ->assertOk()
-            ->assertSee('Quotes Coming Soon');
+            ->assertSee('Member quotation')
+            ->assertDontSee('Other quotation');
     });
 
     it('renders the opportunities tab', function () {
@@ -77,7 +83,7 @@ describe('information tab inline delete actions', function () {
             'addressable_id' => $member->id,
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->call('deleteAddress', $address->id);
 
         $this->assertDatabaseMissing('addresses', ['id' => $address->id]);
@@ -90,7 +96,7 @@ describe('information tab inline delete actions', function () {
             'emailable_id' => $member->id,
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->call('deleteEmail', $email->id);
 
         $this->assertDatabaseMissing('emails', ['id' => $email->id]);
@@ -103,7 +109,7 @@ describe('information tab inline delete actions', function () {
             'phoneable_id' => $member->id,
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->call('deletePhone', $phone->id);
 
         $this->assertDatabaseMissing('phones', ['id' => $phone->id]);
@@ -116,7 +122,7 @@ describe('information tab inline delete actions', function () {
             'linkable_id' => $member->id,
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->call('deleteLink', $link->id);
 
         $this->assertDatabaseMissing('links', ['id' => $link->id]);
@@ -133,7 +139,7 @@ describe('information tab displays contact details', function () {
             'city' => 'London',
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->assertSee('123 Test Street')
             ->assertSee('London');
     });
@@ -146,7 +152,7 @@ describe('information tab displays contact details', function () {
             'address' => 'test@example.com',
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->assertSee('test@example.com');
     });
 
@@ -158,7 +164,7 @@ describe('information tab displays contact details', function () {
             'number' => '+44 7700 900123',
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->assertSee('+44 7700 900123');
     });
 
@@ -170,7 +176,7 @@ describe('information tab displays contact details', function () {
             'url' => 'https://example.com',
         ]);
 
-        Volt::test('members.information', ['member' => $member])
+        Livewire::test(Information::class, ['member' => $member])
             ->assertSee('https://example.com');
     });
 });

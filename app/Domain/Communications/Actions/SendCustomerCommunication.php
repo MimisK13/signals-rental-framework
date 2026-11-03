@@ -9,7 +9,7 @@ use App\Domain\Communications\Data\SendCustomerCommunicationData;
 use App\Domain\Communications\Jobs\DeliverCustomerCommunication;
 use App\Domain\Communications\Services\CommunicationPreferences;
 use App\Domain\Communications\Services\CommunicationTemplateRenderer;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Gate;
 

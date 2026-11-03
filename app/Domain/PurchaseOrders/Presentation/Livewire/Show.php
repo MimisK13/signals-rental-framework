@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Presentation\Livewire;
 
-use App\Actions\VirtualStock\ReturnVirtualStockIntake;
-use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Domain\PurchaseOrders\Actions\CancelPurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\DeleteDraftPurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\ReceivePurchaseOrder;
@@ -13,10 +11,12 @@ use App\Domain\PurchaseOrders\Actions\SendPurchaseOrder;
 use App\Domain\PurchaseOrders\Data\ReceivePurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderStatusRegistry;
+use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
+use App\Domain\VirtualStock\Data\ReturnVirtualStockIntakeData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Services\VirtualStockIntakeReturnGuard;
+use App\Domain\VirtualStock\Services\VirtualStockStatusRegistry;
 use App\Livewire\Concerns\HandlesVerbsStateErrors;
-use App\Models\VirtualStockIntake;
-use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
-use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

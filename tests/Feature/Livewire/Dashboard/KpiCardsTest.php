@@ -2,15 +2,15 @@
 
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Stores\Models\Store;
 use App\Enums\AssetAssignmentStatus;
 use App\Livewire\Dashboard\KpiCards;
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\Store;
 use App\Models\User;
 use App\Services\Dashboard\DashboardKpiService;
 use Database\Seeders\PermissionSeeder;

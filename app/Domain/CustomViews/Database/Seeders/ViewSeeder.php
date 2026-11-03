@@ -8,12 +8,12 @@ use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
 use App\Domain\CustomViews\Models\CustomView;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Domain\Products\Presentation\Columns\ProductColumnRegistry;
 use App\Domain\Products\Presentation\Columns\ProductGroupColumnRegistry;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
-use App\Views\MemberColumnRegistry;
 use Illuminate\Database\Seeder;
 
 final class ViewSeeder extends Seeder

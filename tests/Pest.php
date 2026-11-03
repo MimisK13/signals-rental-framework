@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
-use App\Models\Member;
-use App\Models\Store;
-use App\Models\VirtualStockIntake;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\CreateVirtualStockIntake;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

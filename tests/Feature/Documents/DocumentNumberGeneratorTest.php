@@ -4,7 +4,7 @@ use App\Domain\Documents\Exceptions\DuplicateDocumentNumberException;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Services\DocumentNumberGenerator;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Carbon\CarbonImmutable;
 
 describe('DocumentNumberGenerator', function () {

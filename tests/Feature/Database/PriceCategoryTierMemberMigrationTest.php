@@ -1,35 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\UsesIsolatedSqliteMigrations;
 
 uses(UsesIsolatedSqliteMigrations::class);
 
-const PRICE_CATEGORY_TIER_MEMBER_MIGRATION = '2026_07_04_120230_add_price_category_tier_id_to_members_table';
+const PRICE_CATEGORY_TIER_MEMBER_MIGRATION = 'app/Domain/Pricing/Database/Migrations/2026_07_03_102527_link_members_to_price_category_tiers_table.php';
 
-describe('price category tier member migration (sqlite)', function () {
-    it('adds price_category_tier_id to members', function () {
-        expect(Schema::hasColumn('members', 'price_category_tier_id'))->toBeTrue();
+describe('price category tier member link migration (sqlite)', function () {
+    it('links price_category_tier_id on members', function () {
+        $indexes = collect(Schema::getIndexes('members'))->pluck('name');
+
+        expect(Schema::hasColumn('members', 'price_category_tier_id'))->toBeTrue()
+            ->and($indexes)->toContain('members_price_category_tier_id_index');
     });
 
     it('rolls back and re-applies without leaving a stale index on sqlite', function () {
-        $steps = DB::table('migrations')
-            ->where('migration', '>=', PRICE_CATEGORY_TIER_MEMBER_MIGRATION)
-            ->count();
+        $migration = require base_path(PRICE_CATEGORY_TIER_MEMBER_MIGRATION);
+        $migration->down();
 
-        Artisan::call('migrate:rollback', [
-            '--step' => $steps,
-            '--force' => true,
-        ]);
+        $indexes = collect(Schema::getIndexes('members'))->pluck('name');
 
-        expect(Schema::hasColumn('members', 'price_category_tier_id'))->toBeFalse();
+        expect(Schema::hasColumn('members', 'price_category_tier_id'))->toBeTrue()
+            ->and($indexes)->not->toContain('members_price_category_tier_id_index');
 
-        Artisan::call('migrate', [
-            '--force' => true,
-        ]);
+        $migration->up();
 
-        expect(Schema::hasColumn('members', 'price_category_tier_id'))->toBeTrue();
+        $indexes = collect(Schema::getIndexes('members'))->pluck('name');
+
+        expect(Schema::hasColumn('members', 'price_category_tier_id'))->toBeTrue()
+            ->and($indexes)->toContain('members_price_category_tier_id_index');
     });
 });

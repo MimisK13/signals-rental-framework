@@ -2,7 +2,7 @@
 
 namespace App\Services\Planning;
 
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Collection;
 
 /**

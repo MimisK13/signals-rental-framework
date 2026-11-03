@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Services;
 
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Services\FileService;
 
 /**

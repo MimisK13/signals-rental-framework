@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Actions\CreateContainer;
 use App\Domain\Warehouse\Containers\Actions\CreateTemporaryContainer;
 use App\Domain\Warehouse\Containers\Data\CreateContainerData;
 use App\Domain\Warehouse\Containers\Data\CreateTemporaryContainerData;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
-use App\Models\MemberStore;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

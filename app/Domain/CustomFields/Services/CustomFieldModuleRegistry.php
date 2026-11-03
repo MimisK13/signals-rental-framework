@@ -8,12 +8,12 @@ use App\Domain\Activities\Models\Activity;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRequest;
 use App\Domain\CustomFields\Concerns\HasCustomFields;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 
 /**

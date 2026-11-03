@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Members\ArchiveMember;
-use App\Events\AuditableEvent;
-use App\Jobs\DeliverWebhook;
-use App\Models\Member;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Members\Actions\ArchiveMember;
+use App\Domain\Members\Models\Member;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
 use App\Models\User;
-use App\Models\Webhook;
-use App\Models\WebhookLog;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

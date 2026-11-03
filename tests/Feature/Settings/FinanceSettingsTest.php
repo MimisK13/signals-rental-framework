@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Enums\TaxPointPolicy;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use App\Services\SettingsRegistry;
 use App\Settings\FinanceSettings;

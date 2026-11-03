@@ -1,12 +1,13 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Models\UsageDaily;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\API\Presentation\Livewire\Usage;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -87,7 +88,7 @@ it('shows summary totals and breakdown tables for seeded usage data', function (
 
     $this->actingAs($this->user);
 
-    Volt::test('api.usage')
+    Livewire::test(Usage::class)
         ->assertSee('115')
         ->assertSee('128')
         ->assertSee('alpha-token')
@@ -123,7 +124,7 @@ it('changes totals when the date window preset changes', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.usage')
+    Livewire::test(Usage::class)
         ->assertSee('111')
         ->assertDontSee('api.v1.members.index')
         ->call('setDatePreset', '30d')
@@ -154,7 +155,7 @@ it('narrows totals when a channel filter is applied', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.usage')
+    Livewire::test(Usage::class)
         ->assertSee('9,918')
         ->assertSee('invoice.issued')
         ->call('setChannel', 'api')
@@ -196,7 +197,7 @@ it('renders status split counts for 2xx 4xx and 5xx', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.usage')
+    Livewire::test(Usage::class)
         ->assertSee('Status split')
         ->assertSee('2xx')
         ->assertSee('4xx')
@@ -219,7 +220,7 @@ it('streams a CSV download synchronously and toasts when exporting', function ()
 
     $this->actingAs($this->user);
 
-    Volt::test('api.usage')
+    Livewire::test(Usage::class)
         ->call('setChannel', 'api')
         ->set('filterDatePreset', '24h')
         ->call('exportCsv')

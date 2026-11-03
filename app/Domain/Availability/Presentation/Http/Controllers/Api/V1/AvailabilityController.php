@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Products\Models\Product;
-use App\Http\Controllers\Api\Controller;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

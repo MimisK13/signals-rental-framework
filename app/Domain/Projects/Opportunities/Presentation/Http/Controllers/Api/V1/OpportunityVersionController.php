@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
 use App\Domain\Projects\Opportunities\Actions\ActivateVersion;
 use App\Domain\Projects\Opportunities\Actions\ChangeVersionLabel;
@@ -15,7 +16,6 @@ use App\Domain\Projects\Opportunities\Actions\SendVersion;
 use App\Domain\Projects\Opportunities\Data\ChangeVersionLabelData;
 use App\Domain\Projects\Opportunities\Data\CreateVersionData;
 use App\Domain\Projects\Opportunities\Data\OpportunityVersionData;
-use App\Http\Controllers\Api\Controller;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;

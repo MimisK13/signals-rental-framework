@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\InboundWebhookLog;
-use App\Models\InboundWebhookSource;
-use App\Models\RequestLog;
-use App\Models\UsageDaily;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;

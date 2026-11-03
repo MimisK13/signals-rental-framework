@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Country;
+use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Lists\Models\ListName;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
@@ -77,12 +77,12 @@ new #[Layout('components.layouts.app')] #[Title('Seeders')] class extends Compon
 
         $rateDefinitionsSeeded = Schema::hasTable('rate_definitions') && \App\Domain\Rates\Models\RateDefinition::query()->where('is_preset', true)->exists();
 
-        $storesSeeded = Schema::hasTable('stores') && \App\Models\Store::query()->exists();
+        $storesSeeded = Schema::hasTable('stores') && \App\Domain\Stores\Models\Store::query()->exists();
 
         $demoStoresSeeded = Schema::hasTable('stores')
-            && \App\Models\Store::query()->whereJsonContains('tag_list', 'demo-data')->exists();
+            && \App\Domain\Stores\Models\Store::query()->whereJsonContains('tag_list', 'demo-data')->exists();
         $demoMembersSeeded = Schema::hasTable('members')
-            && \App\Models\Member::query()->whereJsonContains('tag_list', 'demo-data')->exists();
+            && \App\Domain\Members\Models\Member::query()->whereJsonContains('tag_list', 'demo-data')->exists();
         $demoInvoicesSeeded = Schema::hasTable('invoices')
             && \App\Domain\Invoices\Models\Invoice::query()->whereJsonContains('tag_list', 'demo-data')->exists();
 

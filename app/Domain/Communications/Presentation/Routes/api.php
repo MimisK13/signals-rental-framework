@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Communications\Presentation\Http\Controllers\Api\V1\ChannelProviderController;
 use App\Domain\Communications\Presentation\Http\Controllers\Api\V1\CommunicationLogController;
 use App\Domain\Communications\Presentation\Http\Controllers\Api\V1\CommunicationTemplateController;
-use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1')->middleware(['api', ForceJsonResponse::class, 'throttle:api', 'auth:sanctum', LogApiRequest::class, 'signals.active-user'])->group(function (): void {

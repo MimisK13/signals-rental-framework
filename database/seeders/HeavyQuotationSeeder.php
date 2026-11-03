@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup;
@@ -16,9 +17,8 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;

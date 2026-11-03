@@ -1,11 +1,11 @@
 <?php
 
-use App\Actions\Members\CreateMemberRelationship;
-use App\Actions\Members\DeleteMemberRelationship;
-use App\Data\Members\CreateMemberRelationshipData;
-use App\Events\AuditableEvent;
-use App\Models\Member;
-use App\Models\MemberRelationship;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Members\Actions\CreateMemberRelationship;
+use App\Domain\Members\Actions\DeleteMemberRelationship;
+use App\Domain\Members\Data\CreateMemberRelationshipData;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\TaxZone;
-use App\Models\Member;
-use App\Models\Store;
 use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\UsesPostgres;
 

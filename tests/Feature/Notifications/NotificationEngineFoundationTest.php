@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\NotificationAudience;
-use App\Models\Member;
-use App\Models\MemberRelationship;
-use App\Models\NotificationSetting;
-use App\Models\NotificationType;
-use App\Services\NotificationRegistry;
-use Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Enums\NotificationAudience;
+use App\Domain\Notifications\Models\NotificationSetting;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Services\NotificationRegistry;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Notification as NotificationFacade;

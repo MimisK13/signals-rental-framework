@@ -3,8 +3,8 @@
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
-use App\Models\Member;
-use App\Views\MemberColumnRegistry;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 
 beforeEach(function () {
     $this->group = CustomFieldGroup::factory()->create();

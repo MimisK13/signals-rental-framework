@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
 use App\Domain\Availability\Shortages\ValueObjects\ConfirmationGateResult;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

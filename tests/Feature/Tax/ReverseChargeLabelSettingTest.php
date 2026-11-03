@@ -1,8 +1,10 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
 use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
@@ -18,8 +20,6 @@ use App\Domain\Tax\Services\DocumentTaxBreakdown;
 use App\Domain\Tax\Services\TaxResolutionContext;
 use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Domain\Tax\ValueObjects\DocumentTaxSummary;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

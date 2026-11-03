@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Actions\CreateTemporaryContainer;
 use App\Domain\Warehouse\Containers\Data\CreateTemporaryContainerData;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

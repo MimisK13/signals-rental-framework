@@ -6,7 +6,7 @@ namespace App\Domain\Communications\Presentation\Livewire;
 
 use App\Domain\Communications\Services\CommunicationLogQuery;
 use App\Domain\Communications\Services\CommunicationLogStatusRegistry;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

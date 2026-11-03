@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Quotations\Events\QuotationDomainEvent;
 use App\Domain\Quotations\Models\Quotation;
-use App\Events\AuditableEvent;
 
 final class QuotationAudit
 {

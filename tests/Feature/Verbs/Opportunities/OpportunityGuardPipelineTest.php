@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Services\NotificationRegistry;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -30,14 +32,12 @@ use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Services\Hooks\ApprovalChainRegistry;
 use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
 use App\Domain\Projects\Opportunities\Services\TransitionRuleRegistry;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
-use App\Services\NotificationRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

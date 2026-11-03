@@ -3,7 +3,7 @@
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\UsesPostgres;

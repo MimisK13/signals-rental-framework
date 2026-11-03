@@ -1,7 +1,6 @@
 <?php
 
-use App\Services\Api\WebhookEventRegistry;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
@@ -19,13 +18,13 @@ uses(TestCase::class);
 function recorderWebhookSourceFiles(): array
 {
     return [
-        app_path('Services/Shortages/ShortageEventRecorder.php'),
-        app_path('Services/VirtualStock/VirtualStockIntakeEventRecorder.php'),
-        app_path('Services/Containers/ContainerEventRecorder.php'),
-        app_path('Services/PurchaseOrders/PurchaseOrderEventRecorder.php'),
-        app_path('Services/Documents/DocumentEventDispatcher.php'),
-        app_path('Services/Documents/DocumentNumberGenerator.php'),
-        ...File::glob(app_path('Actions/Documents/*.php')) ?: [],
+        app_path('Domain/Availability/Shortages/Services/ShortageEventRecorder.php'),
+        app_path('Domain/VirtualStock/Services/VirtualStockIntakeEventRecorder.php'),
+        app_path('Domain/Warehouse/Containers/Services/ContainerEventRecorder.php'),
+        app_path('Domain/PurchaseOrders/Services/PurchaseOrderEventRecorder.php'),
+        app_path('Domain/Documents/Services/DocumentEventDispatcher.php'),
+        app_path('Domain/Documents/Services/DocumentNumberGenerator.php'),
+        ...File::glob(app_path('Domain/Documents/Actions/*.php')) ?: [],
     ];
 }
 
@@ -62,22 +61,18 @@ function recorderDispatchedWebhookEvents(): array
             $events[$event] = true;
         }
 
-        if (str_contains($path, 'DocumentEventDispatcher')
-            || str_contains($path, 'DocumentNumberGenerator')
-            || str_contains($path, 'Actions/Documents')) {
-            preg_match_all(
-                "/DocumentEventDispatcher::class\)->(?:document|template|sequence)\(\s*[^,]+,\s*'([a-z_]+(?:\.[a-z_]+)+)'/s",
-                $contents,
-                $documentMatches,
-            );
+        preg_match_all(
+            "/DocumentEventDispatcher::class\)->(?:document|template|sequence)\(\s*[^,]+,\s*'([a-z_]+(?:\.[a-z_]+)+)'/s",
+            $contents,
+            $documentMatches,
+        );
 
-            foreach ($documentMatches[1] as $event) {
-                $events[$event] = true;
-            }
+        foreach ($documentMatches[1] as $event) {
+            $events[$event] = true;
+        }
 
-            if (str_contains($contents, '->pdfGenerated(')) {
-                $events['document.pdf_generated'] = true;
-            }
+        if (str_contains($contents, '->pdfGenerated(')) {
+            $events['document.pdf_generated'] = true;
         }
 
         if (str_contains($path, 'ShortageEventRecorder.php')) {
@@ -96,11 +91,12 @@ function recorderDispatchedWebhookEvents(): array
     return array_keys($events);
 }
 
-it('exposes names parity with the legacy WebhookService allow-list', function () {
+it('contains every core event and domain event extensions', function () {
     $registry = app(WebhookEventRegistry::class);
 
-    expect($registry->names())->toEqual(WebhookService::EVENTS)
-        ->and($registry->names())->toHaveCount(count(WebhookEventRegistry::CORE_EVENT_NAMES));
+    expect(array_diff(WebhookEventRegistry::CORE_EVENT_NAMES, $registry->names()))->toBe([])
+        ->and($registry->names())->toContain('crew.member.created')
+        ->and($registry->names())->toContain('quotation.sent');
 });
 
 it('defaults webhook event weights to 1', function () {

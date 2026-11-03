@@ -3,8 +3,8 @@
 use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Models\UserViewPreference;
+use App\Domain\Members\Models\Member;
 use App\Livewire\Components\DataTable;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

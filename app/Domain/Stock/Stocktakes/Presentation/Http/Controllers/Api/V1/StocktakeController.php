@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Stocktakes\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Stock\Stocktakes\Actions\CancelStocktake;
 use App\Domain\Stock\Stocktakes\Actions\CompleteStocktake;
 use App\Domain\Stock\Stocktakes\Actions\CreateStocktake;
@@ -14,8 +15,7 @@ use App\Domain\Stock\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stock\Stocktakes\Data\RecordBulkStocktakeObservationData;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Domain\Stock\Stocktakes\Models\StocktakeLine;
-use App\Http\Controllers\Api\Controller;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

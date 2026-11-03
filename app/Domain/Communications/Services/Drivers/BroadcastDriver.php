@@ -9,8 +9,8 @@ use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Data\ChannelSendData;
 use App\Domain\Communications\Data\ChannelTestResultData;
 use App\Domain\Communications\Data\TestChannelProviderData;
-use App\Models\Member;
-use App\Notifications\ChannelInfrastructureBroadcastNotification;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Notifications\ChannelInfrastructureBroadcastNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Notification;
 

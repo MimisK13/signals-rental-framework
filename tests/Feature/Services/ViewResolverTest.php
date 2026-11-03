@@ -5,7 +5,7 @@ use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Models\UserViewPreference;
 use App\Domain\CustomViews\Services\ViewResolver;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 
 beforeEach(function () {

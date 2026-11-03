@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\ActionLog;
+use App\Domain\AuditLog\Models\ActionLog;
 
 it('prunes old action log entries', function () {
     ActionLog::factory()->create(['created_at' => now()->subMonths(13)]);

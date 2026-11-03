@@ -1,24 +1,10 @@
 <?php
 
 use App\Http\Controllers\Web\DocsController;
-use App\Http\Controllers\Web\InboundWebhookController;
 use App\Http\Controllers\Web\SearchController;
-use App\Http\Middleware\VerifyInboundWebhookSignature;
-use App\Livewire\Members\Addresses;
-use App\Livewire\Members\AddressForm;
-use App\Livewire\Members\EmailForm;
-use App\Livewire\Members\Emails;
-use App\Livewire\Members\LinkForm;
-use App\Livewire\Members\Links;
-use App\Livewire\Members\PhoneForm;
-use App\Livewire\Members\Phones;
 use App\Livewire\Planner\Index as PlannerIndex;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
-
-Route::post('webhooks/receive/{source}', InboundWebhookController::class)
-    ->middleware(VerifyInboundWebhookSignature::class)
-    ->name('webhooks.receive');
 
 Route::get('/', function () {
     if (config('signals.installed') && ! config('signals.setup_complete')) {
@@ -40,10 +26,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['signals.setup-required'])->group(function () {
-    Volt::route('setup', 'setup.wizard')->name('setup.wizard');
-});
-
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes
@@ -61,43 +43,9 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
     Volt::route('settings/calendar', 'settings.calendar')->name('settings.calendar');
-    Volt::route('settings/notifications', 'settings.notifications')->name('settings.notifications');
 
     // Search
     Route::get('search', SearchController::class)->name('search');
-
-    // API Console
-    Volt::route('api', 'api.index')->name('api.index');
-    Volt::route('api/explorer', 'api.explorer')->name('api.explorer');
-    Volt::route('api/logs', 'api.logs')->name('api.logs');
-    Volt::route('api/usage', 'api.usage')->name('api.usage');
-    Volt::route('api/webhooks', 'api.webhooks')->name('api.webhooks');
-
-    // Members
-    Volt::route('members', 'members.index')->name('members.index');
-    Volt::route('members/create', 'members.form')->name('members.create');
-    Volt::route('members/{member}', 'members.show')->name('members.show');
-    Volt::route('members/{member}/edit', 'members.form')->name('members.edit');
-    Route::livewire('members/{member}/addresses', Addresses::class)->name('members.addresses');
-    Route::livewire('members/{member}/addresses/create', AddressForm::class)->name('members.addresses.create');
-    Route::livewire('members/{member}/addresses/{address}/edit', AddressForm::class)->name('members.addresses.edit');
-    Route::livewire('members/{member}/emails', Emails::class)->name('members.emails');
-    Route::livewire('members/{member}/emails/create', EmailForm::class)->name('members.emails.create');
-    Route::livewire('members/{member}/emails/{email}/edit', EmailForm::class)->name('members.emails.edit');
-    Route::livewire('members/{member}/phones', Phones::class)->name('members.phones');
-    Route::livewire('members/{member}/phones/create', PhoneForm::class)->name('members.phones.create');
-    Route::livewire('members/{member}/phones/{phone}/edit', PhoneForm::class)->name('members.phones.edit');
-    Route::livewire('members/{member}/links', Links::class)->name('members.links');
-    Route::livewire('members/{member}/links/create', LinkForm::class)->name('members.links.create');
-    Route::livewire('members/{member}/links/{link}/edit', LinkForm::class)->name('members.links.edit');
-    Volt::route('members/{member}/custom-fields', 'members.custom-fields')->name('members.custom-fields');
-    Volt::route('members/{member}/relationships', 'members.relationships')->name('members.relationships');
-    Volt::route('members/{member}/relationships/create', 'members.relationship-form')->name('members.relationships.create');
-    Volt::route('members/{member}/quotes', 'members.quotes')->name('members.quotes');
-    Volt::route('members/{member}/opportunities', 'members.opportunities')->name('members.opportunities');
-    Volt::route('members/{member}/invoices', 'members.invoices')->name('members.invoices');
-    Volt::route('members/{member}/information', 'members.information')->name('members.information');
-    Volt::route('members/{member}/member-contacts', 'members.member-contacts')->name('members.contacts');
 
     // Stock Levels
 
@@ -110,9 +58,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // Supplier accounts-payable documents.
 
     // Virtual stock
-    Volt::route('virtual-stock', 'virtual-stock.index')->name('virtual-stock.index');
-    Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
-    Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
 
     // Job Planner
     //
@@ -169,7 +114,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
 
     // Account
     Volt::route('admin/settings/company', 'admin.settings.company')->name('admin.settings.company');
-    Volt::route('admin/settings/stores', 'admin.settings.stores')->name('admin.settings.stores');
     Volt::route('admin/settings/branding', 'admin.settings.branding')->name('admin.settings.branding');
 
     // Users & Security
@@ -181,50 +125,29 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin/settings/permissions', 'admin.settings.permissions')->name('admin.settings.permissions');
     Volt::route('admin/settings/security', 'admin.settings.security')->name('admin.settings.security');
 
-    // API
-    Volt::route('admin/settings/api', 'admin.settings.api')->name('admin.settings.api');
-
     // Preferences
     Volt::route('admin/settings/preferences', 'admin.settings.preferences')->name('admin.settings.preferences');
     Volt::route('admin/settings/email', 'admin.settings.email')->name('admin.settings.email');
-    Volt::route('admin/settings/notifications', 'admin.settings.notifications')->name('admin.settings.notifications');
     Volt::route('admin/settings/scheduling', 'admin.settings.scheduling')->name('admin.settings.scheduling');
 
     // Integrations
     Volt::route('admin/settings/integrations', 'admin.settings.integrations')->name('admin.settings.integrations');
 
     // System
-    Volt::route('admin/settings/action-log', 'admin.settings.action-log')->name('admin.settings.action-log');
     Volt::route('admin/settings/system-health', 'admin.settings.system-health')->name('admin.settings.system-health');
     Volt::route('admin/settings/infrastructure', 'admin.settings.infrastructure')->name('admin.settings.infrastructure');
     Volt::route('admin/settings/seeders', 'admin.settings.seeders')->name('admin.settings.seeders');
 
-    // Webhooks (redirected to API Console)
-    Route::redirect('admin/settings/webhooks', '/api/webhooks')->name('admin.settings.webhooks');
-
     // Data
-    Volt::route('admin/settings/countries', 'admin.settings.countries')->name('admin.settings.countries');
 
     Volt::route('admin/settings/finance', 'admin.settings.finance')->name('admin.settings.finance');
 
     // Pricing
 
     // Pricing categories
-    Volt::route('admin/settings/pricing/discount-categories', 'admin.settings.pricing.discount-categories')->name('admin.settings.pricing.discount-categories');
 
     // Documents
     Volt::route('admin/settings/numbering', 'admin.settings.numbering')->name('admin.settings.numbering');
-    Volt::route('admin/settings/pricing/discount-categories/create', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.create');
-    Volt::route('admin/settings/pricing/discount-categories/{discountCategory}/edit', 'admin.settings.pricing.discount-category-form')->name('admin.settings.pricing.discount-categories.edit');
-    Volt::route('admin/settings/pricing/price-categories', 'admin.settings.pricing.price-categories')->name('admin.settings.pricing.price-categories');
-    Volt::route('admin/settings/pricing/price-categories/create', 'admin.settings.pricing.price-category-form')->name('admin.settings.pricing.price-categories.create');
-    Volt::route('admin/settings/pricing/price-categories/{priceCategory}/edit', 'admin.settings.pricing.price-category-form')->name('admin.settings.pricing.price-categories.edit');
-    Volt::route('admin/settings/pricing/bundle-rules', 'admin.settings.pricing.bundle-rules')->name('admin.settings.pricing.bundle-rules');
-    Volt::route('admin/settings/pricing/bundle-rules/create', 'admin.settings.pricing.bundle-rule-form')->name('admin.settings.pricing.bundle-rules.create');
-    Volt::route('admin/settings/pricing/bundle-rules/{bundleRule}/edit', 'admin.settings.pricing.bundle-rule-form')->name('admin.settings.pricing.bundle-rules.edit');
-    Volt::route('admin/settings/pricing/surcharge-groups', 'admin.settings.pricing.surcharge-groups')->name('admin.settings.pricing.surcharge-groups');
-    Volt::route('admin/settings/pricing/surcharge-groups/create', 'admin.settings.pricing.surcharge-group-form')->name('admin.settings.pricing.surcharge-groups.create');
-    Volt::route('admin/settings/pricing/surcharge-groups/{surchargeGroup}/edit', 'admin.settings.pricing.surcharge-group-form')->name('admin.settings.pricing.surcharge-groups.edit');
 });
 
 /*

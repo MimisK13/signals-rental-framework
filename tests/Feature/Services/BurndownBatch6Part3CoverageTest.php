@@ -4,6 +4,7 @@
  * P4-CL4b coverage burn-down batch 6 — classes 46–67 (OpportunityTotalsCalculator through ContainerManifestService).
  */
 
+use App\Domain\API\Services\PriceWeightResolver;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
@@ -32,6 +33,11 @@ use App\Domain\Invoices\Services\CreditNoteNumberGenerator;
 use App\Domain\Invoices\Services\DepositInvoiceCalculator;
 use App\Domain\Invoices\Services\InvoiceMarginCalculator;
 use App\Domain\Invoices\Services\PaymentNumberGenerator;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Services\NotificationLinkResolver;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\Surcharge;
+use App\Domain\Pricing\Services\OpportunityPricingRecalculator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -41,6 +47,7 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItemSurcharge;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderTaxCalculator;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Enums\TaxCategoryType;
 use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\OrganisationTaxClass;
@@ -51,22 +58,15 @@ use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Services\DefaultVatNumberValidator;
 use App\Domain\Tax\Services\TaxCalculator;
 use App\Domain\Tax\Services\TaxRateFallbackResolver;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Services\VirtualStockAssetProvisioner;
+use App\Domain\VirtualStock\Services\VirtualStockIntakeReturnGuard;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerDispatchValidator;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PricingRoundingDirection;
-use App\Models\Member;
-use App\Models\Store;
-use App\Models\Surcharge;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
-use App\Services\Api\PriceWeightResolver;
-use App\Services\Notifications\NotificationLinkResolver;
-use App\Services\Pricing\OpportunityPricingRecalculator;
-use App\Services\VirtualStock\VirtualStockAssetProvisioner;
-use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -415,23 +415,23 @@ describe('NotificationLinkResolver batch-6 branches', function () {
         $member = Member::factory()->create();
 
         $notification = new DatabaseNotification;
-        $notification->data = [
+        $notification->setAttribute('data', [
             'payload' => [
                 'opportunity' => ['id' => $opportunity->id],
             ],
-        ];
+        ]);
         expect($resolver->resolve($notification))->toBe(route('opportunities.show', $opportunity));
 
-        $notification->data = ['payload' => ['action_url' => '/custom/path']];
+        $notification->setAttribute('data', ['payload' => ['action_url' => '/custom/path']]);
         expect($resolver->resolve($notification))->toBe('/custom/path');
 
-        $notification->data = ['payload' => [
+        $notification->setAttribute('data', ['payload' => [
             'subject_type' => Member::class,
             'subject_id' => $member->id,
-        ]];
+        ]]);
         expect($resolver->resolve($notification))->toBe(route('members.show', $member));
 
-        $notification->data = ['payload' => ['subject_type' => Store::class, 'subject_id' => 1]];
+        $notification->setAttribute('data', ['payload' => ['subject_type' => Store::class, 'subject_id' => 1]]);
         expect($resolver->resolve($notification))->toBeNull();
 
         expect($resolver->routeForSubject($opportunity))->toBe(route('opportunities.show', $opportunity))

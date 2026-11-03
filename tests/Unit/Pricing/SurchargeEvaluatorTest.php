@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\Surcharge;
+use App\Domain\Pricing\Models\SurchargeGroup;
+use App\Domain\Pricing\Services\SurchargeEvaluator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunitySurchargeGroup;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PricingRoundingDirection;
-use App\Models\Surcharge;
-use App\Models\SurchargeGroup;
-use App\Services\Pricing\SurchargeEvaluator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

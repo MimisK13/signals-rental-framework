@@ -8,7 +8,7 @@ use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\PluginDocumentTemplateSeederRegistry;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Seeder;
 
 class DocumentTemplateSeeder extends Seeder

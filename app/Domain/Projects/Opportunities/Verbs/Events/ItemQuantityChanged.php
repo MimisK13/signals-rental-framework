@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
+use App\Domain\Pricing\Services\DiscountCategoryApplier;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PricesOpportunityItems;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityItemState;
-use App\Services\Pricing\DiscountCategoryApplier;
 use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;

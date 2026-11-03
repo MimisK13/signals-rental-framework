@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Actions\Assignments\CancelCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\ConfirmCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\InviteCrewAssignment;
@@ -50,10 +51,9 @@ use App\Domain\Crew\Queries\CrewCandidateQuery;
 use App\Domain\Crew\Queries\CrewConflictQuery;
 use App\Domain\Crew\Queries\CrewCoverageQuery;
 use App\Domain\Currency\Models\ExchangeRate;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Models\Project;
-use App\Models\ActionLog;
-use App\Models\MemberStore;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

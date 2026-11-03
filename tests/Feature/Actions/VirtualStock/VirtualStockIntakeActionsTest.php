@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\VirtualStock\CancelVirtualStockIntake;
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Actions\VirtualStock\DeleteDraftVirtualStockIntake;
-use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
-use App\Actions\VirtualStock\ReturnVirtualStockIntake;
-use App\Actions\VirtualStock\UpdateDraftVirtualStockIntake;
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
-use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
 use App\Domain\Products\Models\Product;
+use App\Domain\VirtualStock\Actions\CancelVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\CreateVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\DeleteDraftVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\UpdateDraftVirtualStockIntake;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\VirtualStock\Data\UpdateDraftVirtualStockIntakeData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

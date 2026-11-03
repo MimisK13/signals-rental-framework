@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Api\ExecuteExplorerRequest;
+use App\Domain\API\Actions\ExecuteExplorerRequest;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 

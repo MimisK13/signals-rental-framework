@@ -7,7 +7,7 @@ namespace App\Domain\Crew\Database\Factories;
 use App\Domain\Crew\Enums\CrewEngagementType;
 use App\Domain\Crew\Enums\CrewMemberStatus;
 use App\Domain\Crew\Models\CrewMember;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

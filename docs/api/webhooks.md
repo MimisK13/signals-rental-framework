@@ -49,6 +49,7 @@ Webhooks can be managed via the API (`/api/v1/webhooks`) or from the admin panel
 | `stock_level.deleted` | A stock level is deleted |
 | `stock_transaction.created` | A stock transaction is recorded |
 | `stock_transaction.deleted` | A stock transaction is deleted |
+| `stock_transaction.reversed` | A stock transaction is reversed |
 
 ### Containers
 
@@ -157,6 +158,7 @@ when the event store is rebuilt.
 | `opportunity.item_renamed` | A line item is renamed |
 | `opportunity.item_removed` | A line item is removed |
 | `opportunity.item_quantity_changed` | A line item's quantity changes |
+| `opportunity.item_reservation_changed` | A line item's reserved quantity changes |
 | `opportunity.item_dates_changed` | A line item's hire dates change |
 | `opportunity.item_discount_set` | A line item discount is set |
 | `opportunity.item_optional_toggled` | A line item is toggled optional/required |
@@ -271,6 +273,48 @@ when the event store is rebuilt.
 | `virtual_stock_intake.returned` | Virtual stock is returned after the hire window |
 | `virtual_stock_intake.cancelled` | A virtual stock intake is cancelled |
 | `virtual_stock_intake.deleted` | A draft virtual stock intake is deleted |
+
+### Crew
+
+| Event | Trigger |
+|-------|---------|
+| `crew.member.created` | A crew member is created |
+| `crew.member.updated` | A crew member is updated |
+| `crew.member.archived` | A crew member is archived |
+| `crew.member.restored` | A crew member is restored |
+| `crew.request.created` | A crew request is created |
+| `crew.request.published` | A crew request is published |
+| `crew.request.cancelled` | A crew request is cancelled |
+| `crew.request.filled` | A crew request is filled |
+| `crew.assignment.proposed` | A crew assignment is proposed |
+| `crew.assignment.invited` | A crew member is invited to an assignment |
+| `crew.assignment.confirmed` | A crew assignment is confirmed |
+| `crew.assignment.rejected` | A crew assignment is rejected |
+| `crew.assignment.cancelled` | A crew assignment is cancelled |
+| `crew.assignment.substituted` | A crew assignment is substituted |
+| `crew.shift.created` | A crew shift is created |
+| `crew.shift.updated` | A crew shift is updated |
+| `crew.shift.confirmed` | A crew shift is confirmed |
+| `crew.shift.cancelled` | A crew shift is cancelled |
+| `crew.availability.approved` | Crew availability is approved |
+| `crew.timesheet.submitted` | A crew timesheet is submitted |
+| `crew.timesheet.approved` | A crew timesheet is approved |
+| `crew.timesheet.rejected` | A crew timesheet is rejected |
+| `crew.timesheet.locked` | A crew timesheet is locked |
+| `crew.timesheet.exported_to_finance` | A crew timesheet is exported to finance |
+| `crew.expense.submitted` | A crew expense is submitted |
+| `crew.expense.approved` | A crew expense is approved |
+| `crew.expense.rejected` | A crew expense is rejected |
+| `crew.expense.reimbursed` | A crew expense is reimbursed |
+| `crew.shortage.detected` | A crew shortage is detected |
+
+### Quotations
+
+| Event | Trigger |
+|-------|---------|
+| `quotation.sent` | A quotation is sent |
+| `quotation.accepted` | A quotation is accepted |
+| `quotation.declined` | A quotation is declined |
 
 ## Payload Format
 

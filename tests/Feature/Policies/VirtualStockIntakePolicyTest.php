@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Member;
-use App\Models\MemberStore;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Policies\VirtualStockIntakePolicy;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
-use App\Policies\VirtualStockIntakePolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

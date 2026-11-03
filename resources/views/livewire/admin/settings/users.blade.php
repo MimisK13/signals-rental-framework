@@ -7,7 +7,7 @@ use App\Actions\Admin\SendPasswordReset;
 use App\Actions\Admin\TransferOwnership;
 use App\Data\Admin\InviteUserData;
 use App\Models\User;
-use App\Notifications\UserInvitedNotification;
+use App\Domain\Notifications\Notifications\UserInvitedNotification;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;

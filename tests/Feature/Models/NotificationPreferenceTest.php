@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\NotificationPreference;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Models\NotificationPreference;
+use App\Domain\Notifications\Models\NotificationType;
 use App\Models\User;
 
 it('has the correct fillable attributes', function () {

@@ -1,18 +1,18 @@
 <?php
 
-use App\Actions\Setup\CompleteSetup;
-use App\Data\Setup\CompleteSetupData;
 use App\Domain\Lists\Models\ListName;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\Membership;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\Setup\Actions\CompleteSetup;
+use App\Domain\Setup\Data\CompleteSetupData;
+use App\Domain\Setup\Enums\FeatureProfile;
 use App\Domain\Tax\Models\OrganisationTaxClass;
-use App\Enums\FeatureProfile;
-use App\Enums\MembershipType;
-use App\Models\Country;
-use App\Models\Member;
-use App\Models\Membership;
 
 pest()->group('env-writing');
 use App\Domain\Rates\Models\RateDefinition;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Artisan;

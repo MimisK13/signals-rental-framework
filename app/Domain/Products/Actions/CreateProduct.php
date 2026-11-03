@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Domain\Products\Data\CreateProductData;
 use App\Domain\Products\Data\ProductData;
@@ -11,10 +12,9 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Events\AuditableEvent;
-use App\Models\Store;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

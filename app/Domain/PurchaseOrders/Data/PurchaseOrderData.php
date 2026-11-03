@@ -7,11 +7,11 @@ namespace App\Domain\PurchaseOrders\Data;
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
 use App\Data\Concerns\StripsCostFields;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Lazy;
 

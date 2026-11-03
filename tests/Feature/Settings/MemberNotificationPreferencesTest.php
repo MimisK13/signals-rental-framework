@@ -1,16 +1,17 @@
 <?php
 
-use App\Actions\Notifications\SaveMemberNotificationPreferences;
-use App\Data\Notifications\SaveMemberNotificationPreferencesData;
-use App\Enums\NotificationAudience;
-use App\Models\NotificationPreference;
-use App\Models\NotificationSetting;
-use App\Models\NotificationType;
+use App\Domain\Notifications\Actions\SaveMemberNotificationPreferences;
+use App\Domain\Notifications\Data\SaveMemberNotificationPreferencesData;
+use App\Domain\Notifications\Enums\NotificationAudience;
+use App\Domain\Notifications\Models\NotificationPreference;
+use App\Domain\Notifications\Models\NotificationSetting;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Presentation\Livewire\Settings\Preferences;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -46,7 +47,7 @@ test('avatar menu does not include a separate my notifications link', function (
 test('member can save muted preference', function () {
     $this->actingAs($this->user);
 
-    Volt::test('settings.notifications')
+    Livewire::test(Preferences::class)
         ->set("preferences.{$this->type->id}.is_muted", true)
         ->call('save')
         ->assertHasNoErrors();
@@ -68,7 +69,7 @@ test('member can narrow channels to tenant-enabled subset', function () {
         'is_enabled' => true,
     ]);
 
-    Volt::test('settings.notifications')
+    Livewire::test(Preferences::class)
         ->set("preferences.{$this->type->id}.channels", ['in_app'])
         ->set("preferences.{$this->type->id}.is_muted", false)
         ->call('save')
@@ -91,7 +92,7 @@ test('member cannot enable channels tenant has disabled', function () {
         'is_enabled' => true,
     ]);
 
-    Volt::test('settings.notifications')
+    Livewire::test(Preferences::class)
         ->set("preferences.{$this->type->id}.channels", ['in_app', 'email'])
         ->set("preferences.{$this->type->id}.is_muted", false)
         ->call('save')
@@ -116,6 +117,6 @@ test('disabled tenant notification types are hidden from member preferences', fu
         'is_enabled' => false,
     ]);
 
-    Volt::test('settings.notifications')
+    Livewire::test(Preferences::class)
         ->assertDontSee($this->type->name);
 });

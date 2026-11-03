@@ -1,16 +1,16 @@
 <?php
 
-use App\Data\VirtualStock\CreateVirtualStockIntakeData;
-use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Data\UpdateDocumentSequenceData;
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
 use App\Domain\Invoices\Data\GenerateProformaInvoiceData;
 use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Tax\ValueObjects\DocumentTaxLineAllocation;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\VirtualStock\Data\UpdateDraftVirtualStockIntakeData;
 use App\Domain\Warehouse\Containers\Data\ContainerDispatchAmendmentData;
-use App\Models\Member;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Spatie\LaravelData\Support\Validation\ValidationPath;
 use Tests\TestCase;

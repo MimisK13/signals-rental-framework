@@ -16,8 +16,8 @@ use App\Domain\Documents\Services\DocumentTemplateResolver;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
+use App\Domain\Members\Models\Member;
 use App\Enums\BillingCommunicationKind;
-use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 
 /**

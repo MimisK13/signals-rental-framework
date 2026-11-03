@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\InboundWebhookLog;
-use App\Models\RequestLog;
-use App\Models\UsageDaily;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
 
 beforeEach(function () {
     config(['api_metering.detail_retention_days' => 90]);

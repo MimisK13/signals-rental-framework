@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\SupplierCosts\Presentation\Livewire\ProductSupplierCosts;
-use App\Enums\MembershipType;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

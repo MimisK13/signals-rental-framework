@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Api\Controller;
-use App\Services\Api\WebhookService;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Services\SettingsRegistry;
 use App\Services\SettingsService;
 use App\Settings\SettingsDefinition;

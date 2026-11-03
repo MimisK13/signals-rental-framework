@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Lists\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Lists\Data\ListNameData;
 use App\Domain\Lists\Data\UpdateListNameData;
 use App\Domain\Lists\Models\ListName;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\Gate;
 
 final class UpdateListName

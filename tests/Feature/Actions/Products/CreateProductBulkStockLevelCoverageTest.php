@@ -6,7 +6,7 @@ use App\Domain\Products\Enums\ProductType;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

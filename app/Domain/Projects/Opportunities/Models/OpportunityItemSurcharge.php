@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Models;
 
+use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunityItemSurchargeFactory;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\Surcharge;
 use App\Models\Traits\FormatsMoney;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

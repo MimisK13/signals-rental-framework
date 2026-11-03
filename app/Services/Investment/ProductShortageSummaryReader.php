@@ -5,8 +5,8 @@ namespace App\Services\Investment;
 use App\Data\ProductShortageSummary;
 use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Products\Models\Product;
+use App\Domain\Stores\Models\Store;
 use App\Enums\InvestmentIntelligenceCompleteness;
-use App\Models\Store;
 use Carbon\CarbonImmutable;
 
 final class ProductShortageSummaryReader

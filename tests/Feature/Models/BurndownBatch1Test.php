@@ -8,8 +8,8 @@ use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
-use App\Models\InboundWebhookLog;
-use App\Models\InboundWebhookSource;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
 
 it('exposes inbound webhook source logs relation', function () {
     $source = InboundWebhookSource::factory()->create();

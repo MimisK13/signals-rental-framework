@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\DateWindow;
+use App\Domain\API\Support\DateWindow;
 use Illuminate\Support\Carbon;
 
 afterEach(function () {

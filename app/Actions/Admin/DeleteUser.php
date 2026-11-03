@@ -3,9 +3,9 @@
 namespace App\Actions\Admin;
 
 use App\Data\Api\UserData;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Models\User;
-use App\Services\Api\WebhookService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

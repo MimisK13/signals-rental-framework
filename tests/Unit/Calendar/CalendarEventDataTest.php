@@ -6,7 +6,7 @@ use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Services\Calendar\OwnerColorResolver;
 use App\Domain\Lists\Models\ListValue;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

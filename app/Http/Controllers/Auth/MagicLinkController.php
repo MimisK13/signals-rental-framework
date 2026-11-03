@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\Auth\ConsumeMagicLink;
 use App\Data\Auth\ConsumeMagicLinkData;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Exceptions\Auth\InvalidMagicLinkException;
 use App\Http\Controllers\Auth\Concerns\HandlesPasswordlessTwoFactor;
 use App\Http\Controllers\Controller;

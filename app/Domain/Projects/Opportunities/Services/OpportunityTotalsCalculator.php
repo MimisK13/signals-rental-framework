@@ -5,6 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Services;
 
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Pricing\Services\BundlePricingApplicator;
+use App\Domain\Pricing\Services\DiscountSourceRegistry;
+use App\Domain\Pricing\Services\OpportunityItemDiscountPercentFilterRegistry;
+use App\Domain\Pricing\Services\OpportunitySurchargeApplicator;
+use App\Domain\Pricing\Services\PriceCategoryTierMultiplier;
+use App\Domain\Pricing\Services\QuantityMinorArithmetic;
+use App\Domain\Pricing\Services\RoundingStrategy;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -25,13 +32,6 @@ use App\Domain\Tax\Services\TaxResolutionContext;
 use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
-use App\Services\Pricing\BundlePricingApplicator;
-use App\Services\Pricing\DiscountSourceRegistry;
-use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
-use App\Services\Pricing\OpportunitySurchargeApplicator;
-use App\Services\Pricing\PriceCategoryTierMultiplier;
-use App\Services\Pricing\QuantityMinorArithmetic;
-use App\Services\Pricing\RoundingStrategy;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

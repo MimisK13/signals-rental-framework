@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Products\Actions\UpdateProductContainerConfig;
 use App\Domain\Products\Data\ProductContainerConfigData;
 use App\Domain\Products\Data\UpdateProductContainerConfigData;
 use App\Domain\Products\Models\Product;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Http\Controllers\Api\Controller;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

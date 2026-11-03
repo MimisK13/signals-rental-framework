@@ -4,7 +4,6 @@
  * Coverage burn-up batch 5 (part 2) — Verbs events and concern branches.
  */
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\UpdateDraftInvoice;
 use App\Domain\Invoices\Data\CreateDraftInvoiceData;
@@ -12,6 +11,8 @@ use App\Domain\Invoices\Data\UpdateDraftInvoiceData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Verbs\Events\InvoiceDraftUpdated;
 use App\Domain\Invoices\Verbs\States\InvoiceState;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
@@ -55,17 +56,16 @@ use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderCreated;
 use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderSent;
 use App\Domain\PurchaseOrders\Verbs\States\PurchaseOrderState;
 use App\Domain\Stock\Models\StockLevel;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeConfirmed;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsRetired;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSupplyAdjusted;
+use App\Domain\VirtualStock\Verbs\States\VirtualStockIntakeState;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\DealPriceMode;
-use App\Enums\PricingRoundingDirection;
-use App\Models\Store;
-use App\Models\SurchargeGroup;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSerialisedAssetsRetired;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSupplyAdjusted;
-use App\Verbs\States\VirtualStockIntakeState;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

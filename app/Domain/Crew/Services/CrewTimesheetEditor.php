@@ -12,7 +12,7 @@ use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewShift;
 use App\Domain\Crew\Models\CrewTimeEntry;
 use App\Domain\Crew\Models\CrewTimesheet;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Stores\Scopes\StoreScope;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;

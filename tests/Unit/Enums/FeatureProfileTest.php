@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\FeatureProfile;
+use App\Domain\Setup\Enums\FeatureProfile;
 
 $allModuleKeys = [
     'products',

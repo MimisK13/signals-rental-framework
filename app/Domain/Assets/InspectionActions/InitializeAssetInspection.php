@@ -8,7 +8,7 @@ use App\Domain\Assets\Enums\InspectionStatus;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetInspection;
 use App\Domain\Assets\Models\InspectionPolicy;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

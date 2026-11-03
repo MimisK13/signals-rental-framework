@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Warehouse\Containers\Actions\CreateContainer;
 use App\Domain\Warehouse\Containers\Actions\CreateTemporaryContainer;
 use App\Domain\Warehouse\Containers\Actions\DispatchContainer;
@@ -34,8 +36,6 @@ use App\Domain\Warehouse\Containers\Exceptions\ContainerDispatchAmendmentRequire
 use App\Domain\Warehouse\Containers\Exceptions\ContainerPackConflictException;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

@@ -9,7 +9,7 @@ use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityItem;
 use App\Domain\Projects\Opportunities\Data\ChangeItemQuantityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use App\Services\Planning\OpportunityItemPlanningReader;
 use Database\Seeders\PermissionSeeder;

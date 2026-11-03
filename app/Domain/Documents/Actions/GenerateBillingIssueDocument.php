@@ -15,7 +15,7 @@ use App\Domain\Documents\Services\DocumentTemplateResolver;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Services\FileService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;

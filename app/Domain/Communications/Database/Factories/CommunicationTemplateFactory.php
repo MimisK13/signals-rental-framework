@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Communications\Database\Factories;
 
 use App\Domain\Communications\Models\CommunicationTemplate;
-use App\Models\NotificationType;
-use App\Models\Store;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

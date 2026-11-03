@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Member;
-use App\Services\Api\RansackFilter;
+use App\Domain\API\Services\RansackFilter;
+use App\Domain\Members\Models\Member;
 use Tests\Concerns\UsesPostgres;
 
 uses(UsesPostgres::class);

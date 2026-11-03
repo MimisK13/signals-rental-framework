@@ -7,15 +7,16 @@ use App\Domain\Communications\Data\ChannelTestResultData;
 use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Models\ChannelProvider;
 use App\Domain\Communications\Models\CommunicationTemplate;
-use App\Enums\NotificationAudience;
-use App\Models\NotificationSetting;
-use App\Models\NotificationType;
-use App\Models\Store;
+use App\Domain\Notifications\Enums\NotificationAudience;
+use App\Domain\Notifications\Models\NotificationSetting;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Presentation\Livewire\Admin\NotificationSettings;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use App\Services\Plugins\PluginRegistrar;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -70,8 +71,8 @@ test('owner can toggle a channel for a notification type', function () {
         'default_channels' => ['database', 'mail'],
     ]);
 
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->owner)
+        ->test(NotificationSettings::class)
         ->call('toggleChannel', $type->id, 'mail');
 
     $setting = NotificationSetting::where('notification_type_id', $type->id)->first();
@@ -86,8 +87,8 @@ test('tenant cannot enable channels outside type defaults', function () {
         'default_channels' => ['database'],
     ]);
 
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->owner)
+        ->test(NotificationSettings::class)
         ->call('toggleChannel', $type->id, 'mail')
         ->assertHasErrors('channel');
 
@@ -106,14 +107,14 @@ test('unauthorized user cannot toggle channels via livewire', function () {
         'default_channels' => ['database', 'mail'],
     ]);
 
-    Volt::actingAs($this->admin)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->admin)
+        ->test(NotificationSettings::class)
         ->assertForbidden();
 });
 
 test('unauthorized user cannot save recipient rules via livewire', function () {
-    Volt::actingAs($this->admin)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->admin)
+        ->test(NotificationSettings::class)
         ->assertForbidden();
 });
 
@@ -122,8 +123,8 @@ test('owner can save recipient rules for a notification type', function () {
         'default_recipients' => [['type' => 'subject_owner']],
     ]);
 
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->owner)
+        ->test(NotificationSettings::class)
         ->call('openRecipientEditor', $type->id)
         ->set('editingRecipientRules', [
             ['type' => 'role', 'role' => 'admin'],
@@ -137,8 +138,8 @@ test('owner can save recipient rules for a notification type', function () {
 });
 
 test('unauthorized user cannot open provider config via livewire', function () {
-    Volt::actingAs($this->admin)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->admin)
+        ->test(NotificationSettings::class)
         ->assertForbidden();
 });
 
@@ -150,8 +151,8 @@ test('provider config modal masks secret values and never returns cleartext on r
         'email.from_address' => 'noreply@example.com',
     ]);
 
-    $component = Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
+    $component = Livewire::actingAs($this->owner)
+        ->test(NotificationSettings::class)
         ->call('openProviderConfig', 'email');
 
     expect($component->get('providerConfig')['smtp_password'] ?? '')
@@ -172,14 +173,14 @@ test('provider config modal masks secret values and never returns cleartext on r
 });
 
 test('unauthorized user cannot save provider config via livewire', function () {
-    Volt::actingAs($this->admin)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->admin)
+        ->test(NotificationSettings::class)
         ->assertForbidden();
 });
 
 test('manager can send a database channel provider test', function () {
-    Volt::actingAs($this->manager)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->manager)
+        ->test(NotificationSettings::class)
         ->call('sendProviderTest', 'database')
         ->assertSet('providerTestSuccess', true);
 });
@@ -194,8 +195,8 @@ test('plugin provider test result is persisted on the channel provider record', 
     app(PluginRegistrar::class)
         ->channelDriver('fake_plugin', AdminSettingsPluginChannelDriver::class);
 
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->owner)
+        ->test(NotificationSettings::class)
         ->call('openProviderConfig', 'fake_plugin')
         ->call('sendProviderTest', 'fake_plugin');
 
@@ -211,8 +212,8 @@ test('both-audience types store internal channel overrides separately', function
         'default_channels' => ['database', 'mail'],
     ]);
 
-    Volt::actingAs($this->owner)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->owner)
+        ->test(NotificationSettings::class)
         ->call('toggleChannel', $type->id, 'mail', 'internal');
 
     $setting = NotificationSetting::where('notification_type_id', $type->id)->firstOrFail();
@@ -242,8 +243,8 @@ test('communication template editor link is shown for notification types with te
 });
 
 test('notification log and unsubscribe settings round-trip from admin page', function () {
-    Volt::actingAs($this->manager)
-        ->test('admin.settings.notifications')
+    Livewire::actingAs($this->manager)
+        ->test(NotificationSettings::class)
         ->set('communicationLogRetentionDays', 180)
         ->set('communicationLogPruneSafetyDays', 14)
         ->set('unsubscribeUrlTtlDays', 90)

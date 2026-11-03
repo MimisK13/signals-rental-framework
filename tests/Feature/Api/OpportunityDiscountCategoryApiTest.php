@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Models\DiscountRule;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
@@ -11,9 +14,6 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\DiscountCategory;
-use App\Models\DiscountRule;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

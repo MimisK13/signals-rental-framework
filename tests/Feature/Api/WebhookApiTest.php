@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
 use App\Models\User;
-use App\Models\Webhook;
-use App\Models\WebhookLog;
 use Database\Seeders\PermissionSeeder;
 
 beforeEach(function () {

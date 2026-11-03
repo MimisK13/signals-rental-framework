@@ -1,12 +1,12 @@
 <?php
 
 use App\Domain\Lists\Models\ListValue;
-use App\Models\Address;
-use App\Models\Country;
-use App\Models\Email;
-use App\Models\Link;
-use App\Models\Member;
-use App\Models\Phone;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Email;
+use App\Domain\Members\Models\Link;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\Phone;
+use App\Domain\ReferenceData\Models\Country;
 
 it('creates an address for a member', function () {
     $member = Member::factory()->create();

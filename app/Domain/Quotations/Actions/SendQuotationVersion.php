@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Members\Models\Member;
 use App\Domain\Quotations\Actions\Concerns\AssertsQuotationCompleteness;
 use App\Domain\Quotations\Data\QuotationVersionData;
 use App\Domain\Quotations\Data\SendQuotationVersionData;
@@ -12,7 +13,6 @@ use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationAudit;
 use App\Domain\Quotations\Verbs\Events\QuotationVersionSent;
-use App\Models\Member;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

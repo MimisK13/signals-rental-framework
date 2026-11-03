@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Rates\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Rates\Actions\Concerns\ValidatesRateConfig;
 use App\Domain\Rates\Data\CreateRateDefinitionData;
 use App\Domain\Rates\Data\RateDefinitionData;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Services\RateEngine\RateEngineRegistry;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

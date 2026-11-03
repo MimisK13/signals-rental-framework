@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 
 it('creates member records for users without one', function () {

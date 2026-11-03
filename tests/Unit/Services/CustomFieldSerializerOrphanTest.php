@@ -4,7 +4,7 @@ use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\CustomFields\Services\CustomFieldSerializer;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;

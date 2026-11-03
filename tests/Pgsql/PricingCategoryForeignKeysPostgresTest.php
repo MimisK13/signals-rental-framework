@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\DiscountCategory;
-use App\Models\Member;
-use App\Models\PriceCategory;
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Models\PriceCategory;
 use Tests\Concerns\UsesPostgres;
 
 /*

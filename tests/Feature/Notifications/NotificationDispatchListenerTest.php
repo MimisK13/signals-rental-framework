@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Events\AvailabilityChanged;
@@ -7,6 +9,11 @@ use App\Domain\Availability\Shortages\Enums\WaitlistMonitorStatus;
 use App\Domain\Availability\Shortages\Listeners\MatchWaitlistMonitors;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Jobs\SendNotification;
+use App\Domain\Notifications\Listeners\NotificationDispatchListener;
+use App\Domain\Notifications\Notifications\DomainEventNotification;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
@@ -18,15 +25,8 @@ use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Events\AuditableEvent;
-use App\Jobs\SendNotification;
-use App\Listeners\NotificationDispatchListener;
-use App\Models\ActionLog;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
-use App\Notifications\DomainEventNotification;
-use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

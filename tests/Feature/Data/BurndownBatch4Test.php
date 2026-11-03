@@ -4,11 +4,11 @@
  * P4-CL4b burndown batch 4 — Data DTO coverage.
  */
 
-use App\Data\Pricing\UpdateSurchargeGroupData;
 use App\Domain\Documents\Data\DocumentTemplateVersionData;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
 use App\Domain\Invoices\Data\InvoiceTaxData;
 use App\Domain\Invoices\Models\InvoiceTax;
+use App\Domain\Pricing\Data\UpdateSurchargeGroupData;
 use App\Domain\Projects\Opportunities\Data\AssignItemToSectionData;
 use App\Domain\Projects\Opportunities\Data\AssignSectionParentData;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunitySectionData;

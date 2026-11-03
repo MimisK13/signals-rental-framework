@@ -1,11 +1,15 @@
 <?php
 
-use App\Actions\Members\UpdateMember;
-use App\Data\Members\UpdateMemberData;
+use App\Domain\Members\Actions\UpdateMember;
+use App\Domain\Members\Data\UpdateMemberData;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\Form;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Actions\ProcessMemberVatValidation;
 use App\Domain\Tax\Actions\RequestMemberVatValidation;
 use App\Domain\Tax\Contracts\VatNumberValidator;
@@ -26,17 +30,14 @@ use App\Domain\Tax\Services\TaxResolutionContext;
 use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Domain\Tax\ValueObjects\DocumentTaxSummary;
 use App\Domain\Tax\ValueObjects\VatValidationResult;
-use App\Enums\PricingRoundingDirection;
-use App\Jobs\DeliverWebhook;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Services\WebhookService;
 use App\Models\User;
-use App\Models\Webhook;
-use App\Services\Api\WebhookService;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -179,7 +180,7 @@ describe('manual VAT re-check', function () {
             'tax_number_validated' => true,
         ]);
 
-        Volt::test('members.form', ['member' => $member])
+        Livewire::test(Form::class, ['member' => $member])
             ->assertSee('Valid')
             ->assertSee('Re-check VAT')
             ->call('recheckVatValidation')

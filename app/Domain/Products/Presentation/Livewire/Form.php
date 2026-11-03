@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Livewire;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Presentation\Concerns\LoadsCustomFieldValues;
 use App\Domain\CustomFields\Presentation\Concerns\ReKeysCustomFieldErrors;
@@ -14,14 +15,13 @@ use App\Domain\Products\Data\UpdateProductData;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
+use App\Domain\ReferenceData\Models\CostGroup;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\ReferenceData\Models\RevenueGroup;
 use App\Domain\Stock\Enums\AllowedStockType;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxCategory;
-use App\Models\CostGroup;
-use App\Models\Country;
-use App\Models\RevenueGroup;
-use App\Services\Api\RansackFilter;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Collection;

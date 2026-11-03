@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Stock\Stocktakes\Presentation\Http\Controllers\Api\V1\StocktakeController;
-use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1')

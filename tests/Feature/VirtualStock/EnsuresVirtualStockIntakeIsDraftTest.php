@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\VirtualStockIntake;
-use App\Services\VirtualStock\EnsuresVirtualStockIntakeIsDraft;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Services\EnsuresVirtualStockIntakeIsDraft;
 use Illuminate\Validation\ValidationException;
 
 it('allows draft virtual stock intakes', function () {

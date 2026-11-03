@@ -8,7 +8,7 @@ use App\Domain\Communications\Actions\ToggleCommunicationLogPin;
 use App\Domain\Communications\Models\CommunicationLog as CommunicationLogModel;
 use App\Domain\Communications\Services\CommunicationLogQuery;
 use App\Domain\Communications\Services\CommunicationLogStatusRegistry;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;

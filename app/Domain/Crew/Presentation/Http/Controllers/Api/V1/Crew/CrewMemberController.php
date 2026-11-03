@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Crew\Actions\Registry\ArchiveCrewMember;
 use App\Domain\Crew\Actions\Registry\CreateCrewMember;
 use App\Domain\Crew\Actions\Registry\UpdateCrewMember;
@@ -13,8 +15,6 @@ use App\Domain\Crew\Data\Registry\UpdateCrewMemberData;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\CreateCrewMemberRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\UpdateCrewMemberRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

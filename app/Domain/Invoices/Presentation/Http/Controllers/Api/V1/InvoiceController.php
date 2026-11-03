@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
@@ -22,9 +25,6 @@ use App\Domain\Invoices\Data\RecordPaymentData;
 use App\Domain\Invoices\Data\UpdateDraftInvoiceData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Enums\BillingCommunicationKind;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Http\Traits\ResourceActions;
 use App\Services\FileService;
 use Dedoc\Scramble\Attributes\HeaderParameter;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;

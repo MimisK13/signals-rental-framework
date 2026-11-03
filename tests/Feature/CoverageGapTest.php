@@ -7,9 +7,10 @@
  * the class to 100% method coverage.
  */
 
-use App\Data\Api\ActionLogData;
 use App\Domain\Attachments\Data\AttachmentData;
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\AuditLog\Data\ActionLogData;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Communications\Services\EmailTemplateRenderer;
 use App\Domain\Currency\Models\Currency;
@@ -24,14 +25,13 @@ use App\Domain\CustomViews\Actions\CreateCustomView;
 use App\Domain\CustomViews\Data\CreateCustomViewData;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Services\ViewResolver;
-use App\Models\ActionLog;
-use App\Models\Member;
-use App\Models\MemberRelationship;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
+use App\Domain\Stores\Scopes\StoreScope;
 use App\Models\User;
 use App\Services\PermissionRegistry;
 use App\Support\Formatter;
-use App\Views\MemberColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\Builder;

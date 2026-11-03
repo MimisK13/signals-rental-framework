@@ -3,9 +3,9 @@
 use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
 use App\Domain\Availability\Shortages\Services\NullCostApportionmentStrategy;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Notifications\Services\NotificationRegistry;
 use App\Models\User;
 use App\Services\DocsService;
-use App\Services\NotificationRegistry;
 use App\Services\PermissionRegistry;
 use App\Services\SettingsService;
 use Illuminate\Cache\RateLimiting\Limit;

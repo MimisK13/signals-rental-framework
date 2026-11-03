@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Database\Seeders;
 
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
-use App\Models\Country;
-use App\Models\Store;
 use Illuminate\Database\Seeder;
 
 final class TaxZoneSeeder extends Seeder

@@ -3,7 +3,7 @@
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\DatabaseAvailabilityDataPresence;
 use App\Domain\Products\Models\Product;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Facades\Schema;
 
 it('returns false when the demands table does not exist (pre-availability-engine schema)', function () {

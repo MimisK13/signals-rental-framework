@@ -7,7 +7,7 @@ use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

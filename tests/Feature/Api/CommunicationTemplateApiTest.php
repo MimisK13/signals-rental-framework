@@ -2,9 +2,9 @@
 
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Models\CommunicationTemplateVersion;
-use App\Models\MemberStore;
-use App\Models\NotificationType;
-use App\Models\Store;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

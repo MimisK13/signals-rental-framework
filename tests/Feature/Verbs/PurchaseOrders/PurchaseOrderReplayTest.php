@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\PurchaseOrders\Actions\CancelPurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\DeleteDraftPurchaseOrder;
@@ -9,8 +10,7 @@ use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Data\UpdateDraftPurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

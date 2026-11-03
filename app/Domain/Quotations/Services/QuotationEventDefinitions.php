@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Services;
 
-use App\Enums\NotificationAudience;
+use App\Domain\Notifications\Enums\NotificationAudience;
 
 final class QuotationEventDefinitions
 {

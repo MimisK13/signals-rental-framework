@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Pricing\Models\PriceCategory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Presentation\Livewire\ProductRateForm;
-use App\Models\PriceCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

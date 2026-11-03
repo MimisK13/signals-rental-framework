@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Rates\Models\RateDefinition;
-use App\Models\RevenueGroup;
+use App\Domain\ReferenceData\Models\RevenueGroup;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

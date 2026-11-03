@@ -1,8 +1,10 @@
 <?php
 
-use App\Models\PriceCategory;
+use App\Domain\Pricing\Models\PriceCategory;
+use App\Domain\Pricing\Presentation\Livewire\PriceCategories;
+use App\Domain\Pricing\Presentation\Livewire\PriceCategoryForm;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -19,7 +21,7 @@ it('lists price categories', function () {
     PriceCategory::factory()->create(['name' => 'Retail']);
     PriceCategory::factory()->create(['name' => 'Trade']);
 
-    Volt::test('admin.settings.pricing.price-categories')
+    Livewire::test(PriceCategories::class)
         ->assertSee('Retail')
         ->assertSee('Trade');
 });
@@ -31,7 +33,7 @@ it('renders the create form', function () {
 });
 
 it('can create a price category with tiers', function () {
-    Volt::test('admin.settings.pricing.price-category-form')
+    Livewire::test(PriceCategoryForm::class)
         ->set('name', 'Retail')
         ->set('tiers', [
             ['tier_number' => 1, 'label' => 'Day 1', 'multiplier' => '1.0000', 'sort_order' => 0],
@@ -47,7 +49,7 @@ it('can create a price category with tiers', function () {
 it('can edit a price category', function () {
     $category = PriceCategory::factory()->withDefaultTiers()->create(['name' => 'Old Name']);
 
-    Volt::test('admin.settings.pricing.price-category-form', ['priceCategory' => $category])
+    Livewire::test(PriceCategoryForm::class, ['priceCategory' => $category])
         ->assertSet('name', 'Old Name')
         ->set('name', 'New Name')
         ->call('save');
@@ -56,7 +58,7 @@ it('can edit a price category', function () {
 });
 
 it('can add and remove tiers on the form', function () {
-    Volt::test('admin.settings.pricing.price-category-form')
+    Livewire::test(PriceCategoryForm::class)
         ->call('addTier')
         ->assertCount('tiers', 2)
         ->call('removeTier', 1)
@@ -66,7 +68,7 @@ it('can add and remove tiers on the form', function () {
 it('can delete a price category', function () {
     $category = PriceCategory::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('admin.settings.pricing.price-categories')
+    Livewire::test(PriceCategories::class)
         ->call('deleteCategory', $category->id);
 
     expect(PriceCategory::where('name', 'To Delete')->exists())->toBeFalse();

@@ -1,10 +1,11 @@
 <?php
 
-use App\Enums\MembershipType;
-use App\Models\Member;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
+use App\Domain\Members\Presentation\Livewire\Index;
 use App\Models\User;
-use App\Views\MemberColumnRegistry;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -22,7 +23,7 @@ it('lists members', function () {
     Member::factory()->contact()->create(['name' => 'John Smith']);
     Member::factory()->organisation()->create(['name' => 'Acme Corp']);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->assertSee('John Smith')
         ->assertSee('Acme Corp');
 });
@@ -35,7 +36,7 @@ it('can search members by name', function () {
     Member::factory()->create(['name' => 'John Smith']);
     Member::factory()->create(['name' => 'Jane Doe']);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->set('search', 'John')
         ->assertSee('John Smith')
         ->assertDontSee('Jane Doe');
@@ -45,7 +46,7 @@ it('can filter by membership type', function () {
     Member::factory()->contact()->create(['name' => 'John Contact']);
     Member::factory()->organisation()->create(['name' => 'Acme Org']);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->set('typeFilter', MembershipType::Contact->value)
         ->assertSee('John Contact')
         ->assertDontSee('Acme Org');
@@ -54,28 +55,28 @@ it('can filter by membership type', function () {
 it('can archive a member', function () {
     $member = Member::factory()->create(['name' => 'To Archive']);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->call('archiveMember', $member->id);
 
     expect(Member::withTrashed()->find($member->id)->trashed())->toBeTrue();
 });
 
 it('shows empty state when no members exist', function () {
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->assertSee('No members found.');
 });
 
 it('links to member show page', function () {
     $member = Member::factory()->create(['name' => 'John Smith']);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->assertSeeHtml("/members/{$member->id}");
 });
 
 it('can bulk archive selected members', function () {
     $members = Member::factory()->count(3)->create();
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->call('archiveSelected', $members->pluck('id')->all());
 
     foreach ($members as $member) {
@@ -95,7 +96,7 @@ it('prevents non-owner from archiving a member', function () {
 
     $this->actingAs($regularUser);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->call('archiveMember', $member->id)
         ->assertForbidden();
 
@@ -108,7 +109,7 @@ it('prevents non-owner from bulk archiving members', function () {
 
     $this->actingAs($regularUser);
 
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->call('archiveSelected', $members->pluck('id')->all())
         ->assertForbidden();
 
@@ -118,7 +119,7 @@ it('prevents non-owner from bulk archiving members', function () {
 });
 
 it('ignores invalid membership type in setTypeFilter', function () {
-    Volt::test('members.index')
+    Livewire::test(Index::class)
         ->call('setTypeFilter', 'invalid_type')
         ->assertSet('typeFilter', '');
 });
@@ -127,7 +128,7 @@ it('derives shared table column flags from the MemberColumnRegistry', function (
     Member::factory()->create(['name' => 'Registry Member']);
 
     $registry = app(MemberColumnRegistry::class);
-    $columns = collect((array) Volt::test('members.index')->viewData('columns'))->keyBy('key');
+    $columns = collect((array) Livewire::test(Index::class)->viewData('columns'))->keyBy('key');
 
     // The name/is_active/created_at columns map 1:1 to real members columns, so
     // their sortable/filterable flags must match the registry rather than a

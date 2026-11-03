@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Products\Data\ProductContainerConfigData;
 use App\Domain\Products\Data\UpdateProductContainerConfigData;
 use App\Domain\Products\Models\Product;
@@ -11,8 +12,7 @@ use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerTemplateValidator;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

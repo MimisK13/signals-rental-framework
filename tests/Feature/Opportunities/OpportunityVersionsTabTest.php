@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -12,8 +13,7 @@ use App\Domain\Projects\Opportunities\Enums\VersionType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Presentation\Livewire\Versions;
-use App\Models\ActionLog;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

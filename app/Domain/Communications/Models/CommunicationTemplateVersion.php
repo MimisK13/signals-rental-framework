@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Communications\Models;
 
 use App\Domain\Communications\Database\Factories\CommunicationTemplateVersionFactory;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

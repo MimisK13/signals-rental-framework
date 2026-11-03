@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Members\Data;
+
+use App\Domain\Members\Models\Address;
+use Spatie\LaravelData\Data;
+
+class AddressData extends Data
+{
+    public function __construct(
+        public int $id,
+        public ?string $name,
+        public ?string $street,
+        public ?string $city,
+        public ?string $county,
+        public ?string $postcode,
+        public ?string $what3words,
+        public ?int $country_id,
+        public ?int $type_id,
+        public bool $is_primary,
+        public ?string $latitude,
+        public ?string $longitude,
+        public string $created_at,
+        public string $updated_at,
+    ) {}
+
+    public static function fromModel(Address $address): self
+    {
+        return new self(
+            id: $address->id,
+            name: $address->name,
+            street: $address->street,
+            city: $address->city,
+            county: $address->county,
+            postcode: $address->postcode,
+            what3words: $address->what3words,
+            country_id: $address->country_id,
+            type_id: $address->type_id,
+            is_primary: $address->is_primary,
+            latitude: $address->latitude !== null ? (string) $address->latitude : null,
+            longitude: $address->longitude !== null ? (string) $address->longitude : null,
+            created_at: $address->created_at->toIso8601String(),
+            updated_at: $address->updated_at->toIso8601String(),
+        );
+    }
+}

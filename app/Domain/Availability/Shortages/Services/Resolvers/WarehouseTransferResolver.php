@@ -14,7 +14,7 @@ use App\Domain\Availability\Shortages\Services\ShortageEventRecorder;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionOption;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionResult;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Collection;
 
 /**

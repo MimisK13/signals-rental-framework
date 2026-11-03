@@ -1,10 +1,11 @@
 <?php
 
+use App\Domain\API\Presentation\Livewire\Explorer;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -35,7 +36,7 @@ it('forbids the explorer page without api.explorer.use', function () {
 it('populates selectors from the endpoint catalogue', function () {
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->assertOk()
         ->assertSee('Products')
         ->assertSee('GET');
@@ -44,7 +45,7 @@ it('populates selectors from the endpoint catalogue', function () {
 it('updates the resolved url when the operation changes', function () {
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'products')
         ->set('selectedRouteName', 'api.v1.products.index')
         ->assertSet('resolvedUrl', '/api/v1/products');
@@ -53,7 +54,7 @@ it('updates the resolved url when the operation changes', function () {
 it('shows path parameter inputs and substitutes them into the resolved url', function () {
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'activities')
         ->set('selectedRouteName', 'api.v1.activities.show')
         ->assertSet('hasPathParameters', true)
@@ -67,7 +68,7 @@ it('requires path parameter values before making a request', function () {
     $token = $this->user->createToken('explorer-token', ['activities:read']);
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'activities')
         ->set('selectedRouteName', 'api.v1.activities.show')
         ->set('selectedTokenId', $token->accessToken->id)
@@ -87,7 +88,7 @@ it('sends requests with substituted path parameters', function () {
     $token = $this->user->createToken('explorer-token', ['activities:read']);
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'activities')
         ->set('selectedRouteName', 'api.v1.activities.show')
         ->set('pathParams.activity', '42')
@@ -106,7 +107,7 @@ it('populates the response panel after making a request', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'products')
         ->set('selectedRouteName', 'api.v1.products.index')
         ->set('selectedTokenId', $token->accessToken->id)
@@ -128,7 +129,7 @@ it('uses a pasted token without minting an ephemeral token', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'products')
         ->set('selectedRouteName', 'api.v1.products.index')
         ->set('selectedTokenId', $token->accessToken->id)
@@ -149,7 +150,7 @@ it('mints and deletes an ephemeral token when emulating selected abilities', fun
 
     $this->actingAs($this->user);
 
-    Volt::test('api.explorer')
+    Livewire::test(Explorer::class)
         ->set('selectedResource', 'products')
         ->set('selectedRouteName', 'api.v1.products.index')
         ->set('selectedTokenId', $token->accessToken->id)

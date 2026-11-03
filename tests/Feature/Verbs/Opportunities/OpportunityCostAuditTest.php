@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityCost;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityCost;
@@ -9,7 +10,6 @@ use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Data\UpdateOpportunityCostData;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\ActionLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

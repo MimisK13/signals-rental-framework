@@ -7,7 +7,7 @@ namespace App\Domain\Availability\Shortages\Services;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 
 class CostApportionmentContextBuilder

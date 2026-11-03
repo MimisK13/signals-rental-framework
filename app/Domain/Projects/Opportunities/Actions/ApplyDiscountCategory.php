@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Pricing\Services\DiscountCategoryApplier;
 use App\Domain\Projects\Opportunities\Data\ApplyDiscountCategoryData;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
-use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
-use App\Services\Pricing\DiscountCategoryApplier;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Support\Facades\Gate;
 
 /**

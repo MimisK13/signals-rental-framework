@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierCosts\Database\Factories;
 
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
+use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Enums\MembershipType;
-use App\Models\Member;
-use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

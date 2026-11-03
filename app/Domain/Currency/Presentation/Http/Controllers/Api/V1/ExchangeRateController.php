@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Currency\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Concerns\ResourceActions;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Currency\Actions\ExchangeRates\CreateExchangeRate;
 use App\Domain\Currency\Actions\ExchangeRates\DeleteExchangeRate;
 use App\Domain\Currency\Actions\ExchangeRates\UpdateExchangeRate;
@@ -11,9 +14,6 @@ use App\Domain\Currency\Data\ExchangeRates\CreateExchangeRateData;
 use App\Domain\Currency\Data\ExchangeRates\ExchangeRateData;
 use App\Domain\Currency\Data\ExchangeRates\UpdateExchangeRateData;
 use App\Domain\Currency\Models\ExchangeRate;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
-use App\Http\Traits\ResourceActions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -1,17 +1,17 @@
 <?php
 
-use App\Data\Notifications\NotificationContextData;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Data\NotificationContextData;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Services\RecipientResolvers\ContactRecipientResolver;
+use App\Domain\Notifications\Services\RecipientResolvers\RoleRecipientResolver;
+use App\Domain\Notifications\Services\RecipientResolvers\SpecificMemberRecipientResolver;
+use App\Domain\Notifications\Services\RecipientResolvers\SubjectOwnerRecipientResolver;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\Member;
-use App\Models\NotificationType;
 use App\Models\User;
-use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
-use App\Services\Notifications\RecipientResolvers\RoleRecipientResolver;
-use App\Services\Notifications\RecipientResolvers\SpecificMemberRecipientResolver;
-use App\Services\Notifications\RecipientResolvers\SubjectOwnerRecipientResolver;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
 

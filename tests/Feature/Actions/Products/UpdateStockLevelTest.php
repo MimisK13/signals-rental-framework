@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Stock\Actions\UpdateStockLevel;
 use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Models\StockLevel;
-use App\Events\AuditableEvent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -94,7 +94,7 @@
                                     @endcosts
                                     @if($purchaseOrder->po_type === 'sub_hire' && $item->product_id)
                                         <td class="text-right">
-                                            @can('create', App\Models\VirtualStockIntake::class)
+                                            @can('create', App\Domain\VirtualStock\Models\VirtualStockIntake::class)
                                                 <a href="{{ route('virtual-stock.create', ['purchase_order_id' => $purchaseOrder->id, 'purchase_order_item_id' => $item->id]) }}" wire:navigate.hover class="text-sm text-[var(--link)] hover:underline">Create intake</a>
                                             @endcan
                                         </td>

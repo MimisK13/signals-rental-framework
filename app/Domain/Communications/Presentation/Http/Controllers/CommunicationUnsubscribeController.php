@@ -6,7 +6,7 @@ namespace App\Domain\Communications\Presentation\Http\Controllers;
 
 use App\Domain\Communications\Actions\OptOutMemberCommunication;
 use App\Domain\Communications\Services\CommunicationPreferences;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

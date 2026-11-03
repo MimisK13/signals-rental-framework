@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\Scopes\StoreScope;
-use App\Models\Store;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Stores\Models\Store;
+use App\Domain\Stores\Scopes\StoreScope;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\AuditLog\Listeners\LogAction;
 use App\Domain\Availability\Enums\AvailabilityEventType;
 use App\Domain\Availability\Models\AvailabilityEvent;
 use App\Domain\Availability\Observers\DemandObserver;
@@ -12,10 +14,8 @@ use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Events\AuditableEvent;
-use App\Listeners\DispatchWebhookForAuditableEvent;
-use App\Listeners\LogAction;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Listeners\DispatchWebhookForAuditableEvent;
+use App\Domain\Webhooks\Services\WebhookService;
 use Thunk\Verbs\Facades\Verbs;
 
 /**

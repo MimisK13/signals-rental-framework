@@ -9,7 +9,7 @@ use App\Domain\Crew\Data\Requests\CreateCrewRequestData;
 use App\Domain\Crew\Models\CrewRequest;
 use App\Domain\Crew\Presentation\Livewire\CrewComponent;
 use App\Domain\Projects\Models\Project;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Support\Timezone;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;

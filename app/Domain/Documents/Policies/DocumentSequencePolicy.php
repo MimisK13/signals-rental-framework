@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Policies;
 
 use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
-use App\Policies\Traits\ChecksStoreAccess;
 use Illuminate\Database\Eloquent\Model;
 
 class DocumentSequencePolicy

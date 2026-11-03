@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Services;
 
+use App\Domain\API\Services\RansackFilter;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Currency\Services\CurrencyService;
 use App\Domain\Products\Models\Accessory;
@@ -15,7 +16,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Services\RateEngine\RateCalculator;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
 use App\Domain\Rates\ValueObjects\CalculationContext;
-use App\Services\Api\RansackFilter;
 use App\Services\FileService;
 use Brick\Money\Currency;
 use Brick\Money\Money;

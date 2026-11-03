@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Members\CreateMember;
-use App\Actions\Members\DeleteMember;
-use App\Actions\Members\UpdateMember;
-use App\Data\Members\CreateMemberData;
-use App\Data\Members\UpdateMemberData;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
-use App\Enums\MembershipType;
-use App\Events\AuditableEvent;
-use App\Models\Member;
-use App\Models\PriceCategory;
-use App\Models\PriceCategoryTier;
-use App\Models\Store;
+use App\Domain\Members\Actions\CreateMember;
+use App\Domain\Members\Actions\DeleteMember;
+use App\Domain\Members\Actions\UpdateMember;
+use App\Domain\Members\Data\CreateMemberData;
+use App\Domain\Members\Data\UpdateMemberData;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Pricing\Models\PriceCategory;
+use App\Domain\Pricing\Models\PriceCategoryTier;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

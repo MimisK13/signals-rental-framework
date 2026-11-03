@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Store;
-use Database\Seeders\StoreSeeder;
+use App\Domain\Stores\Database\Seeders\StoreSeeder;
+use App\Domain\Stores\Models\Store;
 
 it('seeds a default store', function () {
     $this->seed(StoreSeeder::class);

@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Currency\Models\Currency;
-use App\Enums\PricingRoundingDirection;
-use App\Services\Pricing\RoundingStrategy;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Services\RoundingStrategy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

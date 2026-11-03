@@ -12,7 +12,7 @@ use App\Domain\Communications\Services\CommunicationTemplateRenderer;
 use App\Domain\Communications\Services\CustomerCommunicationAttachmentResolver;
 use App\Domain\Communications\Services\CustomerCommunicationUnsubscribeUrl;
 use App\Domain\Documents\Models\Document;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;

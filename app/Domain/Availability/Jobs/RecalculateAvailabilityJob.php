@@ -12,7 +12,7 @@ use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;

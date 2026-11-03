@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Services;
 
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 /**
  * Collects plugin-provided document template seeders invoked by

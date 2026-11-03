@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Quotations\Models\Quotation;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

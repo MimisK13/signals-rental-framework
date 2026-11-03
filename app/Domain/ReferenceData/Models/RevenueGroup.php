@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\ReferenceData\Models;
+
+use App\Domain\ReferenceData\Database\Factories\RevenueGroupFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $description
+ * @property bool $is_active
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
+class RevenueGroup extends Model
+{
+    /** @use HasFactory<RevenueGroupFactory> */
+    use HasFactory;
+
+    protected static function newFactory(): RevenueGroupFactory
+    {
+        return RevenueGroupFactory::new();
+    }
+
+    /** @var list<string> */
+    protected $fillable = [
+        'name',
+        'description',
+        'is_active',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+}

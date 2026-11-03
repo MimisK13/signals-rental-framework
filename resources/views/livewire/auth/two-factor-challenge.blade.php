@@ -1,6 +1,6 @@
 <?php
 
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Http\Controllers\Auth\Concerns\HandlesPasswordlessTwoFactor;
 use App\Models\User;
 use Illuminate\Contracts\Encryption\DecryptException;

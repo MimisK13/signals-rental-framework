@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Actions;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Tax\Services\MemberVatValidationService;
-use App\Models\Member;
 use Illuminate\Support\Facades\Gate;
 
 final class RequestMemberVatValidation

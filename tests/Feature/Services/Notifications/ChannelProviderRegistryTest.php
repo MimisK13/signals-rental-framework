@@ -13,7 +13,7 @@ use App\Domain\Communications\Services\ChannelProviderRegistry;
 use App\Domain\Communications\Services\Drivers\BroadcastDriver;
 use App\Domain\Communications\Services\Drivers\DatabaseDriver;
 use App\Domain\Communications\Services\Drivers\EmailDriver;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Services\Plugins\PluginRegistrar;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;

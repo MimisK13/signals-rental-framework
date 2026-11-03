@@ -17,7 +17,7 @@ use App\Domain\Availability\Shortages\Services\PipelineShortageEmitter;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;

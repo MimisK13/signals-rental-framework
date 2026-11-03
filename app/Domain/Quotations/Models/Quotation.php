@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Models;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Quotations\Database\Factories\QuotationFactory;
 use App\Domain\Quotations\Enums\QuotationDealPriceMode;
 use App\Domain\Quotations\Enums\QuotationStatus;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\Traits\FormatsMoney;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

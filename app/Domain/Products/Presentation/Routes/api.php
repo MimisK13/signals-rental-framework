@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
+use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Products\Presentation\Http\Controllers\Api\V1\AccessoryController;
 use App\Domain\Products\Presentation\Http\Controllers\Api\V1\ProductContainerTemplateController;
 use App\Domain\Products\Presentation\Http\Controllers\Api\V1\ProductController;
 use App\Domain\Products\Presentation\Http\Controllers\Api\V1\ProductGroupController;
 use App\Domain\Products\Presentation\Http\Controllers\Api\V1\SerialisedComponentController;
-use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\LogApiRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1')

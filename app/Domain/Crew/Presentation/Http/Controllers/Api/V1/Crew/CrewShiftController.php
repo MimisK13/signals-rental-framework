@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Presentation\Http\Controllers\Api\V1\Crew;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Crew\Actions\Shifts\CancelCrewShift;
 use App\Domain\Crew\Actions\Shifts\ConfirmCrewShift;
 use App\Domain\Crew\Actions\Shifts\CreateCrewShift;
@@ -17,8 +19,6 @@ use App\Domain\Crew\Models\CrewShift;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\CancelCrewShiftRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\CreateCrewShiftRequest;
 use App\Domain\Crew\Presentation\Http\Requests\Crew\UpdateCrewShiftRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

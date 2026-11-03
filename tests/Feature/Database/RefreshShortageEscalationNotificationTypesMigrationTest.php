@@ -2,9 +2,9 @@
 
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Services\SystemCommunicationTemplates;
-use App\Models\NotificationType;
-use App\Models\Store;
-use Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Stores\Models\Store;
 
 beforeEach(function () {
     $this->seed(NotificationTypeSeeder::class);

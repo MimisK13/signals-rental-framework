@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierBills\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\SupplierBills\Enums\SupplierBillStatus;
 use App\Domain\SupplierBills\Models\SupplierBill;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

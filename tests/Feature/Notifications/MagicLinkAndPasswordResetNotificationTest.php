@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Communications\Services\EmailTemplateRenderer;
-use App\Notifications\MagicLinkLoginNotification;
-use App\Notifications\PasswordResetNotification;
+use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
+use App\Domain\Notifications\Notifications\PasswordResetNotification;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Log;

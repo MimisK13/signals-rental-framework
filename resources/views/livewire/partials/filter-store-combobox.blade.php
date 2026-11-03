@@ -2,9 +2,9 @@
     Shared single-store picker for planning filter rows (product bookings).
 --}}
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Store> $stores */
+    /** @var \Illuminate\Support\Collection<int, \App\Domain\Stores\Models\Store> $stores */
     $storeOptions = $stores
-        ->map(static fn (\App\Models\Store $store): array => ['value' => $store->id, 'label' => $store->name])
+        ->map(static fn (\App\Domain\Stores\Models\Store $store): array => ['value' => $store->id, 'label' => $store->name])
         ->values()
         ->all();
 @endphp

@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
-use App\Notifications\PasswordResetNotification;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\Membership;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Notifications\Notifications\PasswordResetNotification;
 use App\Services\SchemaBuilder;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Encryption\DecryptException;

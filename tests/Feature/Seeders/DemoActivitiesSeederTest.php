@@ -2,7 +2,7 @@
 
 use App\Domain\Activities\Database\Seeders\ActivitySeeder;
 use App\Domain\Activities\Models\Activity;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Database\Seeders\DemoDataSeeder;
 use Illuminate\Console\Command;

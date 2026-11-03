@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Models\InboundWebhookSource;
-use App\Models\RequestLog;
-use App\Models\UsageDaily;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\API\Services\UsageRecorder;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Models\User;
-use App\Services\Api\UsageRecorder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;

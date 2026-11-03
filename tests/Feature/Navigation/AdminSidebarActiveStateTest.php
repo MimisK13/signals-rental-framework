@@ -85,7 +85,7 @@ describe('second-level item active state', function () {
     it('does not render a webhooks item in the admin sidebar', function () {
         $html = $this->get(route('admin.settings.api'))->assertOk()->getContent();
 
-        expect(preg_match('/s-admin-nav-item[^>]*href="'.preg_quote(route('admin.settings.webhooks'), '/').'"/', $html))
+        expect(preg_match('/s-admin-nav-item[^>]*href="'.preg_quote(route('api.webhooks'), '/').'"/', $html))
             ->toBe(0);
     });
 

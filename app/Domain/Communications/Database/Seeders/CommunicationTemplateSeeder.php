@@ -6,8 +6,8 @@ namespace App\Domain\Communications\Database\Seeders;
 
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Services\SystemCommunicationTemplates;
-use App\Models\NotificationType;
-use App\Models\Store;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Seeder;
 
 final class CommunicationTemplateSeeder extends Seeder

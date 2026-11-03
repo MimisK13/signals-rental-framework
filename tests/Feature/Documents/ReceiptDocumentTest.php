@@ -16,7 +16,7 @@ use App\Domain\Invoices\Data\RecordPaymentData;
 use App\Domain\Invoices\Enums\PaymentMethod;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
-use App\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

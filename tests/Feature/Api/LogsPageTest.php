@@ -1,13 +1,14 @@
 <?php
 
-use App\Models\InboundWebhookLog;
-use App\Models\InboundWebhookSource;
-use App\Models\RequestLog;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Presentation\Livewire\Logs;
+use App\Domain\Webhooks\Models\InboundWebhookLog;
+use App\Domain\Webhooks\Models\InboundWebhookSource;
+use App\Domain\Webhooks\Models\WebhookLog;
 use App\Models\User;
-use App\Models\WebhookLog;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -55,7 +56,7 @@ it('shows api request logs only on the api channel', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->assertSee('api.v1.products.index')
         ->assertSee('GET')
         ->assertDontSee('product.created')
@@ -81,7 +82,7 @@ it('shows webhook sent logs on the webhook_sent channel', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->call('setChannel', 'webhook_sent')
         ->assertSee('invoice.issued')
         ->assertDontSee('api.v1.products.index')
@@ -108,7 +109,7 @@ it('shows inbound webhook logs on the webhook_received channel', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->call('setChannel', 'webhook_received')
         ->assertSee('Stripe Connect')
         ->assertSee('payment_intent.succeeded')
@@ -133,7 +134,7 @@ it('filters api logs by status class', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->set('filterStatusClass', '5xx')
         ->assertSee('api.v1.error')
         ->assertDontSee('api.v1.ok');
@@ -159,7 +160,7 @@ it('filters api logs by token', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->set('filterToken', (string) $tokenA->accessToken->id)
         ->assertSee('api.v1.alpha')
         ->assertDontSee('api.v1.beta');
@@ -180,7 +181,7 @@ it('filters logs by date window preset', function () {
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->call('setDatePreset', '24h')
         ->assertSee('api.v1.recent')
         ->assertDontSee('api.v1.old')
@@ -203,7 +204,7 @@ it('reveals row detail when toggled', function () {
 
     $logId = RequestLog::query()->value('id');
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->call('toggleRow', $logId)
         ->assertSet('expandedRow', $logId)
         ->assertSee('/api/v1/products/42')
@@ -223,7 +224,7 @@ it('streams a CSV download synchronously and toasts when exporting', function ()
 
     $this->actingAs($this->user);
 
-    Volt::test('api.logs')
+    Livewire::test(Logs::class)
         ->call('setChannel', 'api')
         ->set('filterDatePreset', '24h')
         ->call('exportCsv')

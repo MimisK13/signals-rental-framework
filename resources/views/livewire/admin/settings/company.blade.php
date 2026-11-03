@@ -1,6 +1,6 @@
 <?php
 
-use App\Data\Reference\CountryData;
+use App\Domain\ReferenceData\Data\CountryData;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Volt\Component;

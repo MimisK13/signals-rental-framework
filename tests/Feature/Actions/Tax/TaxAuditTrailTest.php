@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Tax\Actions\CreateTaxRate;
 use App\Domain\Tax\Actions\CreateTaxRule;
 use App\Domain\Tax\Actions\CreateTaxZone;
@@ -30,7 +31,6 @@ use App\Domain\Tax\Models\TaxCategory;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
-use App\Models\ActionLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

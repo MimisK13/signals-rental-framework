@@ -1,9 +1,5 @@
 <?php
 
-use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
-use App\Actions\VirtualStock\ReturnVirtualStockIntake;
-use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
@@ -12,14 +8,20 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
+use App\Domain\VirtualStock\Data\ReturnVirtualStockIntakeData;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Presentation\Livewire\Show;
+use App\Domain\VirtualStock\Services\VirtualStockIntakeProfitAndLossBuilder;
+use App\Domain\VirtualStock\Services\VirtualStockIntakeReturnGuard;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
-use App\Services\VirtualStock\VirtualStockIntakeProfitAndLossBuilder;
-use App\Services\VirtualStock\VirtualStockIntakeReturnGuard;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Livewire\Volt\Volt;
 
 beforeEach(function () {
@@ -229,7 +231,7 @@ it('renders return-to-supplier affordances on virtual stock and purchase order p
     app(ConfirmVirtualStockIntake::class)($intake);
     app(ReceiveVirtualStockIntake::class)($intake->refresh());
 
-    Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake->refresh()])
+    Livewire::test(Show::class, ['virtualStockIntake' => $intake->refresh()])
         ->assertSee('Return to supplier')
         ->assertSee('Cost apportionment');
 

@@ -7,16 +7,16 @@
 
 use App\Domain\Attachments\Data\AttachmentData;
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\AuditLog\Jobs\ExportActionLog;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
-use App\Jobs\ExportActionLog;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
+use App\Domain\Members\Presentation\Livewire\MergeModal;
 use App\Livewire\Components\IconUpload;
 use App\Livewire\Components\ViewBuilder;
-use App\Livewire\Members\MergeModal;
-use App\Models\Member;
 use App\Models\User;
 use App\Support\Timezone;
-use App\Views\MemberColumnRegistry;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -158,7 +158,7 @@ describe('MergeModal render', function () {
         $this->actingAs(User::factory()->owner()->create());
 
         Livewire::test(MergeModal::class)
-            ->assertViewIs('livewire.members.merge-modal')
+            ->assertViewIs('members::merge-modal')
             ->assertStatus(200);
     });
 });

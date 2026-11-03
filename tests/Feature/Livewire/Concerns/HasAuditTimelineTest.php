@@ -2,11 +2,10 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Show;
-use App\Models\ActionLog;
-use App\Models\Member;
+use App\Domain\AuditLog\Models\ActionLog;
+use App\Domain\Members\Models\Member;
 use App\Models\User;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +23,7 @@ it('shapes member timeline entries with headline meta and actor body', function 
         'auditable_id' => $member->id,
     ]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(App\Domain\Members\Presentation\Livewire\Show::class, ['member' => $member])
         ->assertSee('Member Updated')
         ->assertSee("by {$this->user->name}")
         ->assertSeeHtml('s-timeline-dot-blue');
@@ -52,7 +51,7 @@ it('maps member timeline colours for created, archived, and unmatched actions', 
         'auditable_id' => $member->id,
     ]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(App\Domain\Members\Presentation\Livewire\Show::class, ['member' => $member])
         ->assertSeeHtml('s-timeline-dot-green')
         ->assertSeeHtml('s-timeline-dot-red')
         ->assertSee('Member Exported');
@@ -68,7 +67,7 @@ it('omits the actor body when the audit log has no user', function () {
         'auditable_id' => $member->id,
     ]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(App\Domain\Members\Presentation\Livewire\Show::class, ['member' => $member])
         ->assertSee('Member Restored')
         ->assertDontSee('by ');
 });

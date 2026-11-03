@@ -1,18 +1,18 @@
 <?php
 
-use App\Actions\Members\AnonymiseMember;
-use App\Actions\Members\ArchiveMember;
-use App\Actions\Members\CreateMember;
-use App\Actions\Members\DeleteMember;
-use App\Actions\Members\MergeMember;
-use App\Actions\Members\RestoreMember;
-use App\Actions\Members\UpdateMember;
-use App\Data\Members\CreateMemberData;
-use App\Data\Members\MergeMemberData;
-use App\Data\Members\UpdateMemberData;
-use App\Enums\MembershipType;
-use App\Jobs\DeliverWebhook;
-use App\Models\Member;
+use App\Domain\Members\Actions\AnonymiseMember;
+use App\Domain\Members\Actions\ArchiveMember;
+use App\Domain\Members\Actions\CreateMember;
+use App\Domain\Members\Actions\DeleteMember;
+use App\Domain\Members\Actions\MergeMember;
+use App\Domain\Members\Actions\RestoreMember;
+use App\Domain\Members\Actions\UpdateMember;
+use App\Domain\Members\Data\CreateMemberData;
+use App\Domain\Members\Data\MergeMemberData;
+use App\Domain\Members\Data\UpdateMemberData;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

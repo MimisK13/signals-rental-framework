@@ -9,7 +9,7 @@ use App\Domain\Crew\Data\Rates\ResolveCrewRateData;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRateCard;
 use App\Domain\Crew\Models\CrewRole;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Validation\ValidationException;

@@ -11,7 +11,7 @@ use App\Domain\Projects\Opportunities\Data\MergeOpportunityItemsData;
 use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

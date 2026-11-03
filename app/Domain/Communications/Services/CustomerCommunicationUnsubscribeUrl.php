@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Services;
 
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Support\Facades\URL;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Domain\Crew\Actions\Registry;
 
 use App\Domain\Crew\Models\CrewMemberQualification;
 use App\Domain\Crew\Services\CrewAudit;
-use App\Models\Scopes\StoreScope;
+use App\Domain\Stores\Scopes\StoreScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

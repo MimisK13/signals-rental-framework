@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\NotificationType;
+use App\Domain\Notifications\Models\NotificationType;
 use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\UsesPostgres;
 

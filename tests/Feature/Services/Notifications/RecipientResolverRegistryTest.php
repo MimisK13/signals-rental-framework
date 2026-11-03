@@ -1,15 +1,15 @@
 <?php
 
-use App\Contracts\Notifications\RecipientResolver;
-use App\Data\Notifications\NotificationContextData;
 use App\Domain\Communications\Actions\LogCommunication;
 use App\Domain\Communications\Data\TransitionCommunicationLogData;
 use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Members\Models\Member;
+use App\Domain\Notifications\Contracts\RecipientResolver;
+use App\Domain\Notifications\Data\NotificationContextData;
+use App\Domain\Notifications\Models\NotificationType;
+use App\Domain\Notifications\Services\RecipientResolverRegistry;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Member;
-use App\Models\NotificationType;
 use App\Models\User;
-use App\Services\Notifications\RecipientResolverRegistry;
 use App\Services\Plugins\PluginRegistrar;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

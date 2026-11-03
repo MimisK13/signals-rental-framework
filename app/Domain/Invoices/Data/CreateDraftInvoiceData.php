@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Data;
 
 use App\Domain\Invoices\Enums\InvoiceType;
-use App\Enums\MembershipType;
+use App\Domain\Members\Enums\MembershipType;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

@@ -6,8 +6,8 @@ namespace App\Domain\Invoices\Actions;
 
 use App\Domain\Communications\Actions\DispatchBillingCustomerCommunication;
 use App\Domain\Invoices\Data\SendMemberStatementData;
+use App\Domain\Members\Models\Member;
 use App\Enums\BillingCommunicationKind;
-use App\Models\Member;
 use Illuminate\Support\Facades\Gate;
 
 /**

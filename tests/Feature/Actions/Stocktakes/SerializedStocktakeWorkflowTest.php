@@ -13,7 +13,7 @@ use App\Domain\Stock\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stock\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Domain\Stock\Stocktakes\Models\StocktakeObservation;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

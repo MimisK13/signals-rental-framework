@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomFields\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\CustomFields\Actions\CreateCustomFieldGroup;
 use App\Domain\CustomFields\Actions\DeleteCustomFieldGroup;
 use App\Domain\CustomFields\Actions\UpdateCustomFieldGroup;
@@ -11,8 +13,6 @@ use App\Domain\CustomFields\Data\CreateCustomFieldGroupData;
 use App\Domain\CustomFields\Data\CustomFieldGroupData;
 use App\Domain\CustomFields\Data\UpdateCustomFieldGroupData;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

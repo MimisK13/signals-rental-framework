@@ -1,11 +1,12 @@
 <?php
 
 use App\Domain\Invoices\Models\Invoice;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\Invoices;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -23,7 +24,7 @@ it('lists member invoices with outstanding summary', function () {
         'amount_paid' => 5000,
     ]);
 
-    Volt::test('members.invoices', ['member' => $member])
+    Livewire::test(Invoices::class, ['member' => $member])
         ->assertSee('Outstanding Balance')
         ->assertSee('50.00');
 });

@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Models\UsageDaily;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\API\Queries\UsageQuery;
+use App\Domain\API\Support\DateWindow;
 use App\Models\User;
-use App\Queries\Api\UsageQuery;
-use App\Support\DateWindow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\PersonalAccessToken;

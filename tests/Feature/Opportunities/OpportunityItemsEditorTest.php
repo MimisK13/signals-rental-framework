@@ -32,7 +32,7 @@ use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemPriceOverridden;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemRemoved;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

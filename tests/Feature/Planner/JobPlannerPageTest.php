@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Stores\Models\Store;
 use App\Livewire\Planner\Index as PlannerIndex;
-use App\Models\Address;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

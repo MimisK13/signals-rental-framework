@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Pricing\Services\RoundingStrategy;
 use App\Domain\Quotations\Data\SetQuotationDealPriceData;
 use App\Domain\Quotations\Enums\QuotationDealPriceMode;
 use App\Domain\Quotations\Enums\QuotationItemType;
@@ -14,7 +15,6 @@ use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationEditingGuard;
 use App\Domain\Quotations\Verbs\Events\QuotationDealPriceChanged;
 use App\Domain\Quotations\Verbs\Events\QuotationItemDealPriceChanged;
-use App\Services\Pricing\RoundingStrategy;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

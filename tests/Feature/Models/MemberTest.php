@@ -2,14 +2,14 @@
 
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
+use App\Domain\Members\Enums\MembershipType;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Models\Membership;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\OrganisationTaxClass;
-use App\Enums\MembershipType;
-use App\Models\Country;
-use App\Models\Member;
-use App\Models\MemberRelationship;
-use App\Models\Membership;
-use App\Models\MemberStore;
-use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 

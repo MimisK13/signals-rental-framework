@@ -1,11 +1,12 @@
 <?php
 
-use App\Models\ActionLog;
-use App\Models\Member;
-use App\Models\MemberRelationship;
+use App\Domain\AuditLog\Models\ActionLog;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Presentation\Livewire\Show;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +25,7 @@ it('renders the show page with member details', function () {
 it('shows the member name and type', function () {
     $member = Member::factory()->organisation()->create(['name' => 'Acme Corp']);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('Acme Corp')
         ->assertSee('Organisation');
 });
@@ -32,14 +33,14 @@ it('shows the member name and type', function () {
 it('shows active badge for active members', function () {
     $member = Member::factory()->create(['name' => 'Active Person', 'is_active' => true]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('Active');
 });
 
 it('shows inactive badge for inactive members', function () {
     $member = Member::factory()->inactive()->create(['name' => 'Inactive Person']);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('Inactive');
 });
 
@@ -52,7 +53,7 @@ it('shows organisation links for contacts', function () {
         'related_member_id' => $org->id,
     ]);
 
-    Volt::test('members.show', ['member' => $contact])
+    Livewire::test(Show::class, ['member' => $contact])
         ->assertSee('Linked Org');
 });
 
@@ -65,7 +66,7 @@ it('shows contact links for organisations', function () {
         'related_member_id' => $org->id,
     ]);
 
-    Volt::test('members.show', ['member' => $org])
+    Livewire::test(Show::class, ['member' => $org])
         ->assertSee('Linked Contact');
 });
 
@@ -80,11 +81,11 @@ it('shows related members on the reverse-direction member too', function () {
     ]);
 
     // Contact's show page lists the org even though the row's member_id is the org.
-    Volt::test('members.show', ['member' => $contact])
+    Livewire::test(Show::class, ['member' => $contact])
         ->assertSee('Reverse Org');
 
     // And vice versa.
-    Volt::test('members.show', ['member' => $org])
+    Livewire::test(Show::class, ['member' => $org])
         ->assertSee('Reverse Contact');
 });
 
@@ -102,7 +103,7 @@ it('displays the related organisation profile image when it has one', function (
         'related_member_id' => $org->id,
     ]);
 
-    Volt::test('members.show', ['member' => $contact])
+    Livewire::test(Show::class, ['member' => $contact])
         ->assertSee('s-avatar-img', false)
         ->assertSee('icons/org-thumb.jpg', false);
 });
@@ -121,7 +122,7 @@ it('displays the related contact profile image when it has one', function () {
         'related_member_id' => $org->id,
     ]);
 
-    Volt::test('members.show', ['member' => $org])
+    Livewire::test(Show::class, ['member' => $org])
         ->assertSee('s-avatar-img', false)
         ->assertSee('icons/contact-thumb.jpg', false);
 });
@@ -131,7 +132,7 @@ it('mounts the merge modal and offers Merge for a non-user member', function () 
 
     // Asserts the nested Livewire component is rendered: matches the escaped
     // component-name marker that assertSeeLivewire() looks for in the snapshot.
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSeeHtml('&quot;name&quot;:&quot;members.merge-modal&quot;')
         ->assertSee('Merge with...');
 });
@@ -139,7 +140,7 @@ it('mounts the merge modal and offers Merge for a non-user member', function () 
 it('hides the Merge action for a user-type member', function () {
     $member = Member::factory()->user()->create();
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertDontSee('Merge with...');
 });
 
@@ -149,7 +150,7 @@ it('shows description when present', function () {
         'description' => 'A useful description',
     ]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('A useful description');
 });
 
@@ -163,7 +164,7 @@ it('shows live audit-log entries on the activity timeline', function () {
         'user_id' => $this->user->id,
     ]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('Activity Timeline')
         // Action string is humanised: member.archived -> "Member Archived".
         ->assertSee('Member Archived')
@@ -183,7 +184,7 @@ it('does not show audit entries belonging to other members on the timeline', fun
         'user_id' => $this->user->id,
     ]);
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('No recorded activity for this member yet.')
         ->assertDontSee('Member Updated');
 });
@@ -191,7 +192,7 @@ it('does not show audit entries belonging to other members on the timeline', fun
 it('shows an empty-state message when the member has no audit history', function () {
     $member = Member::factory()->create();
 
-    Volt::test('members.show', ['member' => $member])
+    Livewire::test(Show::class, ['member' => $member])
         ->assertSee('No recorded activity for this member yet.');
 });
 

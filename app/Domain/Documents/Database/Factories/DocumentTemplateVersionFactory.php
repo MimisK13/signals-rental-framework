@@ -6,7 +6,7 @@ namespace App\Domain\Documents\Database\Factories;
 
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -276,7 +276,7 @@ Each section has a **Test Connection** button to verify credentials before savin
 
 ### Webhooks
 
-**Route:** `/admin/settings/webhooks`
+**Route:** `/api/webhooks`
 
 Manage webhook subscriptions that notify external services when events occur in Signals. Webhooks are delivered via HTTP POST with HMAC-SHA256 signed payloads.
 

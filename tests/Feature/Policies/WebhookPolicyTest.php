@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Webhooks\Models\Webhook;
 use App\Models\User;
-use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

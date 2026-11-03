@@ -9,7 +9,7 @@ use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Observers\DemandObserver;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;

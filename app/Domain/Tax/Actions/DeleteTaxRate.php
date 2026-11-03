@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Tax\Models\TaxRate;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Illuminate\Support\Facades\Gate;
 
 final class DeleteTaxRate

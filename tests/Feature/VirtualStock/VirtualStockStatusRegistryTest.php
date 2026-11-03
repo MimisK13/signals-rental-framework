@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\VirtualStock\VirtualStockStatusRegistry;
+use App\Domain\VirtualStock\Services\VirtualStockStatusRegistry;
 
 it('exposes configured virtual stock statuses and transitions', function () {
     $registry = app(VirtualStockStatusRegistry::class);

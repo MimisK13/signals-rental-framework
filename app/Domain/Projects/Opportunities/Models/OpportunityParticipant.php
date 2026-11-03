@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Models;
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Database\Factories\OpportunityParticipantFactory;
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

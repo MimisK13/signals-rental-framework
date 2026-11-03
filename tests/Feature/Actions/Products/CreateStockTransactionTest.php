@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Members\Models\Member;
 use App\Domain\Stock\Actions\CreateStockTransaction;
 use App\Domain\Stock\Data\CreateStockTransactionData;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Events\AuditableEvent;
-use App\Models\Member;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

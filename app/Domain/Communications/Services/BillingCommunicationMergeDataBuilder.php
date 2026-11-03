@@ -7,7 +7,7 @@ namespace App\Domain\Communications\Services;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
 
 /**
  * Builds merge-field payloads for billing customer communication emails (P38).

@@ -4,7 +4,7 @@ use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityNumberGenerator;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Carbon\CarbonImmutable;
 
 describe('OpportunityNumberGenerator', function () {

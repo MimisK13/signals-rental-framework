@@ -8,7 +8,7 @@ use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Services\SchemaRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

@@ -2,8 +2,8 @@
 
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Policies\InvoicePolicy;
-use App\Models\Member;
-use App\Models\MemberStore;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

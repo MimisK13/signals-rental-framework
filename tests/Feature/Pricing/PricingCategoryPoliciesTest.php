@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\DiscountCategory;
-use App\Models\PriceCategory;
+use App\Domain\Pricing\Models\DiscountCategory;
+use App\Domain\Pricing\Models\PriceCategory;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -6,7 +6,7 @@ use App\Actions\Admin\ReactivateUser;
 use App\Actions\Admin\SendPasswordReset;
 use App\Actions\Admin\UpdateUser;
 use App\Models\User;
-use App\Notifications\UserInvitedNotification;
+use App\Domain\Notifications\Notifications\UserInvitedNotification;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;

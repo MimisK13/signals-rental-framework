@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.members.partials.member-header', ['member' => $member, 'subpage' => 'Activities'])
-    @include('livewire.members.partials.member-tabs', ['member' => $member, 'activeTab' => 'activities'])
+    @include('members::partials.member-header', ['member' => $member, 'subpage' => 'Activities'])
+    @include('members::partials.member-tabs', ['member' => $member, 'activeTab' => 'activities'])
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="mb-4 flex justify-end">

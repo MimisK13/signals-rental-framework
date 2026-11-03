@@ -4,7 +4,7 @@ use App\Domain\Documents\Actions\UpdateDocumentSequence;
 use App\Domain\Documents\Data\UpdateDocumentSequenceData;
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Invoices\Models\Invoice;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 use App\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;

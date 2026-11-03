@@ -3,7 +3,7 @@
 use App\Domain\Activities\Actions\CompleteActivity;
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Models\Activity;
-use App\Events\AuditableEvent;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

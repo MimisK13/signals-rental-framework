@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Presentation\Livewire\Show;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -7,12 +9,10 @@ use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Presentation\Livewire\Costs;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\Store;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use App\Support\Formatter;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -335,7 +335,7 @@ describe('Phase 4 cost visibility', function () {
             'unit_cost' => 2500,
         ]);
 
-        Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake])
+        Livewire::test(App\Domain\VirtualStock\Presentation\Livewire\Show::class, ['virtualStockIntake' => $intake])
             ->assertSee($intake->number)
             ->assertDontSee('Unit cost')
             ->assertDontSee('Cost apportionment')
@@ -352,7 +352,7 @@ describe('Phase 4 cost visibility', function () {
             'unit_cost' => 2500,
         ]);
 
-        Volt::test('virtual-stock.show', ['virtualStockIntake' => $intake])
+        Livewire::test(App\Domain\VirtualStock\Presentation\Livewire\Show::class, ['virtualStockIntake' => $intake])
             ->assertSee('Unit cost')
             ->assertSee(app(Formatter::class)->money(2500));
     });

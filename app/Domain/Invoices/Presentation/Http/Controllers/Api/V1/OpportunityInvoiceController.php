@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Invoices\Actions\GenerateDepositInvoice;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Actions\GenerateProformaInvoice;
@@ -12,7 +13,6 @@ use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Data\GenerateProformaInvoiceData;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Http\Controllers\Api\Controller;
 use Dedoc\Scramble\Attributes\HeaderParameter;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;

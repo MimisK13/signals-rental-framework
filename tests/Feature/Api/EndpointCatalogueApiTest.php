@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\API\Services\ApiEndpointCatalogue;
 use App\Models\User;
-use App\Services\Api\ApiEndpointCatalogue;
 use Database\Seeders\PermissionSeeder;
 
 beforeEach(function () {

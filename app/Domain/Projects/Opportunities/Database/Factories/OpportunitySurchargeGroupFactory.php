@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Database\Factories;
 
+use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunitySurchargeGroup;
-use App\Models\SurchargeGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

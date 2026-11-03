@@ -1,14 +1,14 @@
 <?php
 
-use App\Data\Members\AddressData;
+use App\Domain\Members\Data\AddressData;
+use App\Domain\Members\Models\Address;
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Actions\UpdateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Data\UpdateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\Address;
-use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

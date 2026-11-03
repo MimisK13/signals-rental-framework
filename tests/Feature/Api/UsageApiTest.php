@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\MeteringChannel;
-use App\Jobs\ExportApiUsage;
-use App\Models\RequestLog;
-use App\Models\UsageDaily;
+use App\Domain\API\Enums\MeteringChannel;
+use App\Domain\API\Jobs\ExportApiUsage;
+use App\Domain\API\Models\RequestLog;
+use App\Domain\API\Models\UsageDaily;
+use App\Domain\API\Services\ApiEndpointCatalogue;
 use App\Models\User;
-use App\Services\Api\ApiEndpointCatalogue;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;

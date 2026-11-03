@@ -6,7 +6,7 @@ namespace App\Domain\Stock\Stocktakes\Presentation\Livewire;
 
 use App\Domain\Stock\Stocktakes\Actions\CreateStocktake;
 use App\Domain\Stock\Stocktakes\Data\CreateStocktakeData;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

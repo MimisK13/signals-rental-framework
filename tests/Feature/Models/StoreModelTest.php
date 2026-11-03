@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 it('has fillable attributes', function () {
     $store = Store::factory()->create([

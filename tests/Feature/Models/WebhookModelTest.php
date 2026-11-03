@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Webhook;
-use App\Models\WebhookLog;
+use App\Domain\Webhooks\Models\Webhook;
+use App\Domain\Webhooks\Models\WebhookLog;
 
 describe('relationships', function () {
     it('has many logs', function () {

@@ -5,13 +5,13 @@ use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
+use App\Domain\ReferenceData\Models\CostGroup;
+use App\Domain\ReferenceData\Models\Country;
+use App\Domain\ReferenceData\Models\RevenueGroup;
 use App\Domain\Stock\Enums\AllowedStockType;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\CostGroup;
-use App\Models\Country;
-use App\Models\RevenueGroup;
 use App\Services\SchemaRegistry;
 
 it('has correct fillable attributes', function () {

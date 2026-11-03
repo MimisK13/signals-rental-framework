@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Domain\Stock\Stocktakes\Models\StocktakeLine;
 use App\Domain\Stock\Stocktakes\Models\StocktakeObservation;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use App\Models\User;
 
 it('uses only the canonical Stocktakes module model identities', function (): void {

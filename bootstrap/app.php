@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\API\Presentation\Http\Middleware\HandleIdempotencyKey;
+use App\Domain\Setup\Http\Middleware\EnsureSetupComplete;
+use App\Domain\Setup\Http\Middleware\EnsureSetupRequired;
 use App\Http\Middleware\EnforceSessionTimeout;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureModuleEnabled;
-use App\Http\Middleware\EnsureSetupComplete;
-use App\Http\Middleware\EnsureSetupRequired;
 use App\Http\Middleware\EnsureTwoFactorAuthenticated;
-use App\Http\Middleware\HandleIdempotencyKey;
 use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;

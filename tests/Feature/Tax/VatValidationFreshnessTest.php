@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Jobs\ValidateMemberVatNumber;
 use App\Domain\Tax\Services\TaxResolutionContext;
-use App\Models\Member;
-use App\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;

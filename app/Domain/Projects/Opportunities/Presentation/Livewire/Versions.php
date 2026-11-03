@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Presentation\Livewire;
 
+use App\Domain\AuditLog\Models\ActionLog;
+use App\Domain\AuditLog\Presentation\Concerns\HasAuditTimeline;
 use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
 use App\Domain\Projects\Opportunities\Actions\ActivateVersion;
 use App\Domain\Projects\Opportunities\Actions\ChangeVersionLabel;
@@ -21,8 +23,6 @@ use App\Domain\Projects\Opportunities\Enums\VersionType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Presentation\Concerns\HasOpportunityActions;
-use App\Livewire\Concerns\HasAuditTimeline;
-use App\Models\ActionLog;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Products\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Products\Actions\CreateSerialisedComponent;
 use App\Domain\Products\Actions\DeleteSerialisedComponent;
 use App\Domain\Products\Actions\UpdateSerialisedComponent;
@@ -12,7 +13,6 @@ use App\Domain\Products\Data\SerialisedComponentData;
 use App\Domain\Products\Data\UpdateSerialisedComponentData;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
-use App\Http\Controllers\Api\Controller;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

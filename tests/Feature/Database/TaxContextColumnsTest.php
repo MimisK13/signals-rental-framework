@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Members\Models\Member;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Models\TaxZone;
-use App\Models\Member;
-use App\Models\Store;
 
 it('persists member tax context columns', function () {
     $zone = TaxZone::factory()->uk()->create();

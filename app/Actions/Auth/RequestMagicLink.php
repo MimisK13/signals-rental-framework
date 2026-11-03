@@ -3,8 +3,8 @@
 namespace App\Actions\Auth;
 
 use App\Data\Auth\RequestMagicLinkData;
+use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
 use App\Models\User;
-use App\Notifications\MagicLinkLoginNotification;
 use App\Services\Auth\MagicLinkService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;

@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Views\Column;
 use App\Views\ColumnRegistry;
-use App\Views\MemberColumnRegistry;
 
 describe('Column', function () {
     it('builds a column with fluent API', function () {

@@ -6,6 +6,7 @@ namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Availability\Shortages\Services\ItemShortageProbe;
+use App\Domain\Pricing\Services\DiscountCategoryApplier;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\Concerns\FormatsOpportunityDates;
@@ -16,9 +17,8 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Services\ItemTreeService;
 use App\Domain\Projects\Opportunities\Services\OpportunityAutoGroupResolver;
-use App\Services\Pricing\DiscountCategoryApplier;
-use App\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
+use App\Services\SequenceAllocator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

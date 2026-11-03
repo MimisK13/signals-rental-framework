@@ -38,7 +38,7 @@
                                 <td class="whitespace-nowrap text-[11px]">@localdatetime($log->created_at)</td>
                                 <td class="text-[11px]">{{ $log->notification_type_key }}</td>
                                 <td class="text-[11px]">
-                                    @if($log->notifiable instanceof \App\Models\Member)
+                                    @if($log->notifiable instanceof \App\Domain\Members\Models\Member)
                                         {{ $log->notifiable->name }}
                                     @else
                                         {{ $log->recipient_address ?? '—' }}

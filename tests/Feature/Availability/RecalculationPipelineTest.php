@@ -11,7 +11,7 @@ use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 

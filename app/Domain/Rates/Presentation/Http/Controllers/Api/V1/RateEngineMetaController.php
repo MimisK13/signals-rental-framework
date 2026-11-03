@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Rates\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Rates\Contracts\CalculationStrategy;
 use App\Domain\Rates\Contracts\RateModifier;
 use App\Domain\Rates\Services\RateEngine\Presets\RatePresets;
 use App\Domain\Rates\Services\RateEngine\RateEngineRegistry;
-use App\Http\Controllers\Api\Controller;
 use App\Support\ConfigSchema\Section;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;

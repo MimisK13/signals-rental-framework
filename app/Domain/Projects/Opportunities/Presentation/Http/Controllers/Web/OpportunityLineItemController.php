@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Presentation\Http\Controllers\Web;
 
 use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityItem;
-use App\Http\Controllers\Controller;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;

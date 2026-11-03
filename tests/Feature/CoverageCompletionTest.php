@@ -8,6 +8,8 @@
  */
 
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\AuditLog\Jobs\ExportActionLog;
+use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Communications\Services\EmailTemplateRenderer;
 use App\Domain\Currency\Models\Currency;
@@ -19,13 +21,11 @@ use App\Domain\CustomFields\Services\CustomFieldCopier;
 use App\Domain\CustomFields\Services\CustomFieldSerializer;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Services\ViewResolver;
-use App\Jobs\ExportActionLog;
-use App\Models\ActionLog;
-use App\Models\Member;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Models\User;
 use App\Services\PermissionRegistry;
 use App\Support\Formatter;
-use App\Views\MemberColumnRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Blade;

@@ -1,7 +1,14 @@
 <?php
 
-use App\Actions\Members\UpdateMember;
-use App\Data\Members\UpdateMemberData;
+use App\Domain\Members\Actions\UpdateMember;
+use App\Domain\Members\Data\UpdateMemberData;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Presentation\Livewire\Form;
+use App\Domain\Pricing\Enums\PricingRoundingDirection;
+use App\Domain\Pricing\Models\PriceCategory;
+use App\Domain\Pricing\Models\PriceCategoryTier;
+use App\Domain\Pricing\Services\OpportunityPricingRecalculator;
+use App\Domain\Pricing\Services\PriceCategoryTierMultiplier;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -15,19 +22,13 @@ use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
+use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Enums\PricingRoundingDirection;
-use App\Models\Member;
-use App\Models\PriceCategory;
-use App\Models\PriceCategoryTier;
-use App\Models\Store;
 use App\Models\User;
-use App\Services\Pricing\OpportunityPricingRecalculator;
-use App\Services\Pricing\PriceCategoryTierMultiplier;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Validation\ValidationException;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {
@@ -357,7 +358,7 @@ it('clears the selected tier when the price category changes in the member form'
         'price_category_tier_id' => $tradeTier->id,
     ]);
 
-    Volt::test('members.form', ['member' => $member])
+    Livewire::test(Form::class, ['member' => $member])
         ->assertSet('priceCategoryTierId', $tradeTier->id)
         ->set('priceCategoryId', $retail->id)
         ->assertSet('priceCategoryTierId', null);

@@ -2,21 +2,21 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Members\Models\Email;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberRelationship;
+use App\Domain\Members\Models\Phone;
 use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
+use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
 use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
 use App\Domain\Tax\Database\Seeders\TaxRateSeeder;
 use App\Domain\Tax\Database\Seeders\TaxRuleSeeder;
 use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
 use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
-use App\Models\Email;
-use App\Models\Member;
-use App\Models\MemberRelationship;
-use App\Models\Phone;
-use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Member;
-use App\Models\MemberStore;
-use App\Models\Store;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
+use App\Domain\Stores\Models\Store;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\User;
-use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

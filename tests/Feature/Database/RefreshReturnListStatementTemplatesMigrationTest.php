@@ -3,7 +3,7 @@
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
-use App\Models\Store;
+use App\Domain\Stores\Models\Store;
 
 beforeEach(function () {
     $this->store = Store::factory()->create();

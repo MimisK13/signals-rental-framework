@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Actions;
 
-use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
@@ -24,12 +23,13 @@ use App\Domain\Stock\Actions\CreateStockTransaction;
 use App\Domain\Stock\Data\CreateStockTransactionData;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Actions\ApportionVirtualStockCost;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\VirtualStock\Services\VirtualStockStatusRegistry;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeConfirmed;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSupplyAdjusted;
+use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeUpdated;
 use App\Services\SequenceAllocator;
-use App\Services\VirtualStock\VirtualStockStatusRegistry;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeConfirmed;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeSupplyAdjusted;
-use App\Verbs\Events\VirtualStock\VirtualStockIntakeUpdated;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;

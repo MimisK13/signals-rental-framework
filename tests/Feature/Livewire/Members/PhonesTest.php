@@ -1,10 +1,10 @@
 <?php
 
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
-use App\Livewire\Members\PhoneForm;
-use App\Livewire\Members\Phones;
-use App\Models\Member;
-use App\Models\Phone;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\Phone;
+use App\Domain\Members\Presentation\Livewire\PhoneForm;
+use App\Domain\Members\Presentation\Livewire\Phones;
 use App\Models\User;
 use Livewire\Livewire;
 

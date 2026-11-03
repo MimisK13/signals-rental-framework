@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierCosts\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\Products\Models\Product;
 use App\Domain\SupplierCosts\Actions\CreateSupplierCost;
 use App\Domain\SupplierCosts\Actions\DeleteSupplierCost;
@@ -14,8 +16,6 @@ use App\Domain\SupplierCosts\Data\ProductSupplierCostData;
 use App\Domain\SupplierCosts\Data\UpdateSupplierCostData;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\SupplierCosts\Presentation\Http\Requests\CreateSupplierCostRequest;
-use App\Http\Controllers\Api\Controller;
-use App\Http\Traits\FiltersQueries;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

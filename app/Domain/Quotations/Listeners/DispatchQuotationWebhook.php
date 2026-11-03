@@ -6,7 +6,7 @@ namespace App\Domain\Quotations\Listeners;
 
 use App\Domain\Quotations\Events\QuotationDomainEvent;
 use App\Domain\Quotations\Services\QuotationEventDefinitions;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 
 final readonly class DispatchQuotationWebhook
 {

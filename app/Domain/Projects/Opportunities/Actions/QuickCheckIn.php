@@ -12,11 +12,11 @@ use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Data\QuickCheckInData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\AutoPromotionContext;
-use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AssetAssignmentStatus;
 use App\Domain\Projects\Opportunities\Verbs\Events\AssetChecked;
 use App\Domain\Projects\Opportunities\Verbs\Events\AssetReturned;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PromotesOpportunityStatus;
+use App\Domain\Stock\Models\StockLevel;
+use App\Enums\AssetAssignmentStatus;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 

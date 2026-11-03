@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Warehouse\Containers\Data\ContainerData;
 use App\Domain\Warehouse\Containers\Data\ContainerItemData;
 use App\Domain\Warehouse\Containers\Enums\ContainerDissolveReason;
 use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Events\AuditableEvent;
-use App\Services\Api\WebhookService;
+use App\Domain\Webhooks\Services\WebhookService;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Auth;
 

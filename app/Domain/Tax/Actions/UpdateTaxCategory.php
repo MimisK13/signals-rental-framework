@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Actions;
 
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Tax\Data\TaxCategoryData;
 use App\Domain\Tax\Data\UpdateTaxCategoryData;
 use App\Domain\Tax\Models\TaxCategory;
-use App\Events\AuditableEvent;
 use Illuminate\Support\Facades\Gate;
 
 final class UpdateTaxCategory
