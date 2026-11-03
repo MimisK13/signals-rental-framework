@@ -1,0 +1,304 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Dashboard\Services;
+
+use App\Domain\Administration\Models\User;
+use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Invoices\Models\CreditNote;
+use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Enums\AssetAssignmentStatus;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * Aggregate queries backing the dashboard KPI stat cards.
+ *
+ * All counts respect the authenticated user's store access. Invoice queries
+ * scoped metrics apply an explicit store filter here.
+ */
+final class DashboardKpiService
+{
+    /**
+     * @return array{
+     *     active_opportunities: array{total: int, quotations: int, orders: int},
+     *     revenue: array{
+     *         current_minor: int,
+     *         previous_minor: int,
+     *         change_percent: float|null,
+     *         currency_code: string,
+     *     },
+     *     on_hire: array{units: int, active_jobs: int},
+     *     overdue: array{
+     *         total_outstanding_minor: int,
+     *         invoice_count: int,
+     *         average_days_overdue: float|null,
+     *         currency_code: string,
+     *     },
+     * }
+     */
+    public function metrics(
+        ?User $user = null,
+        bool $includeOpportunities = true,
+        bool $includeInvoices = true,
+    ): array
+    {
+        $user ??= auth()->user();
+        $now = Carbon::now('UTC');
+        $monthStart = $now->copy()->startOfMonth();
+        $previousMonthStart = $monthStart->copy()->subMonth();
+        $previousMonthEnd = $monthStart->copy()->subSecond();
+
+        $quotations = $includeOpportunities
+            ? $this->activeOpportunitiesQuery($user)->ofState(OpportunityState::Quotation)->count()
+            : 0;
+
+        $orders = $includeOpportunities
+            ? $this->activeOpportunitiesQuery($user)->ofState(OpportunityState::Order)->count()
+            : 0;
+
+        $currentRevenue = $includeInvoices ? $this->revenueForPeriod($user, $monthStart, $now) : 0;
+        $previousRevenue = $includeInvoices ? $this->revenueForPeriod($user, $previousMonthStart, $previousMonthEnd) : 0;
+
+        $currencyCode = settings('company.base_currency') ?: 'GBP';
+
+        return [
+            'active_opportunities' => [
+                'total' => $quotations + $orders,
+                'quotations' => $quotations,
+                'orders' => $orders,
+            ],
+            'revenue' => [
+                'current_minor' => $currentRevenue,
+                'previous_minor' => $previousRevenue,
+                'change_percent' => $this->percentChange($previousRevenue, $currentRevenue),
+                'currency_code' => $currencyCode,
+            ],
+            'on_hire' => $includeOpportunities
+                ? $this->onHireMetrics($user)
+                : ['units' => 0, 'active_jobs' => 0],
+            'overdue' => $includeInvoices
+                ? $this->overdueMetrics($user, $now, $currencyCode)
+                : [
+                    'total_outstanding_minor' => 0,
+                    'invoice_count' => 0,
+                    'average_days_overdue' => null,
+                    'currency_code' => $currencyCode,
+                ],
+        ];
+    }
+
+    /**
+     * @return Builder<Opportunity>
+     */
+    private function activeOpportunitiesQuery(?User $user): Builder
+    {
+        $query = Opportunity::query()
+            ->whereIn('state', [
+                OpportunityState::Quotation->value,
+                OpportunityState::Order->value,
+            ])
+            ->where(function (Builder $query): void {
+                $query
+                    ->where(function (Builder $query): void {
+                        $query->where('state', OpportunityState::Quotation->value)
+                            ->whereNotIn('status', [
+                                OpportunityStatus::QuotationLost->statusValue(),
+                                OpportunityStatus::QuotationDead->statusValue(),
+                            ]);
+                    })
+                    ->orWhere(function (Builder $query): void {
+                        $query->where('state', OpportunityState::Order->value)
+                            ->whereNotIn('status', [
+                                OpportunityStatus::OrderComplete->statusValue(),
+                                OpportunityStatus::OrderCancelled->statusValue(),
+                            ]);
+                    });
+            });
+
+        return $this->applyStoreScope($query, 'store_id', $user);
+    }
+
+    private function revenueForPeriod(?User $user, Carbon $startsAt, Carbon $endsAt): int
+    {
+        $invoiceTotal = (int) Invoice::query()
+            ->whereNotNull('issued_at')
+            ->whereBetween('issued_at', [$startsAt, $endsAt])
+            ->where('type', '!=', InvoiceType::Proforma->value)
+            ->where('status', '!=', 'void')
+            ->when(
+                ($storeIds = $this->storeIdsForUser($user)) !== null,
+                function (Builder $query) use ($storeIds): void {
+                    if ($storeIds === []) {
+                        $query->whereRaw('0 = 1');
+
+                        return;
+                    }
+
+                    $query->whereIn('store_id', $storeIds);
+                },
+            )
+            ->sum('total');
+
+        $creditTotal = (int) CreditNote::query()
+            ->whereNotNull('issued_at')
+            ->whereBetween('issued_at', [$startsAt, $endsAt])
+            ->where('status', '!=', 'void')
+            ->when(
+                ($storeIds = $this->storeIdsForUser($user)) !== null,
+                function (Builder $query) use ($storeIds): void {
+                    if ($storeIds === []) {
+                        $query->whereRaw('0 = 1');
+
+                        return;
+                    }
+
+                    $query->whereHas(
+                        'invoice',
+                        fn (Builder $invoiceQuery) => $invoiceQuery->whereIn('store_id', $storeIds),
+                    );
+                },
+            )
+            ->selectRaw('COALESCE(SUM(ABS(total)), 0) as credit_total')
+            ->value('credit_total');
+
+        return max(0, $invoiceTotal - $creditTotal);
+    }
+
+    /**
+     * @return array{units: int, active_jobs: int}
+     */
+    private function onHireMetrics(?User $user): array
+    {
+        $outStatuses = [
+            AssetAssignmentStatus::Dispatched->value,
+            AssetAssignmentStatus::OnHire->value,
+        ];
+
+        $serialisedUnits = OpportunityItemAsset::query()
+            ->whereIn('status', $outStatuses)
+            ->whereHas('item.opportunity', function (Builder $query) use ($user): void {
+                $this->applyStoreScope($query, 'store_id', $user);
+            })
+            ->count();
+
+        $bulkUnits = (int) OpportunityItem::query()
+            ->whereHas('opportunity', function (Builder $query) use ($user): void {
+                $this->applyStoreScope($query, 'store_id', $user);
+            })
+            ->whereRaw('dispatched_quantity > returned_quantity')
+            ->selectRaw('COALESCE(SUM(CAST(dispatched_quantity AS NUMERIC) - CAST(returned_quantity AS NUMERIC)), 0) as on_hire_units')
+            ->value('on_hire_units');
+
+        $activeJobs = $this->applyStoreScope(Opportunity::query(), 'store_id', $user)
+            ->where(function (Builder $query) use ($outStatuses): void {
+                $query
+                    ->whereHas('allItems.assets', function (Builder $query) use ($outStatuses): void {
+                        $query->whereIn('status', $outStatuses);
+                    })
+                    ->orWhereHas('allItems', function (Builder $query): void {
+                        $query->whereRaw('dispatched_quantity > returned_quantity');
+                    });
+            })
+            ->count();
+
+        return [
+            'units' => $serialisedUnits + $bulkUnits,
+            'active_jobs' => $activeJobs,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     total_outstanding_minor: int,
+     *     invoice_count: int,
+     *     average_days_overdue: float|null,
+     *     currency_code: string,
+     * }
+     */
+    private function overdueMetrics(?User $user, Carbon $now, string $currencyCode): array
+    {
+        $overdueQuery = Invoice::query()
+            ->overdue($now)
+            ->when(
+                ($storeIds = $this->storeIdsForUser($user)) !== null,
+                function (Builder $query) use ($storeIds): void {
+                    if ($storeIds === []) {
+                        $query->whereRaw('0 = 1');
+
+                        return;
+                    }
+
+                    $query->whereIn('store_id', $storeIds);
+                },
+            );
+
+        $invoiceCount = (int) (clone $overdueQuery)->count();
+        $totalOutstanding = (int) (clone $overdueQuery)->sum('amount_outstanding');
+
+        $averageDays = null;
+
+        if ($invoiceCount > 0) {
+            $averageDays = (float) (clone $overdueQuery)
+                ->pluck('due_at')
+                ->filter()
+                ->avg(fn ($dueAt) => Carbon::parse($dueAt)->diffInDays($now));
+        }
+
+        return [
+            'total_outstanding_minor' => $totalOutstanding,
+            'invoice_count' => $invoiceCount,
+            'average_days_overdue' => $averageDays,
+            'currency_code' => $currencyCode,
+        ];
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    private function applyStoreScope(Builder $query, string $column, ?User $user): Builder
+    {
+        $storeIds = $this->storeIdsForUser($user);
+
+        if ($storeIds === null) {
+            return $query;
+        }
+
+        if ($storeIds === []) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        return $query->whereIn($column, $storeIds);
+    }
+
+    /**
+     * @return list<int>|null Null means unrestricted access.
+     */
+    private function storeIdsForUser(?User $user): ?array
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        return $user->accessibleStoreIds();
+    }
+
+    private function percentChange(int $previous, int $current): ?float
+    {
+        if ($previous <= 0) {
+            return null;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
+    }
+}

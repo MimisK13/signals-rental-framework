@@ -3,6 +3,8 @@
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
+use App\Domain\Dashboard\Presentation\Livewire\KpiCards;
+use App\Domain\Dashboard\Services\DashboardKpiService;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Models\Member;
@@ -13,8 +15,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stores\Models\Store;
 use App\Enums\AssetAssignmentStatus;
-use App\Livewire\Dashboard\KpiCards;
-use App\Services\Dashboard\DashboardKpiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -213,4 +213,29 @@ it('KpiCards metrics() uses global metrics for guests without per-user cache', f
     expect($metrics)->toHaveKey('active_opportunities')
         ->and($metrics)->toHaveKey('revenue')
         ->and($metrics['active_opportunities']['total'])->toBe(2);
+});
+
+it('hides opportunity and invoice KPIs without their permissions', function () {
+    Opportunity::factory()->quotation()->create();
+    Invoice::factory()->issued()->create();
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(KpiCards::class)
+        ->assertDontSee('Active Opportunities')
+        ->assertDontSee('On Hire')
+        ->assertDontSee('Revenue')
+        ->assertDontSee('Overdue');
+});
+
+it('shows only KPI groups the user may access', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo('opportunities.access');
+
+    Livewire::actingAs($user)
+        ->test(KpiCards::class)
+        ->assertSee('Active Opportunities')
+        ->assertSee('On Hire')
+        ->assertDontSee('Revenue')
+        ->assertDontSee('Overdue');
 });

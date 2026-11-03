@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\ConnectionTesters\S3ConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\S3ConnectionTester;
 use Aws\CommandInterface;
 use Aws\Exception\AwsException;
 use Aws\Result;

@@ -1,8 +1,8 @@
 <?php
 
-use App\Services\ConnectionTesters\PostgresConnectionTester;
-use App\Services\ConnectionTesters\RedisConnectionTester;
-use App\Services\ConnectionTesters\S3ConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\S3ConnectionTester;
 use Illuminate\Support\Facades\Artisan;
 
 it('registers the signals:status command', function () {

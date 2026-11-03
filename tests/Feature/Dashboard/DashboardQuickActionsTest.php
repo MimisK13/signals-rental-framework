@@ -42,6 +42,29 @@ it('hides the New Opportunity quick action from a user without opportunities.cre
         ->assertDontSee(route('opportunities.create'), false);
 });
 
+it('shows invoice and product quick actions only with their create permissions', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo(['invoices.create', 'products.create']);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Create Invoice')
+        ->assertSee(route('invoices.create'), false)
+        ->assertSee('Add Product')
+        ->assertSee(route('products.create'), false);
+});
+
+it('hides invoice and product quick actions without create permissions', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertDontSee('Create Invoice')
+        ->assertDontSee('Add Product');
+});
+
 it('shows the opportunity pipeline widget to a user with opportunities.access', function () {
     $user = User::factory()->create();
     $user->givePermissionTo('opportunities.access');

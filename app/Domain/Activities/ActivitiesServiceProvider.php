@@ -21,6 +21,7 @@ use App\Domain\Activities\Presentation\Livewire\Embedded\ProductActivities;
 use App\Domain\Activities\Presentation\Livewire\Embedded\StockLevelActivities;
 use App\Domain\Activities\Presentation\Livewire\Form;
 use App\Domain\Activities\Presentation\Livewire\Index;
+use App\Domain\Activities\Presentation\Livewire\Settings\Calendar as CalendarSettings;
 use App\Domain\Activities\Presentation\Livewire\Show;
 use App\Domain\Activities\Services\ActivityTypeList;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -73,6 +74,7 @@ final class ActivitiesServiceProvider extends ServiceProvider
             'products.activities' => ProductActivities::class,
             'stock-levels.activities' => StockLevelActivities::class,
             'opportunities.activities' => OpportunityActivities::class,
+            'settings.calendar' => CalendarSettings::class,
         ] as $name => $class) {
             Livewire::addComponent(name: $name, class: $class);
         }

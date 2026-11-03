@@ -10,6 +10,7 @@ use App\Domain\Activities\Presentation\Livewire\Embedded\ProductActivities;
 use App\Domain\Activities\Presentation\Livewire\Embedded\StockLevelActivities;
 use App\Domain\Activities\Presentation\Livewire\Form;
 use App\Domain\Activities\Presentation\Livewire\Index;
+use App\Domain\Activities\Presentation\Livewire\Settings\Calendar as CalendarSettings;
 use App\Domain\Activities\Presentation\Livewire\Show;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,7 @@ Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'signals.sess
     Route::livewire('activities/{activity}', Show::class)->name('activities.show');
     Route::livewire('activities/{activity}/edit', Form::class)->name('activities.edit');
     Route::livewire('calendar', CalendarIndex::class)->name('calendar.index');
+    Route::livewire('settings/calendar', CalendarSettings::class)->name('settings.calendar');
     Route::livewire('members/{member}/activities', MemberActivities::class)->name('members.activities');
     Route::livewire('products/{product}/activities', ProductActivities::class)->name('products.activities');
     Route::livewire('stock-levels/{stockLevel}/activities', StockLevelActivities::class)->name('stock-levels.activities');

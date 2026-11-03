@@ -32,17 +32,8 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['signals.setup-complete', 'auth', 'verified', '2fa', 'signals.session-timeout'])
-    ->name('dashboard');
-
 Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-timeout'])->group(function () {
     Route::redirect('settings', 'settings/profile');
-
-    Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
-    Volt::route('settings/password', 'settings.password')->name('settings.password');
-    Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
-    Volt::route('settings/calendar', 'settings.calendar')->name('settings.calendar');
 
     // Search
     Route::get('search', SearchController::class)->name('search');
@@ -100,10 +91,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Route::redirect('admin/settings', 'admin');
 
     // System
-    Volt::route('admin/settings/system-health', 'admin.settings.system-health')->name('admin.settings.system-health');
-    Volt::route('admin/settings/infrastructure', 'admin.settings.infrastructure')->name('admin.settings.infrastructure');
-    Volt::route('admin/settings/seeders', 'admin.settings.seeders')->name('admin.settings.seeders');
-
     // Data
 
     // Pricing

@@ -7,7 +7,8 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Models\Member;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stores\Models\Store;
-use Livewire\Volt\Volt;
+use App\Domain\System\Presentation\Livewire\Admin\Seeders;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -26,15 +27,23 @@ it('renders the seeders page', function () {
 });
 
 it('shows seeder status as seeded when data exists', function () {
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->assertSee('PermissionSeeder')
         ->assertSee('RoleSeeder')
         ->assertSee('StoreSeeder')
         ->assertSee('DemoDataSeeder');
 });
 
+it('references only existing allowlisted seeder classes', function () {
+    $seeders = Livewire::test(Seeders::class)->get('seeders');
+
+    foreach ($seeders as $seeder) {
+        expect(class_exists($seeder['class']))->toBeTrue($seeder['class']);
+    }
+});
+
 it('detects permissions as seeded', function () {
-    $component = Volt::test('admin.settings.seeders');
+    $component = Livewire::test(Seeders::class);
 
     $seeders = $component->get('seeders');
     expect($seeders['permissions']['seeded'])->toBeTrue();
@@ -42,7 +51,7 @@ it('detects permissions as seeded', function () {
 });
 
 it('detects stores as not seeded when no stores exist', function () {
-    $component = Volt::test('admin.settings.seeders');
+    $component = Livewire::test(Seeders::class);
 
     $seeders = $component->get('seeders');
     expect($seeders['stores']['seeded'])->toBeFalse();
@@ -54,13 +63,13 @@ it('detects demo data as seeded when tagged stores, members, and invoices exist'
     Member::factory()->create(['tag_list' => ['demo-data']]);
     Invoice::factory()->create(['tag_list' => ['demo-data']]);
 
-    $seeders = Volt::test('admin.settings.seeders')->get('seeders');
+    $seeders = Livewire::test(Seeders::class)->get('seeders');
 
     expect($seeders['demo']['seeded'])->toBeTrue();
 });
 
 it('describes the phase-4 demo substrate on the seeders page', function () {
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->assertSee('Phase-4 UAT substrate')
         ->assertSee('Quote-to-cash')
         ->assertSee('virtual stock intake');
@@ -69,7 +78,7 @@ it('describes the phase-4 demo substrate on the seeders page', function () {
 it('runs an individual seeder', function () {
     expect(Store::query()->exists())->toBeFalse();
 
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->call('seed', 'stores')
         ->assertDispatched('seeder-completed');
 
@@ -82,8 +91,9 @@ it('runs all default seeders', function () {
     Permission::query()->delete();
     Role::query()->delete();
 
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->call('seedAll')
+        ->assertHasNoErrors()
         ->assertDispatched('seeder-completed');
 
     expect(Permission::query()->exists())->toBeTrue();
@@ -91,7 +101,7 @@ it('runs all default seeders', function () {
 });
 
 it('hides run button for already seeded seeders', function () {
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->assertDontSee('Run Default Seeders');
 });
 
@@ -99,18 +109,18 @@ it('shows run button for unseeded seeders', function () {
     Permission::query()->delete();
     Role::query()->delete();
 
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->assertSee('Run Default Seeders');
 });
 
 it('shows error for invalid seeder key', function () {
-    Volt::test('admin.settings.seeders')
+    Livewire::test(Seeders::class)
         ->call('seed', 'nonexistent')
         ->assertHasErrors(['seeder']);
 });
 
 it('lists and runs the rate definitions preset seeder', function () {
-    $component = Volt::test('admin.settings.seeders');
+    $component = Livewire::test(Seeders::class);
 
     $seeders = $component->get('seeders');
     expect($seeders)->toHaveKey('rate_definitions');

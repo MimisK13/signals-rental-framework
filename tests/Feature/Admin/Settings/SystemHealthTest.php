@@ -1,7 +1,8 @@
 <?php
 
 use App\Domain\Administration\Models\User;
-use Livewire\Volt\Volt;
+use App\Domain\System\Presentation\Livewire\Admin\SystemHealth;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -16,12 +17,12 @@ it('renders the system health page', function () {
 });
 
 it('displays health check results', function () {
-    Volt::test('admin.settings.system-health')
+    Livewire::test(SystemHealth::class)
         ->assertSet('checks', fn ($checks) => count($checks) === 6);
 });
 
 it('can refresh health checks', function () {
-    Volt::test('admin.settings.system-health')
+    Livewire::test(SystemHealth::class)
         ->call('refresh')
         ->assertSet('checks', fn ($checks) => count($checks) === 6);
 });

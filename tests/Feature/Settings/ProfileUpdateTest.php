@@ -2,11 +2,15 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Domain\Administration\Actions\DeleteOwnAccount;
 use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Presentation\Livewire\Settings\DeleteAccount;
+use App\Domain\Administration\Presentation\Livewire\Settings\Profile;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Laravel\Sanctum\PersonalAccessToken;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProfileUpdateTest extends TestCase
@@ -34,7 +38,7 @@ class ProfileUpdateTest extends TestCase
 
         // Asserts the nested Livewire component is rendered: matches the escaped
         // component-name marker that assertSeeLivewire() looks for in the snapshot.
-        Volt::test('settings.profile')
+        Livewire::test(Profile::class)
             ->assertSeeHtml('&quot;name&quot;:&quot;components.icon-upload&quot;')
             ->assertSet('member.id', $user->member_id);
     }
@@ -50,7 +54,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        Volt::test('settings.profile');
+        Livewire::test(Profile::class);
 
         $user->refresh();
 
@@ -65,7 +69,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = Volt::test('settings.profile')
+        $response = Livewire::test(Profile::class)
             ->set('name', 'Test User')
             ->set('email', 'test@example.com')
             ->call('updateProfileInformation');
@@ -88,7 +92,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        Volt::test('settings.profile')
+        Livewire::test(Profile::class)
             ->set('name', 'Renamed Person')
             ->set('email', $user->email)
             ->call('updateProfileInformation')
@@ -106,7 +110,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        Volt::test('settings.profile')
+        Livewire::test(Profile::class)
             ->call('handleProfilePhotoUpdated')
             ->assertRedirect(route('settings.profile'));
     }
@@ -117,7 +121,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = Volt::test('settings.profile')
+        $response = Livewire::test(Profile::class)
             ->set('name', 'Test User')
             ->set('email', $user->email)
             ->call('updateProfileInformation');
@@ -133,10 +137,13 @@ class ProfileUpdateTest extends TestCase
         User::factory()->create();
 
         $user = User::factory()->create();
+        $user->createToken('self-delete-test');
+
+        $this->assertTrue(PersonalAccessToken::query()->where('tokenable_id', $user->id)->exists());
 
         $this->actingAs($user);
 
-        $response = Volt::test('settings.delete-user-form')
+        $response = Livewire::test(DeleteAccount::class)
             ->set('password', 'password')
             ->call('deleteUser');
 
@@ -146,6 +153,19 @@ class ProfileUpdateTest extends TestCase
 
         $this->assertNull($user->fresh());
         $this->assertFalse(auth()->check());
+        $this->assertFalse(PersonalAccessToken::query()->where('tokenable_id', $user->id)->exists());
+    }
+
+    public function test_delete_own_account_action_deletes_the_user_and_tokens(): void
+    {
+        User::factory()->create();
+        $user = User::factory()->create();
+        $user->createToken('direct-self-delete-test');
+
+        (new DeleteOwnAccount)($user, static function (): void {});
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        $this->assertFalse(PersonalAccessToken::query()->where('tokenable_id', $user->id)->exists());
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
@@ -156,7 +176,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = Volt::test('settings.delete-user-form')
+        $response = Livewire::test(DeleteAccount::class)
             ->set('password', 'wrong-password')
             ->call('deleteUser');
 
@@ -174,7 +194,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($owner);
 
-        $response = Volt::test('settings.delete-user-form')
+        $response = Livewire::test(DeleteAccount::class)
             ->set('password', 'password')
             ->call('deleteUser');
 
@@ -191,7 +211,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($owner);
 
-        Volt::test('settings.delete-user-form')
+        Livewire::test(DeleteAccount::class)
             ->assertSee('Transfer ownership before deleting your account.')
             ->assertDontSee("open-modal', 'confirm-user-deletion", false);
     }
@@ -205,7 +225,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = Volt::test('settings.delete-user-form')
+        $response = Livewire::test(DeleteAccount::class)
             ->set('password', 'password')
             ->call('deleteUser');
 
@@ -220,7 +240,7 @@ class ProfileUpdateTest extends TestCase
 
         $this->actingAs($user);
 
-        Volt::test('settings.delete-user-form')
+        Livewire::test(DeleteAccount::class)
             ->assertSee('You are the last user in the system and cannot delete your account.');
     }
 }

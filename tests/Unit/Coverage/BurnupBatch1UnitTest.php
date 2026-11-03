@@ -5,11 +5,11 @@
  */
 
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
+use App\Domain\Dashboard\Services\DashboardKpiService;
 use App\Domain\Notifications\Services\RecipientResolvers\SubjectOwnerRecipientResolver;
 use App\Domain\Pricing\Services\Predicates\ProductIdsPredicate;
 use App\Domain\Pricing\ValueObjects\DiscountCriteriaContext;
 use App\Domain\Tax\Enums\TaxBuyerType;
-use App\Services\Dashboard\DashboardKpiService;
 use Tests\TestCase;
 
 uses(TestCase::class);

@@ -13,6 +13,7 @@ use App\Domain\Crew\CrewServiceProvider;
 use App\Domain\Currency\CurrencyServiceProvider;
 use App\Domain\CustomFields\CustomFieldsServiceProvider;
 use App\Domain\CustomViews\CustomViewsServiceProvider;
+use App\Domain\Dashboard\DashboardServiceProvider;
 use App\Domain\Documents\DocumentsServiceProvider;
 use App\Domain\Invoices\InvoicesServiceProvider;
 use App\Domain\Lists\ListsServiceProvider;
@@ -32,6 +33,7 @@ use App\Domain\Stock\StockServiceProvider;
 use App\Domain\Stores\StoresServiceProvider;
 use App\Domain\SupplierBills\SupplierBillsServiceProvider;
 use App\Domain\SupplierCosts\SupplierCostsServiceProvider;
+use App\Domain\System\SystemServiceProvider;
 use App\Domain\Tax\TaxServiceProvider;
 use App\Domain\VirtualStock\VirtualStockServiceProvider;
 use App\Domain\Warehouse\WarehouseServiceProvider;
@@ -52,12 +54,14 @@ return [
     CrewServiceProvider::class,
     CommunicationsServiceProvider::class,
     CustomViewsServiceProvider::class,
+    DashboardServiceProvider::class,
     CustomFieldsServiceProvider::class,
     DocumentsServiceProvider::class,
     ActivitiesServiceProvider::class,
     AuditLogServiceProvider::class,
     StockServiceProvider::class,
     StoresServiceProvider::class,
+    SystemServiceProvider::class,
     CurrencyServiceProvider::class,
     ListsServiceProvider::class,
     MembersServiceProvider::class,

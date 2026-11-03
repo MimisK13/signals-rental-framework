@@ -13,8 +13,10 @@ it('keeps authentication implementation inside the Auth domain', function (): vo
         ->and(file_exists(app_path('Services/Auth')))->toBeFalse()
         ->and(file_exists(app_path('Http/Controllers/Auth')))->toBeFalse()
         ->and(file_exists(resource_path('views/livewire/auth')))->toBeFalse()
+        ->and(file_exists(resource_path('views/livewire/settings/password.blade.php')))->toBeFalse()
         ->and(file_exists(base_path('routes/auth.php')))->toBeFalse()
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('invitation/")
+        ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("Volt::route('settings/password")
         ->and(file_get_contents(base_path('routes/web.php')))->not->toContain("require __DIR__.'/auth.php'");
 });
 

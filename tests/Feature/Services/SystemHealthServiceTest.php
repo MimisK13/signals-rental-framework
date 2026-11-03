@@ -1,9 +1,9 @@
 <?php
 
-use App\Services\ConnectionTesters\PostgresConnectionTester;
-use App\Services\ConnectionTesters\RedisConnectionTester;
-use App\Services\ConnectionTesters\S3ConnectionTester;
-use App\Services\SystemHealthService;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\S3ConnectionTester;
+use App\Domain\System\Services\SystemHealthService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 

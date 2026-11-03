@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Dashboard\Presentation\Livewire;
+
+use App\Domain\Dashboard\Concerns\ScopesDashboardQueries;
+use App\Domain\Administration\Models\User;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Component;
+
+/**
+ * Dashboard widget summarising the opportunity pipeline at-a-glance.
+ *
+ * Renders four cheap aggregate stats — open quotations, live orders, orders
+ * starting soon, and opportunities flagged with a shortage — each linking
+ * through to the filtered Index. The whole widget is gated on
+ * `opportunities.access`; users without it see nothing.
+ */
+final class OpportunityPipeline extends Component
+{
+    use ScopesDashboardQueries;
+
+    /**
+     * How many days ahead counts as "due to dispatch soon" for an order.
+     */
+    public int $dueSoonDays = 7;
+
+    /**
+     * Build the four pipeline stat counts in a small number of cheap aggregate
+     * queries (no N+1, no row hydration).
+     *
+     * @return array{quotations: int, orders: int, due_soon: int, shortages: int}
+     */
+    public function counts(): array
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return ['quotations' => 0, 'orders' => 0, 'due_soon' => 0, 'shortages' => 0];
+        }
+
+        $quotations = $this->scopeToAccessibleStores(Opportunity::query(), $user)
+            ->ofState(OpportunityState::Quotation)
+            ->count();
+
+        // The orders and due-soon counts share the same Order-state base query; build
+        // it once and clone for each derived count.
+        $orderBase = $this->scopeToAccessibleStores(Opportunity::query(), $user)
+            ->ofState(OpportunityState::Order);
+
+        $orders = (clone $orderBase)->count();
+
+        $dueSoon = (clone $orderBase)
+            ->whereNotNull('starts_at')
+            ->whereBetween('starts_at', [Carbon::now(), Carbon::now()->addDays($this->dueSoonDays)])
+            ->count();
+
+        $shortages = $this->scopeToAccessibleStores(Opportunity::query(), $user)
+            ->where('has_shortage', true)
+            ->count();
+
+        return [
+            'quotations' => $quotations,
+            'orders' => $orders,
+            'due_soon' => $dueSoon,
+            'shortages' => $shortages,
+        ];
+    }
+
+    public function render(): View
+    {
+        $canAccess = Gate::allows('opportunities.access');
+
+        // Only run the four aggregate counts for users who can see the widget —
+        // a user lacking the gate renders nothing, so the queries would be wasted
+        // (mirrors RecentOpportunities, which gates before its query).
+        $counts = $canAccess
+            ? $this->counts()
+            : ['quotations' => 0, 'orders' => 0, 'due_soon' => 0, 'shortages' => 0];
+
+        return view('dashboard::widgets.opportunity-pipeline', [
+            'counts' => $counts,
+            'dueSoonDays' => $this->dueSoonDays,
+            'canAccess' => $canAccess,
+        ]);
+    }
+}

@@ -11,6 +11,7 @@ use App\Domain\Auth\Presentation\Livewire\ConfirmPassword;
 use App\Domain\Auth\Presentation\Livewire\ForgotPassword;
 use App\Domain\Auth\Presentation\Livewire\Login;
 use App\Domain\Auth\Presentation\Livewire\ResetPassword;
+use App\Domain\Auth\Presentation\Livewire\Settings\UpdatePassword;
 use App\Domain\Auth\Presentation\Livewire\TwoFactorChallenge;
 use App\Domain\Auth\Presentation\Livewire\VerifyEmail;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,10 @@ Route::middleware(['web', 'signals.setup-complete'])->group(function (): void {
             ->name('verification.verify');
         Route::livewire('confirm-password', ConfirmPassword::class)->name('password.confirm');
     });
+
+    Route::livewire('settings/password', UpdatePassword::class)
+        ->middleware(['auth', '2fa', 'signals.session-timeout'])
+        ->name('settings.password');
 
     Route::livewire('invitation/{user}', AcceptInvitation::class)
         ->middleware('signed')

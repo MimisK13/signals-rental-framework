@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Setup\Actions;
 
-use App\Services\ConnectionTesters\PostgresConnectionTester;
-use App\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
 use Illuminate\Support\Facades\Schema;
 
 class CheckInfrastructure

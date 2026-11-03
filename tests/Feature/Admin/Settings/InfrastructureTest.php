@@ -1,10 +1,11 @@
 <?php
 
 use App\Domain\Administration\Models\User;
-use App\Services\ConnectionTesters\PostgresConnectionTester;
-use App\Services\ConnectionTesters\RedisConnectionTester;
-use App\Services\ConnectionTesters\S3ConnectionTester;
-use Livewire\Volt\Volt;
+use App\Domain\System\Presentation\Livewire\Admin\Infrastructure;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\S3ConnectionTester;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -46,7 +47,7 @@ it('loads current database configuration', function () {
         'database.connections.pgsql.username' => 'my_user',
     ]);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->assertSet('dbHost', '10.0.0.1')
         ->assertSet('dbPort', 5433)
         ->assertSet('dbDatabase', 'my_db')
@@ -61,7 +62,7 @@ it('loads current redis configuration', function () {
         'database.redis.default.port' => 6380,
     ]);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->assertSet('redisHost', '10.0.0.2')
         ->assertSet('redisPort', 6380);
 });
@@ -71,8 +72,25 @@ it('loads current queue configuration', function () {
 
     config(['queue.default' => 'redis']);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->assertSet('queueConnection', 'redis');
+});
+
+it('does not expose configured infrastructure secrets to Livewire state', function () {
+    $owner = User::factory()->owner()->create();
+
+    config([
+        'database.connections.pgsql.password' => 'database-secret',
+        'database.redis.default.password' => 'redis-secret',
+        'filesystems.disks.s3.key' => 's3-key',
+        'filesystems.disks.s3.secret' => 's3-secret',
+    ]);
+
+    Livewire::actingAs($owner)->test(Infrastructure::class)
+        ->assertSet('dbPassword', '')
+        ->assertSet('redisPassword', '')
+        ->assertSet('s3Key', '')
+        ->assertSet('s3Secret', '');
 });
 
 it('can test database connection', function () {
@@ -85,7 +103,7 @@ it('can test database connection', function () {
 
     app()->instance(PostgresConnectionTester::class, $mock);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->call('testDatabase')
         ->assertSet('dbTestResult.success', true)
         ->assertSet('dbTestResult.version', 'PostgreSQL 16.2');
@@ -101,7 +119,7 @@ it('can test redis connection', function () {
 
     app()->instance(RedisConnectionTester::class, $mock);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->call('testRedis')
         ->assertSet('redisTestResult.success', true)
         ->assertSet('redisTestResult.version', 'Redis 7.2.4');
@@ -117,7 +135,7 @@ it('can test s3 connection', function () {
 
     app()->instance(S3ConnectionTester::class, $mock);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->call('testS3')
         ->assertSet('s3TestResult.success', true);
 });
@@ -132,7 +150,7 @@ it('shows failed connection test result', function () {
 
     app()->instance(PostgresConnectionTester::class, $mock);
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->call('testDatabase')
         ->assertSet('dbTestResult.success', false)
         ->assertSet('dbTestResult.error', 'Connection refused');
@@ -141,14 +159,14 @@ it('shows failed connection test result', function () {
 it('denies connection testing to non-owner admin', function () {
     $admin = User::factory()->admin()->create();
 
-    Volt::actingAs($admin)->test('admin.settings.infrastructure')
+    Livewire::actingAs($admin)->test(Infrastructure::class)
         ->assertForbidden();
 });
 
 it('validates database fields when saving', function () {
     $owner = User::factory()->owner()->create();
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->set('dbHost', '')
         ->set('dbPort', 0)
         ->set('dbDatabase', '')
@@ -159,7 +177,7 @@ it('validates database fields when saving', function () {
 it('validates redis fields when saving', function () {
     $owner = User::factory()->owner()->create();
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->set('redisHost', '')
         ->set('redisPort', 0)
         ->call('saveRedis')
@@ -169,7 +187,12 @@ it('validates redis fields when saving', function () {
 it('validates s3 fields when saving', function () {
     $owner = User::factory()->owner()->create();
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    config([
+        'filesystems.disks.s3.key' => '',
+        'filesystems.disks.s3.secret' => '',
+    ]);
+
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->set('s3Key', '')
         ->set('s3Secret', '')
         ->set('s3Region', '')
@@ -181,7 +204,7 @@ it('validates s3 fields when saving', function () {
 it('validates queue connection option', function () {
     $owner = User::factory()->owner()->create();
 
-    Volt::actingAs($owner)->test('admin.settings.infrastructure')
+    Livewire::actingAs($owner)->test(Infrastructure::class)
         ->set('queueConnection', 'invalid')
         ->call('saveQueue')
         ->assertHasErrors(['queueConnection']);

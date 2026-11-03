@@ -19,3 +19,7 @@ _Avoid_: Preferences, System Settings
 **Numbering**:
 The shared capability for allocating internal counters and formatting user-visible identifiers. The business entity receiving a number remains owned by its own domain.
 _Avoid_: Document Numbering, Sequence Management
+
+**System**:
+The operational boundary for application health, runtime infrastructure diagnostics, and controlled maintenance tools. Initial installation and business configuration remain outside this boundary.
+_Avoid_: Platform, Setup, System Settings

@@ -5,9 +5,16 @@ declare(strict_types=1);
 use App\Domain\Administration\Presentation\Livewire\Permissions;
 use App\Domain\Administration\Presentation\Livewire\RoleForm;
 use App\Domain\Administration\Presentation\Livewire\Roles;
+use App\Domain\Administration\Presentation\Livewire\Settings\Appearance;
+use App\Domain\Administration\Presentation\Livewire\Settings\Profile;
 use App\Domain\Administration\Presentation\Livewire\UserForm;
 use App\Domain\Administration\Presentation\Livewire\Users;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'signals.session-timeout'])->group(function (): void {
+    Route::livewire('settings/profile', Profile::class)->name('settings.profile');
+    Route::livewire('settings/appearance', Appearance::class)->name('settings.appearance');
+});
 
 Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'admin', 'signals.session-timeout'])->group(function (): void {
     Route::livewire('admin/settings/users', Users::class)->name('admin.settings.users');

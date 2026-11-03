@@ -3,8 +3,11 @@
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
+use App\Domain\Dashboard\Presentation\Livewire\OpportunityPipeline;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Livewire\Dashboard\OpportunityPipeline;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
@@ -97,4 +100,23 @@ it('renders nothing for a user without opportunities.access', function () {
         'due_soon' => 0,
         'shortages' => 0,
     ]);
+});
+
+it('scopes pipeline counts to stores assigned to the user', function () {
+    $allowedStore = Store::factory()->create();
+    $blockedStore = Store::factory()->create();
+    $member = Member::factory()->create();
+    MemberStore::query()->create(['member_id' => $member->id, 'store_id' => $allowedStore->id]);
+
+    $user = User::factory()->create(['member_id' => $member->id]);
+    $user->givePermissionTo('opportunities.access');
+
+    Opportunity::factory()->quotation()->create(['store_id' => $allowedStore->id]);
+    Opportunity::factory()->count(2)->quotation()->create(['store_id' => $blockedStore->id]);
+
+    $counts = Livewire::actingAs($user)
+        ->test(OpportunityPipeline::class)
+        ->viewData('counts');
+
+    expect($counts['quotations'])->toBe(1);
 });

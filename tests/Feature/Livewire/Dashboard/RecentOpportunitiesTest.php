@@ -3,9 +3,11 @@
 use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Administration\Models\User;
+use App\Domain\Dashboard\Presentation\Livewire\RecentOpportunities;
 use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Livewire\Dashboard\RecentOpportunities;
+use App\Domain\Stores\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -89,4 +91,22 @@ it('renders nothing for a user without opportunities.access', function () {
         ->assertOk()
         ->assertDontSee('Recent Opportunities')
         ->assertDontSee('Hidden opportunity');
+});
+
+it('lists only opportunities from stores assigned to the user', function () {
+    $allowedStore = Store::factory()->create();
+    $blockedStore = Store::factory()->create();
+    $member = Member::factory()->create();
+    MemberStore::query()->create(['member_id' => $member->id, 'store_id' => $allowedStore->id]);
+
+    $user = User::factory()->create(['member_id' => $member->id]);
+    $user->givePermissionTo('opportunities.access');
+
+    Opportunity::factory()->order()->create(['store_id' => $allowedStore->id, 'subject' => 'Visible job']);
+    Opportunity::factory()->order()->create(['store_id' => $blockedStore->id, 'subject' => 'Hidden job']);
+
+    Livewire::actingAs($user)
+        ->test(RecentOpportunities::class)
+        ->assertSee('Visible job')
+        ->assertDontSee('Hidden job');
 });

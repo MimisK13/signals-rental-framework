@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Setup\Actions\CheckInfrastructure;
-use App\Services\ConnectionTesters\PostgresConnectionTester;
-use App\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
 use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {

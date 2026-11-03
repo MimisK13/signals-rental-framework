@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
 use Tests\TestCase;
 
 uses(TestCase::class);

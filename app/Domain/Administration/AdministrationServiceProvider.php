@@ -8,6 +8,9 @@ use App\Domain\Administration\Database\Seeders\PermissionSeeder;
 use App\Domain\Administration\Presentation\Livewire\Permissions;
 use App\Domain\Administration\Presentation\Livewire\RoleForm;
 use App\Domain\Administration\Presentation\Livewire\Roles;
+use App\Domain\Administration\Presentation\Livewire\Settings\Appearance;
+use App\Domain\Administration\Presentation\Livewire\Settings\DeleteAccount;
+use App\Domain\Administration\Presentation\Livewire\Settings\Profile;
 use App\Domain\Administration\Presentation\Livewire\UserForm;
 use App\Domain\Administration\Presentation\Livewire\Users;
 use App\Domain\Administration\Services\PermissionRegistry;
@@ -38,5 +41,8 @@ final class AdministrationServiceProvider extends ServiceProvider
         Livewire::addComponent(name: 'admin.settings.roles', class: Roles::class);
         Livewire::addComponent(name: 'admin.settings.role-form', class: RoleForm::class);
         Livewire::addComponent(name: 'admin.settings.permissions', class: Permissions::class);
+        Livewire::addComponent(name: 'settings.profile', class: Profile::class);
+        Livewire::addComponent(name: 'settings.delete-account', class: DeleteAccount::class);
+        Livewire::addComponent(name: 'settings.appearance', class: Appearance::class);
     }
 }

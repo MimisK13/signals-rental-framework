@@ -9,6 +9,7 @@ use App\Domain\Auth\Presentation\Livewire\ConfirmPassword;
 use App\Domain\Auth\Presentation\Livewire\ForgotPassword;
 use App\Domain\Auth\Presentation\Livewire\Login;
 use App\Domain\Auth\Presentation\Livewire\ResetPassword;
+use App\Domain\Auth\Presentation\Livewire\Settings\UpdatePassword;
 use App\Domain\Auth\Presentation\Livewire\TwoFactorAuthenticationForm;
 use App\Domain\Auth\Presentation\Livewire\TwoFactorChallenge;
 use App\Domain\Auth\Presentation\Livewire\VerifyEmail;
@@ -46,6 +47,7 @@ final class AuthServiceProvider extends ServiceProvider
         Livewire::addComponent(name: 'auth.two-factor-challenge', class: TwoFactorChallenge::class);
         Livewire::addComponent(name: 'auth.verify-email', class: VerifyEmail::class);
         Livewire::addComponent(name: 'settings.two-factor-authentication-form', class: TwoFactorAuthenticationForm::class);
+        Livewire::addComponent(name: 'settings.password', class: UpdatePassword::class);
 
         Event::listen(SocialiteWasCalled::class, MicrosoftExtendSocialite::class);
     }

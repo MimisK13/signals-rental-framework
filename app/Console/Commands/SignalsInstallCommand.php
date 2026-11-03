@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Console\Commands\Concerns\HasSignalsBranding;
-use App\Services\ConnectionTesters\PostgresConnectionTester;
-use App\Services\ConnectionTesters\RedisConnectionTester;
-use App\Services\ConnectionTesters\S3ConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\PostgresConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\S3ConnectionTester;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\Exceptions\ProcessTimedOutException;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\ConnectionTesters\RedisConnectionTester;
+use App\Domain\System\Services\ConnectionTesters\RedisConnectionTester;
 
 it('returns failure shape on bad redis connection', function () {
     $tester = new RedisConnectionTester;
