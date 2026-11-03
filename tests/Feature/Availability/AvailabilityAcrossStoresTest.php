@@ -5,7 +5,7 @@ use App\Domain\Availability\Data\AvailabilityRangeData;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Services\AvailabilityService;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

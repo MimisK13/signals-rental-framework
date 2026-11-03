@@ -3,7 +3,7 @@
 use App\Domain\Availability\Enums\AvailabilityEventType;
 use App\Domain\Availability\Models\AvailabilityEvent;
 use App\Domain\Availability\Shortages\Services\PipelineShortageEmitter;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

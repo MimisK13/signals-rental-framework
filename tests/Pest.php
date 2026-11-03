@@ -2,11 +2,11 @@
 
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Model;

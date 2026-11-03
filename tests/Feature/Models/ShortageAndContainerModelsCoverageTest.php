@@ -3,11 +3,11 @@
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Models\Opportunity;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
 use App\Models\Store;
 use App\Models\User;
 

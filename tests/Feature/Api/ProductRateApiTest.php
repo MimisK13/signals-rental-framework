@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
-use App\Models\Product;
 use App\Models\User;
 use App\Services\ColumnRegistryResolver;
 use Database\Seeders\PermissionSeeder;

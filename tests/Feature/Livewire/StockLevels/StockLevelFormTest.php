@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Presentation\Livewire\Form;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Livewire\Livewire;

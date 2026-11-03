@@ -15,11 +15,11 @@ use App\Domain\Availability\Shortages\Services\Resolvers\WarehouseTransferResolv
 use App\Domain\Availability\Shortages\Services\ShortageResolverRegistry;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionOption;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\OpportunityState;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

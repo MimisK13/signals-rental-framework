@@ -1,7 +1,5 @@
 <?php
 
-use App\Actions\Products\UpdateSerialisedComponent;
-use App\Data\Products\UpdateSerialisedComponentData;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Enums\DemandPhase;
@@ -9,6 +7,11 @@ use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Availability\Services\DemandSourceRegistry;
+use App\Domain\Products\Actions\UpdateSerialisedComponent;
+use App\Domain\Products\Data\UpdateSerialisedComponentData;
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
 use App\Domain\Warehouse\Containers\Actions\UnpackContainerItem;
@@ -20,9 +23,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Exceptions\ContainerPackConflictException;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Enums\KitComponentBinding;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

@@ -36,6 +36,7 @@ use App\Domain\Invoices\Presentation\Http\Controllers\Api\V1\CreditNoteControlle
 use App\Domain\Lists\Actions\UpdateListName;
 use App\Domain\Lists\Data\UpdateListNameData;
 use App\Domain\Lists\Presentation\Http\Controllers\Api\V1\ListNameController;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\UpdateDraftPurchaseOrder;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
@@ -59,7 +60,6 @@ use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
-use App\Models\Product;
 use App\Models\RequestLog;
 use App\Models\Store;
 use App\Models\Surcharge;

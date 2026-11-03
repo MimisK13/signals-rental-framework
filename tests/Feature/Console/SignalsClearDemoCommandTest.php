@@ -2,6 +2,8 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
 use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
@@ -14,11 +16,9 @@ use App\Models\Member;
 use App\Models\MemberRelationship;
 use App\Models\Opportunity;
 use App\Models\Phone;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
-use Database\Seeders\ProductGroupSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;

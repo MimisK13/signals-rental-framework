@@ -2,6 +2,7 @@
 
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\CreateContainer;
 use App\Domain\Warehouse\Containers\Actions\CreateTemporaryContainer;
@@ -19,7 +20,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Webhook;

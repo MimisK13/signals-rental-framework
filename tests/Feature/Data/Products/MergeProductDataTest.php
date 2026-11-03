@@ -1,7 +1,7 @@
 <?php
 
-use App\Data\Products\MergeProductData;
-use App\Models\Product;
+use App\Domain\Products\Data\MergeProductData;
+use App\Domain\Products\Models\Product;
 use Illuminate\Validation\ValidationException;
 
 it('valid data passes validation', function () {

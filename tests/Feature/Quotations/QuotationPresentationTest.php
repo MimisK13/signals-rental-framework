@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Quotations\Actions\AddQuotationItem;
 use App\Domain\Quotations\Actions\CreateQuotation;
@@ -14,7 +15,6 @@ use App\Domain\Quotations\Presentation\Livewire\Editor;
 use App\Domain\Quotations\Presentation\Livewire\Form;
 use App\Domain\Quotations\Presentation\Livewire\Index;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

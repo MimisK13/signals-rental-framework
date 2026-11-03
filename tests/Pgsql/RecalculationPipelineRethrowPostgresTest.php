@@ -2,8 +2,8 @@
 
 use App\Domain\Availability\Contracts\AvailabilityStrategyContract;
 use App\Domain\Availability\Services\RecalculationPipeline;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;

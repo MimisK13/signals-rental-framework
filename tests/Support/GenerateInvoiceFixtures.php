@@ -6,6 +6,7 @@ use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Models\OrganisationTaxClass;
@@ -17,7 +18,6 @@ use App\Domain\Tax\Models\TaxZoneMember;
 use App\Enums\LineItemTransactionType;
 use App\Models\Member;
 use App\Models\Opportunity;
-use App\Models\Product;
 use App\Models\Store;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 

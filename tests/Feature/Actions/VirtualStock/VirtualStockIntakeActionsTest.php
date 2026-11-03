@@ -9,7 +9,7 @@ use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Actions\VirtualStock\UpdateDraftVirtualStockIntake;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Data\VirtualStock\UpdateDraftVirtualStockIntakeData;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;

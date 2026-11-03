@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierBills\Actions\CreateSupplierBill;
@@ -9,7 +10,6 @@ use App\Domain\SupplierBills\Enums\SupplierBillStatus;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
 use App\Domain\Stock\Presentation\Livewire\Show;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;

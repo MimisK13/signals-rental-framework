@@ -73,14 +73,14 @@ it('persists the polymorphic itemable reference and revenue group from the data'
     addItem($opportunity, [
         'name' => 'Referenced',
         'itemable_id' => 42,
-        'itemable_type' => 'App\\Models\\Product',
+        'itemable_type' => 'App\\Domain\\Products\\Models\\Product',
         'revenue_group_id' => 7,
     ]);
 
     $item = $opportunity->items()->latest('id')->firstOrFail();
 
     expect($item->itemable_id)->toBe(42)
-        ->and($item->itemable_type)->toBe('App\\Models\\Product')
+        ->and($item->itemable_type)->toBe('App\\Domain\\Products\\Models\\Product')
         ->and($item->revenue_group_id)->toBe(7)
         ->and($item->path)->toBe('0001');
 });

@@ -21,12 +21,12 @@ use Symfony\Component\Process\Process;
 
 require_once __DIR__.'/../../Support/LineItemsEditorTestHelpers.php';
 use App\Domain\Activities\Presentation\Livewire\Embedded\OpportunityActivities;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Enums\OpportunityItemType;
-use App\Models\Accessory;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityEditorTreeService;

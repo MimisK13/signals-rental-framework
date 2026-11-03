@@ -3,8 +3,8 @@
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Index;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -54,7 +54,7 @@ it('renders the regarding column with a friendly type label, not the class strin
 
     expect($html)->toContain('Par Can 64')
         ->and($html)->toContain('Product')
-        ->and($html)->not->toContain('App\\Models\\Product');
+        ->and($html)->not->toContain('App\\Domain\\Products\\Models\\Product');
 });
 
 it('renders a stock-level regarding column as "Stock Level"', function () {

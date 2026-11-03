@@ -3,10 +3,11 @@
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Presentation\Livewire\Form;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -29,7 +30,7 @@ it('loads custom field values from a product into the form', function () {
         'value_string' => 'ABC-123',
     ]);
 
-    $component = Volt::test('products.form', ['product' => $product]);
+    $component = Livewire::test(Form::class, ['product' => $product]);
 
     $component->assertSet('customFieldValues.serial_code', 'ABC-123');
 });
@@ -50,7 +51,7 @@ it('loads boolean custom field values correctly', function () {
         'value_boolean' => true,
     ]);
 
-    $component = Volt::test('products.form', ['product' => $product]);
+    $component = Livewire::test(Form::class, ['product' => $product]);
 
     expect($component->get('customFieldValues.is_hazardous'))->toBeTrue();
 });

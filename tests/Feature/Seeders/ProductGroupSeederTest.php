@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\ProductGroup;
-use Database\Seeders\ProductGroupSeeder;
+use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
+use App\Domain\Products\Models\ProductGroup;
 
 it('seeds the audio catalogue hierarchy', function () {
     $this->seed(ProductGroupSeeder::class);

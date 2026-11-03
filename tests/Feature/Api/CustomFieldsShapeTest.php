@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

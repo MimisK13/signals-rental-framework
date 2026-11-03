@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Enums\MembershipType;
 use App\Livewire\Components\DataTable;
 use App\Models\Member;
-use App\Models\ProductGroup;
 use App\Models\User;
 use Illuminate\View\ViewException;
 use Livewire\Exceptions\EventHandlerDoesNotExist;

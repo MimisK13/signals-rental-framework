@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Enums\TaxPointPolicy;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
@@ -10,7 +11,6 @@ use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityTotalsCalculator;

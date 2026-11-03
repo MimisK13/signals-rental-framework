@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Embedded\ProductActivities;
 use App\Domain\Activities\Presentation\Livewire\Embedded\StockLevelActivities;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
 

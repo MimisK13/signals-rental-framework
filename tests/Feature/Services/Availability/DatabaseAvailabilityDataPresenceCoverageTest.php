@@ -2,7 +2,7 @@
 
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\DatabaseAvailabilityDataPresence;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Facades\Schema;
 

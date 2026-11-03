@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Products\UpdateProductContainerConfig;
-use App\Data\Products\UpdateProductContainerConfigData;
+use App\Domain\Products\Actions\UpdateProductContainerConfig;
+use App\Domain\Products\Data\UpdateProductContainerConfigData;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

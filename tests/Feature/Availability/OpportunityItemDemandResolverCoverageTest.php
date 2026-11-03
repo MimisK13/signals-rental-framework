@@ -3,6 +3,8 @@
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Enums\AssetAssignmentStatus;
@@ -12,8 +14,6 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\OpportunityVersion;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Quotations\Actions\AddQuotationItem;
 use App\Domain\Quotations\Actions\ClearQuotationDealPrice;
 use App\Domain\Quotations\Actions\CreateQuotation;
@@ -20,10 +23,7 @@ use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationEditorReadModel;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Accessory;
 use App\Models\Member;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

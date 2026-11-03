@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Products\RestoreProduct;
+use App\Domain\Products\Actions\RestoreProduct;
+use App\Domain\Products\Models\Product;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Product;
 use App\Models\User;
 use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;

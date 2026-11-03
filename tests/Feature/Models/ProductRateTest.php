@@ -1,10 +1,10 @@
 <?php
 
 use App\Contracts\HasSchema;
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
-use App\Models\Product;
 use App\Models\Store;
 use App\Services\SchemaBuilder;
 use Carbon\CarbonInterface;

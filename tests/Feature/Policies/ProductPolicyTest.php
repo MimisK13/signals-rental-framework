@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Policies\ProductPolicy;
 use App\Models\User;
-use App\Policies\ProductPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

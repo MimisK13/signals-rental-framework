@@ -1,11 +1,11 @@
 <?php
 
-use App\Actions\Products\CreateProduct;
-use App\Data\Products\CreateProductData;
+use App\Domain\Products\Actions\CreateProduct;
+use App\Domain\Products\Data\CreateProductData;
+use App\Domain\Products\Enums\ProductType;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\ProductType;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

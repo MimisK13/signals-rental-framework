@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Livewire\Volt\Volt;
@@ -31,7 +31,7 @@ it('links the item name to the stock level show page', function () {
 
     Volt::test('components.data-table', [
         'columns' => [
-            ['key' => 'item_name', 'label' => 'Item Name', 'sortable' => true, 'view' => 'livewire.products.partials.stock-item-name'],
+            ['key' => 'item_name', 'label' => 'Item Name', 'sortable' => true, 'view' => 'products::partials.stock-item-name'],
         ],
         'model' => StockLevel::class,
         'scopes' => ['forProduct' => $product->id],

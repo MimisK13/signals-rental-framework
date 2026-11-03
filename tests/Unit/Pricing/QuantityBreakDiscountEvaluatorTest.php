@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Enums\DiscountRuleScope;
 use App\Enums\LineItemTransactionType;
 use App\Models\DiscountCategory;
 use App\Models\DiscountRule;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Services\Pricing\DiscountRuleEvaluator;
 use App\Services\Pricing\QuantityContextResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;

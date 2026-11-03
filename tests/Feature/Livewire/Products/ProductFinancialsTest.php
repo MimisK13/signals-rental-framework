@@ -3,15 +3,16 @@
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Assets\Presentation\Livewire\ProductFinancials;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\User;
 use App\Support\Formatter;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -80,7 +81,7 @@ it('renders product fleet financials and links the asset breakdown', function ()
 
     $response->assertOk();
 
-    Volt::test('products.financials', ['product' => $product])
+    Livewire::test(ProductFinancials::class, ['product' => $product])
         ->assertSee('Fleet')
         ->assertSee('Owned Assets')
         ->assertSee('2')
@@ -129,7 +130,7 @@ it('preserves incomplete fleet financials while showing confirmed revenue', func
         'returned_at' => '2026-10-02 10:00:00',
     ]);
 
-    $rendered = Volt::test('products.financials', ['product' => $product])->html();
+    $rendered = Livewire::test(ProductFinancials::class, ['product' => $product])->html();
 
     expect($rendered)
         ->toContain('Financial history incomplete')
@@ -143,7 +144,7 @@ it('preserves zero revenue and valid zero recovery for an unused asset', functio
     $product = Product::factory()->rental()->serialised()->create(['name' => 'Midas M32']);
     makeProductFinancialsUiAsset($product, acquisition: 320000);
 
-    Volt::test('products.financials', ['product' => $product])
+    Livewire::test(ProductFinancials::class, ['product' => $product])
         ->assertSee('0.00%')
         ->assertSee(app(Formatter::class)->money(0, 'GBP').' of '.app(Formatter::class)->money(320000, 'GBP').' recovered')
         ->assertSee(app(Formatter::class)->money(320000, 'GBP').' remaining to break-even')

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Accessory;
-use App\Models\Product;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
 use Illuminate\Database\QueryException;
 
 it('belongs to a product', function () {

@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Products\DeleteProduct;
+use App\Domain\Products\Actions\DeleteProduct;
+use App\Domain\Products\Models\Product;
 use App\Events\AuditableEvent;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

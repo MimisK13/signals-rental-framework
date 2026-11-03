@@ -2,8 +2,8 @@
 
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
 use App\Models\Store;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;

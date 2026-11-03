@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\V1\ProductController;
+use App\Domain\Products\Presentation\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\SchemaController;
 use App\Services\Api\PriceWeightResolver;
 use App\Support\Api\Attributes\PriceWeight;

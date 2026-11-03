@@ -2,11 +2,11 @@
 
 use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityPresentation;

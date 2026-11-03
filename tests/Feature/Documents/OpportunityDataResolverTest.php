@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Documents\Services\OpportunityDataResolver;
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
@@ -11,7 +12,6 @@ use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

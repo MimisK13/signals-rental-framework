@@ -2,7 +2,7 @@
 
 use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Availability\Services\AvailabilityService;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

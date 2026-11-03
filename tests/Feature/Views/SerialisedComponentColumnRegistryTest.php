@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Products\Presentation\Columns\SerialisedComponentColumnRegistry;
 use App\Views\Column;
-use App\Views\SerialisedComponentColumnRegistry;
 
 describe('SerialisedComponentColumnRegistry', function () {
     it('exposes the kit-component columns with the right metadata', function () {

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Actions\AcceptQuotationVersion;
 use App\Domain\Quotations\Actions\AddQuotationItem;
 use App\Domain\Quotations\Actions\CreateQuotation;
@@ -32,7 +33,6 @@ use App\Domain\Tax\Models\TaxRule;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

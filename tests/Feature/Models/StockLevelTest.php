@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\AllowedStockType;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Services\SchemaRegistry;
 use Carbon\CarbonImmutable;

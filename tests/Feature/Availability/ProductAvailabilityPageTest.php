@@ -3,16 +3,17 @@
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Presentation\Livewire\ProductAvailability;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Opportunity;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -58,7 +59,7 @@ it('renders a store-scoped product availability summary from canonical snapshots
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('products.availability', ['product' => $product])
+    $component = Livewire::test(ProductAvailability::class, ['product' => $product])
         ->assertOk()
         ->assertSet('storeId', $this->store->id)
         ->assertSee('Midas M32')
@@ -94,7 +95,7 @@ it('recalculates the summary when the selected store changes', function () {
 
     $this->actingAs($this->user);
 
-    $component = Volt::test('products.availability', ['product' => $product])
+    $component = Livewire::test(ProductAvailability::class, ['product' => $product])
         ->set('storeId', $secondStore->id);
 
     expect($component->get('summary')->physical_stock)->toBe(7)
@@ -121,7 +122,7 @@ it('shows opportunity demand in a human-readable breakdown without adding a seco
 
     $this->actingAs($this->user);
 
-    Volt::test('products.availability', ['product' => $product])
+    Livewire::test(ProductAvailability::class, ['product' => $product])
         ->assertSee('Demand Breakdown')
         ->assertSee('Festival A')
         ->assertSee('2')
@@ -131,7 +132,7 @@ it('shows opportunity demand in a human-readable breakdown without adding a seco
 it('forbids product availability without availability.view', function () {
     $this->actingAs(User::factory()->create());
 
-    Volt::test('products.availability', ['product' => Product::factory()->create()])
+    Livewire::test(ProductAvailability::class, ['product' => Product::factory()->create()])
         ->assertForbidden();
 });
 
@@ -145,7 +146,7 @@ it('does not claim period metrics when no canonical snapshots exist', function (
 
     $this->actingAs($this->user);
 
-    Volt::test('products.availability', ['product' => $product])
+    Livewire::test(ProductAvailability::class, ['product' => $product])
         ->assertSee('No availability snapshot exists for this period yet.')
         ->assertSee('No availability slots are available for this period.');
 });

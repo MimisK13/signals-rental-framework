@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Products\Models\ProductGroup;
 use App\Livewire\Components\IconUpload;
 use App\Models\Member;
-use App\Models\ProductGroup;
 use App\Models\User;
 use App\Services\FileService;
 use Database\Seeders\PermissionSeeder;

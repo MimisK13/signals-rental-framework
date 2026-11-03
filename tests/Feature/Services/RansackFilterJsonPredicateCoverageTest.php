@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Services\Api\RansackFilter;
 
 beforeEach(function () {

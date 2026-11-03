@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\AdjustStockLevel;
 use App\Domain\Stock\Data\AdjustStockLevelData;
 use App\Domain\Stock\Enums\TransactionType;
@@ -14,7 +15,6 @@ use App\Domain\Stock\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stock\Stocktakes\Data\RecordBulkStocktakeObservationData;
 use App\Domain\Stock\Stocktakes\Enums\StocktakeStatus;
 use App\Domain\Stock\Stocktakes\Models\StocktakeObservation;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

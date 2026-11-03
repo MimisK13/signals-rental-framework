@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Enums\MeteringChannel;
-use App\Models\Product;
 use App\Models\RequestLog;
 use App\Models\UsageDaily;
 use App\Models\User;

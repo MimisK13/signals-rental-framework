@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Assets\Models\Asset;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\CreateStockTransaction;
 use App\Domain\Stock\Actions\DeleteStockTransaction;
 use App\Domain\Stock\Data\CreateStockTransactionData;
@@ -11,7 +12,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerBulkMembershipEventType;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerBulkMembership;
 use App\Domain\Warehouse\Containers\Models\ContainerBulkMembershipEvent;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\CarbonInterface;

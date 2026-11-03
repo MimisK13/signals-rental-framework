@@ -11,6 +11,6 @@ it('does not expose legacy tax class mappings', function (): void {
         ->and(class_exists('App\Models\TaxRule'))->toBeFalse()
         ->and(class_exists('App\Models\TaxZone'))->toBeFalse()
         ->and(class_exists('App\Models\TaxCategory'))->toBeFalse()
-        ->and(class_exists('App\Models\ProductTaxClass'))->toBeFalse()
+        ->and(class_exists('App\Domain\Products\Models\ProductTaxClass'))->toBeFalse()
         ->and(class_exists('App\Models\OrganisationTaxClass'))->toBeFalse();
 });

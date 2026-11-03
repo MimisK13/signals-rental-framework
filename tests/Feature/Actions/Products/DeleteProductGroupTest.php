@@ -1,7 +1,7 @@
 <?php
 
-use App\Actions\Products\DeleteProductGroup;
-use App\Models\ProductGroup;
+use App\Domain\Products\Actions\DeleteProductGroup;
+use App\Domain\Products\Models\ProductGroup;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

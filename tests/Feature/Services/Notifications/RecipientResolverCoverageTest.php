@@ -2,11 +2,11 @@
 
 use App\Data\Notifications\NotificationContextData;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
+use App\Domain\Products\Models\Product;
 use App\Models\Member;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\User;
 use App\Services\Notifications\RecipientResolvers\ContactRecipientResolver;
 use App\Services\Notifications\RecipientResolvers\RoleRecipientResolver;

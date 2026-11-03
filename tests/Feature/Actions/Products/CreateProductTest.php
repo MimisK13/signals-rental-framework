@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Products\CreateProduct;
-use App\Data\Products\CreateProductData;
-use App\Data\Products\ProductData;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\Products\Actions\CreateProduct;
+use App\Domain\Products\Data\CreateProductData;
+use App\Domain\Products\Data\ProductData;
+use App\Domain\Products\Enums\ProductType;
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Enums\ProductType;
 use App\Events\AuditableEvent;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

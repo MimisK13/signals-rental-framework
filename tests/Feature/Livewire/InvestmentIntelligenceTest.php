@@ -3,7 +3,7 @@
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Presentation\Livewire\Investment;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
 

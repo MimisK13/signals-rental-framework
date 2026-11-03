@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Models\ProductRate;
-use App\Models\Product;
 
 it('exposes a rates relation returning the product rate assignments', function () {
     $product = Product::factory()->create();

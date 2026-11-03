@@ -1,11 +1,13 @@
 <?php
 
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
+use App\Domain\Products\Presentation\Livewire\Show;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
-use App\Models\ProductGroup;
+use App\Domain\Stock\Presentation\Livewire\ProductStock;
 use App\Models\User;
 use App\Support\Formatter;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +26,7 @@ it('renders the show page with product details', function () {
 it('shows the product name and type', function () {
     $product = Product::factory()->rental()->create(['name' => 'Wireless Microphone']);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Wireless Microphone')
         ->assertSee('Rental');
 });
@@ -32,14 +34,14 @@ it('shows the product name and type', function () {
 it('shows active badge for active products', function () {
     $product = Product::factory()->create(['name' => 'Active Product', 'is_active' => true]);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Active');
 });
 
 it('shows inactive badge for inactive products', function () {
     $product = Product::factory()->inactive()->create(['name' => 'Inactive Product']);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Inactive');
 });
 
@@ -50,7 +52,7 @@ it('loads product group relationship', function () {
         'product_group_id' => $group->id,
     ]);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Audio Equipment');
 });
 
@@ -60,7 +62,7 @@ it('shows description when present', function () {
         'description' => 'A detailed product description',
     ]);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('A detailed product description');
 });
 
@@ -82,7 +84,7 @@ it('shows quick stats values for available quantity, stock levels and accessorie
         'quantity_unavailable' => 2,
     ]);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Available Quantity')
         ->assertSee('Stock Levels')
         ->assertSee('Accessories')
@@ -93,7 +95,7 @@ it('shows quick stats values for available quantity, stock levels and accessorie
 it('renders stock method as a violet badge for serialised products', function () {
     $product = Product::factory()->serialised()->create(['name' => 'Serial Product']);
 
-    $rendered = Volt::test('products.show', ['product' => $product])->html();
+    $rendered = Livewire::test(Show::class, ['product' => $product])->html();
 
     expect($rendered)->toContain('s-badge-violet');
     expect($rendered)->toContain('Serialised');
@@ -106,7 +108,7 @@ it('renders stock method as a violet badge for serialised products', function ()
 it('renders stock method as a cyan badge for bulk products', function () {
     $product = Product::factory()->bulk()->create(['name' => 'Bulk Product']);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('s-badge-cyan', false);
 });
 
@@ -116,7 +118,7 @@ it('omits the barcode row in product details for serialised products', function 
         'barcode' => 'BC-SERIAL-1',
     ]);
 
-    $rendered = Volt::test('products.show', ['product' => $product])->html();
+    $rendered = Livewire::test(Show::class, ['product' => $product])->html();
 
     // Barcode should not appear in the Product Details grid (only Key Attributes may show it).
     $detailsSection = substr($rendered, strpos($rendered, 'Product Details') ?: 0, 1500);
@@ -129,7 +131,7 @@ it('shows the barcode row in product details for non-serialised products with a 
         'barcode' => 'BC-BULK-1',
     ]);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Barcode')
         ->assertSee('BC-BULK-1');
 });
@@ -140,7 +142,7 @@ it('shows pricing with the system currency symbol', function () {
         'purchase_price' => 123400,
     ]);
 
-    $rendered = Volt::test('products.show', ['product' => $product])->html();
+    $rendered = Livewire::test(Show::class, ['product' => $product])->html();
 
     // Pricing renders via the system-currency Formatter (currency symbol/code + amount),
     // not the bare numeric formatMoneyCost output.
@@ -157,7 +159,7 @@ it('does not render weight or sku in the key attributes panel', function () {
         'sku' => 'SKU-XYZ',
     ]);
 
-    $rendered = Volt::test('products.show', ['product' => $product])->html();
+    $rendered = Livewire::test(Show::class, ['product' => $product])->html();
 
     $keyAttrs = substr($rendered, strpos($rendered, 'Key Attributes') ?: 0);
     expect($keyAttrs)->not->toContain('Weight');
@@ -168,7 +170,7 @@ it('does not render the icon upload component on the show page', function () {
     $product = Product::factory()->create(['name' => 'No Upload Product']);
 
     // The escaped component-name marker is how assertSeeLivewire() detects a nested component.
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertDontSeeHtml('&quot;name&quot;:&quot;components.icon-upload&quot;');
 });
 
@@ -178,7 +180,7 @@ it('renders the description in a full-width center panel', function () {
         'description' => 'A long product description that spans the full center column.',
     ]);
 
-    Volt::test('products.show', ['product' => $product])
+    Livewire::test(Show::class, ['product' => $product])
         ->assertSee('Description')
         ->assertSee('A long product description that spans the full center column.');
 });
@@ -187,7 +189,7 @@ it('includes the merge modal on a non-overview product tab', function () {
     $product = Product::factory()->create(['name' => 'Merge Tab Product']);
 
     // The merge modal must render on non-overview tabs (regression: previously overview-only).
-    Volt::test('products.stock', ['product' => $product])
+    Livewire::test(ProductStock::class, ['product' => $product])
         ->assertSeeHtml('&quot;name&quot;:&quot;products.merge-modal&quot;')
         ->assertSee('open-merge-modal', false);
 });
@@ -195,7 +197,7 @@ it('includes the merge modal on a non-overview product tab', function () {
 it('includes the merge modal on the overview tab without double rendering', function () {
     $product = Product::factory()->create(['name' => 'Overview Merge Product']);
 
-    $rendered = Volt::test('products.show', ['product' => $product])->html();
+    $rendered = Livewire::test(Show::class, ['product' => $product])->html();
 
     // The merge action listener is wired once via the shared header partial.
     expect(substr_count($rendered, 'open-modal.window'))->toBeGreaterThanOrEqual(1);

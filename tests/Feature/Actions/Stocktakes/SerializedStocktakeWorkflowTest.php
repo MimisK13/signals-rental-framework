@@ -2,6 +2,7 @@
 
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
 use App\Domain\Stock\Stocktakes\Actions\CompleteStocktake;
@@ -12,7 +13,6 @@ use App\Domain\Stock\Stocktakes\Data\CreateStocktakeData;
 use App\Domain\Stock\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Domain\Stock\Stocktakes\Models\StocktakeObservation;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

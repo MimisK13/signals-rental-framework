@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
-use App\Models\Product;
 use App\Models\Store;
 
 beforeEach(function () {

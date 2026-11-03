@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Products\CreateAccessory;
-use App\Actions\Products\DeleteAccessory;
-use App\Actions\Products\UpdateAccessory;
-use App\Data\Products\CreateAccessoryData;
-use App\Data\Products\UpdateAccessoryData;
+use App\Domain\Products\Actions\CreateAccessory;
+use App\Domain\Products\Actions\DeleteAccessory;
+use App\Domain\Products\Actions\UpdateAccessory;
+use App\Domain\Products\Data\CreateAccessoryData;
+use App\Domain\Products\Data\UpdateAccessoryData;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Accessory;
-use App\Models\Product;
 use App\Models\User;
 use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;

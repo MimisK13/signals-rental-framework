@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
-use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Carbon;

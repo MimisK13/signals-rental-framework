@@ -1,12 +1,12 @@
 <?php
 
 use App\Contracts\HasSchema;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Models\StockTransaction;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Services\SchemaRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

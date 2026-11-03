@@ -5,7 +5,6 @@
  */
 
 use App\Data\Notifications\NotificationContextData;
-use App\Data\Products\ProductData;
 use App\Domain\Communications\Actions\LogCommunication;
 use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Listeners\RecordCustomerCommunicationDelivery;
@@ -26,6 +25,9 @@ use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceTax;
 use App\Domain\Invoices\Services\InvoiceTotalsCalculator;
+use App\Domain\Products\Data\ProductData;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\TaxRate;
@@ -35,14 +37,12 @@ use App\Enums\MeteringChannel;
 use App\Http\Controllers\Web\SearchController;
 use App\Jobs\ExportActionLog;
 use App\Livewire\Components\DataTable;
-use App\Models\Accessory;
 use App\Models\ActionLog;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\UsageDaily;
 use App\Models\User;

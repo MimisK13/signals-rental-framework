@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Actions\CreateProductRate;
 use App\Domain\Rates\Actions\DeleteProductRate;
 use App\Domain\Rates\Actions\UpdateProductRate;
@@ -11,7 +12,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Services\RateEngine\ProductRateOverlapChecker;
 use App\Events\AuditableEvent;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

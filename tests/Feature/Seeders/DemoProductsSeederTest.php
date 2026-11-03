@@ -1,13 +1,13 @@
 <?php
 
 use App\Console\Commands\SignalsClearDemoCommand;
+use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
+use App\Domain\Products\Enums\ProductType;
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Database\Seeders\RateDefinitionPresetSeeder;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
-use App\Enums\ProductType;
-use App\Models\Product;
-use Database\Seeders\ProductGroupSeeder;
 
 require_once __DIR__.'/../../Support/DemoSeederTestHelpers.php';
 

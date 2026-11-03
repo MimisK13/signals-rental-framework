@@ -1,12 +1,12 @@
 <?php
 
-use App\Data\Products\ProductData;
+use App\Domain\Products\Data\ProductData;
+use App\Domain\Products\Enums\ProductType;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Enums\ProductType;
 use App\Models\CostGroup;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\RevenueGroup;
 
 it('maps is_active to active key in output', function () {

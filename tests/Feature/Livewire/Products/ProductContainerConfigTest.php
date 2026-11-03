@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Presentation\Livewire\ContainerConfig;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -41,7 +42,7 @@ it('forbids the container config page for bulk products', function () {
 it('saves container configuration via the tab', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('products.container-config', ['product' => $this->product])
+    Livewire::test(ContainerConfig::class, ['product' => $this->product])
         ->set('isContainerable', true)
         ->set('availabilityMode', 'kit')
         ->set('templateSlots', [[
@@ -65,7 +66,7 @@ it('hides save controls without manage_templates permission', function () {
 
     $this->actingAs($user);
 
-    Volt::test('products.container-config', ['product' => $this->product])
+    Livewire::test(ContainerConfig::class, ['product' => $this->product])
         ->assertSee('Manage Container Templates')
         ->assertDontSee('Save Container Config');
 });

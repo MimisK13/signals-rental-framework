@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Models\DiscountCategory;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\User;
 use Livewire\Volt\Volt;
 

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Accessory;
-use App\Models\Product;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

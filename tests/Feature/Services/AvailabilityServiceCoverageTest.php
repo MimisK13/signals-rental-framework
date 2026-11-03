@@ -6,9 +6,9 @@ use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

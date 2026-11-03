@@ -1,16 +1,16 @@
 <?php
 
+use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
+use App\Domain\Products\Models\Product;
 use App\Enums\OpportunityItemType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
-use Database\Seeders\ProductGroupSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 

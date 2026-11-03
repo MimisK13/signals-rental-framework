@@ -4,7 +4,6 @@ use App\Data\Notifications\NotificationSettingData;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Pricing\PriceCategoryData;
-use App\Data\Products\ProductData;
 use App\Domain\Communications\Data\CommunicationLogData;
 use App\Domain\Communications\Data\CommunicationTemplateData;
 use App\Domain\Communications\Models\CommunicationLog;
@@ -12,6 +11,8 @@ use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Models\CommunicationTemplateVersion;
 use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Products\Data\ProductData;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Rates\Models\ProductRate;
@@ -26,7 +27,6 @@ use App\Models\NotificationType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
 use App\Models\PriceCategory;
-use App\Models\Product;
 use App\Models\Store;
 
 it('maps InvoiceData opportunity reference to null when no opportunity is linked', function () {

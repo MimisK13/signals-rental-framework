@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ProductGroup;
+use App\Domain\Products\Models\ProductGroup;
+use App\Domain\Products\Presentation\Columns\ProductGroupColumnRegistry;
 use App\Views\Column;
-use App\Views\ProductGroupColumnRegistry;
 
 describe('ProductGroupColumnRegistry', function () {
     it('returns product_groups as entity type', function () {

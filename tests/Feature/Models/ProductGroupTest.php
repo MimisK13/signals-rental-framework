@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Product;
-use App\Models\ProductGroup;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Services\SchemaBuilder;
 
 it('creates a product group with factory', function () {

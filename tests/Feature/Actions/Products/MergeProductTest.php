@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Products\MergeProduct;
-use App\Data\Products\MergeProductData;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
+use App\Domain\Products\Actions\MergeProduct;
+use App\Domain\Products\Data\MergeProductData;
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
-use App\Models\Accessory;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

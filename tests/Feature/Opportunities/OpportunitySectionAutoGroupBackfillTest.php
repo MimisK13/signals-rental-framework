@@ -2,13 +2,13 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunitySection;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\SequenceAllocator;

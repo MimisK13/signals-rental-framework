@@ -51,7 +51,7 @@ it('returns null from getPage when the resolved markdown file cannot be read', f
     } finally {
         removeDocsCoverageDir($dir);
     }
-})->skip(posix_getuid() === 0, 'chmod 000 does not block reads when running as root.');
+})->skip(! function_exists('posix_getuid') || posix_getuid() === 0, 'This test requires POSIX file permissions as a non-root user.');
 
 it('returns an empty manifest when documentation.json exists but cannot be read', function () {
     App::shouldReceive('environment')->with('local')->andReturn(true);
@@ -71,7 +71,7 @@ it('returns an empty manifest when documentation.json exists but cannot be read'
     } finally {
         removeDocsCoverageDir($dir);
     }
-})->skip(posix_getuid() === 0, 'chmod 000 does not block reads when running as root.');
+})->skip(! function_exists('posix_getuid') || posix_getuid() === 0, 'This test requires POSIX file permissions as a non-root user.');
 
 it('skips a changelog entry whose markdown file cannot be read', function () {
     App::shouldReceive('environment')->with('local')->andReturn(true);
@@ -99,4 +99,4 @@ it('skips a changelog entry whose markdown file cannot be read', function () {
     } finally {
         removeDocsCoverageDir($dir);
     }
-})->skip(posix_getuid() === 0, 'chmod 000 does not block reads when running as root.');
+})->skip(! function_exists('posix_getuid') || posix_getuid() === 0, 'This test requires POSIX file permissions as a non-root user.');

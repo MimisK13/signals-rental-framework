@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Enums\LineItemTransactionType;
 use App\Models\OpportunityItem;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\RevenueGroup;
 use App\Services\Opportunities\OpportunityAutoGroupResolver;
 

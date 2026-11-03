@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Products\CreateSerialisedComponent;
-use App\Data\Products\CreateSerialisedComponentData;
 use App\Domain\Availability\Services\KitAvailabilityCalculator;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
+use App\Domain\Products\Actions\CreateSerialisedComponent;
+use App\Domain\Products\Data\CreateSerialisedComponentData;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

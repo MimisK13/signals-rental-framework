@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderTaxCalculator;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxResultType;
@@ -12,7 +13,6 @@ use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

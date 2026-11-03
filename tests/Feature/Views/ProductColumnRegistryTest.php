@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Products\Presentation\Columns\ProductColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Views\Column;
-use App\Views\ProductColumnRegistry;
 
 describe('ProductColumnRegistry', function () {
     it('returns products as entity type', function () {

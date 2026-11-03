@@ -4,8 +4,8 @@ use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Services\KitAvailabilityCalculator;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

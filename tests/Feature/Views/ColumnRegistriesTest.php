@@ -2,6 +2,9 @@
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
 use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
+use App\Domain\Products\Presentation\Columns\ProductColumnRegistry;
+use App\Domain\Products\Presentation\Columns\ProductGroupColumnRegistry;
+use App\Domain\Products\Presentation\Columns\SerialisedComponentColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
@@ -12,9 +15,6 @@ use App\Views\OpportunityColumnRegistry;
 use App\Views\OpportunityCostColumnRegistry;
 use App\Views\OpportunityItemColumnRegistry;
 use App\Views\OpportunityVersionColumnRegistry;
-use App\Views\ProductColumnRegistry;
-use App\Views\ProductGroupColumnRegistry;
-use App\Views\SerialisedComponentColumnRegistry;
 
 dataset('column registries', [
     'products' => [ProductColumnRegistry::class, 'products', 'name'],

@@ -1,9 +1,10 @@
 <?php
 
-use App\Enums\ProductType;
-use App\Models\Product;
+use App\Domain\Products\Enums\ProductType;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Presentation\Livewire\Form;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -36,7 +37,7 @@ it('renders the edit form with pre-populated data', function () {
         ->assertOk()
         ->assertSee('Edit');
 
-    Volt::test('products.form', ['product' => $product])
+    Livewire::test(Form::class, ['product' => $product])
         ->assertSet('name', 'LED Panel')
         ->assertSet('productType', 'rental')
         ->assertSet('description', 'A bright LED panel')
@@ -45,7 +46,7 @@ it('renders the edit form with pre-populated data', function () {
 });
 
 it('creates a product with valid data', function () {
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->set('name', 'New Test Product')
         ->set('productType', 'rental')
         ->set('stockMethod', 1)
@@ -59,7 +60,7 @@ it('creates a product with valid data', function () {
 });
 
 it('stores product prices entered in major currency units as minor units', function () {
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->set('name', 'Major Unit Price Product')
         ->set('purchasePrice', '3000')
         ->call('save')
@@ -76,19 +77,19 @@ it('hydrates stored minor-unit prices back to major currency units', function ()
         'purchase_price' => 300000,
     ]);
 
-    Volt::test('products.form', ['product' => $product])
+    Livewire::test(Form::class, ['product' => $product])
         ->assertSet('purchasePrice', '3000.00');
 });
 
 it('validates required name field', function () {
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->set('name', '')
         ->call('save')
         ->assertHasErrors(['name' => 'required']);
 });
 
 it('redirects to show page after creation', function () {
-    $component = Volt::test('products.form')
+    $component = Livewire::test(Form::class)
         ->set('name', 'Redirect Test Product')
         ->call('save');
 
@@ -99,7 +100,7 @@ it('redirects to show page after creation', function () {
 it('updates an existing product', function () {
     $product = Product::factory()->create(['name' => 'Original Name']);
 
-    Volt::test('products.form', ['product' => $product])
+    Livewire::test(Form::class, ['product' => $product])
         ->set('name', 'Updated Name')
         ->call('save')
         ->assertRedirect();
@@ -112,7 +113,7 @@ it('updates an existing product', function () {
 
 it('pre-populates product type from query param', function () {
     // Default without query param
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->assertSet('productType', 'rental');
 
     // With query param - test via HTTP request
@@ -124,7 +125,7 @@ it('pre-populates product type from query param', function () {
 it('validates unique product name', function () {
     Product::factory()->create(['name' => 'Duplicate Name']);
 
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->set('name', 'Duplicate Name')
         ->call('save')
         ->assertHasErrors(['name']);
@@ -133,7 +134,7 @@ it('validates unique product name', function () {
 it('allows same name when editing the same product', function () {
     $product = Product::factory()->create(['name' => 'Keep This Name']);
 
-    Volt::test('products.form', ['product' => $product])
+    Livewire::test(Form::class, ['product' => $product])
         ->set('name', 'Keep This Name')
         ->call('save')
         ->assertHasNoErrors(['name'])
@@ -141,7 +142,7 @@ it('allows same name when editing the same product', function () {
 });
 
 it('saves tags from the tag-input array on create', function () {
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->set('name', 'Tagged Product')
         ->set('tags', ['Lighting', 'Sound'])
         ->call('save')
@@ -158,7 +159,7 @@ it('hydrates existing tags into the tags property on mount', function () {
         'tag_list' => ['Rigging', 'Cables'],
     ]);
 
-    Volt::test('products.form', ['product' => $product])
+    Livewire::test(Form::class, ['product' => $product])
         ->assertSet('tags', ['Rigging', 'Cables']);
 });
 
@@ -166,7 +167,7 @@ it('exposes distinct existing tags as suggestions', function () {
     Product::factory()->create(['tag_list' => ['Sound', 'Lighting']]);
     Product::factory()->create(['tag_list' => ['Lighting', 'Rigging']]);
 
-    Volt::test('products.form')
+    Livewire::test(Form::class)
         ->assertSet('tags', [])
         ->tap(function ($component) {
             $suggestions = $component->instance()->tagSuggestions();

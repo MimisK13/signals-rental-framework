@@ -1,10 +1,10 @@
 <?php
 
 use App\Data\Opportunities\OpportunityItemData;
+use App\Domain\Products\Models\Product;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 
 it('serialises the unified RMS line-item shape from a model', function () {
     $opportunity = Opportunity::factory()->create();

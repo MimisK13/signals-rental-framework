@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\Product;
+use App\Domain\Assets\Presentation\Livewire\ProductUtilization;
+use App\Domain\Products\Models\Product;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -14,7 +15,7 @@ it('renders the product utilization page for serialized products', function (): 
 
     $this->get(route('products.utilization', $product))->assertOk();
 
-    Volt::test('products.utilization', ['product' => $product])
+    Livewire::test(ProductUtilization::class, ['product' => $product])
         ->assertSee('Weighted Fleet Utilization')
         ->assertSee('From')
         ->assertSee('Until');

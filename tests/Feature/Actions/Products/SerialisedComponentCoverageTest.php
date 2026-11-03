@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Products\CreateSerialisedComponent;
-use App\Actions\Products\UpdateSerialisedComponent;
-use App\Data\Products\CreateSerialisedComponentData;
-use App\Data\Products\UpdateSerialisedComponentData;
-use App\Enums\KitComponentBinding;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
+use App\Domain\Products\Actions\CreateSerialisedComponent;
+use App\Domain\Products\Actions\UpdateSerialisedComponent;
+use App\Domain\Products\Data\CreateSerialisedComponentData;
+use App\Domain\Products\Data\UpdateSerialisedComponentData;
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

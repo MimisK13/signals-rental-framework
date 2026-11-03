@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Validation\ValidationException;
 

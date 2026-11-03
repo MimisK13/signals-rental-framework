@@ -1,11 +1,12 @@
 <?php
 
-use App\Actions\Products\MergeProduct;
-use App\Data\Products\MergeProductData;
 use App\Domain\Assets\Enums\AssetExpenseType;
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetExpense;
+use App\Domain\Products\Actions\MergeProduct;
+use App\Domain\Products\Data\MergeProductData;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\CreateStockLevel;
 use App\Domain\Stock\Actions\UpdateStockLevel;
 use App\Domain\Stock\Data\CreateStockLevelData;
@@ -13,7 +14,6 @@ use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

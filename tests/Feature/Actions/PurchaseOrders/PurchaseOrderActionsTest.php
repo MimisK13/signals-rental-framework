@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CancelPurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\DeleteDraftPurchaseOrder;
@@ -10,7 +11,6 @@ use App\Domain\PurchaseOrders\Data\UpdateDraftPurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

@@ -1,12 +1,12 @@
 <?php
 
 use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
+use App\Domain\Products\Presentation\Livewire\ProductGroups\Index;
 use App\Livewire\Components\DataTable;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\User;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -23,8 +23,8 @@ it('renders the product groups index page', function () {
 });
 
 it('renders the quick add product group action and drawer', function () {
-    Volt::test('product-groups.index')
-        ->assertSee('Quick Add')
+    Livewire::test(Index::class)
+        ->assertSee('New Group')
         ->assertSee('New Product Group')
         ->assertSeeHtml('product-group-quick-create')
         ->assertSeeHtml('dense-side-panel-footer')
@@ -41,7 +41,7 @@ it('renders ProductGroup custom fields in the quick add panel', function () {
 
     expect(CustomField::query()->forModule('ProductGroup')->active()->count())->toBe(1);
 
-    $component = Volt::test('product-groups.index');
+    $component = Livewire::test(Index::class);
 
     expect($component->viewData('groupedCustomFields')->count())->toBe(1);
 
@@ -54,7 +54,7 @@ it('lists product groups', function () {
     ProductGroup::factory()->create(['name' => 'Lighting']);
     ProductGroup::factory()->create(['name' => 'Sound']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSee('Lighting')
         ->assertSee('Sound');
 });
@@ -62,7 +62,7 @@ it('lists product groups', function () {
 it('deletes a product group', function () {
     $group = ProductGroup::factory()->create(['name' => 'To Delete']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->call('deleteGroup', $group->id);
 
     expect(ProductGroup::find($group->id))->toBeNull();
@@ -71,7 +71,7 @@ it('deletes a product group', function () {
 it('renders view products, panel edit and delete row actions', function () {
     $group = ProductGroup::factory()->create(['name' => 'Group With Actions']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSee('View products')
         ->assertSee('Edit')
         ->assertSee('Delete')
@@ -83,14 +83,14 @@ it('renders the products count as a filtered link when the group has products', 
     $group = ProductGroup::factory()->create(['name' => 'Has Products']);
     Product::factory()->create(['product_group_id' => $group->id]);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSeeHtml('filters%5Bproduct_group_id%5D='.$group->id);
 });
 
 it('renders the group icon inline in the name column with a fallback glyph when no icon is set', function () {
     ProductGroup::factory()->create(['name' => 'Audio Visual']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         // Fallback glyph container + the name link rendered by the column-name partial
         ->assertSeeHtml('size-8 rounded')
         ->assertSee('Audio Visual')
@@ -104,7 +104,7 @@ it('renders the group icon thumbnail inline in the name column when an icon is s
         'icon_thumb_url' => 'icons/productgroups/1/thumbs/icon.jpg',
     ]);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSeeHtml('object-cover');
 });
 
@@ -112,7 +112,7 @@ it('renders the parent group name in the parent column for a child group', funct
     $parent = ProductGroup::factory()->create(['name' => 'Lighting']);
     ProductGroup::factory()->create(['name' => 'Moving Heads', 'parent_id' => $parent->id]);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSee('Lighting')
         ->assertSee('Moving Heads');
 });
@@ -120,20 +120,20 @@ it('renders the parent group name in the parent column for a child group', funct
 it('renders an em-dash in the parent column for a top-level group', function () {
     ProductGroup::factory()->create(['name' => 'Top Level']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSeeHtml('text-[var(--text-muted)]')
         ->assertSee('—');
 });
 
 it('shows empty state when no product groups exist', function () {
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSee('No product groups found.');
 });
 
 it('renders the custom-view selector for the product_groups entity type', function () {
     ProductGroup::factory()->create(['name' => 'Lighting']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         // view-selector split button + the "new custom view" entry
         ->assertSeeHtml('s-btn-split')
         ->assertSee('New custom view');
@@ -151,7 +151,7 @@ it('renders the bulk-actions bar with a delete action when rows are selected', f
             ['key' => 'actions', 'type' => 'actions'],
         ],
         'model' => ProductGroup::class,
-        'bulkActionsView' => 'livewire.product-groups.partials.bulk-actions',
+        'bulkActionsView' => 'products::product-groups.partials.bulk-actions',
         'entityType' => 'product_groups',
     ])
         ->call('toggleSelected', $group->id)
@@ -164,7 +164,7 @@ it('bulk-deletes the selected product groups', function () {
     $groupB = ProductGroup::factory()->create(['name' => 'Bravo']);
     $keep = ProductGroup::factory()->create(['name' => 'Charlie']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->call('deleteSelected', [$groupA->id, $groupB->id]);
 
     expect(ProductGroup::find($groupA->id))->toBeNull()
@@ -175,6 +175,6 @@ it('bulk-deletes the selected product groups', function () {
 it('renders the bulk checkbox column header', function () {
     ProductGroup::factory()->create(['name' => 'Lighting']);
 
-    Volt::test('product-groups.index')
+    Livewire::test(Index::class)
         ->assertSeeHtml('s-col-check');
 });

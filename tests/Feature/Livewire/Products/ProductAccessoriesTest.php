@@ -1,15 +1,16 @@
 <?php
 
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Presentation\Livewire\Accessories;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Accessory;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -31,7 +32,7 @@ it('links an accessory to the product', function () {
     $product = Product::factory()->create();
     $accessoryProduct = Product::factory()->create(['name' => 'Power Cable']);
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $accessoryProduct->id)
         ->set('accessoryQuantity', 3)
         ->call('addAccessory')
@@ -49,7 +50,7 @@ it('resets the form fields after a successful add', function () {
     $product = Product::factory()->create();
     $accessoryProduct = Product::factory()->create();
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $accessoryProduct->id)
         ->set('accessoryQuantity', 5)
         ->call('addAccessory')
@@ -61,7 +62,7 @@ it('resets the form fields after a successful add', function () {
 it('validates that an accessory is selected', function () {
     $product = Product::factory()->create();
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->call('addAccessory')
         ->assertHasErrors(['selectedAccessoryId' => 'required']);
 });
@@ -69,7 +70,7 @@ it('validates that an accessory is selected', function () {
 it('prevents a product being an accessory of itself', function () {
     $product = Product::factory()->create();
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $product->id)
         ->call('addAccessory')
         ->assertHasErrors('selectedAccessoryId');
@@ -85,7 +86,7 @@ it('prevents linking the same accessory twice', function () {
         'accessory_product_id' => $accessoryProduct->id,
     ]);
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $accessoryProduct->id)
         ->call('addAccessory')
         ->assertHasErrors('selectedAccessoryId');
@@ -97,7 +98,7 @@ it('resets the form fields when resetForm is called', function () {
 
     // A single-character search avoids the (PostgreSQL-only) ilike query in the
     // searchResults computed, which is not executable on the SQLite test DB.
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $accessoryProduct->id)
         ->set('accessoryQuantity', 9)
         ->set('accessorySearch', 'x')
@@ -115,7 +116,7 @@ it('removes an accessory via removeAccessory', function () {
         'accessory_product_id' => $accessoryProduct->id,
     ]);
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->call('removeAccessory', $accessory->id);
 
     expect(Accessory::find($accessory->id))->toBeNull();
@@ -127,7 +128,7 @@ it('routes add through the CreateAccessory action so the audit trail is written'
     $product = Product::factory()->create();
     $accessoryProduct = Product::factory()->create();
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $accessoryProduct->id)
         ->set('accessoryQuantity', 2)
         ->call('addAccessory')
@@ -146,7 +147,7 @@ it('routes remove through the DeleteAccessory action firing AuditableEvent', fun
     $product = Product::factory()->create();
     $accessory = Accessory::factory()->create(['product_id' => $product->id]);
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->call('removeAccessory', $accessory->id);
 
     Event::assertDispatched(AuditableEvent::class, fn (AuditableEvent $e) => $e->action === 'accessory.deleted');
@@ -158,7 +159,7 @@ it('forbids adding an accessory for a user without products.edit permission', fu
     $product = Product::factory()->create();
     $accessoryProduct = Product::factory()->create();
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->set('selectedAccessoryId', $accessoryProduct->id)
         ->set('accessoryQuantity', 1)
         ->call('addAccessory')
@@ -173,7 +174,7 @@ it('forbids removing an accessory for a user without products.edit permission', 
     $product = Product::factory()->create();
     $accessory = Accessory::factory()->create(['product_id' => $product->id]);
 
-    Volt::test('products.accessories', ['product' => $product])
+    Livewire::test(Accessories::class, ['product' => $product])
         ->call('removeAccessory', $accessory->id)
         ->assertForbidden();
 

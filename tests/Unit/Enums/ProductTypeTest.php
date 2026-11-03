@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ProductType;
+use App\Domain\Products\Enums\ProductType;
 
 it('has correct cases', function () {
     expect(ProductType::cases())->toHaveCount(4);

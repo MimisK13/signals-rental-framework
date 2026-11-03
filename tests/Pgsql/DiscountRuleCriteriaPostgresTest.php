@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Models\DiscountCategory;
 use App\Models\DiscountRule;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\UsesPostgres;

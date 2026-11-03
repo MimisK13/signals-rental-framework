@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Presentation\Livewire\Investment;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -16,7 +17,7 @@ it('renders the product investment page only for serialized products', function 
 
     $this->get(route('products.investment', $product))->assertOk();
 
-    Volt::test('products.investment', ['product' => $product])
+    Livewire::test(Investment::class, ['product' => $product])
         ->assertSee('Financial Position')
         ->assertSee('Fleet Capacity')
         ->assertSee('Signals &amp; Guidance', false);

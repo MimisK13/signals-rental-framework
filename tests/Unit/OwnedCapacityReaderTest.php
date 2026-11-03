@@ -6,8 +6,8 @@ use App\Data\Opportunities\PreparedStockInputs;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\OwnedCapacityReader;
 use App\Domain\Availability\Services\RecalculationPipeline;
+use App\Domain\Products\Models\Product;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

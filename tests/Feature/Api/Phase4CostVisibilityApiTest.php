@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Presentation\Livewire\Show;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
@@ -7,7 +9,6 @@ use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
@@ -15,6 +16,7 @@ use App\Support\Formatter;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
+use Livewire\Livewire;
 use Livewire\Volt\Volt;
 
 beforeEach(function () {
@@ -245,7 +247,7 @@ describe('Phase 4 cost visibility', function () {
         $product = Product::factory()->create(['purchase_price' => 123400]);
         $formatted = app(Formatter::class)->money(123400);
 
-        Volt::test('products.show', ['product' => $product])
+        Livewire::test(Show::class, ['product' => $product])
             ->assertDontSee('Purchase Price')
             ->assertDontSee($formatted);
     });

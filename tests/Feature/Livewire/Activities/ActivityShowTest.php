@@ -3,10 +3,10 @@
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Show;
 use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\ActionLog;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -65,8 +65,8 @@ it('shows a friendly regarding badge, never the raw class string', function () {
 
     Livewire::test(Show::class, ['activity' => $activity])
         ->assertSee('Product')
-        ->assertDontSee('App\\Models\\Product')
-        ->assertDontSee('App\Models\Product');
+        ->assertDontSee('App\\Domain\\Products\\Models\\Product')
+        ->assertDontSee('App\Domain\Products\Models\Product');
 });
 
 it('renders a stock-level regarding as a "Stock Level" badge, not the class string', function () {

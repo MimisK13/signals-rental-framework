@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\CreateStockLevel;
 use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Data\StockLevelData;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

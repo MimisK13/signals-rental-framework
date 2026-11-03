@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Crew\Models\CrewMember;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

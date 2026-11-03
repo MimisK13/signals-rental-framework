@@ -2,6 +2,7 @@
 
 use App\Actions\Members\UpdateMember;
 use App\Data\Members\UpdateMemberData;
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Actions\ProcessMemberVatValidation;
 use App\Domain\Tax\Actions\RequestMemberVatValidation;
 use App\Domain\Tax\Contracts\VatNumberValidator;
@@ -27,7 +28,6 @@ use App\Jobs\DeliverWebhook;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Webhook;
