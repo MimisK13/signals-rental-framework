@@ -4,31 +4,24 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
-use App\Models\User;
-use App\Policies\NumberingPolicy;
 use App\Services\ColumnRegistryResolver;
 use App\Services\DocsService;
-use App\Services\PermissionRegistry;
 use App\Services\Plugins\PluginRegistrar;
 use App\Services\SchemaRegistry;
 use App\Support\Formatter;
-use App\Support\NumberingAccess;
 use App\Support\Timezone;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use SocialiteProviders\Manager\SocialiteWasCalled;
-use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 use Thunk\Verbs\Lifecycle\MetadataManager;
 use Thunk\Verbs\Metadata;
 
@@ -43,13 +36,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PluginRegistrar::class);
         $this->app->singleton(ColumnRegistryResolver::class);
 
-        $this->app->singleton(PermissionRegistry::class, function (): PermissionRegistry {
-            $registry = new PermissionRegistry;
-            $registry->registerMany(PermissionSeeder::permissions());
-
-            return $registry;
-        });
-
     }
 
     public function boot(): void
@@ -61,7 +47,6 @@ class AppServiceProvider extends ServiceProvider
         $this->configureAuthorization();
         $this->configureRateLimiting();
         $this->registerBladeDirectives();
-        $this->registerSocialiteProviders();
         $this->registerVerbsMetadata();
         $this->registerDocumentWorkflowTriggers();
 
@@ -92,18 +77,6 @@ class AppServiceProvider extends ServiceProvider
                 'user_agent' => $request?->userAgent(),
             ];
         });
-    }
-
-    /**
-     * Register community Socialite providers.
-     *
-     * Google ships with Laravel Socialite core, but Microsoft 365 requires the
-     * socialiteproviders/microsoft package, which extends Socialite via the
-     * SocialiteWasCalled event.
-     */
-    protected function registerSocialiteProviders(): void
-    {
-        Event::listen(SocialiteWasCalled::class, MicrosoftExtendSocialite::class);
     }
 
     protected function configureDefaults(): void
@@ -145,8 +118,6 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureAuthorization(): void
     {
-        Gate::policy(NumberingAccess::class, NumberingPolicy::class);
-
         Gate::before(function (User $user, string $ability, array $arguments): ?bool {
             if (! $user->isOwner()) {
                 return null;

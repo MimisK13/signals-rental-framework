@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationType;
-use App\Models\User;
 
 it('has the correct fillable attributes', function () {
     $preference = new NotificationPreference;

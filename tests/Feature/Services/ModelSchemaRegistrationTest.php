@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Currency\Models\Currency;
@@ -13,7 +14,6 @@ use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Webhooks\Models\Webhook;
-use App\Models\User;
 use App\Services\SchemaRegistry;
 
 describe('Phase 1 Model Schema Registration', function () {

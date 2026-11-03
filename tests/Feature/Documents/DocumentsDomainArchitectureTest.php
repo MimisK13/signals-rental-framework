@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Presentation\Livewire\Editor;
 use App\Domain\Documents\Presentation\Livewire\Index;
@@ -11,7 +10,6 @@ use App\Domain\Documents\Presentation\Livewire\Index;
 it('owns the canonical document models and native presentation', function (): void {
     expect(class_exists(Document::class))->toBeTrue()
         ->and(class_exists(DocumentTemplate::class))->toBeTrue()
-        ->and(class_exists(DocumentSequence::class))->toBeTrue()
         ->and(class_exists(Index::class))->toBeTrue()
         ->and(class_exists(Editor::class))->toBeTrue()
         ->and(class_exists('App\\Models\\Document'))->toBeFalse()

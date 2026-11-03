@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Data\ChannelSendData;
@@ -7,10 +10,7 @@ use App\Domain\Communications\Data\ChannelTestResultData;
 use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Models\ChannelProvider;
 use App\Domain\Communications\Services\ChannelConfigMasker;
-use App\Models\User;
 use App\Services\Plugins\PluginRegistrar;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

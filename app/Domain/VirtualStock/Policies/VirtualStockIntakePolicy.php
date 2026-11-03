@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\VirtualStock\Policies;
 
-use App\Models\User;
-use App\Domain\VirtualStock\Models\VirtualStockIntake;
+use App\Domain\Administration\Models\User;
 use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
+use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\VirtualStock\Services\VirtualStockStatusRegistry;
 use Illuminate\Database\Eloquent\Model;
 

@@ -1,6 +1,9 @@
 <?php
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
@@ -11,9 +14,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\UsesPostgres;
 

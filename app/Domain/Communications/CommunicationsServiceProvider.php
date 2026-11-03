@@ -27,6 +27,8 @@ use App\Domain\Communications\Services\Drivers\DatabaseDriver;
 use App\Domain\Communications\Services\Drivers\EmailDriver;
 use App\Domain\Communications\Services\MergeFieldFilterRegistry;
 use App\Domain\Communications\Services\MergeFieldRenderer;
+use App\Domain\Communications\Settings\NotificationSettings;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +39,10 @@ final class CommunicationsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->afterResolving(SettingsRegistry::class, function (SettingsRegistry $registry): void {
+            $registry->register(new NotificationSettings);
+        });
+
         $this->app->singleton(ChannelProviderRegistry::class, function ($app): ChannelProviderRegistry {
             $registry = new ChannelProviderRegistry($app);
             $registry->register('email', EmailDriver::class);

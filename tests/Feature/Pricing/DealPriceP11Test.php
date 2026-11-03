@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Members\Models\Member;
 use App\Domain\Pricing\Contracts\DealPriceValidator;
@@ -26,9 +29,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Verbs\Events\DealPriceSet;
 use App\Domain\Stores\Models\Store;
 use App\Enums\DealPriceMode;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Thunk\Verbs\Facades\Verbs;

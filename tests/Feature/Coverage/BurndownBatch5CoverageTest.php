@@ -4,6 +4,9 @@
  * P4-CL4b burndown batch 5 — classes 1–18 (cheapest-first slice).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Jobs\ExportApiUsage;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\API\Models\UsageDaily;
@@ -68,9 +71,6 @@ use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\BillingCommunicationKind;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;

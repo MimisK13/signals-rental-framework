@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\InspectionPolicy;
 use App\Domain\Products\Models\Product;
-use App\Models\User;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

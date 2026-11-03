@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Admin\CreateRole;
-use App\Actions\Admin\DeactivateUser;
-use App\Actions\Admin\DeleteRole;
-use App\Actions\Admin\InviteUser;
-use App\Actions\Admin\UpdateRole;
-use App\Actions\Admin\UpdateUser;
-use App\Data\Admin\InviteUserData;
+use App\Domain\Administration\Actions\CreateRole;
+use App\Domain\Administration\Actions\DeactivateUser;
+use App\Domain\Administration\Actions\DeleteRole;
+use App\Domain\Administration\Actions\InviteUser;
+use App\Domain\Administration\Actions\UpdateRole;
+use App\Domain\Administration\Actions\UpdateUser;
+use App\Domain\Administration\Data\InviteUserData;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Domain\Webhooks\Models\Webhook;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Spatie\Permission\Models\Role;

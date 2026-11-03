@@ -6,8 +6,8 @@ namespace App\Domain\Activities\Presentation\Http\Controllers;
 
 use App\Domain\Activities\Services\Calendar\CalendarEventService;
 use App\Domain\Activities\Services\Calendar\IcsFeedBuilder;
+use App\Domain\Administration\Models\User;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\PermissionRegistry;
+use App\Domain\Administration\Services\PermissionRegistry;
 
 describe('PermissionRegistry', function () {
     it('is registered in the container', function () {

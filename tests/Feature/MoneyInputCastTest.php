@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Actions\CreateProductRate;
 use App\Domain\Rates\Data\CreateProductRateData;
 use App\Domain\Rates\Data\UpdateProductRateData;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
-use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

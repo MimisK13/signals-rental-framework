@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Actions\UpdateMember;
 use App\Domain\Members\Data\UpdateMemberData;
 use App\Domain\Members\Models\Member;
@@ -33,9 +36,6 @@ use App\Domain\Tax\ValueObjects\VatValidationResult;
 use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Domain\Webhooks\Models\Webhook;
 use App\Domain\Webhooks\Services\WebhookService;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 

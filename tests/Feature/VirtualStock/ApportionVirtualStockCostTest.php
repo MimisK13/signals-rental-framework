@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Projects\Opportunities\Actions\UpdateOpportunityCost;
@@ -16,9 +19,6 @@ use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
 use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
 use App\Domain\VirtualStock\Actions\SetVirtualStockCostOverride;
 use App\Domain\VirtualStock\Data\SetVirtualStockCostOverrideData;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Carbon;
 use Thunk\Verbs\Facades\Verbs;

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Database\Seeders\ViewSeeder;
 use App\Domain\CustomViews\Models\CustomView;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Spatie\Permission\Models\Role;
 
 it('creates a custom view with factory', function () {

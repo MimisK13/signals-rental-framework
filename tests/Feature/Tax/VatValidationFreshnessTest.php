@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Jobs\ValidateMemberVatNumber;
 use App\Domain\Tax\Services\TaxResolutionContext;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Tests\Concerns\UsesPostgres;
 
 /*

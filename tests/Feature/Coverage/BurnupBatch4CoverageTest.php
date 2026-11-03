@@ -4,6 +4,9 @@
  * Coverage burn-up batch 4 — part 1 (predicates, services, policies, models, jobs).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Jobs\ExportApiRequestLog;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\Availability\Shortages\Services\MoneyApportionment;
@@ -13,11 +16,11 @@ use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Communications\Services\CommunicationPreferences;
 use App\Domain\Documents\Exceptions\DocumentRenderException;
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Policies\DocumentSequencePolicy;
 use App\Domain\Documents\Services\SandboxedBladeCompiler;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Policies\DocumentSequencePolicy;
 use App\Domain\Pricing\Enums\DiscountRuleScope;
 use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Pricing\Models\SurchargeGroup;
@@ -45,9 +48,6 @@ use App\Domain\Tax\Services\TaxCalculator;
 use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
 use App\Domain\VirtualStock\Policies\VirtualStockIntakePolicy;
 use App\Domain\VirtualStock\Services\VirtualAssetStatusRegistry;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -10,7 +10,7 @@ use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Services\Calendar\AllDayDetector;
 use App\Domain\Activities\Services\Calendar\OwnerColorResolver;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use App\Support\Timezone;
 use Carbon\CarbonInterface;
 use Spatie\LaravelData\Data;

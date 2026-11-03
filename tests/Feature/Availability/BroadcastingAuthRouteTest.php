@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 // M8-4a: the Echo client subscribes to private availability channels by POSTing
 // to `/broadcasting/auth`. That route is auto-registered via the `channels`

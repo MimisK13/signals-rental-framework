@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 test('returns a successful response when not installed', function () {
     config(['signals.installed' => false, 'signals.setup_complete' => false]);

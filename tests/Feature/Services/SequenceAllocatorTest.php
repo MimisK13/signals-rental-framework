@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Sequence;
-use App\Services\SequenceAllocator;
+use App\Domain\Numbering\Models\Sequence;
+use App\Domain\Numbering\Services\SequenceAllocator;
 
 describe('SequenceAllocator', function () {
     it('starts a new sequence at 1 and increments', function () {

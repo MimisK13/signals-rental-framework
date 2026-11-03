@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -19,9 +22,6 @@ use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\UsesPostgres;
 

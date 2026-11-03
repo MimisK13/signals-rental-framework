@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\AbilityRegistry;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Crew\Actions\Registry\CreateCrewMember;
@@ -18,8 +20,6 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Domain\Webhooks\Models\Webhook;
 use App\Domain\Webhooks\Services\WebhookEventRegistry;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;

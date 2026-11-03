@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
-use App\Services\SettingsService;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Services\SettingsService;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

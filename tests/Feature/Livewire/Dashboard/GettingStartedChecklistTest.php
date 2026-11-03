@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stores\Models\Store;
 use App\Livewire\Dashboard\GettingStartedChecklist;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

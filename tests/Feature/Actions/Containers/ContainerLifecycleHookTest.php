@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
@@ -11,9 +14,6 @@ use App\Domain\Warehouse\Containers\Events\BeforeContainerItemTransferred;
 use App\Domain\Warehouse\Containers\Events\BeforeContainerPacked;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 

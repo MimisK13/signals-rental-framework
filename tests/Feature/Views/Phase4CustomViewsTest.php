@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Services\ViewResolver;
 use App\Domain\Documents\Models\DocumentTemplate;
@@ -12,10 +15,7 @@ use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
 use App\Domain\Stores\Models\Store;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\VirtualStock\Presentation\Columns\VirtualStockIntakeColumnRegistry;
-use App\Models\User;
 use App\Services\ColumnRegistryResolver;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {

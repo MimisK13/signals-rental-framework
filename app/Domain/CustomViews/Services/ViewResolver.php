@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomViews\Services;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\RansackFilter;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Models\UserViewPreference;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 final class ViewResolver

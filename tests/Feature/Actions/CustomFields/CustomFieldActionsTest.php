@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\CustomFields\Actions\CreateCustomField;
 use App\Domain\CustomFields\Actions\DeleteCustomField;
@@ -9,10 +12,7 @@ use App\Domain\CustomFields\Data\UpdateCustomFieldData;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use App\Services\SchemaRegistry;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;

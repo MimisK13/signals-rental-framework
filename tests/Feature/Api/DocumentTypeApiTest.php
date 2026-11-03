@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Services\SchemaRegistry;
-use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {

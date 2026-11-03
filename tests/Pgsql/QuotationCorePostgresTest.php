@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Quotations\Actions\AddQuotationItem;
 use App\Domain\Quotations\Actions\CreateQuotation;
@@ -13,9 +16,6 @@ use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Tests\Concerns\UsesPostgres;
 use Thunk\Verbs\Facades\Verbs;
 

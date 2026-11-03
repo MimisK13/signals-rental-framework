@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Setting;
-use App\Services\SettingsService;
+use App\Domain\Settings\Models\Setting;
+use App\Domain\Settings\Services\SettingsService;
 
 beforeEach(function () {
     $this->service = app(SettingsService::class);

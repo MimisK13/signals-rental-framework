@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRateCard;
@@ -9,8 +11,6 @@ use App\Domain\Crew\Models\CrewRequest;
 use App\Domain\Crew\Models\CrewRequestLine;
 use App\Domain\Crew\Models\CrewTimeEntry;
 use App\Domain\Crew\Models\CrewTimesheet;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;

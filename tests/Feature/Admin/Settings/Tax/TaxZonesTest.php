@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\TaxCategory;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

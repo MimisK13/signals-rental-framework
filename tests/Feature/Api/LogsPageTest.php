@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\API\Presentation\Livewire\Logs;
 use App\Domain\Webhooks\Models\InboundWebhookLog;
 use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Domain\Webhooks\Models\WebhookLog;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 

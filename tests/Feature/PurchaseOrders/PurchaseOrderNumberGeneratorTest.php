@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Domain\Stores\Models\Store;
 use Carbon\CarbonImmutable;

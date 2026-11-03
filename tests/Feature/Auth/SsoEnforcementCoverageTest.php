@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
-use App\Services\Auth\SsoEnforcement;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Services\SsoEnforcement;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {

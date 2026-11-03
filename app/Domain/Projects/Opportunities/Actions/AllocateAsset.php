@@ -7,13 +7,13 @@ namespace App\Domain\Projects\Opportunities\Actions;
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Data\AllocateAssetData;
 use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Verbs\Events\AssetAllocated;
 use App\Domain\Stock\Models\StockLevel;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 

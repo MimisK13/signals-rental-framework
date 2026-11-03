@@ -1,7 +1,8 @@
 <?php
 
-use App\Models\User;
-use Livewire\Volt\Volt;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Presentation\Livewire\Admin\GeneralPreferences;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -16,7 +17,7 @@ it('renders the general preferences page', function () {
 });
 
 it('loads general preferences with defaults', function () {
-    Volt::test('admin.settings.preferences')
+    Livewire::test(GeneralPreferences::class)
         ->assertSet('numberDecimalSeparator', '.')
         ->assertSet('numberThousandsSeparator', ',')
         ->assertSet('currencyDisplay', 'symbol')
@@ -25,7 +26,7 @@ it('loads general preferences with defaults', function () {
 });
 
 it('saves general preferences', function () {
-    Volt::test('admin.settings.preferences')
+    Livewire::test(GeneralPreferences::class)
         ->set('numberDecimalSeparator', ',')
         ->set('numberThousandsSeparator', '.')
         ->set('currencyDisplay', 'code')
@@ -43,14 +44,14 @@ it('saves general preferences', function () {
 });
 
 it('validates items per page options', function () {
-    Volt::test('admin.settings.preferences')
+    Livewire::test(GeneralPreferences::class)
         ->set('itemsPerPage', 999)
         ->call('save')
         ->assertHasErrors(['itemsPerPage']);
 });
 
 it('validates currency display options', function () {
-    Volt::test('admin.settings.preferences')
+    Livewire::test(GeneralPreferences::class)
         ->set('currencyDisplay', 'invalid')
         ->call('save')
         ->assertHasErrors(['currencyDisplay']);

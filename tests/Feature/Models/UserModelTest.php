@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Spatie\Permission\Models\Role;
 
 describe('hasTwoFactorEnabled', function () {

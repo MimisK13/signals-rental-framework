@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class CreditNotePolicy

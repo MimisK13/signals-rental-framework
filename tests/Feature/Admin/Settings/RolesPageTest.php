@@ -1,9 +1,11 @@
 <?php
 
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Presentation\Livewire\RoleForm;
+use App\Domain\Administration\Presentation\Livewire\Roles;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -44,7 +46,7 @@ it('renders the edit role page', function () {
 });
 
 it('creates a custom role', function () {
-    Volt::test('admin.settings.role-form')
+    Livewire::test(RoleForm::class)
         ->set('roleName', 'Custom Role')
         ->set('roleDescription', 'A custom role')
         ->set('selectedPermissions', ['members.view', 'members.create'])
@@ -62,7 +64,7 @@ it('creates a custom role', function () {
 it('updates a role', function () {
     $role = Role::create(['name' => 'Test Role', 'guard_name' => 'web']);
 
-    Volt::test('admin.settings.role-form', ['role' => $role])
+    Livewire::test(RoleForm::class, ['role' => $role])
         ->set('roleName', 'Updated Role')
         ->set('roleDescription', 'Updated description')
         ->set('selectedPermissions', ['products.view'])
@@ -78,7 +80,7 @@ it('updates a role', function () {
 it('prevents renaming system roles', function () {
     $admin = Role::findByName('Admin', 'web');
 
-    Volt::test('admin.settings.role-form', ['role' => $admin])
+    Livewire::test(RoleForm::class, ['role' => $admin])
         ->set('roleName', 'Super Admin')
         ->call('save')
         ->assertHasErrors();
@@ -87,7 +89,7 @@ it('prevents renaming system roles', function () {
 it('deletes a custom role', function () {
     $role = Role::create(['name' => 'Deletable', 'guard_name' => 'web']);
 
-    Volt::test('admin.settings.roles')
+    Livewire::test(Roles::class)
         ->call('deleteRole', $role->id)
         ->assertDispatched('role-deleted');
 
@@ -97,7 +99,7 @@ it('deletes a custom role', function () {
 it('prevents deleting system roles', function () {
     $admin = Role::findByName('Admin', 'web');
 
-    Volt::test('admin.settings.roles')
+    Livewire::test(Roles::class)
         ->call('deleteRole', $admin->id)
         ->assertHasErrors();
 });
@@ -107,7 +109,7 @@ it('prevents deleting roles with assigned users', function () {
     $user = User::factory()->create();
     $user->assignRole('Used Role');
 
-    Volt::test('admin.settings.roles')
+    Livewire::test(Roles::class)
         ->call('deleteRole', $role->id)
         ->assertHasErrors();
 });
@@ -117,7 +119,7 @@ it('loads users assigned to a role', function () {
     $user = User::factory()->create();
     $user->assignRole('Test Role');
 
-    $component = Volt::test('admin.settings.role-form', ['role' => $role]);
+    $component = Livewire::test(RoleForm::class, ['role' => $role]);
     expect($component->get('selectedUsers'))->toContain($user->id);
 });
 
@@ -126,7 +128,7 @@ it('assigns users to a role on save', function () {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
-    Volt::test('admin.settings.role-form', ['role' => $role])
+    Livewire::test(RoleForm::class, ['role' => $role])
         ->set('roleName', 'Test Role')
         ->set('selectedUsers', [$user1->id, $user2->id])
         ->call('save')
@@ -142,7 +144,7 @@ it('removes users from a role on save', function () {
     $user = User::factory()->create();
     $user->assignRole('Test Role');
 
-    Volt::test('admin.settings.role-form', ['role' => $role])
+    Livewire::test(RoleForm::class, ['role' => $role])
         ->set('roleName', 'Test Role')
         ->set('selectedUsers', [])
         ->call('save')
@@ -154,7 +156,7 @@ it('removes users from a role on save', function () {
 it('assigns users when creating a new role', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.role-form')
+    Livewire::test(RoleForm::class)
         ->set('roleName', 'Brand New Role')
         ->set('selectedUsers', [$user->id])
         ->call('save')
@@ -165,7 +167,7 @@ it('assigns users when creating a new role', function () {
 });
 
 it('includes owner users in the user list', function () {
-    $component = Volt::test('admin.settings.role-form');
+    $component = Livewire::test(RoleForm::class);
     $allUsers = $component->viewData('allUsers');
 
     expect($allUsers->where('is_owner', true)->count())->toBeGreaterThan(0);

@@ -45,7 +45,7 @@ use App\Domain\Pricing\Services\Predicates\TransactionTypesPredicate;
 use App\Domain\Pricing\Services\QuantityContextResolver;
 use App\Domain\Pricing\Settings\PricingSettings;
 use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;

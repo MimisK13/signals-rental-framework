@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Services\CommunicationTemplateRenderer;
 use App\Domain\Communications\Services\CoreMergeFieldFilters;
@@ -7,7 +8,6 @@ use App\Domain\Communications\Services\MergeFieldFilterRegistry;
 use App\Domain\Communications\Services\MergeFieldRenderContext;
 use App\Domain\Communications\Services\MergeFieldRenderer;
 use App\Domain\Currency\Models\Currency;
-use App\Models\User;
 use App\Support\Timezone;
 use Illuminate\Support\Carbon;
 

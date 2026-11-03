@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pricing\Settings;
 
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 use Illuminate\Validation\Rule;
 
 /**

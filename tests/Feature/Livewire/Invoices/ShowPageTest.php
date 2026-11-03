@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Jobs\SendBillingCustomerCommunication;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Jobs\GenerateBillingIssueDocumentJob;
@@ -14,9 +17,6 @@ use App\Domain\Invoices\Presentation\Livewire\Show;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 

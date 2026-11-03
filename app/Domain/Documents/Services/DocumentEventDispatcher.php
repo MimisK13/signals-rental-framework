@@ -6,10 +6,8 @@ namespace App\Domain\Documents\Services;
 
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Documents\Data\DocumentData;
-use App\Domain\Documents\Data\DocumentSequenceData;
 use App\Domain\Documents\Data\DocumentTemplateData;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Webhooks\Services\WebhookService;
 use Thunk\Verbs\Facades\Verbs;
@@ -71,18 +69,6 @@ class DocumentEventDispatcher
 
         $this->dispatchWebhook($action, [
             'document_template' => DocumentTemplateData::fromModel($template)->toArray(),
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>|null  $metadata
-     */
-    public function sequence(DocumentSequence $sequence, string $action, ?array $metadata = null): void
-    {
-        event(new AuditableEvent($sequence, $action, metadata: $metadata));
-
-        $this->dispatchWebhook($action, [
-            'document_sequence' => DocumentSequenceData::fromModel($sequence)->toArray(),
         ]);
     }
 

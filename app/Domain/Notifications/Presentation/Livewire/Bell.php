@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Presentation\Livewire;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\On;

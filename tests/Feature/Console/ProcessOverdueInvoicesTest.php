@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Invoices\Models\Invoice;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Currency\Database\Seeders\CurrencySeeder;
 use App\Domain\Currency\Models\ExchangeRate;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {

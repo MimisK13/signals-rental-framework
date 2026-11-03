@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Enums\MeteringChannel;
 use App\Domain\API\Jobs\ExportApiUsage;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\API\Models\UsageDaily;
 use App\Domain\API\Services\ApiEndpointCatalogue;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\PersonalAccessToken;

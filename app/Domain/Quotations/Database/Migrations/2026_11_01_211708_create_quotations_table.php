@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

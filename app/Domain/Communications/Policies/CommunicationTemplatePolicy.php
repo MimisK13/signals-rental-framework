@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
 use Illuminate\Database\Eloquent\Model;
 

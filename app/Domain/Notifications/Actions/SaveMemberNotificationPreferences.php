@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Actions;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Notifications\Data\SaveMemberNotificationPreferencesData;
 use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\MemberNotificationPreferenceCatalog;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;

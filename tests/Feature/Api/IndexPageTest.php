@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Enums\MeteringChannel;
 use App\Domain\API\Models\UsageDaily;
 use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Domain\Webhooks\Models\Webhook;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 

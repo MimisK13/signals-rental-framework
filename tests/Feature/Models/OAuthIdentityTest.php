@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\OAuthIdentity;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Models\OAuthIdentity;
 use Illuminate\Database\QueryException;
 
 it('builds an oauth identity via its factory', function () {

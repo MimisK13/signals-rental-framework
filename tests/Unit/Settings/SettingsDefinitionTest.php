@@ -2,18 +2,18 @@
 
 use App\Domain\API\Settings\ApiSettings;
 use App\Domain\AuditLog\Settings\ActionLogSettings;
+use App\Domain\Auth\Settings\SsoSettings;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Enums\DemandDateSource;
 use App\Domain\Availability\Settings\AvailabilitySettings;
 use App\Domain\Pricing\Settings\PricingSettings;
 use App\Domain\Projects\Opportunities\Settings\OpportunitySettings;
-use App\Settings\EmailSettings;
-use App\Settings\GeneralPreferencesSettings;
-use App\Settings\IntegrationSettings;
-use App\Settings\SchedulingSettings;
-use App\Settings\SecuritySettings;
-use App\Settings\SettingsDefinition;
-use App\Settings\SsoSettings;
+use App\Domain\Settings\Settings\EmailSettings;
+use App\Domain\Settings\Settings\GeneralPreferencesSettings;
+use App\Domain\Settings\Settings\IntegrationSettings;
+use App\Domain\Settings\Settings\SchedulingSettings;
+use App\Domain\Settings\Settings\SecuritySettings;
+use App\Domain\Settings\Settings\SettingsDefinition;
 
 /**
  * Flatten a rules array (mixing string rules and rule objects) into a single

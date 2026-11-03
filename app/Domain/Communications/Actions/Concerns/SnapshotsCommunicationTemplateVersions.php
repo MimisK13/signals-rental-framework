@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Actions\Concerns;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Models\CommunicationTemplateVersion;
-use App\Models\User;
 
 trait SnapshotsCommunicationTemplateVersions
 {

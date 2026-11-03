@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Models;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Database\Factories\CrewTimeEntryFactory;
 use App\Domain\Crew\Enums\CrewTimeEntryKind;
 use App\Domain\Crew\Enums\CrewTimesheetStatus;
 use App\Domain\Stores\Scopes\StoreScope;
 use App\Models\Traits\FormatsMoney;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

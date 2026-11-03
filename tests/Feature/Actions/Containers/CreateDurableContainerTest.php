@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Products\Models\Product;
@@ -11,9 +14,6 @@ use App\Domain\Warehouse\Containers\Actions\CreateContainer;
 use App\Domain\Warehouse\Containers\Actions\CreateDurableContainer;
 use App\Domain\Warehouse\Containers\Data\CreateDurableContainerData;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

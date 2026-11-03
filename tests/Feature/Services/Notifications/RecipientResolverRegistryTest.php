@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Actions\LogCommunication;
 use App\Domain\Communications\Data\TransitionCommunicationLogData;
 use App\Domain\Communications\Models\CommunicationLog;
@@ -9,7 +10,6 @@ use App\Domain\Notifications\Data\NotificationContextData;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\RecipientResolverRegistry;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\User;
 use App\Services\Plugins\PluginRegistrar;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

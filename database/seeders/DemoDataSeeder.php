@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Administration\Models\User;
 use App\Domain\Currency\Services\CurrencyService;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Enums\MembershipType;
@@ -38,7 +39,6 @@ use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use Database\Seeders\Concerns\DemoDataSeederSupport;
 use Database\Seeders\Concerns\SeedsDemoPhase4;
 use Illuminate\Database\Eloquent\Collection;

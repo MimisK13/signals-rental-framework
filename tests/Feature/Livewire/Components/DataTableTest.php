@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Livewire\Components\DataTable;
-use App\Models\User;
 use Illuminate\View\ViewException;
 use Livewire\Exceptions\EventHandlerDoesNotExist;
 use Livewire\Livewire;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Verbs\Events;
 
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState as StateAxis;
 use App\Domain\Projects\Opportunities\Enums\VersionStatus;
 use App\Domain\Projects\Opportunities\Enums\VersionType;
@@ -14,7 +15,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\RecordsOpportunityAudit;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityState;
 use App\Domain\Projects\Opportunities\Verbs\States\OpportunityVersionState;
-use App\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;
 use Thunk\Verbs\Attributes\Autodiscovery\StateId;
 use Thunk\Verbs\Event;

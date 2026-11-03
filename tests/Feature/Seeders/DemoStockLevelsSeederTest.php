@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 require_once __DIR__.'/../../Support/DemoSeederTestHelpers.php';
 

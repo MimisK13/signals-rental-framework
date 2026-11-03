@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
@@ -8,8 +10,6 @@ use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
 use App\Domain\Stores\Database\Seeders\StoreSeeder;
 use App\Domain\Stores\Models\Store;
 use Database\Seeders\DatabaseSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 it('seeds document and communication templates for every store via DatabaseSeeder', function () {
     $this->seed(PermissionSeeder::class);

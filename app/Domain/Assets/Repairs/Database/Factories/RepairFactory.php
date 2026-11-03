@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Repairs\Database\Factories;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Repairs\Enums\RepairStatus;
 use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

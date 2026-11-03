@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
 use App\Enums\LineItemTransactionType;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;

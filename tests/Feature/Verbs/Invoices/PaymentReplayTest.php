@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Actions\IssueInvoice;
 use App\Domain\Invoices\Actions\RecordPayment;
@@ -9,10 +12,7 @@ use App\Domain\Invoices\Enums\PaymentMethod;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function () {

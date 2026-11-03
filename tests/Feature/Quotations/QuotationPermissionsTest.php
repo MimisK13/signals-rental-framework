@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\AbilityRegistry;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Policies\QuotationPolicy;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Gate;
 
 beforeEach(function (): void {

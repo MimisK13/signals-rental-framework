@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\InspectionComplianceState;
 use App\Domain\Assets\Enums\InspectionResult;
 use App\Domain\Assets\Enums\InspectionStatus;
@@ -15,7 +16,6 @@ use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomViews\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Models\CustomView;
-use App\Models\User;
 
 final class CustomViewPolicy
 {

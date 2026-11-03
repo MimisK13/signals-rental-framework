@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Members\Models\Member;
 use App\Domain\Pricing\Models\DiscountCategory;
@@ -11,9 +14,6 @@ use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

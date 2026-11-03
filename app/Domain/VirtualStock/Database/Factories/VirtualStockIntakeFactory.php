@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\VirtualStock\Database\Factories;
 
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stores\Models\Store;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

@@ -11,7 +11,7 @@ use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\AuditLog\Policies\ActionLogPolicy;
 use App\Domain\AuditLog\Presentation\Livewire\Admin\Index;
 use App\Domain\AuditLog\Settings\ActionLogSettings;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;

@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
@@ -7,9 +10,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 /**
  * Regression coverage for todo #78 — includes that were whitelisted in

@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\GenerateDepositInvoice;
 use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
 use App\Domain\Invoices\Enums\InvoiceType;
@@ -11,9 +14,6 @@ use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
 use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

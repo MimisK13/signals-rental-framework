@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Attachments\Presentation\Livewire\FileUploadModal;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use App\Services\FileService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

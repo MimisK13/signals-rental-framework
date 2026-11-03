@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Actions\Assignments\ConfirmCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\ProposeCrewAssignment;
 use App\Domain\Crew\Actions\Timesheets\UpdateCrewTimeEntry;
@@ -10,7 +11,6 @@ use App\Domain\Crew\Data\Timesheets\UpdateCrewTimeEntryData;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewRequestLine;
 use App\Domain\Crew\Models\CrewTimeEntry;
-use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

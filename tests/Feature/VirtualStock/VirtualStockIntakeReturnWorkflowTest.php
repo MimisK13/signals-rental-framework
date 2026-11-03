@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
@@ -16,9 +19,6 @@ use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\VirtualStock\Presentation\Livewire\Show;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeProfitAndLossBuilder;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeReturnGuard;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;

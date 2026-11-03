@@ -75,7 +75,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     // Dense UI foundation sandbox
     Route::view('dense/sandbox', 'dense.sandbox')->name('dense.sandbox');
 });
-
 /*
 |--------------------------------------------------------------------------
 | Well-Known URLs
@@ -92,18 +91,6 @@ Route::get('.well-known/change-password', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Invitation Acceptance (signed URL, no auth required)
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['signals.setup-complete'])->group(function () {
-    Volt::route('invitation/{user}', 'auth.accept-invitation')
-        ->name('invitation.accept')
-        ->middleware('signed');
-});
-
-/*
-|--------------------------------------------------------------------------
 | Admin Panel
 |--------------------------------------------------------------------------
 */
@@ -112,27 +99,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
     Volt::route('admin', 'admin.index')->name('admin.index');
     Route::redirect('admin/settings', 'admin');
 
-    // Account
-    Volt::route('admin/settings/company', 'admin.settings.company')->name('admin.settings.company');
-    Volt::route('admin/settings/branding', 'admin.settings.branding')->name('admin.settings.branding');
-
-    // Users & Security
-    Volt::route('admin/settings/users', 'admin.settings.users')->name('admin.settings.users');
-    Volt::route('admin/settings/users/{user}/edit', 'admin.settings.user-form')->name('admin.settings.users.edit');
-    Volt::route('admin/settings/roles', 'admin.settings.roles')->name('admin.settings.roles');
-    Volt::route('admin/settings/roles/create', 'admin.settings.role-form')->name('admin.settings.roles.create');
-    Volt::route('admin/settings/roles/{role}/edit', 'admin.settings.role-form')->name('admin.settings.roles.edit');
-    Volt::route('admin/settings/permissions', 'admin.settings.permissions')->name('admin.settings.permissions');
-    Volt::route('admin/settings/security', 'admin.settings.security')->name('admin.settings.security');
-
-    // Preferences
-    Volt::route('admin/settings/preferences', 'admin.settings.preferences')->name('admin.settings.preferences');
-    Volt::route('admin/settings/email', 'admin.settings.email')->name('admin.settings.email');
-    Volt::route('admin/settings/scheduling', 'admin.settings.scheduling')->name('admin.settings.scheduling');
-
-    // Integrations
-    Volt::route('admin/settings/integrations', 'admin.settings.integrations')->name('admin.settings.integrations');
-
     // System
     Volt::route('admin/settings/system-health', 'admin.settings.system-health')->name('admin.settings.system-health');
     Volt::route('admin/settings/infrastructure', 'admin.settings.infrastructure')->name('admin.settings.infrastructure');
@@ -140,14 +106,11 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.se
 
     // Data
 
-    Volt::route('admin/settings/finance', 'admin.settings.finance')->name('admin.settings.finance');
-
     // Pricing
 
     // Pricing categories
 
     // Documents
-    Volt::route('admin/settings/numbering', 'admin.settings.numbering')->name('admin.settings.numbering');
 });
 
 /*
@@ -238,5 +201,3 @@ Route::prefix('docs')->group(function () {
         ->name('docs.show')
         ->where(['section' => '[a-z0-9-]+', 'page' => '[a-z0-9-]+']);
 });
-
-require __DIR__.'/auth.php';

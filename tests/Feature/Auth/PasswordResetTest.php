@@ -2,15 +2,17 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Presentation\Livewire\ForgotPassword;
+use App\Domain\Auth\Presentation\Livewire\ResetPassword;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Notifications\Notifications\PasswordResetNotification;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Notification;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -36,7 +38,7 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        Volt::test('auth.forgot-password')
+        Livewire::test(ForgotPassword::class)
             ->set('email', $user->email)
             ->call('sendPasswordResetLink');
 
@@ -49,7 +51,7 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        Volt::test('auth.forgot-password')
+        Livewire::test(ForgotPassword::class)
             ->set('email', $user->email)
             ->call('sendPasswordResetLink');
 
@@ -68,12 +70,12 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        Volt::test('auth.forgot-password')
+        Livewire::test(ForgotPassword::class)
             ->set('email', $user->email)
             ->call('sendPasswordResetLink');
 
         Notification::assertSentTo($user, PasswordResetNotification::class, function ($notification) use ($user) {
-            $response = Volt::test('auth.reset-password', ['token' => $notification->token])
+            $response = Livewire::test(ResetPassword::class, ['token' => $notification->token])
                 ->set('email', $user->email)
                 ->set('password', 'password')
                 ->set('password_confirmation', 'password')

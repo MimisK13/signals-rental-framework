@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
-use App\Models\User;
 use App\Services\ColumnRegistryResolver;
 use Illuminate\Database\Eloquent\Relations\Relation;
 

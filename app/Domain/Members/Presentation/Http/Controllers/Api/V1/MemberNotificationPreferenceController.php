@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\Members\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\Administration\Models\User;
+use App\Domain\API\Presentation\Http\Controllers\Controller;
+use App\Domain\API\Support\Attributes\PriceWeight;
+use App\Domain\Members\Models\Member;
+use App\Domain\Members\Models\MemberStore;
 use App\Domain\Notifications\Actions\SaveNotificationPreferences;
 use App\Domain\Notifications\Data\NotificationPreferenceData;
 use App\Domain\Notifications\Data\SaveNotificationPreferenceItemData;
 use App\Domain\Notifications\Data\SaveNotificationPreferencesData;
-use App\Domain\Members\Models\Member;
-use App\Domain\Members\Models\MemberStore;
-use App\Domain\API\Presentation\Http\Controllers\Controller;
-use App\Models\User;
 use App\Domain\Notifications\Services\MemberNotificationPreferenceCatalog;
-use App\Domain\API\Support\Attributes\PriceWeight;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

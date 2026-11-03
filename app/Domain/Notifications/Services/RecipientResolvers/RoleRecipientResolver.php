@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Services\RecipientResolvers;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Contracts\RecipientResolver;
 use App\Domain\Notifications\Data\NotificationContextData;
-use App\Models\User;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\VirtualStock\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
-use App\Domain\VirtualStock\Data\VirtualStockIntakeData;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
+use App\Domain\VirtualStock\Data\VirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Services\SequenceAllocator;
 use App\Domain\VirtualStock\Services\SerialisedVirtualStockAssetCoordinator;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeEventRecorder;
 use App\Domain\VirtualStock\Services\VirtualStockStatusRegistry;

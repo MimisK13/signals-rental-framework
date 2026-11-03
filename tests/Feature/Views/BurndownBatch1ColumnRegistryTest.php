@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoiceColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoicePaymentColumnRegistry;
 use App\Domain\PurchaseOrders\Presentation\Tables\PurchaseOrderColumnRegistry;
 use App\Domain\VirtualStock\Presentation\Columns\VirtualStockIntakeColumnRegistry;
-use App\Models\User;
 use App\Views\ColumnRegistry;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

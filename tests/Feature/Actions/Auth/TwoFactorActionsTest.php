@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Auth\ConfirmTwoFactor;
-use App\Actions\Auth\DisableTwoFactor;
-use App\Actions\Auth\EnableTwoFactor;
-use App\Actions\Auth\RegenerateTwoFactorRecoveryCodes;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Actions\ConfirmTwoFactor;
+use App\Domain\Auth\Actions\DisableTwoFactor;
+use App\Domain\Auth\Actions\EnableTwoFactor;
+use App\Domain\Auth\Actions\RegenerateTwoFactorRecoveryCodes;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FA\Google2FA;

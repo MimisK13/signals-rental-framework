@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Presentation\Livewire\Utilization;
 use App\Domain\Products\Models\Product;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function (): void {

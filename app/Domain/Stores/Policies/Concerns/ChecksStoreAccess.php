@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stores\Policies\Concerns;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 trait ChecksStoreAccess

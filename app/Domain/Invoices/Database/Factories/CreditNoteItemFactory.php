@@ -7,7 +7,7 @@ namespace App\Domain\Invoices\Database\Factories;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\CreditNoteItem;
 use App\Domain\Invoices\Models\InvoiceItem;
-use App\Services\SequenceAllocator;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

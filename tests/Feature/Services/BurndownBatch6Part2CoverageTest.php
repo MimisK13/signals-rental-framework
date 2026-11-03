@@ -4,6 +4,8 @@
  * P4-CL4b coverage burn-down batch 6 — classes 28–45 (DocsService through InvoiceStatusResolver).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Services\AvailabilityService;
@@ -58,8 +60,6 @@ use App\Domain\VirtualStock\Services\VirtualStockIntakeProfitAndLossBuilder;
 use App\Enums\LineItemTransactionType;
 use App\Services\DocsService;
 use App\Services\FileService;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;

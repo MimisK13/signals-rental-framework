@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Services;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationLog;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

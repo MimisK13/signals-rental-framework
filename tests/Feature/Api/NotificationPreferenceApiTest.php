@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Enums\NotificationAudience;
 use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

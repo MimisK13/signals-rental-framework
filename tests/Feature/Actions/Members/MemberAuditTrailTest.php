@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Actions\AnonymiseMember;
 use App\Domain\Members\Actions\ArchiveMember;
 use App\Domain\Members\Actions\CreateMember;
@@ -13,9 +16,6 @@ use App\Domain\Members\Data\UpdateMemberData;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Domain\Webhooks\Jobs\DeliverWebhook;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 
 /**

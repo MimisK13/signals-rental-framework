@@ -4,6 +4,9 @@
  * Coverage burn-up batch 5 — services, policies, and support classes.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
@@ -18,7 +21,6 @@ use App\Domain\Communications\Services\CustomerCommunicationAttachmentResolver;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Exceptions\DocumentRenderException;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Policies\DocumentTemplatePolicy;
 use App\Domain\Documents\Services\ReceiptDataResolver;
@@ -32,6 +34,7 @@ use App\Domain\Notifications\Enums\NotificationAudience;
 use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\NotificationSettingsCatalog;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
@@ -41,9 +44,6 @@ use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stores\Models\Store;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeProfitAndLossBuilder;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;

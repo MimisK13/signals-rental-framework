@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Models\CommunicationLog;
 use App\Domain\Communications\Services\CommunicationLogQuery;
@@ -14,9 +17,6 @@ use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Presentation\Livewire\Communications;
 use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 

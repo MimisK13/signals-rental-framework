@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Documents\Services\DocumentSequenceEntityProjection;
-use App\Domain\Documents\Services\EntityNumberSchemeCatalog;
+use App\Domain\Numbering\Services\DocumentSequenceEntityProjection;
+use App\Domain\Numbering\Services\EntityNumberSchemeCatalog;
 
 it('maps invoice document sequence types to invoice type slugs', function () {
     expect(DocumentSequenceEntityProjection::invoiceTypeForDocumentSequenceType('invoice_standard'))->toBe('standard')

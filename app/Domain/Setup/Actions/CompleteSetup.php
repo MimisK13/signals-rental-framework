@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Setup\Actions;
 
-use App\Domain\Setup\Data\CompleteSetupData;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
@@ -14,12 +16,10 @@ use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\Membership;
 use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
 use App\Domain\Rates\Database\Seeders\RateDefinitionPresetSeeder;
+use App\Domain\ReferenceData\Database\Seeders\CountrySeeder;
+use App\Domain\Setup\Data\CompleteSetupData;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
-use App\Models\User;
-use App\Domain\ReferenceData\Database\Seeders\CountrySeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Artisan;
 

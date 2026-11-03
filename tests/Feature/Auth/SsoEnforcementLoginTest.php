@@ -1,7 +1,8 @@
 <?php
 
-use App\Models\User;
-use Livewire\Volt\Volt as LivewireVolt;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Presentation\Livewire\Login;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -15,7 +16,7 @@ it('blocks password login for a user whose role enforces sso', function () {
     $user = User::factory()->create();
     $user->assignRole('Sales');
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')
@@ -33,7 +34,7 @@ it('directs the user to an SSO provider button when enforcement is on and a prov
     $user = User::factory()->create();
     $user->assignRole('Sales');
 
-    $component = LivewireVolt::test('auth.login')
+    $component = Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')
@@ -53,7 +54,7 @@ it('directs the user to their administrator when enforcement is on but no SSO pr
     $user = User::factory()->create();
     $user->assignRole('Sales');
 
-    $component = LivewireVolt::test('auth.login')
+    $component = Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')
@@ -72,7 +73,7 @@ it('allows password login for a user without an enforced role', function () {
 
     $user = User::factory()->create();
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')
@@ -88,7 +89,7 @@ it('never blocks the owner from password login even with an enforced role', func
     $owner = User::factory()->owner()->create();
     $owner->assignRole('Sales');
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $owner->email)
         ->set('password', 'password')
         ->call('login')
@@ -102,7 +103,7 @@ it('does not block password login when no roles are enforced', function () {
     $user = User::factory()->create();
     $user->assignRole('Sales');
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')

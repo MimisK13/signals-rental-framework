@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Settings;
 
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 
 /**
  * Tenant tax configuration for zone resolution fallbacks.

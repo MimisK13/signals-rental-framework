@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Members\Presentation\Livewire;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Presentation\Concerns\LoadsCustomFieldValues;
 use App\Domain\CustomFields\Presentation\Concerns\ReKeysCustomFieldErrors;
@@ -20,7 +21,6 @@ use App\Domain\Pricing\Models\PriceCategory;
 use App\Domain\Pricing\Models\PriceCategoryTier;
 use App\Domain\Tax\Actions\RequestMemberVatValidation;
 use App\Domain\Tax\Models\OrganisationTaxClass;
-use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;

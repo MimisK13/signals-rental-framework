@@ -1,9 +1,10 @@
 <?php
 
-use App\Models\Setting;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Models\Setting;
+use App\Domain\Settings\Presentation\Livewire\Admin\Integrations;
 use Illuminate\Support\Facades\Crypt;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -19,7 +20,7 @@ it('renders the integrations settings page', function () {
 });
 
 it('loads sso settings with defaults', function () {
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSet('ssoGoogleEnabled', false)
         ->assertSet('ssoGoogleClientId', '')
         ->assertSet('ssoGoogleClientSecret', '')
@@ -31,7 +32,7 @@ it('loads sso settings with defaults', function () {
 it('saves sso credentials and toggles on self-hosted', function () {
     config(['signals.cloud' => false]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoGoogleEnabled', true)
         ->set('ssoGoogleClientId', 'google-client-id')
         ->set('ssoGoogleClientSecret', 'google-secret')
@@ -53,7 +54,7 @@ it('saves sso credentials and toggles on self-hosted', function () {
 it('stores sso client secrets encrypted at rest', function () {
     config(['signals.cloud' => false]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoGoogleEnabled', true)
         ->set('ssoGoogleClientId', 'google-client-id')
         ->set('ssoGoogleClientSecret', 'super-secret-value')
@@ -72,7 +73,7 @@ it('stores sso client secrets encrypted at rest', function () {
 it('shows sso key fields on self-hosted installs', function () {
     config(['signals.cloud' => false]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSee('Enable Google sign-in')
         ->assertSee('Google Client ID')
         ->assertSee('Google Client Secret')
@@ -84,7 +85,7 @@ it('shows sso key fields on self-hosted installs', function () {
 it('hides sso key fields but keeps toggles on cloud', function () {
     config(['signals.cloud' => true]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSee('Enable Google sign-in')
         ->assertSee('Enable Microsoft 365 sign-in')
         ->assertSee('managed by Signals Cloud')
@@ -98,7 +99,7 @@ it('hides sso key fields but keeps toggles on cloud', function () {
 it('saves sso toggles only and ignores key fields on cloud', function () {
     config(['signals.cloud' => true]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoGoogleEnabled', true)
         ->set('ssoMicrosoftEnabled', false)
         ->call('save')
@@ -118,7 +119,7 @@ it('saves sso toggles only and ignores key fields on cloud', function () {
 it('saves and round-trips the allowed email domains, normalising the input', function () {
     config(['signals.cloud' => false]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoAllowedEmailDomains', "Owned.Example, second.example\nOWNED.example  third.example")
         ->call('save')
         ->assertHasNoErrors()
@@ -132,7 +133,7 @@ it('saves and round-trips the allowed email domains, normalising the input', fun
 it('loads stored allowed email domains as newline-separated text', function () {
     settings()->set('sso.allowed_email_domains', ['owned.example', 'second.example'], 'json');
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSet('ssoAllowedEmailDomains', "owned.example\nsecond.example");
 });
 
@@ -141,14 +142,14 @@ it('renders only valid string entries when the stored allow-list is mixed-type',
     // cannot break the textarea round-trip.
     settings()->set('sso.allowed_email_domains', [1, null, 'valid.example', '  ', 'second.example'], 'json');
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSet('ssoAllowedEmailDomains', "valid.example\nsecond.example");
 });
 
 it('persists the allowed email domains on cloud too (policy, not a credential)', function () {
     config(['signals.cloud' => true]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoAllowedEmailDomains', 'owned.example')
         ->call('save')
         ->assertHasNoErrors();
@@ -162,7 +163,7 @@ it('does not load stored client secrets into the component (write-only)', functi
     settings()->set('sso.google_client_secret', 'stored-google-secret', 'encrypted');
     settings()->set('sso.microsoft_client_secret', 'stored-ms-secret', 'encrypted');
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSet('ssoGoogleClientSecret', '')
         ->assertSet('ssoMicrosoftClientSecret', '');
 });
@@ -171,7 +172,7 @@ it('does not render a stored client secret into the page markup', function () {
     config(['signals.cloud' => false]);
     settings()->set('sso.google_client_secret', 'top-secret-google', 'encrypted');
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertDontSee('top-secret-google')
         ->assertSee('Configured — leave blank to keep');
 });
@@ -181,7 +182,7 @@ it('keeps the existing secret when the secret field is submitted blank', functio
     settings()->set('sso.google_client_secret', 'original-secret', 'encrypted');
     settings()->set('sso.google_client_id', 'gid', 'encrypted');
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoGoogleClientId', 'gid-updated')
         ->set('ssoGoogleClientSecret', '')
         ->call('save')
@@ -195,7 +196,7 @@ it('updates the secret when a new value is entered', function () {
     config(['signals.cloud' => false]);
     settings()->set('sso.google_client_secret', 'original-secret', 'encrypted');
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->set('ssoGoogleClientSecret', 'rotated-secret')
         ->call('save')
         ->assertHasNoErrors()
@@ -208,7 +209,7 @@ it('updates the secret when a new value is entered', function () {
 it('renders the callback url via the named sso.callback route', function () {
     config(['signals.cloud' => false]);
 
-    Volt::test('admin.settings.integrations')
+    Livewire::test(Integrations::class)
         ->assertSee(route('sso.callback', ['provider' => 'google']), escape: false)
         ->assertSee(route('sso.callback', ['provider' => 'microsoft']), escape: false);
 });

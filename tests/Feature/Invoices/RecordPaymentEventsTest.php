@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Actions\IssueInvoice;
 use App\Domain\Invoices\Actions\RecordPayment;
@@ -12,10 +15,7 @@ use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Domain\Webhooks\Models\Webhook;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {

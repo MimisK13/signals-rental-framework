@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Models;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Enums\ContainerBulkMembershipEventType;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;

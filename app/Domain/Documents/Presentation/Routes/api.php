@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Domain\API\Presentation\Http\Middleware\ForceJsonResponse;
 use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Documents\Presentation\Http\Controllers\Api\V1\DocumentController;
-use App\Domain\Documents\Presentation\Http\Controllers\Api\V1\DocumentSequenceController;
 use App\Domain\Documents\Presentation\Http\Controllers\Api\V1\DocumentTemplateController;
 use App\Domain\Documents\Presentation\Http\Controllers\Api\V1\DocumentTypeController;
 use Illuminate\Support\Facades\Route;
@@ -15,8 +14,6 @@ Route::prefix('api/v1')
     ->group(function (): void {
         Route::get('document_types', [DocumentTypeController::class, 'index'])->name('api.v1.document_types.index');
         Route::get('document_types/{type}/fields', [DocumentTypeController::class, 'fields'])->name('api.v1.document_types.fields');
-        Route::get('document_sequences', [DocumentSequenceController::class, 'index'])->name('api.v1.document_sequences.index');
-        Route::put('document_sequences/{documentSequence}', [DocumentSequenceController::class, 'update'])->name('api.v1.document_sequences.update');
         Route::post('document_templates/import', [DocumentTemplateController::class, 'import'])->name('api.v1.document_templates.import');
         Route::get('document_templates/{documentTemplate}/export', [DocumentTemplateController::class, 'export'])->name('api.v1.document_templates.export');
         Route::get('document_templates', [DocumentTemplateController::class, 'index'])->name('api.v1.document_templates.index');

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Pricing\Models\DiscountCategory;
 use App\Domain\Pricing\Presentation\Livewire\DiscountCategoryForm;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

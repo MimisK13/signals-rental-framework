@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Products\Presentation\Livewire\Show;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Presentation\Livewire\ProductStock;
-use App\Models\User;
 use App\Support\Formatter;
 use Livewire\Livewire;
 

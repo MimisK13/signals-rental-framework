@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
@@ -17,9 +20,6 @@ use App\Domain\Projects\Opportunities\Verbs\Events\VersionDeclined;
 use App\Domain\Projects\Opportunities\Verbs\Events\VersionLabelChanged;
 use App\Domain\Projects\Opportunities\Verbs\Events\VersionSent;
 use App\Domain\Projects\Opportunities\Verbs\Events\VersionSuperseded;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Thunk\Verbs\Facades\Verbs;
 

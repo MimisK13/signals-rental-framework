@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Attachments\Policies\AttachmentPolicy;
 use App\Domain\Attachments\Presentation\Livewire\MemberFiles;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 it('uses the canonical attachment model and preserves parent morph values', function (): void {

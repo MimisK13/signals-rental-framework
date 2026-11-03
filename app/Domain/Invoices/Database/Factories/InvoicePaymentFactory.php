@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Database\Factories;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Enums\PaymentMethod;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
-use App\Models\User;
-use App\Services\SequenceAllocator;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

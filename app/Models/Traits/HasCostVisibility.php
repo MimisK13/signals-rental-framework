@@ -2,7 +2,7 @@
 
 namespace App\Models\Traits;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use App\Support\CostVisibility;
 
 trait HasCostVisibility

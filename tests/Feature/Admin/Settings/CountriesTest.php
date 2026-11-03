@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\ReferenceData\Models\Country;
 use App\Domain\ReferenceData\Presentation\Livewire\Admin\Countries;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

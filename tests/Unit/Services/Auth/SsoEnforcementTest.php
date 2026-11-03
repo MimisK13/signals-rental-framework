@@ -1,13 +1,13 @@
 <?php
 
-use App\Models\User;
-use App\Services\Auth\SsoEnforcement;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Services\SsoEnforcement;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-// DatabaseMigrations: roles/users and the settings() store are persisted to the DB.
-uses(TestCase::class, DatabaseMigrations::class);
+// RefreshDatabase: roles/users and the settings() store are persisted to the DB.
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     $this->enforcement = app(SsoEnforcement::class);

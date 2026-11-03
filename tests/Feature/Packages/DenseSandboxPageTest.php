@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 it('renders the dense foundation sandbox for authenticated users', function (): void {
     $response = $this->actingAs(User::factory()->owner()->create())

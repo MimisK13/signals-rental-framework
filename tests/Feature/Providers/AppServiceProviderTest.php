@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Services\PermissionRegistry;
 use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
 use App\Domain\Availability\Shortages\Services\NullCostApportionmentStrategy;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Notifications\Services\NotificationRegistry;
-use App\Models\User;
+use App\Domain\Settings\Services\SettingsService;
 use App\Services\DocsService;
-use App\Services\PermissionRegistry;
-use App\Services\SettingsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;

@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Notifications\TestPipelineNotification;
 use App\Domain\Notifications\Presentation\Livewire\Bell;
 use App\Domain\Notifications\Presentation\Livewire\Pane;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

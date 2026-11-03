@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Products\Models\Product;
@@ -11,9 +14,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 

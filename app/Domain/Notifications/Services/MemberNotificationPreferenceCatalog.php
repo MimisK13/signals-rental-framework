@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Services;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Enums\NotificationAudience;
 use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationType;
-use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**

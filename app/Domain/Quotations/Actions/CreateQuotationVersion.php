@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Quotations\Data\CreateQuotationVersionData;
 use App\Domain\Quotations\Data\QuotationVersionData;
 use App\Domain\Quotations\Enums\QuotationVersionType;
@@ -13,7 +14,6 @@ use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Verbs\Events\QuotationVersionCreated;
 use App\Domain\Quotations\Verbs\Events\QuotationVersionDeactivated;
 use App\Domain\Quotations\Verbs\Events\QuotationVersionSuperseded;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

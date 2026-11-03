@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -10,9 +13,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;

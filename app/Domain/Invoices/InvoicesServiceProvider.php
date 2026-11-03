@@ -17,6 +17,8 @@ use App\Domain\Invoices\Presentation\Livewire\OpportunityInvoices;
 use App\Domain\Invoices\Presentation\Livewire\PaymentsIndex;
 use App\Domain\Invoices\Presentation\Livewire\Show;
 use App\Domain\Invoices\Services\InvoiceStatusRegistry;
+use App\Domain\Invoices\Settings\InvoiceSettings;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -26,6 +28,9 @@ final class InvoicesServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(InvoiceStatusRegistry::class);
+        $this->app->afterResolving(SettingsRegistry::class, function (SettingsRegistry $registry): void {
+            $registry->register(new InvoiceSettings);
+        });
     }
 
     public function boot(): void

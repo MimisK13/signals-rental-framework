@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Actions\CreateProject;
@@ -10,7 +11,6 @@ use App\Domain\Projects\Data\UpdateProjectData;
 use App\Domain\Projects\Database\Seeders\ProjectSeeder;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
-use App\Models\User;
 
 beforeEach(function (): void {
     $this->actingAs(User::factory()->owner()->create());

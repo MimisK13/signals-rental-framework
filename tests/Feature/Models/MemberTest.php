@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
 use App\Domain\Members\Enums\MembershipType;
@@ -10,7 +11,6 @@ use App\Domain\Members\Models\MemberStore;
 use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Tax\Models\OrganisationTaxClass;
-use App\Models\User;
 use Illuminate\Database\QueryException;
 
 it('creates a member with contact type', function () {

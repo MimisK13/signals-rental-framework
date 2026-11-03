@@ -1,6 +1,6 @@
 <?php
 
-use Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use Spatie\Permission\Models\Role;
 
 /**

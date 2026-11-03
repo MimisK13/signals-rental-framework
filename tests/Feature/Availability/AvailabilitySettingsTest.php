@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Contracts\AvailabilityDataPresence;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Services\SettingsAvailabilityResolutionProvider;
 use App\Domain\Availability\Settings\AvailabilitySettings;
-use App\Models\User;
-use App\Services\SettingsRegistry;
-use App\Services\SettingsService;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
+use App\Domain\Settings\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsService;
 use Illuminate\Validation\ValidationException;
 
 /**

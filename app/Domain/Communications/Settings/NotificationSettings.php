@@ -2,7 +2,7 @@
 
 namespace App\Domain\Communications\Settings;
 
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 
 class NotificationSettings extends SettingsDefinition
 {

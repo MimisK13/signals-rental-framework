@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Pricing\Models\PriceCategory;
 use App\Domain\Pricing\Presentation\Livewire\PriceCategories;
 use App\Domain\Pricing\Presentation\Livewire\PriceCategoryForm;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

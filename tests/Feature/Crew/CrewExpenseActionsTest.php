@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Actions\Expenses\ApproveCrewExpense;
@@ -17,8 +19,6 @@ use App\Domain\Crew\Data\Expenses\UpdateCrewExpenseData;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewExpense;
 use App\Domain\Crew\Models\CrewMember;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

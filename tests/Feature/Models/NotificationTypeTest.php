@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
-use App\Models\User;
 
 describe('effectiveChannels', function () {
     it('returns default channels when no setting exists', function () {

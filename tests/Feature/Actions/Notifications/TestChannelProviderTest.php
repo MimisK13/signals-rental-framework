@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Actions\TestChannelProvider;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
@@ -8,10 +11,7 @@ use App\Domain\Communications\Data\ChannelTestResultData;
 use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Mail\TemplatedEmail;
-use App\Models\User;
 use App\Services\Plugins\PluginRegistrar;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;

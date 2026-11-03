@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Products\Models\Product;
@@ -14,9 +17,6 @@ use App\Domain\Stock\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Domain\Stock\Stocktakes\Models\StocktakeObservation;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function (): void {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

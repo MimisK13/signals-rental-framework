@@ -1,7 +1,7 @@
 <?php
 
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 

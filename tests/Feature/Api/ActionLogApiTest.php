@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Data\ActionLogData;
 use App\Domain\AuditLog\Models\ActionLog;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 

@@ -7,7 +7,7 @@ namespace App\Domain\Activities\Services\Calendar;
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use App\Support\Timezone;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;

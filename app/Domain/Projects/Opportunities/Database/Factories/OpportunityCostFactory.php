@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Database\Factories;
 
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Enums\LineItemTransactionType;
-use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

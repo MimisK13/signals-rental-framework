@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {

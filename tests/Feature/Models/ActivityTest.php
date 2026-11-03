@@ -5,12 +5,12 @@ use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Models\ActivityParticipant;
+use App\Domain\Administration\Models\User;
 use App\Domain\Lists\Models\ListValue;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\User;
 use App\Services\SchemaRegistry;
 
 it('has correct fillable attributes', function () {

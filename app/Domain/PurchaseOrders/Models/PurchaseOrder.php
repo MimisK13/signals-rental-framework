@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\PurchaseOrders\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Database\Factories\PurchaseOrderFactory;
@@ -13,7 +14,6 @@ use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\Traits\FormatsMoney;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -3,6 +3,7 @@
 namespace App\Domain\API\Presentation\Http\Controllers\V1;
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\API\Support\Attributes\PriceWeight;
 use App\Domain\Attachments\Models\Attachment;
@@ -33,7 +34,6 @@ use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Schemas\DocumentTaxGroupSchema;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Webhooks\Models\Webhook;
-use App\Models\User;
 use App\Services\SchemaRegistry;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;

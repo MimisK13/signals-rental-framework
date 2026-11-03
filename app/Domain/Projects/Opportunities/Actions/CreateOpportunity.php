@@ -6,6 +6,7 @@ namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Actions\Concerns\ValidatesOpportunityMember;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
@@ -13,7 +14,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityNumberGenerator;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityCreated;
 use App\Domain\Stores\Models\Store;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

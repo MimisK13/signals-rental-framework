@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\RecalculationPipeline;
@@ -18,7 +19,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;

@@ -4,6 +4,9 @@
  * Coverage burn-up batch 4 — part 2 (Verbs event handle/apply/validate branches).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\IssueInvoice;
@@ -59,11 +62,8 @@ use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeReceived;
 use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsProvisioned;
 use App\Domain\VirtualStock\Verbs\States\VirtualStockIntakeState;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\User;
 use App\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;

@@ -1,12 +1,12 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
@@ -56,7 +56,7 @@ describe('GET /api/v1/document_sequences', function () {
             ->and($response->json('document_sequences.0.next_number'))->toBe(12);
     });
 
-    it('forbids callers without document_templates.view', function () {
+    it('forbids callers without numbering.view', function () {
         $viewer = User::factory()->create(['is_owner' => false, 'is_active' => true]);
         Sanctum::actingAs($viewer, ['*']);
 
@@ -81,7 +81,7 @@ describe('GET /api/v1/document_sequences', function () {
 
         $member = Member::factory()->create();
         $restrictedUser = User::factory()->create(['member_id' => $member->id, 'is_owner' => false, 'is_active' => true]);
-        $restrictedUser->givePermissionTo('document_templates.view');
+        $restrictedUser->givePermissionTo('numbering.view');
         MemberStore::create(['member_id' => $member->id, 'store_id' => $storeA->id, 'created_at' => now()]);
 
         Sanctum::actingAs($restrictedUser, ['documents:read']);
@@ -102,7 +102,7 @@ describe('GET /api/v1/document_sequences', function () {
         $sequenceB = DocumentSequence::factory()->create(['store_id' => $storeB->id, 'document_type' => 'quote']);
 
         $admin = User::factory()->admin()->create(['is_active' => true]);
-        $admin->givePermissionTo('document_templates.view');
+        $admin->givePermissionTo('numbering.view');
         Sanctum::actingAs($admin, ['documents:read']);
 
         $response = $this->getJson('/api/v1/document_sequences')->assertOk();
@@ -140,10 +140,10 @@ describe('PUT /api/v1/document_sequences/{documentSequence}', function () {
             ->and($sequence->reset_frequency)->toBe('yearly');
     });
 
-    it('forbids callers without document_templates.edit', function () {
+    it('forbids callers without numbering.edit', function () {
         $sequence = DocumentSequence::factory()->create();
         $admin = User::factory()->admin()->create(['is_active' => true]);
-        $admin->givePermissionTo('document_templates.view');
+        $admin->givePermissionTo('numbering.view');
         Sanctum::actingAs($admin, ['documents:write']);
 
         $this->putJson("/api/v1/document_sequences/{$sequence->id}", [
@@ -162,7 +162,7 @@ describe('PUT /api/v1/document_sequences/{documentSequence}', function () {
 
         $member = Member::factory()->create();
         $restrictedUser = User::factory()->create(['member_id' => $member->id, 'is_owner' => false, 'is_active' => true]);
-        $restrictedUser->givePermissionTo('document_templates.edit');
+        $restrictedUser->givePermissionTo('numbering.edit');
         MemberStore::create(['member_id' => $member->id, 'store_id' => $storeA->id, 'created_at' => now()]);
 
         Sanctum::actingAs($restrictedUser, ['documents:write']);

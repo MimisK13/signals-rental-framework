@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Concerns;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\GenerateDepositInvoice;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Actions\GenerateProformaInvoice;
@@ -73,7 +74,6 @@ use App\Domain\Warehouse\Containers\Data\CreateContainerData;
 use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\User;
 use Carbon\CarbonImmutable;
 
 trait SeedsDemoPhase4

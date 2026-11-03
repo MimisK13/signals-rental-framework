@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\VirtualStock\Services;
 
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Services\SequenceAllocator;
 use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsProvisioned;
 use Carbon\CarbonImmutable;
 

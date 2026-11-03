@@ -2,9 +2,9 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Embedded\MemberActivities;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Webhooks\Services\WebhookService;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Livewire\Livewire;
 

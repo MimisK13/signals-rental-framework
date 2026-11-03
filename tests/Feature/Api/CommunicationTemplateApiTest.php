@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Models\CommunicationTemplateVersion;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

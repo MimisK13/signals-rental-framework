@@ -2,6 +2,7 @@
 
 namespace App\Domain\API\Presentation\Http\Controllers\V1;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Data\ApiUsageData;
 use App\Domain\API\Enums\MeteringChannel;
 use App\Domain\API\Jobs\ExportApiUsage;
@@ -9,7 +10,6 @@ use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\API\Queries\UsageQuery;
 use App\Domain\API\Support\Attributes\PriceWeight;
 use App\Domain\API\Support\DateWindow;
-use App\Models\User;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

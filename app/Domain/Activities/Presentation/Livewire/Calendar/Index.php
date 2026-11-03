@@ -7,7 +7,7 @@ namespace App\Domain\Activities\Presentation\Livewire\Calendar;
 use App\Domain\Activities\Data\Calendar\CalendarEventData;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Services\Calendar\CalendarEventService;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;

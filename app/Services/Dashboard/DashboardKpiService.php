@@ -2,6 +2,7 @@
 
 namespace App\Services\Dashboard;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
@@ -11,7 +12,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

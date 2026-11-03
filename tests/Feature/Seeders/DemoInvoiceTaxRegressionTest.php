@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
@@ -20,10 +23,7 @@ use App\Domain\Tax\Database\Seeders\TaxRateSeeder;
 use App\Domain\Tax\Database\Seeders\TaxRuleSeeder;
 use App\Domain\Tax\Database\Seeders\TaxZoneRuleSeeder;
 use App\Domain\Tax\Database\Seeders\TaxZoneSeeder;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 
 require_once __DIR__.'/../../Support/DemoSeederTestHelpers.php';

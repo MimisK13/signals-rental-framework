@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
@@ -22,9 +25,6 @@ use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityStatusChanged;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityStatusPromoted;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityUpdated;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;

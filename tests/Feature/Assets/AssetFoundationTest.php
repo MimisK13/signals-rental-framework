@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetExpenseType;
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
@@ -15,9 +18,6 @@ use App\Domain\Stock\Data\UpdateStockLevelData;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;

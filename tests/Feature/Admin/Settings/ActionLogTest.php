@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\AuditLog\Presentation\Livewire\Admin\Index;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

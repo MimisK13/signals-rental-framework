@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Policies\Concerns;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 /**
  * Store visibility guard shared by every Crew policy.

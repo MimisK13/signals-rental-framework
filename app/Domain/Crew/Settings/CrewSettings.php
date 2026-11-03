@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Settings;
 
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 
 /**
  * Crew planning, compensation, availability, and retention policy.

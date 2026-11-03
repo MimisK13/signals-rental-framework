@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewQualification;
@@ -23,8 +25,6 @@ use App\Domain\Crew\Presentation\Livewire\Planner;
 use App\Domain\Crew\Presentation\Livewire\Rates;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 

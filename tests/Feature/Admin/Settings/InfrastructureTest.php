@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use App\Services\ConnectionTesters\PostgresConnectionTester;
 use App\Services\ConnectionTesters\RedisConnectionTester;
 use App\Services\ConnectionTesters\S3ConnectionTester;

@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Data\ChannelSendData;
@@ -12,10 +15,7 @@ use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Presentation\Livewire\Admin\NotificationSettings;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use App\Services\Plugins\PluginRegistrar;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

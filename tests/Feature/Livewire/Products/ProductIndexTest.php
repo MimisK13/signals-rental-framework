@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Products\Presentation\Livewire\Index;
 use App\Livewire\Components\DataTable;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

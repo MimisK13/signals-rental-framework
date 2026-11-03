@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\OpportunityNumberGenerator;
 use App\Domain\Stores\Models\Store;

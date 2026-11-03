@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Models\Project;
-use App\Models\User;
 
 final class ProjectPolicy
 {

@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Lists\Actions\CreateListName;
 use App\Domain\Lists\Actions\DeleteListName;
@@ -7,9 +10,6 @@ use App\Domain\Lists\Actions\UpdateListName;
 use App\Domain\Lists\Data\CreateListNameData;
 use App\Domain\Lists\Data\UpdateListNameData;
 use App\Domain\Lists\Models\ListName;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
 

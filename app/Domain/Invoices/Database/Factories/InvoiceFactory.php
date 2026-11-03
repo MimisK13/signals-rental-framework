@@ -7,8 +7,8 @@ namespace App\Domain\Invoices\Database\Factories;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Models\Member;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Stores\Models\Store;
-use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

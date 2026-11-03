@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Enums\CrewAssignmentStatus;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 
 class CrewAssignmentPolicy
 {

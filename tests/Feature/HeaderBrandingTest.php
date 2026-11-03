@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {

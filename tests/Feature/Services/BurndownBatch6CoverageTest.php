@@ -4,6 +4,9 @@
  * P4-CL4b coverage burn-down batch 6 — first 30 service classes (cheapest-first slice).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Models\ApiIdempotencyKey;
 use App\Domain\API\Services\IdempotencyKeyService;
 use App\Domain\AuditLog\Events\AuditableEvent;
@@ -26,17 +29,17 @@ use App\Domain\Communications\Services\CommunicationLogStatusRegistry;
 use App\Domain\Communications\Services\CommunicationPreferences;
 use App\Domain\Communications\Services\CustomerCommunicationAttachmentResolver;
 use App\Domain\Communications\Services\Drivers\EmailDriver;
-use App\Domain\Documents\Enums\DocumentSequenceResetFrequency;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\PageDimensions;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Services\EventNotificationConditionEvaluator;
 use App\Domain\Notifications\Services\EventNotificationMapRegistry;
+use App\Domain\Numbering\Enums\DocumentSequenceResetFrequency;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Pricing\Models\DiscountCategory;
 use App\Domain\Pricing\Models\DiscountRule;
@@ -66,10 +69,7 @@ use App\Domain\Warehouse\Containers\Services\KitContainerReturnCompletion;
 use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use App\Services\Dashboard\DashboardKpiService;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;

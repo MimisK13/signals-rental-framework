@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Models\UserViewPreference;
 use App\Domain\CustomViews\Services\ViewResolver;
-use App\Models\User;
 
 it('keeps the historical migration class name available without a morph map', function (): void {
     $view = CustomView::factory()->create();

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 it('redirects to setup when installed but setup not complete', function () {
     config(['signals.installed' => true, 'signals.setup_complete' => false]);

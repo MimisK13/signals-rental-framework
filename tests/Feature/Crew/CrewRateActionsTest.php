@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Actions\Rates\CreateCrewRateCard;
 use App\Domain\Crew\Actions\Rates\ResolveCrewRate;
 use App\Domain\Crew\Data\Rates\CreateCrewRateCardData;
@@ -10,8 +12,6 @@ use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRateCard;
 use App\Domain\Crew\Models\CrewRole;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Validation\ValidationException;
 
 it('resolves member rates ahead of role defaults and freezes policy settings', function (): void {

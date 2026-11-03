@@ -4,6 +4,9 @@
  * P4-CL4b burndown batch 2 — part 2 (remaining targets).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\UsageRecorder;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\AuditLog\Models\ActionLog;
@@ -70,9 +73,6 @@ use App\Domain\Webhooks\Models\Webhook;
 use App\Http\Controllers\Web\DocsController;
 use App\Livewire\Components\ViewBuilder;
 use App\Livewire\Concerns\HandlesVerbsStateErrors;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

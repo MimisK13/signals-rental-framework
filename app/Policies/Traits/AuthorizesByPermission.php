@@ -2,7 +2,7 @@
 
 namespace App\Policies\Traits;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberRelationship;
 use App\Domain\Members\Presentation\Livewire\Show;
-use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 

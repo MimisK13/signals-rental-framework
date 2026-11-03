@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Settings;
 
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 use Illuminate\Validation\Rule;
 
 /**

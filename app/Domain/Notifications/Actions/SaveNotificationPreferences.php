@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Actions;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Data\SaveMemberNotificationPreferencesData;
 use App\Domain\Notifications\Data\SaveNotificationPreferencesData;
-use App\Models\User;
 
 class SaveNotificationPreferences
 {

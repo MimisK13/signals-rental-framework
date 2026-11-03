@@ -3,8 +3,8 @@
 namespace App\Support;
 
 use App\Data\Concerns\StripsCostFields;
+use App\Domain\Administration\Models\User;
 use App\Models\Traits\HasCostVisibility;
-use App\Models\User;
 
 /**
  * Central cost-visibility checks and field stripping for the `costs.view` permission.

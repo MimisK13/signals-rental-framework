@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Actions\Registry\AddCrewMemberQualification;
 use App\Domain\Crew\Actions\Registry\ArchiveCrewMember;
 use App\Domain\Crew\Actions\Registry\CreateCrewMember;
@@ -22,8 +24,6 @@ use App\Domain\Crew\Models\CrewMemberQualification;
 use App\Domain\Crew\Models\CrewQualification;
 use App\Domain\Crew\Models\CrewRole;
 use App\Domain\Crew\Models\CrewSkill;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

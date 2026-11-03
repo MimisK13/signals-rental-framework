@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrderPolicy

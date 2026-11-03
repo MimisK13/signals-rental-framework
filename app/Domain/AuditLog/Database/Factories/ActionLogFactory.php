@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\AuditLog\Database\Factories;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

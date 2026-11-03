@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
 use App\Domain\Products\Presentation\Livewire\ProductGroups\Index;
 use App\Livewire\Components\DataTable;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

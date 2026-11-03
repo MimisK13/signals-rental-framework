@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Auth\RequestMagicLink;
-use App\Data\Auth\RequestMagicLinkData;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Actions\RequestMagicLink;
+use App\Domain\Auth\Data\RequestMagicLinkData;
+use App\Domain\Auth\Models\MagicLinkToken;
 use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
-use App\Models\MagicLinkToken;
-use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-// DatabaseMigrations: the action queries users and writes magic-link tokens,
+// RefreshDatabase: the action queries users and writes magic-link tokens,
 // and reads the settings() store from the DB.
-uses(TestCase::class, DatabaseMigrations::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     Notification::fake();

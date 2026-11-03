@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Services\ItemTreeService;
@@ -12,7 +13,6 @@ use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 
 /**

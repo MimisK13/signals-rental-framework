@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Presentation\Livewire;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Actions\MarkNotificationRead;
 use App\Domain\Notifications\Services\NotificationLinkResolver;
-use App\Models\User;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

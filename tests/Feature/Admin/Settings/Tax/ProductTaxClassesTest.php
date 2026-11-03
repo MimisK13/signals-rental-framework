@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

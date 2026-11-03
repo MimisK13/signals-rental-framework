@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\PurchaseOrders\Database\Factories;
 
 use App\Domain\Members\Models\Member;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stores\Models\Store;
-use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

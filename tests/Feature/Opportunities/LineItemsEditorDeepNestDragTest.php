@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
 use App\Domain\Projects\Opportunities\Actions\RestructureOpportunityItems;
 use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
@@ -9,10 +13,6 @@ use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
 use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use App\Services\SequenceAllocator;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
 use Thunk\Verbs\Facades\Verbs;

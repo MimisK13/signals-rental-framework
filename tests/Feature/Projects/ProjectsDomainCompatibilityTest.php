@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Policies\ProjectPolicy;
 use App\Domain\Projects\Presentation\Livewire\Index;
 use App\Domain\Projects\Presentation\Livewire\Show;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 it('uses the canonical project model across opportunity relationships and policy discovery', function (): void {

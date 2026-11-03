@@ -7,10 +7,8 @@ namespace App\Domain\Documents;
 use App\Domain\Documents\Contracts\DocumentRenderer;
 use App\Domain\Documents\Contracts\PdfDriver;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Policies\DocumentPolicy;
-use App\Domain\Documents\Policies\DocumentSequencePolicy;
 use App\Domain\Documents\Policies\DocumentTemplatePolicy;
 use App\Domain\Documents\Presentation\Livewire\Editor;
 use App\Domain\Documents\Presentation\Livewire\Index;
@@ -87,7 +85,6 @@ final class DocumentsServiceProvider extends ServiceProvider
 
         Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(DocumentTemplate::class, DocumentTemplatePolicy::class);
-        Gate::policy(DocumentSequence::class, DocumentSequencePolicy::class);
 
         Livewire::addComponent(name: 'document-templates.index', class: Index::class);
         Livewire::addComponent(name: 'document-templates.edit', class: Editor::class);

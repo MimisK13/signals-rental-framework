@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Shortages\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Database\Factories\ShortageResolutionFactory;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Models\Traits\FormatsMoney;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -2,9 +2,9 @@
 
 namespace App\Services\DataTable;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\RansackFilter;
 use App\Domain\CustomViews\Services\ViewResolver;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 

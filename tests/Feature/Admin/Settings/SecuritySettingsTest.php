@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\User;
-use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Presentation\Livewire\Admin\Security;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -18,7 +19,7 @@ it('renders the security settings page', function () {
 });
 
 it('loads security settings with defaults', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->assertSet('passwordMinLength', 8)
         ->assertSet('passwordRequireUppercase', false)
         ->assertSet('passwordRequireNumber', false)
@@ -32,7 +33,7 @@ it('loads security settings with defaults', function () {
 });
 
 it('saves security settings', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->set('passwordMinLength', 12)
         ->set('passwordRequireUppercase', true)
         ->set('passwordRequireNumber', true)
@@ -56,14 +57,14 @@ it('saves security settings', function () {
 });
 
 it('defaults magic-link login to disabled', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->assertSet('magicLinkEnabled', false);
 
     expect(settings('security.magic_link_enabled'))->toBe(false);
 });
 
 it('persists and round-trips the magic-link login toggle', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->set('magicLinkEnabled', true)
         ->call('save')
         ->assertHasNoErrors()
@@ -73,20 +74,20 @@ it('persists and round-trips the magic-link login toggle', function () {
 });
 
 it('renders the magic-link login toggle on the page', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->assertSee('Email magic-link login')
         ->assertSeeHtml('wire:model="magicLinkEnabled"');
 });
 
 it('validates password min length range', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->set('passwordMinLength', 3)
         ->call('save')
         ->assertHasErrors(['passwordMinLength']);
 });
 
 it('validates session timeout range', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->set('sessionTimeout', 2)
         ->call('save')
         ->assertHasErrors(['sessionTimeout']);
@@ -101,14 +102,14 @@ it('returns 403 for non-admin users', function () {
 });
 
 it('loads sso enforced roles with empty default', function () {
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->assertSet('ssoEnforcedRoles', []);
 });
 
 it('saves sso enforced roles', function () {
     $this->seed(RoleSeeder::class);
 
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->set('ssoEnforcedRoles', ['Admin', 'Sales'])
         ->call('save')
         ->assertHasNoErrors()
@@ -123,7 +124,7 @@ it('does not offer the owner as an enforceable role', function () {
     // Force an Owner Spatie role to exist to prove the page still excludes it.
     Role::findOrCreate('Owner', 'web');
 
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->assertSee('value="Admin"', escape: false)
         ->assertDontSee('value="Owner"', escape: false);
 });
@@ -131,7 +132,7 @@ it('does not offer the owner as an enforceable role', function () {
 it('rejects an unknown role for sso enforcement', function () {
     $this->seed(RoleSeeder::class);
 
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->set('ssoEnforcedRoles', ['Nonexistent Role'])
         ->call('save')
         ->assertHasErrors(['ssoEnforcedRoles.0']);
@@ -143,7 +144,7 @@ it('drops a stale enforced role on load when its role was renamed or deleted', f
     // Persist a mix of a valid role and a now-deleted one.
     settings()->set('security.sso_enforced_roles', ['Admin', 'Deleted Role'], 'json');
 
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->assertSet('ssoEnforcedRoles', ['Admin']);
 });
 
@@ -153,7 +154,7 @@ it('saves successfully even when a stale enforced role is stored', function () {
     settings()->set('security.sso_enforced_roles', ['Admin', 'Deleted Role'], 'json');
 
     // The stale entry is sanitised on load, so saving is not blocked by `exists`.
-    Volt::test('admin.settings.security')
+    Livewire::test(Security::class)
         ->call('save')
         ->assertHasNoErrors()
         ->assertDispatched('security-settings-saved');

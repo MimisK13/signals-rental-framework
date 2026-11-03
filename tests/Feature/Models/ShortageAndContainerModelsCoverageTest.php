@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
@@ -9,7 +10,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\User;
 
 describe('ContainerItem relations', function () {
     it('resolves serialisedItem and product belongsTo relations', function () {

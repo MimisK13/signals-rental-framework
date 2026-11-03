@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Actions\Assignments\CancelCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\RecalculateCrewAssignmentCost;
@@ -18,8 +20,6 @@ use App\Domain\Crew\Models\CrewShift;
 use App\Domain\Crew\Models\CrewTimesheet;
 use App\Domain\Crew\Queries\CrewCostForecastQuery;
 use App\Domain\Crew\Services\CrewCancellationCompensation;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Validation\ValidationException;
 
 function crewCancellationActor(): void

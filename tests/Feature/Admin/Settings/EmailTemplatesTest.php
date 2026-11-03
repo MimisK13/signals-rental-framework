@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Communications\Models\EmailTemplateVersion;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

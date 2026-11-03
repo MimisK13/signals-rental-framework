@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Console;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetCondition;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
@@ -45,7 +46,6 @@ use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;

@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Livewire\Components\DataTable;
-use App\Models\User;
 use Livewire\Livewire;
 use Tests\Concerns\UsesPostgres;
 

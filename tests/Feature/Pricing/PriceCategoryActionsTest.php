@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Pricing\Actions\CreatePriceCategory;
 use App\Domain\Pricing\Actions\DeletePriceCategory;
@@ -7,9 +10,6 @@ use App\Domain\Pricing\Actions\UpdatePriceCategory;
 use App\Domain\Pricing\Data\CreatePriceCategoryData;
 use App\Domain\Pricing\Data\UpdatePriceCategoryData;
 use App\Domain\Pricing\Models\PriceCategory;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
 

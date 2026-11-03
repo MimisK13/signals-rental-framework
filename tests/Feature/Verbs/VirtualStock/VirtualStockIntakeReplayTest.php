@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Enums\DemandPhase;
@@ -17,9 +20,6 @@ use App\Domain\VirtualStock\Actions\ReceiveVirtualStockIntake;
 use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
 use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Thunk\Verbs\Facades\Verbs;

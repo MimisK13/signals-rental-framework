@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Presentation\Livewire\Invoices;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

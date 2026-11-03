@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\NotificationChannelResolver;
-use App\Models\User;
 
 beforeEach(function () {
     $this->resolver = app(NotificationChannelResolver::class);

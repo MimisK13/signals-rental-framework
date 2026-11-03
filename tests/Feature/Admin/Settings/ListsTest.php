@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

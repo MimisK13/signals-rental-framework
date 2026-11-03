@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Repairs\Models;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetExpense;
 use App\Domain\Assets\Models\AssetInspection;
@@ -17,7 +18,6 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stores\Models\Store;
 use App\Domain\SupplierBills\Models\SupplierBillItem;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

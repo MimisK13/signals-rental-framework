@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Console\ExpireCrewInvitations;
 use App\Domain\Crew\Console\ScanCrewQualifications;
@@ -20,8 +22,6 @@ use App\Domain\Crew\Queries\CrewCostForecastQuery;
 use App\Domain\Crew\Queries\CrewExpiringQualificationQuery;
 use App\Domain\Crew\Queries\CrewUtilisationQuery;
 use App\Domain\Crew\Queries\CrewWorkHistoryQuery;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 
 function crewPlanningUser(): User

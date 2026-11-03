@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Presentation\Livewire\AcceptInvitation;
 use Illuminate\Support\Facades\URL;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -53,7 +54,7 @@ it('allows setting password and completing invitation', function () {
 
     $url = URL::signedRoute('invitation.accept', ['user' => $user->id]);
 
-    Volt::test('auth.accept-invitation', ['user' => $user])
+    Livewire::test(AcceptInvitation::class, ['user' => $user])
         ->set('password', 'NewPassword123!')
         ->set('password_confirmation', 'NewPassword123!')
         ->call('accept')

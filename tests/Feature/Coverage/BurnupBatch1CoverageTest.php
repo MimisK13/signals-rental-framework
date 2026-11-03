@@ -4,12 +4,15 @@
  * Coverage burn-up batch 1 — flip one-method-away classes to fully covered.
  */
 
-use App\Actions\Auth\ConsumeMagicLink;
-use App\Data\Auth\ConsumeMagicLinkData;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Jobs\ExportApiUsage;
 use App\Domain\API\Models\UsageDaily;
 use App\Domain\API\Queries\UsageQuery;
 use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Auth\Actions\ConsumeMagicLink;
+use App\Domain\Auth\Data\ConsumeMagicLinkData;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Communications\Actions\DeleteCommunicationTemplate;
 use App\Domain\Communications\Actions\LogCommunication;
@@ -24,7 +27,6 @@ use App\Domain\Documents\Actions\CreateDocumentTemplate;
 use App\Domain\Documents\Data\CreateDocumentTemplateData;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\Domain\Documents\Services\PurchaseOrderDataResolver;
 use App\Domain\Invoices\Actions\IssueCreditNote;
@@ -37,6 +39,7 @@ use App\Domain\Notifications\Data\NotificationContextData;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\EventNotificationConditionEvaluator;
 use App\Domain\Notifications\Services\RecipientResolvers\SubjectOwnerRecipientResolver;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
 use App\Domain\Pricing\Models\DiscountCategory;
 use App\Domain\Pricing\Models\DiscountRule;
 use App\Domain\Pricing\Services\DiscountCategoryApplier;
@@ -73,13 +76,10 @@ use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Livewire\Components\ViewBuilder;
-use App\Models\User;
 use App\Services\ColumnRegistryResolver;
 use App\Views\Column;
 use App\Views\ColumnRegistry;
 use Carbon\Carbon;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;

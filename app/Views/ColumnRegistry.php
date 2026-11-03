@@ -2,7 +2,7 @@
 
 namespace App\Views;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use App\Services\SchemaRegistry;
 use App\Support\CostVisibility;
 

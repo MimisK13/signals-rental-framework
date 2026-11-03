@@ -7,6 +7,10 @@
  * partially covered, to flip the class to fully covered.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Services\PermissionRegistry;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\AuditLog\Jobs\ExportActionLog;
 use App\Domain\AuditLog\Models\ActionLog;
@@ -23,11 +27,7 @@ use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Services\ViewResolver;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
-use App\Models\User;
-use App\Services\PermissionRegistry;
 use App\Support\Formatter;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;

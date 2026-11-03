@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\VirtualStock\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
-use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
-use App\Domain\VirtualStock\Data\VirtualStockIntakeData;
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
+use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
+use App\Domain\VirtualStock\Data\VirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Services\SequenceAllocator;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeEventRecorder;
 use App\Domain\VirtualStock\Services\VirtualStockNumberGenerator;
 use App\Domain\VirtualStock\Services\VirtualStockStatusRegistry;

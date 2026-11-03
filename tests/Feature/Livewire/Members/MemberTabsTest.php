@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Address;
 use App\Domain\Members\Models\Email;
 use App\Domain\Members\Models\Link;
@@ -8,7 +9,6 @@ use App\Domain\Members\Models\MemberRelationship;
 use App\Domain\Members\Models\Phone;
 use App\Domain\Members\Presentation\Livewire\Information;
 use App\Domain\Quotations\Models\Quotation;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

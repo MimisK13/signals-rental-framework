@@ -23,7 +23,8 @@ function recorderWebhookSourceFiles(): array
         app_path('Domain/Warehouse/Containers/Services/ContainerEventRecorder.php'),
         app_path('Domain/PurchaseOrders/Services/PurchaseOrderEventRecorder.php'),
         app_path('Domain/Documents/Services/DocumentEventDispatcher.php'),
-        app_path('Domain/Documents/Services/DocumentNumberGenerator.php'),
+        app_path('Domain/Numbering/Services/DocumentNumberGenerator.php'),
+        app_path('Domain/Numbering/Services/NumberingEventDispatcher.php'),
         ...File::glob(app_path('Domain/Documents/Actions/*.php')) ?: [],
     ];
 }
@@ -34,7 +35,7 @@ function recorderWebhookSourceFiles(): array
  * Scans for:
  *  - direct {@see WebhookService::dispatch()} calls
  *  - {@see ShortageEventRecorder} audit actions bridged onto the webhook bus
- *  - {@see DocumentEventDispatcher} document/template/sequence/pdfGenerated callers
+ *  - document and numbering dispatcher callers
  *
  * @return list<string>
  */
@@ -62,7 +63,7 @@ function recorderDispatchedWebhookEvents(): array
         }
 
         preg_match_all(
-            "/DocumentEventDispatcher::class\)->(?:document|template|sequence)\(\s*[^,]+,\s*'([a-z_]+(?:\.[a-z_]+)+)'/s",
+            "/(?:DocumentEventDispatcher|NumberingEventDispatcher)::class\)->(?:document|template|sequence)\(\s*[^,]+,\s*'([a-z_]+(?:\.[a-z_]+)+)'/s",
             $contents,
             $documentMatches,
         );

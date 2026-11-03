@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Setting;
-use App\Providers\SettingsServiceProvider;
-use App\Services\SettingsRegistry;
-use App\Services\SettingsService;
+use App\Domain\Settings\Models\Setting;
+use App\Domain\Settings\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsService;
+use App\Domain\Settings\SettingsServiceProvider;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;

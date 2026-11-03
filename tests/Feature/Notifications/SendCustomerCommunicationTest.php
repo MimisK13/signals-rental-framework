@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Actions\SendCustomerCommunication;
 use App\Domain\Communications\Data\SendCustomerCommunicationData;
 use App\Domain\Communications\Jobs\DeliverCustomerCommunication;
@@ -15,9 +18,6 @@ use App\Domain\Documents\ValueObjects\DocumentRenderResult;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Mail;

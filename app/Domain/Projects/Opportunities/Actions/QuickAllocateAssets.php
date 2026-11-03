@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Data\OpportunityData;
 use App\Domain\Projects\Opportunities\Data\QuickAllocateAssetsData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -12,7 +13,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Projects\Opportunities\Verbs\Events\AssetAllocated;
 use App\Domain\Stock\Models\StockLevel;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

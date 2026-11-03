@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetUsage;
@@ -10,7 +11,6 @@ use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use App\Support\Formatter;
 use Livewire\Livewire;
 

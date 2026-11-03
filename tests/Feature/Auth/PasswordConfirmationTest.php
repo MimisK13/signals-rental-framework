@@ -2,9 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Presentation\Livewire\ConfirmPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
@@ -32,7 +33,7 @@ class PasswordConfirmationTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = Volt::test('auth.confirm-password')
+        $response = Livewire::test(ConfirmPassword::class)
             ->set('password', 'password')
             ->call('confirmPassword');
 
@@ -47,7 +48,7 @@ class PasswordConfirmationTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = Volt::test('auth.confirm-password')
+        $response = Livewire::test(ConfirmPassword::class)
             ->set('password', 'wrong-password')
             ->call('confirmPassword');
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Models;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Database\Factories\AssetLifecycleEventFactory;
 use App\Domain\Assets\Enums\AssetLifecycleEventType;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
@@ -11,7 +12,6 @@ use App\Domain\Assets\Enums\AssetRetirementDisposition;
 use App\Domain\Attachments\Concerns\HasAttachments;
 use App\Domain\Members\Models\Member;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

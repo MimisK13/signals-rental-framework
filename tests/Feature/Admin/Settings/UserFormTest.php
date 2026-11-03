@@ -1,12 +1,13 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Presentation\Livewire\UserForm;
 use App\Domain\Notifications\Notifications\UserInvitedNotification;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -28,7 +29,7 @@ it('populates form with user data', function () {
     $user = User::factory()->create(['name' => 'Jane Doe', 'email' => 'jane@example.com']);
     $user->assignRole('Read Only');
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->assertSet('userName', 'Jane Doe')
         ->assertSet('userEmail', 'jane@example.com')
         ->assertSet('selectedRoles', ['Read Only']);
@@ -37,7 +38,7 @@ it('populates form with user data', function () {
 it('updates user name and email', function () {
     $user = User::factory()->create(['name' => 'Old Name', 'email' => 'old@example.com']);
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('userName', 'New Name')
         ->set('userEmail', 'new@example.com')
         ->call('save')
@@ -52,7 +53,7 @@ it('updates user name and email', function () {
 it('assigns roles to a user', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('selectedRoles', ['Sales', 'Read Only'])
         ->call('save')
         ->assertHasNoErrors();
@@ -66,7 +67,7 @@ it('removes roles from a user', function () {
     $user = User::factory()->create();
     $user->assignRole(['Sales', 'Read Only']);
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('selectedRoles', ['Read Only'])
         ->call('save')
         ->assertHasNoErrors();
@@ -79,7 +80,7 @@ it('removes roles from a user', function () {
 it('validates required fields', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('userName', '')
         ->set('userEmail', 'not-email')
         ->call('save')
@@ -90,7 +91,7 @@ it('validates email uniqueness', function () {
     User::factory()->create(['email' => 'taken@example.com']);
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('userEmail', 'taken@example.com')
         ->call('save')
         ->assertHasErrors(['userEmail']);
@@ -99,7 +100,7 @@ it('validates email uniqueness', function () {
 it('allows saving with the same email', function () {
     $user = User::factory()->create(['email' => 'same@example.com']);
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('userEmail', 'same@example.com')
         ->call('save')
         ->assertHasNoErrors();
@@ -108,7 +109,7 @@ it('allows saving with the same email', function () {
 it('deactivates a user from the edit page', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->call('deactivate')
         ->assertDispatched('user-deactivated')
         ->assertSet('isDeactivated', true);
@@ -119,7 +120,7 @@ it('deactivates a user from the edit page', function () {
 it('reactivates a user from the edit page', function () {
     $user = User::factory()->deactivated()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->call('reactivate')
         ->assertDispatched('user-reactivated')
         ->assertSet('isDeactivated', false);
@@ -134,7 +135,7 @@ it('sends a password reset', function () {
 
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->call('sendPasswordReset')
         ->assertDispatched('password-reset-sent');
 });
@@ -144,7 +145,7 @@ it('resends an invitation', function () {
 
     $user = User::factory()->invited()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->call('resendInvitation')
         ->assertDispatched('invitation-resent');
 
@@ -161,7 +162,7 @@ it('returns 403 for non-admin users', function () {
 });
 
 it('shows roles section for owner with explanation', function () {
-    Volt::test('admin.settings.user-form', ['user' => $this->owner])
+    Livewire::test(UserForm::class, ['user' => $this->owner])
         ->assertSet('isOwner', true)
         ->assertSee('Owners have implicit access to everything');
 });
@@ -169,13 +170,13 @@ it('shows roles section for owner with explanation', function () {
 it('shows roles section for non-owner', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->assertSet('isOwner', false)
         ->assertSee('Roles');
 });
 
 it('prevents deactivating the owner', function () {
-    Volt::test('admin.settings.user-form', ['user' => $this->owner])
+    Livewire::test(UserForm::class, ['user' => $this->owner])
         ->call('deactivate')
         ->assertHasErrors();
 
@@ -185,7 +186,7 @@ it('prevents deactivating the owner', function () {
 it('rejects non-existent role names', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->set('selectedRoles', ['NonExistentRole'])
         ->call('save')
         ->assertHasErrors(['selectedRoles.0']);
@@ -194,7 +195,7 @@ it('rejects non-existent role names', function () {
 it('rejects resend invitation for non-invited user', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.user-form', ['user' => $user])
+    Livewire::test(UserForm::class, ['user' => $user])
         ->call('resendInvitation')
         ->assertHasErrors(['user']);
 });

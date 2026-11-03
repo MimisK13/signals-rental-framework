@@ -2,9 +2,9 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Policies\ActivityPolicy;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Verbs\Events\QuotationItemAdded;
-use App\Services\SequenceAllocator;
 
 /** Internal replay-stable snapshot cloning for revisions and alternatives. */
 final class CloneQuotationVersionItems

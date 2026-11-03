@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Presentation\Livewire;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\RansackFilter;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\CustomFields\Models\CustomField;
@@ -26,7 +27,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
 use App\Domain\ReferenceData\Models\Country;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use App\Services\What3WordsService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
-use App\Services\SettingsService;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Services\SettingsService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 

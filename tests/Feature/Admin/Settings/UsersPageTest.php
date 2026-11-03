@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Presentation\Livewire\Users;
 use App\Domain\Notifications\Notifications\UserInvitedNotification;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -24,7 +25,7 @@ it('renders the users page', function () {
 it('lists all users', function () {
     $other = User::factory()->create(['name' => 'Jane Doe']);
 
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->assertSee($this->owner->name)
         ->assertSee('Jane Doe');
 });
@@ -33,7 +34,7 @@ it('renders role badges with the blue badge class', function () {
     $user = User::factory()->create(['name' => 'Roled User']);
     $user->assignRole('Read Only');
 
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->assertSeeHtml('<span class="s-badge s-badge-blue">Read Only</span>');
 });
 
@@ -50,7 +51,7 @@ it('shows user status badges', function () {
 it('invites a new user', function () {
     Notification::fake();
 
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->call('openInviteModal')
         ->set('inviteName', 'New User')
         ->set('inviteEmail', 'new@example.com')
@@ -71,7 +72,7 @@ it('invites a new user', function () {
 });
 
 it('validates invite fields', function () {
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->call('openInviteModal')
         ->set('inviteName', '')
         ->set('inviteEmail', 'not-email')
@@ -80,7 +81,7 @@ it('validates invite fields', function () {
 });
 
 it('requires at least one role when inviting', function () {
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->call('openInviteModal')
         ->set('inviteName', 'No Role User')
         ->set('inviteEmail', 'norole@example.com')
@@ -92,7 +93,7 @@ it('requires at least one role when inviting', function () {
 it('prevents inviting duplicate email', function () {
     User::factory()->create(['email' => 'existing@example.com']);
 
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->call('openInviteModal')
         ->set('inviteName', 'Duplicate')
         ->set('inviteEmail', 'existing@example.com')
@@ -103,7 +104,7 @@ it('prevents inviting duplicate email', function () {
 it('deactivates a user', function () {
     $user = User::factory()->create();
 
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->call('deactivate', $user->id)
         ->assertDispatched('user-deactivated');
 
@@ -114,7 +115,7 @@ it('deactivates a user', function () {
 it('reactivates a user', function () {
     $user = User::factory()->deactivated()->create();
 
-    Volt::test('admin.settings.users')
+    Livewire::test(Users::class)
         ->call('reactivate', $user->id)
         ->assertDispatched('user-reactivated');
 

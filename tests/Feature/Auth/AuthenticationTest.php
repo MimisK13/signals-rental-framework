@@ -2,9 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Presentation\Livewire\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt as LivewireVolt;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -28,7 +29,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = LivewireVolt::test('auth.login')
+        $response = Livewire::test(Login::class)
             ->set('email', $user->email)
             ->set('password', 'password')
             ->call('login');
@@ -71,7 +72,7 @@ class AuthenticationTest extends TestCase
 
         // Two failed attempts consume the allowance (max_login_attempts = 2).
         for ($i = 0; $i < 2; $i++) {
-            LivewireVolt::test('auth.login')
+            Livewire::test(Login::class)
                 ->set('email', $user->email)
                 ->set('password', 'wrong-password')
                 ->call('login')
@@ -79,7 +80,7 @@ class AuthenticationTest extends TestCase
         }
 
         // The next attempt is locked out — even with the *correct* password.
-        LivewireVolt::test('auth.login')
+        Livewire::test(Login::class)
             ->set('email', $user->email)
             ->set('password', 'password')
             ->call('login')

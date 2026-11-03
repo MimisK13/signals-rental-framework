@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Database\Factories;
 
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Quotations\Enums\QuotationVersionStatus;
 use App\Domain\Quotations\Enums\QuotationVersionType;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<QuotationVersion> */

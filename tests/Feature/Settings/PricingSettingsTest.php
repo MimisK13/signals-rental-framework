@@ -2,7 +2,7 @@
 
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Pricing\Settings\PricingSettings;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Validator;
 
 describe('PricingSettings definition', function () {

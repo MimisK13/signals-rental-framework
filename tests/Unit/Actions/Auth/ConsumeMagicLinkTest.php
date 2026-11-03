@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Auth\ConsumeMagicLink;
-use App\Data\Auth\ConsumeMagicLinkData;
-use App\Exceptions\Auth\InvalidMagicLinkException;
-use App\Models\MagicLinkToken;
-use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Actions\ConsumeMagicLink;
+use App\Domain\Auth\Data\ConsumeMagicLinkData;
+use App\Domain\Auth\Exceptions\InvalidMagicLinkException;
+use App\Domain\Auth\Models\MagicLinkToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-// DatabaseMigrations: the action reads/writes magic-link tokens and reads the
+// RefreshDatabase: the action reads/writes magic-link tokens and reads the
 // settings() store from the DB.
-uses(TestCase::class, DatabaseMigrations::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     settings()->set('security.magic_link_enabled', true, 'boolean');

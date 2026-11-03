@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Members\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
 
 class MemberPolicy

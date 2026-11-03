@@ -1,0 +1,261 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Administration\Database\Seeders;
+
+use App\Domain\Administration\Services\PermissionRegistry;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+
+final class PermissionSeeder extends Seeder
+{
+    /**
+     * Core permissions with metadata for the UI.
+     *
+     * @return array<string, array{label: string, description: string, group: string, sub_group: string|null, layer: string, dependencies: list<string>}>
+     */
+    public static function permissions(): array
+    {
+        return [
+            // Settings
+            'settings.access' => ['label' => 'Access Settings', 'description' => 'Access the settings area', 'group' => 'Settings', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'settings.view' => ['label' => 'View Settings', 'description' => 'View system settings', 'group' => 'Settings', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'settings.manage' => ['label' => 'Manage Settings', 'description' => 'Create, update, and delete system settings', 'group' => 'Settings', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['settings.view']],
+
+            // Users
+            'users.access' => ['label' => 'Access Users', 'description' => 'Access the users area', 'group' => 'Users', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'users.view' => ['label' => 'View Users', 'description' => 'View user list and details', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.access']],
+            'users.invite' => ['label' => 'Invite Users', 'description' => 'Send user invitations', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.view']],
+            'users.edit' => ['label' => 'Edit Users', 'description' => 'Edit user details and roles', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.view']],
+            'users.deactivate' => ['label' => 'Deactivate Users', 'description' => 'Deactivate user accounts', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.edit']],
+            'users.activate' => ['label' => 'Activate Users', 'description' => 'Reactivate user accounts', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.edit']],
+            'users.delete' => ['label' => 'Delete Users', 'description' => 'Permanently delete user accounts', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.edit']],
+            'users.reset-password' => ['label' => 'Reset Passwords', 'description' => 'Send password reset emails', 'group' => 'Users', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['users.edit']],
+
+            // Roles
+            'roles.view' => ['label' => 'View Roles', 'description' => 'View roles and their permissions', 'group' => 'Roles', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'roles.manage' => ['label' => 'Manage Roles', 'description' => 'Create, edit, and delete roles', 'group' => 'Roles', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['roles.view']],
+
+            // Members
+            'members.access' => ['label' => 'Access Members', 'description' => 'Access the members area', 'group' => 'Members', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'members.view' => ['label' => 'View Members', 'description' => 'View member records', 'group' => 'Members', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['members.access']],
+            'members.create' => ['label' => 'Create Members', 'description' => 'Create new member records', 'group' => 'Members', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['members.view']],
+            'members.edit' => ['label' => 'Edit Members', 'description' => 'Edit member records', 'group' => 'Members', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['members.view']],
+            'members.delete' => ['label' => 'Delete Members', 'description' => 'Delete member records', 'group' => 'Members', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['members.edit']],
+
+            // Opportunities
+            'opportunities.access' => ['label' => 'Access Opportunities', 'description' => 'Access the opportunities area', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'opportunities.view' => ['label' => 'View Opportunities', 'description' => 'View opportunities and quotes', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.access']],
+            'opportunities.create' => ['label' => 'Create Opportunities', 'description' => 'Create new opportunities', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.view']],
+            'opportunities.edit' => ['label' => 'Edit Opportunities', 'description' => 'Edit existing opportunities', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.view']],
+            'opportunities.delete' => ['label' => 'Delete Opportunities', 'description' => 'Delete opportunities', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
+            'opportunities.unlock_rates' => ['label' => 'Unlock Order Rates', 'description' => 'Release the FX/tax locks set when an order is confirmed, to re-price or re-tax it', 'group' => 'Opportunities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
+            'opportunities.dispatch_add_items' => ['label' => 'Add Items at Dispatch', 'description' => 'Add or increase opportunity line items during container dispatch validation', 'group' => 'Opportunities', 'sub_group' => 'Dispatch', 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
+
+            // Projects (planning/commercial groupings; not Store or inventory scope)
+            'projects.access' => ['label' => 'Access Projects', 'description' => 'Access the projects area', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'projects.view' => ['label' => 'View Projects', 'description' => 'View project records and grouped opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.access']],
+            'projects.create' => ['label' => 'Create Projects', 'description' => 'Create project records', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.view']],
+            'projects.edit' => ['label' => 'Edit Projects', 'description' => 'Edit projects and attach or detach opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.view']],
+            'projects.delete' => ['label' => 'Delete Projects', 'description' => 'Archive project records without deleting opportunities', 'group' => 'Projects', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['projects.edit']],
+
+            // Quotations
+            'quotations.access' => ['label' => 'Access Quotations', 'description' => 'Access standalone and Project quotations', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'quotations.view' => ['label' => 'View Quotations', 'description' => 'View quotations and their versions', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.access']],
+            'quotations.create' => ['label' => 'Create Quotations', 'description' => 'Create standalone and Project quotations', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.view']],
+            'quotations.edit' => ['label' => 'Edit Quotations', 'description' => 'Edit draft quotations and their versions', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.view']],
+            'quotations.delete' => ['label' => 'Delete Quotations', 'description' => 'Delete draft quotations', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.edit']],
+            'quotations.send' => ['label' => 'Send Quotations', 'description' => 'Send quotation versions to customers', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.edit']],
+            'quotations.accept' => ['label' => 'Accept Quotations', 'description' => 'Record acceptance and create or link a Project', 'group' => 'Quotations', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['quotations.view']],
+
+            // Shortages (detection, resolution, and the confirmation-gate override)
+            'shortages.view' => ['label' => 'View Shortages', 'description' => 'View detected shortages and their resolutions', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['opportunities.view']],
+            'shortages.resolve' => ['label' => 'Resolve Shortages', 'description' => 'Apply resolutions and acknowledge shortages', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['shortages.view']],
+            'shortages.ignore' => ['label' => 'Ignore Shortages', 'description' => 'Override the store shortage policy to confirm an order despite unresolved shortages (can_ignore_shortages)', 'group' => 'Opportunities', 'sub_group' => 'Shortages', 'layer' => 'action', 'dependencies' => ['opportunities.edit']],
+
+            // Activities
+            'activities.access' => ['label' => 'Access Activities', 'description' => 'Access the activities area', 'group' => 'Activities', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'activities.view' => ['label' => 'View Activities', 'description' => 'View activity records', 'group' => 'Activities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['activities.access']],
+            'activities.create' => ['label' => 'Create Activities', 'description' => 'Create new activities', 'group' => 'Activities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['activities.view']],
+            'activities.edit' => ['label' => 'Edit Activities', 'description' => 'Edit existing activities', 'group' => 'Activities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['activities.view']],
+            'activities.delete' => ['label' => 'Delete Activities', 'description' => 'Delete activities', 'group' => 'Activities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['activities.edit']],
+            'activities.complete' => ['label' => 'Complete Activities', 'description' => 'Mark activities as completed', 'group' => 'Activities', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['activities.edit']],
+
+            // Invoices
+            'invoices.access' => ['label' => 'Access Invoices', 'description' => 'Access the invoices area', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'invoices.view' => ['label' => 'View Invoices', 'description' => 'View invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.access']],
+            'invoices.create' => ['label' => 'Create Invoices', 'description' => 'Create new invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.view']],
+            'invoices.edit' => ['label' => 'Edit Invoices', 'description' => 'Edit existing invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.view']],
+            'invoices.delete' => ['label' => 'Delete Invoices', 'description' => 'Delete invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.edit']],
+            'invoices.issue' => ['label' => 'Issue Invoices', 'description' => 'Issue invoices to customers', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.edit']],
+            'invoices.void' => ['label' => 'Void Invoices', 'description' => 'Void issued invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.issue']],
+            'invoices.credit' => ['label' => 'Issue Credit Notes', 'description' => 'Issue credit notes against invoices', 'group' => 'Invoices', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['invoices.issue']],
+
+            // Payments
+            'payments.record' => ['label' => 'Record Payments', 'description' => 'Record payments and refunds against invoices', 'group' => 'Invoices', 'sub_group' => 'Payments', 'layer' => 'action', 'dependencies' => ['invoices.view']],
+
+            // Purchase orders
+            'purchase_orders.access' => ['label' => 'Access Purchase Orders', 'description' => 'Access the purchase orders area', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'purchase_orders.view' => ['label' => 'View Purchase Orders', 'description' => 'View purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.access']],
+            'purchase_orders.create' => ['label' => 'Create Purchase Orders', 'description' => 'Create new purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.view']],
+            'purchase_orders.edit' => ['label' => 'Edit Purchase Orders', 'description' => 'Edit draft purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.view']],
+            'purchase_orders.delete' => ['label' => 'Delete Purchase Orders', 'description' => 'Delete draft purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
+            'purchase_orders.send' => ['label' => 'Send Purchase Orders', 'description' => 'Send purchase orders to suppliers', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.edit']],
+            'purchase_orders.cancel' => ['label' => 'Cancel Purchase Orders', 'description' => 'Cancel purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
+            'purchase_orders.receive' => ['label' => 'Receive Purchase Orders', 'description' => 'Record goods received against purchase orders', 'group' => 'Purchase Orders', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['purchase_orders.send']],
+
+            // Supplier bills
+            'supplier_bills.view' => ['label' => 'View Supplier Bills', 'description' => 'View supplier bills and actual supplier charges', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['costs.view']],
+            'supplier_bills.create' => ['label' => 'Create Supplier Bills', 'description' => 'Record supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.view']],
+            'supplier_bills.edit' => ['label' => 'Edit Supplier Bills', 'description' => 'Edit draft supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.view']],
+            'supplier_bills.delete' => ['label' => 'Delete Supplier Bills', 'description' => 'Delete draft supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.edit']],
+            'supplier_bills.issue' => ['label' => 'Issue Supplier Bills', 'description' => 'Mark supplier bills as authoritative charges', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.edit']],
+            'supplier_bills.void' => ['label' => 'Void Supplier Bills', 'description' => 'Void issued supplier bills', 'group' => 'Costs', 'sub_group' => 'Supplier Bills', 'layer' => 'action', 'dependencies' => ['supplier_bills.issue']],
+
+            // Virtual stock
+            'virtual_stock.access' => ['label' => 'Access Virtual Stock', 'description' => 'Access the virtual stock area', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'virtual_stock.view' => ['label' => 'View Virtual Stock', 'description' => 'View virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.access']],
+            'virtual_stock.create' => ['label' => 'Create Virtual Stock', 'description' => 'Create virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.view']],
+            'virtual_stock.edit' => ['label' => 'Edit Virtual Stock', 'description' => 'Edit draft virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.view']],
+            'virtual_stock.delete' => ['label' => 'Delete Virtual Stock', 'description' => 'Delete draft virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.edit']],
+            'virtual_stock.confirm' => ['label' => 'Confirm Virtual Stock', 'description' => 'Confirm virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.edit']],
+            'virtual_stock.receive' => ['label' => 'Receive Virtual Stock', 'description' => 'Mark virtual stock intakes as received', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.confirm']],
+            'virtual_stock.return' => ['label' => 'Return Virtual Stock', 'description' => 'Mark virtual stock intakes as returned', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.receive']],
+            'virtual_stock.cancel' => ['label' => 'Cancel Virtual Stock', 'description' => 'Cancel virtual stock intakes', 'group' => 'Virtual Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['virtual_stock.confirm']],
+
+            // Products
+            'products.access' => ['label' => 'Access Products', 'description' => 'Access the products area', 'group' => 'Products', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'products.view' => ['label' => 'View Products', 'description' => 'View product catalogue', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.access']],
+            'products.create' => ['label' => 'Create Products', 'description' => 'Create new products', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.view']],
+            'products.edit' => ['label' => 'Edit Products', 'description' => 'Edit existing products', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.view']],
+            'products.delete' => ['label' => 'Delete Products', 'description' => 'Delete products', 'group' => 'Products', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['products.edit']],
+            'products.supplier_costs' => ['label' => 'Manage Supplier Costs', 'description' => 'Create, edit, and delete product supplier costs', 'group' => 'Products', 'sub_group' => 'Supplier Costs', 'layer' => 'action', 'dependencies' => ['products.view', 'costs.view']],
+
+            // Kits (the product bill-of-materials — serialised_components composition)
+            'kits.view' => ['label' => 'View Kit Compositions', 'description' => 'View a product\'s kit bill-of-materials', 'group' => 'Products', 'sub_group' => 'Kits', 'layer' => 'action', 'dependencies' => ['products.view']],
+            'kits.manage' => ['label' => 'Manage Kit Compositions', 'description' => 'Add, update, and remove kit components', 'group' => 'Products', 'sub_group' => 'Kits', 'layer' => 'action', 'dependencies' => ['kits.view']],
+
+            // Rates
+            'rates.access' => ['label' => 'Access Rates', 'description' => 'Access the rate definitions area', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'rates.view' => ['label' => 'View Rates', 'description' => 'View rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.access']],
+            'rates.create' => ['label' => 'Create Rates', 'description' => 'Create rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.view']],
+            'rates.edit' => ['label' => 'Edit Rates', 'description' => 'Edit rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.view']],
+            'pricing.view' => ['label' => 'View Pricing Categories', 'description' => 'View discount and price categories', 'group' => 'Pricing', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'pricing.manage' => ['label' => 'Manage Pricing Categories', 'description' => 'Create and manage discount and price categories', 'group' => 'Pricing', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['pricing.view']],
+            'rates.delete' => ['label' => 'Delete Rates', 'description' => 'Delete rate definitions and product rates', 'group' => 'Rates', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['rates.edit']],
+
+            // Stock
+            'stock.access' => ['label' => 'Access Stock', 'description' => 'Access the stock area', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'stock.view' => ['label' => 'View Stock', 'description' => 'View stock levels and movements', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.access']],
+            'stock.adjust' => ['label' => 'Adjust Stock', 'description' => 'Make stock adjustments', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
+            'stock.count' => ['label' => 'Count Stock', 'description' => 'Record physical stock counts', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
+            'stock.transfer' => ['label' => 'Transfer Stock', 'description' => 'Transfer stock between stores', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.view']],
+            'availability.view' => ['label' => 'View Availability', 'description' => 'View product availability and shortages', 'group' => 'Stock', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['stock.access']],
+
+            // Containers (serialised-containers.md — full permission set; lifecycle actions land P49–P52)
+            'containers.view' => ['label' => 'View Containers', 'description' => 'View container listings and contents', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['stock.access']],
+            'containers.create' => ['label' => 'Create Containers', 'description' => 'Create containers from containerable serialised items', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view']],
+            'containers.create_temporary' => ['label' => 'Create Temporary Containers', 'description' => 'Create barcode-only temporary containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view']],
+            'containers.pack' => ['label' => 'Pack Containers', 'description' => 'Pack and unpack items in open containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view']],
+            'containers.pack_override' => ['label' => 'Pack Override', 'description' => 'Pack items that are checked out on another opportunity (auto-return)', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.transfer' => ['label' => 'Transfer Between Containers', 'description' => 'Move items between active containers in one step', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.nest' => ['label' => 'Nest Containers', 'description' => 'Place containers inside other containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.seal' => ['label' => 'Seal Containers', 'description' => 'Seal and unseal containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.pack']],
+            'containers.dissolve' => ['label' => 'Dissolve Containers', 'description' => 'Manually dissolve containers', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.seal']],
+            'containers.manage_templates' => ['label' => 'Manage Container Templates', 'description' => 'Edit container templates and product container settings', 'group' => 'Stock', 'sub_group' => 'Containers', 'layer' => 'action', 'dependencies' => ['containers.view', 'products.edit']],
+
+            // Reports
+            'reports.access' => ['label' => 'Access Reports', 'description' => 'Access the reports area', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'reports.view' => ['label' => 'View Reports', 'description' => 'View reports', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['reports.access']],
+            'reports.export' => ['label' => 'Export Reports', 'description' => 'Export report data', 'group' => 'Reports', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['reports.view']],
+
+            // Documents
+            'documents.access' => ['label' => 'Access Documents', 'description' => 'Access the documents area', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'documents.view' => ['label' => 'View Documents', 'description' => 'View generated documents', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.access']],
+            'documents.create' => ['label' => 'Create Documents', 'description' => 'Generate documents from templates', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'documents.finalise' => ['label' => 'Finalise Documents', 'description' => 'Lock generated documents from further changes', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'documents.share' => ['label' => 'Share Documents', 'description' => 'Create and manage public document links', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'documents.delete' => ['label' => 'Delete Documents', 'description' => 'Delete generated documents', 'group' => 'Documents', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['documents.view']],
+            'document_templates.view' => ['label' => 'View Document Templates', 'description' => 'View document template definitions', 'group' => 'Documents', 'sub_group' => 'Templates', 'layer' => 'action', 'dependencies' => ['documents.access']],
+            'document_templates.edit' => ['label' => 'Edit Document Templates', 'description' => 'Create and edit document templates', 'group' => 'Documents', 'sub_group' => 'Templates', 'layer' => 'action', 'dependencies' => ['document_templates.view']],
+            'numbering.view' => ['label' => 'View Numbering Schemes', 'description' => 'View entity number format settings', 'group' => 'Documents', 'sub_group' => 'Numbering', 'layer' => 'action', 'dependencies' => ['documents.access']],
+            'numbering.edit' => ['label' => 'Edit Numbering Schemes', 'description' => 'Edit entity number format settings', 'group' => 'Documents', 'sub_group' => 'Numbering', 'layer' => 'action', 'dependencies' => ['numbering.view']],
+
+            // System
+            'system.read' => ['label' => 'Read System Info', 'description' => 'Access system health and diagnostics via API', 'group' => 'System', 'sub_group' => null, 'layer' => 'action', 'dependencies' => []],
+            'schema.read' => ['label' => 'Read Field Schemas', 'description' => 'Access model field schema definitions via API', 'group' => 'System', 'sub_group' => null, 'layer' => 'action', 'dependencies' => []],
+            'action-log.view' => ['label' => 'View Action Log', 'description' => 'View the audit trail', 'group' => 'System', 'sub_group' => 'Audit', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'email-templates.manage' => ['label' => 'Manage Email Templates', 'description' => 'Edit email templates and content', 'group' => 'System', 'sub_group' => 'Communications', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'notifications.manage' => ['label' => 'Manage Notifications', 'description' => 'Configure notification types and channels', 'group' => 'System', 'sub_group' => 'Communications', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'custom-fields.view' => ['label' => 'View Custom Fields', 'description' => 'View custom field definitions', 'group' => 'System', 'sub_group' => 'Customisation', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'custom-fields.manage' => ['label' => 'Manage Custom Fields', 'description' => 'Create and manage custom fields', 'group' => 'System', 'sub_group' => 'Customisation', 'layer' => 'action', 'dependencies' => ['custom-fields.view']],
+            'list-values.view' => ['label' => 'View Lists', 'description' => 'View list of values', 'group' => 'System', 'sub_group' => 'Customisation', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'list-values.manage' => ['label' => 'Manage Lists', 'description' => 'Create and manage list of values', 'group' => 'System', 'sub_group' => 'Customisation', 'layer' => 'action', 'dependencies' => ['list-values.view']],
+            'tax-classes.view' => ['label' => 'View Tax Classes', 'description' => 'View tax class definitions', 'group' => 'System', 'sub_group' => 'Finance', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'tax-classes.manage' => ['label' => 'Manage Tax Classes', 'description' => 'Create and manage tax classes', 'group' => 'System', 'sub_group' => 'Finance', 'layer' => 'action', 'dependencies' => ['tax-classes.view']],
+            'static-data.view' => ['label' => 'View Static Data', 'description' => 'View reference data (countries, etc.)', 'group' => 'System', 'sub_group' => 'Reference Data', 'layer' => 'action', 'dependencies' => ['settings.access']],
+            'static-data.manage' => ['label' => 'Manage Static Data', 'description' => 'Manage reference data and lookups', 'group' => 'System', 'sub_group' => 'Reference Data', 'layer' => 'action', 'dependencies' => ['static-data.view']],
+            'webhooks.manage' => ['label' => 'Manage Webhooks', 'description' => 'Create and manage webhook subscriptions', 'group' => 'System', 'sub_group' => 'Integrations', 'layer' => 'action', 'dependencies' => ['settings.access']],
+
+            // API Console
+            'api.access' => ['label' => 'Access API Console', 'description' => 'Access the API console area', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'area', 'dependencies' => []],
+            'api.explorer.use' => ['label' => 'Use API Explorer', 'description' => 'Execute requests via the API explorer', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'action', 'dependencies' => ['api.access']],
+            'api.logs.view' => ['label' => 'View API Logs', 'description' => 'View API request logs', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'action', 'dependencies' => ['api.access']],
+            'api.usage.view' => ['label' => 'View API Usage', 'description' => 'View API usage aggregates and exports', 'group' => 'API', 'sub_group' => 'Console', 'layer' => 'action', 'dependencies' => ['api.access']],
+
+            // Crew
+            'crew.access' => ['label' => 'Access Crew', 'description' => 'Access the crew management area', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'area', 'dependencies' => []],
+            'crew.view' => ['label' => 'View Crew', 'description' => 'View crew members and their operational details', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.access']],
+            'crew.create' => ['label' => 'Create Crew', 'description' => 'Create crew member records', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.edit' => ['label' => 'Edit Crew', 'description' => 'Edit crew member records', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.delete' => ['label' => 'Archive Crew', 'description' => 'Archive and restore crew member records', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.edit']],
+            'crew.view.sensitive' => ['label' => 'View Sensitive Crew Data', 'description' => 'View internal notes and other sensitive crew data', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.rates.view' => ['label' => 'View Crew Rates', 'description' => 'View crew rate cards and compensation', 'group' => 'Crew', 'sub_group' => 'Rates', 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.rates.manage' => ['label' => 'Manage Crew Rates', 'description' => 'Create and edit crew rate cards', 'group' => 'Crew', 'sub_group' => 'Rates', 'layer' => 'action', 'dependencies' => ['crew.rates.view']],
+            'crew.requests.view' => ['label' => 'View Crew Requests', 'description' => 'View crew requests and lines', 'group' => 'Crew', 'sub_group' => 'Requests', 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.requests.create' => ['label' => 'Create Crew Requests', 'description' => 'Create crew requests', 'group' => 'Crew', 'sub_group' => 'Requests', 'layer' => 'action', 'dependencies' => ['crew.requests.view']],
+            'crew.requests.edit' => ['label' => 'Edit Crew Requests', 'description' => 'Edit crew requests and lines', 'group' => 'Crew', 'sub_group' => 'Requests', 'layer' => 'action', 'dependencies' => ['crew.requests.view']],
+            'crew.requests.publish' => ['label' => 'Publish Crew Requests', 'description' => 'Publish crew requests for filling', 'group' => 'Crew', 'sub_group' => 'Requests', 'layer' => 'action', 'dependencies' => ['crew.requests.edit']],
+            'crew.requests.cancel' => ['label' => 'Cancel Crew Requests', 'description' => 'Cancel crew requests', 'group' => 'Crew', 'sub_group' => 'Requests', 'layer' => 'action', 'dependencies' => ['crew.requests.edit']],
+            'crew.assignments.view' => ['label' => 'View Crew Assignments', 'description' => 'View crew assignments', 'group' => 'Crew', 'sub_group' => 'Assignments', 'layer' => 'action', 'dependencies' => ['crew.requests.view']],
+            'crew.assignments.create' => ['label' => 'Create Crew Assignments', 'description' => 'Propose and invite crew assignments', 'group' => 'Crew', 'sub_group' => 'Assignments', 'layer' => 'action', 'dependencies' => ['crew.assignments.view']],
+            'crew.assignments.confirm' => ['label' => 'Confirm Crew Assignments', 'description' => 'Confirm crew assignments', 'group' => 'Crew', 'sub_group' => 'Assignments', 'layer' => 'action', 'dependencies' => ['crew.assignments.create']],
+            'crew.assignments.cancel' => ['label' => 'Cancel Crew Assignments', 'description' => 'Cancel confirmed crew assignments', 'group' => 'Crew', 'sub_group' => 'Assignments', 'layer' => 'action', 'dependencies' => ['crew.assignments.confirm']],
+            'crew.assignments.substitute' => ['label' => 'Substitute Crew Assignments', 'description' => 'Substitute a crew member on a confirmed assignment', 'group' => 'Crew', 'sub_group' => 'Assignments', 'layer' => 'action', 'dependencies' => ['crew.assignments.confirm']],
+            'crew.shifts.view' => ['label' => 'View Crew Shifts', 'description' => 'View crew shifts', 'group' => 'Crew', 'sub_group' => 'Shifts', 'layer' => 'action', 'dependencies' => ['crew.assignments.view']],
+            'crew.shifts.manage' => ['label' => 'Manage Crew Shifts', 'description' => 'Create, edit, confirm, and complete crew shifts', 'group' => 'Crew', 'sub_group' => 'Shifts', 'layer' => 'action', 'dependencies' => ['crew.shifts.view']],
+            'crew.availability.view' => ['label' => 'View Crew Availability', 'description' => 'View crew availability and leave', 'group' => 'Crew', 'sub_group' => 'Availability', 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.availability.request' => ['label' => 'Request Crew Availability', 'description' => 'Request availability and leave for a crew member', 'group' => 'Crew', 'sub_group' => 'Availability', 'layer' => 'action', 'dependencies' => ['crew.availability.view']],
+            'crew.availability.approve' => ['label' => 'Approve Crew Availability', 'description' => 'Approve or reject crew availability requests', 'group' => 'Crew', 'sub_group' => 'Availability', 'layer' => 'action', 'dependencies' => ['crew.availability.view']],
+            'crew.timesheets.view' => ['label' => 'View Crew Timesheets', 'description' => 'View crew timesheets and time entries', 'group' => 'Crew', 'sub_group' => 'Timesheets', 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.timesheets.create' => ['label' => 'Create Crew Timesheets', 'description' => 'Create and edit crew timesheets', 'group' => 'Crew', 'sub_group' => 'Timesheets', 'layer' => 'action', 'dependencies' => ['crew.timesheets.view']],
+            'crew.timesheets.approve' => ['label' => 'Approve Crew Timesheets', 'description' => 'Approve or reject crew timesheets', 'group' => 'Crew', 'sub_group' => 'Timesheets', 'layer' => 'action', 'dependencies' => ['crew.timesheets.view']],
+            'crew.timesheets.lock' => ['label' => 'Lock Crew Timesheets', 'description' => 'Lock approved crew timesheets', 'group' => 'Crew', 'sub_group' => 'Timesheets', 'layer' => 'action', 'dependencies' => ['crew.timesheets.approve']],
+            'crew.timesheets.export' => ['label' => 'Export Crew Timesheets', 'description' => 'Export approved crew timesheets to finance', 'group' => 'Crew', 'sub_group' => 'Timesheets', 'layer' => 'action', 'dependencies' => ['crew.timesheets.approve']],
+            'crew.expenses.view' => ['label' => 'View Crew Expenses', 'description' => 'View crew expenses', 'group' => 'Crew', 'sub_group' => 'Expenses', 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.expenses.create' => ['label' => 'Create Crew Expenses', 'description' => 'Create and edit crew expenses', 'group' => 'Crew', 'sub_group' => 'Expenses', 'layer' => 'action', 'dependencies' => ['crew.expenses.view']],
+            'crew.expenses.approve' => ['label' => 'Approve Crew Expenses', 'description' => 'Approve, reject, and reimburse crew expenses', 'group' => 'Crew', 'sub_group' => 'Expenses', 'layer' => 'action', 'dependencies' => ['crew.expenses.view']],
+            'crew.reports.view' => ['label' => 'View Crew Reports', 'description' => 'View crew coverage, cost, and utilisation reports', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.view']],
+            'crew.conflicts.override' => ['label' => 'Override Crew Conflicts', 'description' => 'Confirm assignments that have hard availability conflicts', 'group' => 'Crew', 'sub_group' => 'Assignments', 'layer' => 'action', 'dependencies' => ['crew.assignments.confirm']],
+            'crew.settings.manage' => ['label' => 'Manage Crew Settings', 'description' => 'Manage crew planning and compensation settings', 'group' => 'Crew', 'sub_group' => null, 'layer' => 'action', 'dependencies' => ['crew.access']],
+
+            // Global — cost visibility (field-level)
+            'costs.view' => ['label' => 'View Costs', 'description' => 'View cost prices, margins, and purchase costs', 'group' => 'Global', 'sub_group' => null, 'layer' => 'field', 'dependencies' => []],
+        ];
+    }
+
+    public function run(): void
+    {
+        $permissions = self::permissions();
+
+        // Create Spatie permissions
+        foreach (array_keys($permissions) as $key) {
+            Permission::findOrCreate($key, 'web');
+        }
+
+        // Register metadata in the registry
+        $registry = app(PermissionRegistry::class);
+        $registry->registerMany($permissions);
+    }
+}

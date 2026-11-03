@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Actions\Concerns\ClonesOpportunityItems;
 use App\Domain\Projects\Opportunities\Data\CreateVersionData;
 use App\Domain\Projects\Opportunities\Data\OpportunityVersionData;
@@ -13,7 +14,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Projects\Opportunities\Verbs\Events\VersionCreated;
 use App\Domain\Projects\Opportunities\Verbs\Events\VersionSuperseded;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

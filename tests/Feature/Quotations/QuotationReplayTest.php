@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Quotations\Actions\CreateQuotation;
 use App\Domain\Quotations\Data\CreateQuotationData;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Thunk\Verbs\Facades\Verbs;
 

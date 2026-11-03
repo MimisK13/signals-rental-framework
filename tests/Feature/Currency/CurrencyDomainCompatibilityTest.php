@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\Currency\Services\CurrencyService;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
-use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 

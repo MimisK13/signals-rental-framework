@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class TestStorePolicy

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Database\Factories\CreditNoteFactory;
 use App\Domain\Stores\Concerns\HasStoreScoping;
 use App\Domain\Stores\Models\Store;
 use App\Models\Traits\FormatsMoney;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

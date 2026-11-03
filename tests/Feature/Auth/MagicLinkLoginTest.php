@@ -1,15 +1,17 @@
 <?php
 
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Models\MagicLinkToken;
+use App\Domain\Auth\Presentation\Livewire\Login;
+use App\Domain\Auth\Presentation\Livewire\TwoFactorChallenge;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
-use App\Models\MagicLinkToken;
-use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
-use Livewire\Volt\Volt as LivewireVolt;
+use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 use Spatie\Permission\Models\Role;
 
@@ -27,7 +29,7 @@ it('queues the notification and shows the neutral confirmation for an eligible a
 
     $user = User::factory()->create(['email' => 'staff@example.com']);
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('magicLinkEmail', 'staff@example.com')
         ->call('sendMagicLink')
         ->assertHasNoErrors()
@@ -40,7 +42,7 @@ it('queues the notification and shows the neutral confirmation for an eligible a
 it('validates that a magic-link email is present and well formed', function () {
     Notification::fake();
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('magicLinkEmail', 'not-an-email')
         ->call('sendMagicLink')
         ->assertHasErrors('magicLinkEmail')
@@ -52,7 +54,7 @@ it('validates that a magic-link email is present and well formed', function () {
 it('shows the same neutral confirmation for an unknown email without sending', function () {
     Notification::fake();
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('magicLinkEmail', 'nobody@example.com')
         ->call('sendMagicLink')
         ->assertHasNoErrors()
@@ -67,7 +69,7 @@ it('shows the neutral confirmation for an inactive user without sending', functi
 
     User::factory()->deactivated()->create(['email' => 'inactive@example.com']);
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('magicLinkEmail', 'inactive@example.com')
         ->call('sendMagicLink')
         ->assertHasNoErrors()
@@ -83,7 +85,7 @@ it('shows the neutral confirmation but sends nothing when the feature is off', f
 
     User::factory()->create(['email' => 'staff@example.com']);
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('magicLinkEmail', 'staff@example.com')
         ->call('sendMagicLink')
         ->assertHasNoErrors()
@@ -100,7 +102,7 @@ it('shows the neutral confirmation but sends nothing for an SSO-enforced user', 
     $user = User::factory()->create(['email' => 'sales@example.com']);
     $user->assignRole('Sales');
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('magicLinkEmail', 'sales@example.com')
         ->call('sendMagicLink')
         ->assertHasNoErrors()
@@ -245,7 +247,7 @@ it('audits the magic-link login only after the 2FA challenge completes', functio
     // Step 2: complete the challenge with a valid TOTP code.
     $code = app(Google2FA::class)->getCurrentOtp((string) $user->two_factor_secret);
 
-    LivewireVolt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('code', $code)
         ->call('authenticate')
         ->assertHasNoErrors();
@@ -275,7 +277,7 @@ it('audits the magic-link login after the 2FA challenge completes via a recovery
     $codes = json_decode((string) $user->two_factor_recovery_codes, true);
     $validCode = $codes[0];
 
-    LivewireVolt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('useRecovery', true)
         ->set('recoveryCode', $validCode)
         ->call('authenticate')
@@ -303,14 +305,14 @@ it('audits the magic-link login after the 2FA challenge completes via a recovery
 it('renders the magic-link affordance when the feature is enabled', function () {
     settings()->set('security.magic_link_enabled', true, 'boolean');
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->assertSee('Email me a sign-in link');
 });
 
 it('does not render the magic-link affordance when the feature is disabled', function () {
     settings()->set('security.magic_link_enabled', false, 'boolean');
 
-    LivewireVolt::test('auth.login')
+    Livewire::test(Login::class)
         ->assertDontSee('Email me a sign-in link')
         ->assertDontSee('Send sign-in link');
 });

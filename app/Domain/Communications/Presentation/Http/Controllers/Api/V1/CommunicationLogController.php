@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
 use App\Domain\API\Presentation\Http\Controllers\Controller;
 use App\Domain\API\Support\Attributes\PriceWeight;
 use App\Domain\Communications\Data\CommunicationLogData;
 use App\Domain\Communications\Models\CommunicationLog;
 use App\Domain\Communications\Services\CommunicationLogQuery;
-use App\Models\User;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

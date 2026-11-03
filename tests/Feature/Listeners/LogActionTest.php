@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\AuditLog\Listeners\LogAction;
 use App\Domain\AuditLog\Models\ActionLog;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 it('creates an action log entry when an auditable event fires', function () {

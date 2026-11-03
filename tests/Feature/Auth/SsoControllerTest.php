@@ -1,14 +1,15 @@
 <?php
 
-use App\Models\OAuthIdentity;
-use App\Models\User;
-use App\Services\Auth\SsoService;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Models\OAuthIdentity;
+use App\Domain\Auth\Presentation\Livewire\TwoFactorChallenge;
+use App\Domain\Auth\Services\SsoService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Contracts\Provider as SocialiteProvider;
 use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialiteUser;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 
 beforeEach(function () {
@@ -260,7 +261,7 @@ it('audits the sso login after the full sso → 2FA challenge flow', function ()
     // Step 2: complete the challenge with a valid TOTP code.
     $code = app(Google2FA::class)->getCurrentOtp((string) $user->two_factor_secret);
 
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('code', $code)
         ->call('authenticate')
         ->assertHasNoErrors();

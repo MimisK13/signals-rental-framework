@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
 use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
@@ -15,7 +16,6 @@ use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Domain\VirtualStock\Presentation\Columns\VirtualStockIntakeColumnRegistry;
 use App\Domain\Warehouse\Containers\Presentation\Columns\ContainerColumnRegistry;
-use App\Models\User;
 use App\Support\CostVisibility;
 use App\Views\ColumnRegistry;
 use Illuminate\Validation\ValidationException;

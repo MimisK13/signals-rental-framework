@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Presentation\Http\Concerns\FiltersQueries;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;

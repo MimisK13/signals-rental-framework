@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Communications\Models\EmailTemplateVersion;
-use App\Models\User;
 
 it('has the correct fillable attributes', function () {
     $version = new EmailTemplateVersion;

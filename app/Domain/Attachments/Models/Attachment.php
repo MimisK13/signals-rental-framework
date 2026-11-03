@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Database\Factories\AttachmentFactory;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

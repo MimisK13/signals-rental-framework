@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Presentation\Livewire\MergeModal;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

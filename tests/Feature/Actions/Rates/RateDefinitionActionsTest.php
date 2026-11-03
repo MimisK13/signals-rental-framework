@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Rates\Actions\CreateRateDefinition;
 use App\Domain\Rates\Actions\DeleteRateDefinition;
@@ -11,9 +14,6 @@ use App\Domain\Rates\Data\UpdateRateDefinitionData;
 use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Webhooks\Services\WebhookService;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;

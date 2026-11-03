@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\CreateStockTransaction;
@@ -13,10 +16,7 @@ use App\Domain\Warehouse\Containers\Enums\ContainerBulkMembershipEventType;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerBulkMembership;
 use App\Domain\Warehouse\Containers\Models\ContainerBulkMembershipEvent;
-use App\Models\User;
 use Carbon\CarbonInterface;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Services;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Models\CrewRequestLine;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Contracts\RecipientResolver;
 use App\Domain\Notifications\Data\NotificationContextData;
-use App\Models\User;
 use Illuminate\Support\Collection;
 
 final class CrewCoordinatorRecipientResolver implements RecipientResolver

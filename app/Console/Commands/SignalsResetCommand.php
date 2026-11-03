@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Console\Commands\Concerns\HasSignalsBranding;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Models\Setting;
 use App\Domain\Stores\Models\Store;
-use App\Models\Setting;
-use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Artisan;

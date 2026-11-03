@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Settings;
 
-use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 
 /**
  * Tenant invoice configuration scaffold (P30).

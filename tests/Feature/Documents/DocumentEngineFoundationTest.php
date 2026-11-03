@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
 use App\Domain\Members\Models\Member;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {

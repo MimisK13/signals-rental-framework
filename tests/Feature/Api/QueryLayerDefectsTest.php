@@ -1,14 +1,14 @@
 <?php
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 /**
  * Regression coverage for the 2026-06-15 UAT query-layer defect cluster:

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\API\Database\Factories;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Enums\MeteringChannel;
 use App\Domain\API\Models\RequestLog;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

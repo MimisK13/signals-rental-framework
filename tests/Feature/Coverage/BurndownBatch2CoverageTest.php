@@ -5,6 +5,9 @@
  */
 
 use App\Console\Commands\ApiFlushLogs;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\UsageRecorder;
 use App\Domain\AuditLog\Presentation\Concerns\HasAuditTimeline;
 use App\Domain\Availability\Shortages\Console\EscalateUnresolvedShortages;
@@ -70,9 +73,6 @@ use App\Domain\Tax\Models\TaxCategory;
 use App\Domain\VirtualStock\Console\DetectVirtualStockOverruns;
 use App\Domain\Webhooks\Http\Middleware\VerifyInboundWebhookSignature;
 use App\Enums\BillingCommunicationKind;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;

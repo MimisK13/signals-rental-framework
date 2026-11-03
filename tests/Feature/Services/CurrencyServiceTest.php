@@ -4,7 +4,7 @@ use App\Domain\Currency\Database\Seeders\CurrencySeeder;
 use App\Domain\Currency\Database\Seeders\ExchangeRateSeeder;
 use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\Currency\Services\CurrencyService;
-use App\Services\SettingsService;
+use App\Domain\Settings\Services\SettingsService;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

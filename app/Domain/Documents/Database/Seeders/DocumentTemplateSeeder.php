@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Database\Seeders;
 
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\PluginDocumentTemplateSeederRegistry;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Stores\Models\Store;
 use Illuminate\Database\Seeder;
 

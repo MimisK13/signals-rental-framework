@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Actions\Auth\ConsumeMagicLink;
-use App\Actions\Auth\RequestMagicLink;
-use App\Data\Auth\RequestMagicLinkData;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Actions\ConsumeMagicLink;
+use App\Domain\Auth\Actions\RequestMagicLink;
+use App\Domain\Auth\Data\RequestMagicLinkData;
+use App\Domain\Auth\Models\MagicLinkToken;
 use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
-use App\Models\MagicLinkToken;
-use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Settings\CompanySettings;
+use App\Domain\Settings\Settings\CompanySettings;
 
 it('returns company as the group', function () {
     $settings = new CompanySettings;

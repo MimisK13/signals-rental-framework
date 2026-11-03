@@ -2,11 +2,11 @@
 
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Services\SystemCommunicationTemplates;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Stores\Database\Seeders\StoreSeeder;
 use App\Domain\Stores\Models\Store;
 

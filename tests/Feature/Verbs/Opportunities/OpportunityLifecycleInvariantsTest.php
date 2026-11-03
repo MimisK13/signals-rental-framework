@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Actions\MarkAssetMissing;
 use App\Domain\Assets\Enums\AssetCondition;
 use App\Domain\Assets\Models\Asset;
@@ -35,9 +38,6 @@ use App\Domain\Stores\Models\Store;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\LineItemTransactionType;
 use App\Enums\ReleasePoint;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Queue;
 use Thunk\Verbs\Exceptions\EventNotValid;
 

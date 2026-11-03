@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityCost;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
@@ -12,9 +15,6 @@ use App\Domain\Projects\Opportunities\Verbs\Events\CostRemoved;
 use App\Domain\Projects\Opportunities\Verbs\Events\CostUpdated;
 use App\Domain\Projects\Opportunities\Verbs\Events\DealPriceCleared;
 use App\Domain\Projects\Opportunities\Verbs\Events\DealPriceSet;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Thunk\Verbs\Facades\Verbs;

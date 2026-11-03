@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 /**
  * Maps system role names to numeric hierarchy levels.

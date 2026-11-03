@@ -17,7 +17,7 @@ use App\Domain\API\Services\CoreAbilityDefinitions;
 use App\Domain\API\Services\PriceWeightResolver;
 use App\Domain\API\Services\UsageRecorder;
 use App\Domain\API\Settings\ApiSettings;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Support\Facades\Blade;

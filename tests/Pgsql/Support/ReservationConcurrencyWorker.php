@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetLifecycleEventType;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
@@ -27,7 +28,6 @@ use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\VerifyKitCheckin;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

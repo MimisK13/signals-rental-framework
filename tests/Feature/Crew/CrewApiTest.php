@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Crew\Models\CrewRequest;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Presentation\Livewire\Settings;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Actions\SaveMemberNotificationPreferences;
 use App\Domain\Notifications\Data\SaveMemberNotificationPreferencesData;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\MemberNotificationPreferenceCatalog;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

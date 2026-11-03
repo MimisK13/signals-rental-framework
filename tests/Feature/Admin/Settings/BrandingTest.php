@@ -1,9 +1,10 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Presentation\Livewire\Admin\Branding;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -23,13 +24,13 @@ it('loads current branding values', function () {
         'branding.accent_colour' => '#00ff00',
     ]);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->assertSet('primaryColour', '#ff0000')
         ->assertSet('accentColour', '#00ff00');
 });
 
 it('saves branding colours', function () {
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', '#223344')
         ->set('accentColour', '#556677')
         ->call('save')
@@ -41,7 +42,7 @@ it('saves branding colours', function () {
 });
 
 it('validates hex colour format', function () {
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', 'not-a-colour')
         ->set('accentColour', '#GGG')
         ->call('save')
@@ -53,7 +54,7 @@ it('uploads a logo', function () {
 
     $file = UploadedFile::fake()->image('logo.png', 200, 200);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', '#1e3a5f')
         ->set('accentColour', '#3b82f6')
         ->set('logo', $file)
@@ -70,7 +71,7 @@ it('records an opaque logo as not transparent', function () {
     // UploadedFile::fake()->image() produces an opaque JPEG-style raster.
     $file = UploadedFile::fake()->image('logo.png', 200, 200);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', '#1e3a5f')
         ->set('accentColour', '#3b82f6')
         ->set('logo', $file)
@@ -88,7 +89,7 @@ it('clears the transparency flag when the logo is removed', function () {
         'branding.logo_has_transparency' => ['value' => true, 'type' => 'boolean'],
     ]);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->call('removeLogo');
 
     expect(settings('branding.logo_has_transparency'))->toBeFalse();
@@ -99,7 +100,7 @@ it('validates logo file type', function () {
 
     $file = UploadedFile::fake()->create('document.pdf', 100);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', '#1e3a5f')
         ->set('accentColour', '#3b82f6')
         ->set('logo', $file)
@@ -112,7 +113,7 @@ it('validates logo file size', function () {
 
     $file = UploadedFile::fake()->image('huge-logo.png')->size(3000);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', '#1e3a5f')
         ->set('accentColour', '#3b82f6')
         ->set('logo', $file)
@@ -125,7 +126,7 @@ it('can remove a logo', function () {
 
     $file = UploadedFile::fake()->image('logo.png', 200, 200);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->set('primaryColour', '#1e3a5f')
         ->set('accentColour', '#3b82f6')
         ->set('logo', $file)
@@ -134,7 +135,7 @@ it('can remove a logo', function () {
     $logoPath = settings('branding.logo_path');
     Storage::disk('public')->assertExists($logoPath);
 
-    Volt::test('admin.settings.branding')
+    Livewire::test(Branding::class)
         ->call('removeLogo')
         ->assertSet('currentLogoPath', null)
         ->assertRedirect(route('admin.settings.branding'));

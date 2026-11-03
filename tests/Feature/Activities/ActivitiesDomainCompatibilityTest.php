@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Domain\Activities\Enums\ActivityType;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Models\ActivityParticipant;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\AuditLog\Models\ActionLog;
@@ -17,8 +19,6 @@ use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Jobs\SendNotification;
 use App\Domain\Notifications\Notifications\DomainEventNotification;
 use App\Domain\Notifications\Services\NotificationChannelResolver;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 

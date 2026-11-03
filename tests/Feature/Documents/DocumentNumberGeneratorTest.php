@@ -2,8 +2,9 @@
 
 use App\Domain\Documents\Exceptions\DuplicateDocumentNumberException;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
+use App\Domain\Documents\Services\DocumentNumberValidator;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
 use App\Domain\Stores\Models\Store;
 use Carbon\CarbonImmutable;
 
@@ -168,11 +169,11 @@ describe('DocumentNumberGenerator', function () {
             'document_number' => 'INV-2026-0099',
         ]);
 
-        $generator = app(DocumentNumberGenerator::class);
+        $validator = app(DocumentNumberValidator::class);
 
-        $generator->validateManualNumber($store->id, 'invoice', 'INV-2026-0100');
+        $validator->assertUnique($store->id, 'invoice', 'INV-2026-0100');
 
-        expect(fn () => $generator->validateManualNumber($store->id, 'invoice', 'INV-2026-0099'))
+        expect(fn () => $validator->assertUnique($store->id, 'invoice', 'INV-2026-0099'))
             ->toThrow(DuplicateDocumentNumberException::class);
 
         expect(DocumentSequence::query()->where('store_id', $store->id)->value('next_number'))->toBe(10);

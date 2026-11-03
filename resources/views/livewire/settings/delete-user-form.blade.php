@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\Actions\Logout;
-use App\Models\User;
+use App\Domain\Auth\Presentation\Actions\Logout;
+use App\Domain\Administration\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 

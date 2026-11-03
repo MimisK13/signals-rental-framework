@@ -4,6 +4,9 @@
  * Coverage burn-up batch 3 — part 1 (actions, console, notifications, opportunities, pricing).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
@@ -23,7 +26,6 @@ use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
 use App\Domain\Documents\ValueObjects\DocumentRenderResult;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Actions\IssueInvoice;
@@ -32,6 +34,7 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Actions\MemberPriceCategoryTierValidator;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
 use App\Domain\Pricing\Actions\UpdateSurchargeGroup;
 use App\Domain\Pricing\Data\UpdateSurchargeGroupData;
 use App\Domain\Pricing\Models\PriceCategory;
@@ -64,9 +67,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Enums\BillingCommunicationKind;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

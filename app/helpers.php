@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\SettingsService;
+use App\Domain\Settings\Services\SettingsService;
 
 if (! function_exists('settings')) {
 

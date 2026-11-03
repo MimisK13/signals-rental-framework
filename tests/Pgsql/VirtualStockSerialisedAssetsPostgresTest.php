@@ -1,11 +1,15 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\RecalculationPipeline;
+use App\Domain\Numbering\Models\Sequence;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
@@ -25,10 +29,6 @@ use App\Domain\VirtualStock\Actions\ReturnVirtualStockIntake;
 use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Enums\LineItemTransactionType;
-use App\Models\Sequence;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesPostgres;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\Auth\SsoService;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Domain\Auth\Services\SsoService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Two\GoogleProvider;
 use SocialiteProviders\Microsoft\Provider as MicrosoftProvider;
@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 // Uses DatabaseMigrations because the service reads per-tenant credentials and
 // toggles via settings(), which are persisted to the database.
-uses(TestCase::class, DatabaseMigrations::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     $this->sso = app(SsoService::class);

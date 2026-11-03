@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Enums\CrewTimesheetStatus;
 use App\Domain\Crew\Models\CrewTimesheet;
 use App\Domain\Crew\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 
 class CrewTimesheetPolicy
 {

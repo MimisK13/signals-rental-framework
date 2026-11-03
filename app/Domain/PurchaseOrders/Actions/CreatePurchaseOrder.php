@@ -6,6 +6,7 @@ namespace App\Domain\PurchaseOrders\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\PurchaseOrders\Actions\Concerns\BuildsPurchaseOrderLinePayloads;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
 use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
@@ -16,7 +17,6 @@ use App\Domain\PurchaseOrders\Services\PurchaseOrderStatusRegistry;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderTaxCalculator;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderTotalsCalculator;
 use App\Domain\PurchaseOrders\Verbs\Events\PurchaseOrderCreated;
-use App\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

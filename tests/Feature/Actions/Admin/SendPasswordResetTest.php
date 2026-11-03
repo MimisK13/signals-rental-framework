@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Admin\SendPasswordReset;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Actions\SendPasswordReset;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;

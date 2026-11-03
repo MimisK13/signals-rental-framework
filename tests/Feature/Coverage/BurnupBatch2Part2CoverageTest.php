@@ -4,6 +4,9 @@
  * Coverage burn-up batch 2 (part 2) — services, data, policies, middleware, models.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Presentation\Http\Middleware\LogApiRequest;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
@@ -16,7 +19,6 @@ use App\Domain\Communications\Services\Drivers\EmailDriver;
 use App\Domain\Documents\Actions\ImportDocumentTemplate;
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Services\DocumentRenderErrorSanitizer;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\TemplateLineDiff;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\CreditNoteTax;
@@ -25,6 +27,7 @@ use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\NotificationLinkResolver;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Pricing\Services\DiscountRuleEvaluator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
@@ -41,9 +44,6 @@ use App\Domain\Stores\Models\Store;
 use App\Domain\VirtualStock\Services\VirtualStockNumberGenerator;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;

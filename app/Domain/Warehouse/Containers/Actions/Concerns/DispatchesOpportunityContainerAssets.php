@@ -6,6 +6,7 @@ namespace App\Domain\Warehouse\Containers\Actions\Concerns;
 
 use App\Domain\Availability\Shortages\Services\DispatchShortageGate;
 use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\Concerns\FormatsOpportunityDates;
 use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
@@ -27,7 +28,6 @@ use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\LineItemTransactionType;
-use App\Services\SequenceAllocator;
 use App\Verbs\States\AssetAssignmentState;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;

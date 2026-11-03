@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\AuditLog\Settings;
 
-use App\Settings\SettingsDefinition;
+use App\Domain\Settings\Settings\SettingsDefinition;
 
 class ActionLogSettings extends SettingsDefinition
 {

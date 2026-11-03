@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

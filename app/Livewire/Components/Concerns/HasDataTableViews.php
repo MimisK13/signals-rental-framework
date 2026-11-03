@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Components\Concerns;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Actions\SetDefaultCustomView;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Services\ViewResolver;
-use App\Models\User;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;

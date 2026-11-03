@@ -2,7 +2,7 @@
 
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;

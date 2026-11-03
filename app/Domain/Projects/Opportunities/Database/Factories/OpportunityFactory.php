@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Opportunities\Database\Factories;
 
 use App\Domain\Members\Models\Member;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Services\SequenceAllocator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

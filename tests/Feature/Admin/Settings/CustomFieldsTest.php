@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Presentation\Livewire\Form;
 use App\Domain\CustomFields\Presentation\Livewire\Index;
-use App\Models\User;
 use App\Services\VisibilityRuleEvaluator;
 use Livewire\Livewire;
 

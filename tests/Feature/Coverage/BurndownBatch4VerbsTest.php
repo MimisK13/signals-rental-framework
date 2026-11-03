@@ -4,6 +4,9 @@
  * P4-CL4b burndown batch 4 — Verbs events and concern branches.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\IssueInvoice;
@@ -14,6 +17,7 @@ use App\Domain\Invoices\Verbs\Events\InvoiceGenerated;
 use App\Domain\Invoices\Verbs\Events\InvoiceIssued;
 use App\Domain\Invoices\Verbs\Events\InvoiceVoided;
 use App\Domain\Members\Models\Member;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
 use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
@@ -50,11 +54,7 @@ use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsProvi
 use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSerialisedAssetsRetired;
 use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeSupplyAdjusted;
 use App\Domain\VirtualStock\Verbs\States\VirtualStockIntakeState;
-use App\Models\User;
-use App\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

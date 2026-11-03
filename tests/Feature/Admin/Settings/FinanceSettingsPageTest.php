@@ -1,8 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Presentation\Livewire\Admin\Finance;
 use App\Domain\Tax\Enums\TaxPointPolicy;
-use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -17,7 +18,7 @@ it('renders the finance settings page', function () {
 });
 
 it('loads finance settings with defaults', function () {
-    Volt::test('admin.settings.finance')
+    Livewire::test(Finance::class)
         ->assertSet('taxPointPolicy', TaxPointPolicy::SupplyDate->value)
         ->assertSet('pricesIncludeTaxDefault', false)
         ->assertSet('showTaxOnDocuments', true)
@@ -26,7 +27,7 @@ it('loads finance settings with defaults', function () {
 });
 
 it('saves finance settings', function () {
-    Volt::test('admin.settings.finance')
+    Livewire::test(Finance::class)
         ->set('taxPointPolicy', TaxPointPolicy::InvoiceDate->value)
         ->set('pricesIncludeTaxDefault', true)
         ->set('showTaxOnDocuments', false)
@@ -40,7 +41,7 @@ it('saves finance settings', function () {
 });
 
 it('saves vat validation validity days', function () {
-    Volt::test('admin.settings.finance')
+    Livewire::test(Finance::class)
         ->set('vatValidationValidityDays', 14)
         ->call('save')
         ->assertHasNoErrors();
@@ -49,7 +50,7 @@ it('saves vat validation validity days', function () {
 });
 
 it('saves reverse charge label', function () {
-    Volt::test('admin.settings.finance')
+    Livewire::test(Finance::class)
         ->set('reverseChargeLabel', 'Customer VAT due')
         ->call('save')
         ->assertHasNoErrors();
@@ -58,7 +59,7 @@ it('saves reverse charge label', function () {
 });
 
 it('validates tax_point_policy options', function () {
-    Volt::test('admin.settings.finance')
+    Livewire::test(Finance::class)
         ->set('taxPointPolicy', 'invalid')
         ->call('save')
         ->assertHasErrors(['taxPointPolicy']);

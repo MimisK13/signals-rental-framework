@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
@@ -20,7 +21,6 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use App\Services\Planning\OpportunityItemPlanningReader;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

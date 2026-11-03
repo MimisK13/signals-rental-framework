@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 describe('StockLevel::assertUniqueIdentifiers', function () {

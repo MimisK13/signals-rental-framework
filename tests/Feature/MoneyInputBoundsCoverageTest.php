@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Rates\Data\CreateProductRateData;
-use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

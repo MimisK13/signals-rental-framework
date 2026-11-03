@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 use Tests\TestCase;

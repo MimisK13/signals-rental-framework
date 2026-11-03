@@ -13,7 +13,7 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Services\InvoiceNumberGenerator;
 use App\Domain\Invoices\Services\InvoiceStatusRegistry;
 use App\Domain\Invoices\Verbs\Events\InvoiceGenerated;
-use App\Services\SequenceAllocator;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

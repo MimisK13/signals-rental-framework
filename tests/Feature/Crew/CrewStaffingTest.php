@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Actions\Assignments\CancelCrewAssignment;
 use App\Domain\Crew\Actions\Assignments\ConfirmCrewAssignment;
@@ -54,9 +56,7 @@ use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\Members\Models\MemberStore;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

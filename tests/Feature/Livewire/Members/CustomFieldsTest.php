@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldGroup;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Presentation\Livewire\CustomFields;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

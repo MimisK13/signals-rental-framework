@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Actions\CreateSerialisedComponent;
 use App\Domain\Products\Actions\UpdateSerialisedComponent;
 use App\Domain\Products\Data\CreateSerialisedComponentData;
@@ -7,9 +10,6 @@ use App\Domain\Products\Data\UpdateSerialisedComponentData;
 use App\Domain\Products\Enums\KitComponentBinding;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

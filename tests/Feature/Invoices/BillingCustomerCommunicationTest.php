@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Jobs\SendBillingCustomerCommunication;
 use App\Domain\Communications\Models\CommunicationLog;
@@ -23,9 +26,6 @@ use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberRelationship;
 use App\Domain\Notifications\Database\Seeders\NotificationTypeSeeder;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;

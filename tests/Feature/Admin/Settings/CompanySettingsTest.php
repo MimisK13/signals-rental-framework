@@ -1,9 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Currency\Models\Currency;
-use App\Models\User;
+use App\Domain\Settings\Presentation\Livewire\Admin\Company;
 use App\Support\Formatter;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -25,7 +26,7 @@ it('loads current settings values', function () {
         'company.base_currency' => 'GBP',
     ]);
 
-    Volt::test('admin.settings.company')
+    Livewire::test(Company::class)
         ->assertSet('name', 'Test Company')
         ->assertSet('countryCode', 'GB')
         ->assertSet('timezone', 'Europe/London')
@@ -33,7 +34,7 @@ it('loads current settings values', function () {
 });
 
 it('saves company settings', function () {
-    Volt::test('admin.settings.company')
+    Livewire::test(Company::class)
         ->set('name', 'Updated Company')
         ->set('countryCode', 'US')
         ->set('timezone', 'America/New_York')
@@ -61,7 +62,7 @@ it('saves the base currency under the canonical key the money engine reads', fun
         'decimal_places' => 2,
     ]);
 
-    Volt::test('admin.settings.company')
+    Livewire::test(Company::class)
         ->set('name', 'Euro Co')
         ->set('countryCode', 'DE')
         ->set('timezone', 'Europe/Berlin')
@@ -82,7 +83,7 @@ it('saves the base currency under the canonical key the money engine reads', fun
 });
 
 it('validates required fields', function () {
-    Volt::test('admin.settings.company')
+    Livewire::test(Company::class)
         ->set('name', '')
         ->set('countryCode', '')
         ->call('save')
@@ -90,7 +91,7 @@ it('validates required fields', function () {
 });
 
 it('validates country code is 2 characters', function () {
-    Volt::test('admin.settings.company')
+    Livewire::test(Company::class)
         ->set('name', 'Test')
         ->set('countryCode', 'GBR')
         ->set('timezone', 'Europe/London')
@@ -104,7 +105,7 @@ it('validates country code is 2 characters', function () {
 });
 
 it('auto-fills defaults when country changes', function () {
-    Volt::test('admin.settings.company')
+    Livewire::test(Company::class)
         ->set('countryCode', 'GB')
         ->assertSet('timezone', 'Europe/London')
         ->assertSet('currency', 'GBP')

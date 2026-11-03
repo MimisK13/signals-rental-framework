@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
-use App\Models\User;
 
 describe('scopeForEntity', function () {
     it('filters by auditable type', function () {

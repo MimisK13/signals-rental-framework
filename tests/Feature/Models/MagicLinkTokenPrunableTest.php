@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\MagicLinkToken;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Models\MagicLinkToken;
 use Illuminate\Database\Eloquent\Prunable;
 
 // The model:prune command instantiates models without their dependencies, so the

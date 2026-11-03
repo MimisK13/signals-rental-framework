@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Attachments\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
-use App\Models\User;
 
 final class AttachmentPolicy
 {

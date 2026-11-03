@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
@@ -11,9 +14,6 @@ use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\VirtualStock\Presentation\Livewire\Form;
 use App\Domain\VirtualStock\Presentation\Livewire\Index;
 use App\Domain\VirtualStock\Presentation\Livewire\Show;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

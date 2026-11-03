@@ -4,6 +4,9 @@
  * P4-CL4b burndown batch 5 — classes 19–35 (cheapest-first slice).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Jobs\ExportApiRequestLog;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\Communications\Jobs\DeliverCustomerCommunication;
@@ -64,9 +67,6 @@ use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Webhooks\Models\InboundWebhookLog;
 use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

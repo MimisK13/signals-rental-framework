@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
@@ -10,10 +13,7 @@ use App\Domain\Projects\Opportunities\Data\ChangeItemQuantityData;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use App\Services\Planning\OpportunityItemPlanningReader;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Thunk\Verbs\Facades\Verbs;
 
 beforeEach(function (): void {

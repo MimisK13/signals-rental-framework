@@ -7,6 +7,10 @@
  * the class to 100% method coverage.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
+use App\Domain\Administration\Services\PermissionRegistry;
 use App\Domain\Attachments\Data\AttachmentData;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\AuditLog\Data\ActionLogData;
@@ -29,11 +33,7 @@ use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberRelationship;
 use App\Domain\Members\Presentation\Columns\MemberColumnRegistry;
 use App\Domain\Stores\Scopes\StoreScope;
-use App\Models\User;
-use App\Services\PermissionRegistry;
 use App\Support\Formatter;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Route;

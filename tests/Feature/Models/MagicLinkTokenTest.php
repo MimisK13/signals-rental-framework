@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\MagicLinkToken;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Models\MagicLinkToken;
 
 it('builds a magic link token via its factory', function () {
     $token = MagicLinkToken::factory()->create();

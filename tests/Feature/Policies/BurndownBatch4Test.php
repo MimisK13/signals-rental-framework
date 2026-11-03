@@ -4,20 +4,23 @@
  * P4-CL4b burndown batch 4 — policy branch coverage.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationLog;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Policies\CommunicationLogPolicy;
 use App\Domain\Communications\Policies\CommunicationTemplatePolicy;
 use App\Domain\Documents\Enums\DocumentStatus;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Policies\DocumentPolicy;
-use App\Domain\Documents\Policies\DocumentSequencePolicy;
 use App\Domain\Documents\Policies\DocumentTemplatePolicy;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Policies\InvoicePolicy;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\MemberStore;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Policies\DocumentSequencePolicy;
 use App\Domain\Products\Policies\ProductGroupPolicy;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
@@ -26,9 +29,6 @@ use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
 use App\Domain\Stores\Models\Store;
 use App\Domain\VirtualStock\Policies\VirtualStockIntakePolicy;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

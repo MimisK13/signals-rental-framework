@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Pest\Browser\Api\Webpage;
 
 it('loads dashboard with notification bell when browser plugin is available', function () {

@@ -2,12 +2,12 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Form;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
-use App\Models\User;
 use Carbon\Carbon;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

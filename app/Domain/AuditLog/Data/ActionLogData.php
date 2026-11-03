@@ -53,7 +53,7 @@ class ActionLogData extends Data
     }
 
     /**
-     * Convert a FQCN to a friendly resource name (e.g. App\Models\User → user).
+     * Convert a FQCN to a friendly resource name (e.g. App\Domain\Administration\Models\User → user).
      */
     private static function friendlyType(?string $type): ?string
     {

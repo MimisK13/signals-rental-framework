@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\EmailTemplateSeeder;
 use App\Domain\Communications\Mail\TemplatedEmail;
 use App\Domain\Communications\Models\EmailTemplate;
 use App\Domain\Notifications\Notifications\UserInvitedNotification;
-use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 
 it('sends via mail channel', function () {

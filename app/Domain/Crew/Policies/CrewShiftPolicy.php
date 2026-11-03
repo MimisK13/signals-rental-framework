@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Enums\CrewShiftStatus;
 use App\Domain\Crew\Models\CrewShift;
 use App\Domain\Crew\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 
 class CrewShiftPolicy
 {

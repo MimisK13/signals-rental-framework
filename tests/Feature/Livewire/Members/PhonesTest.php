@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\Phone;
 use App\Domain\Members\Presentation\Livewire\PhoneForm;
 use App\Domain\Members\Presentation\Livewire\Phones;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

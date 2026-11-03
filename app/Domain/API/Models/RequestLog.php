@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\API\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Database\Factories\RequestLogFactory;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

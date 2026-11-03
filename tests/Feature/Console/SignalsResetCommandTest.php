@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Models\Setting;
 use App\Domain\Stores\Models\Store;
-use App\Models\Setting;
-use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 
 beforeEach(function () {

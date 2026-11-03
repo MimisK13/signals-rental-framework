@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Data\NotificationContextData;
@@ -11,7 +12,6 @@ use App\Domain\Notifications\Services\RecipientResolvers\SubjectOwnerRecipientRe
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Models\OpportunityItem;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
 

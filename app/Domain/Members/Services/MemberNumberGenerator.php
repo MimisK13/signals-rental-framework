@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Members\Services;
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Stores\Models\Store;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

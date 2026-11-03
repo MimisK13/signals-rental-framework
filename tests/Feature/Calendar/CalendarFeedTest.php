@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Activities\Models\Activity;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {

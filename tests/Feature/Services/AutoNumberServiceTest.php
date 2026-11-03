@@ -2,8 +2,8 @@
 
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
-use App\Models\AutoNumberSequence;
-use App\Services\AutoNumberService;
+use App\Domain\Numbering\Models\AutoNumberSequence;
+use App\Domain\Numbering\Services\AutoNumberService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 describe('AutoNumberService', function () {

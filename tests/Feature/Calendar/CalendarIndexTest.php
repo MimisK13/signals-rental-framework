@@ -4,11 +4,11 @@ use App\Domain\Activities\Data\Calendar\CalendarEventData;
 use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Calendar\Index;
-use App\Models\User;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Collection;
 use Livewire\Livewire;
 

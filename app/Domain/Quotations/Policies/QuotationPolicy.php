@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Quotations\Models\Quotation;
-use App\Models\User;
 
 final class QuotationPolicy
 {

@@ -1,0 +1,231 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Auth\Presentation\Livewire;
+
+use App\Domain\Administration\Models\User;
+use App\Domain\AuditLog\Events\AuditableEvent;
+use App\Domain\Auth\Presentation\Http\Controllers\Concerns\HandlesPasswordlessTwoFactor;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use PragmaRX\Google2FA\Google2FA;
+
+#[Layout('auth::components.layout')]
+final class TwoFactorChallenge extends Component
+{
+    public string $code = '';
+
+    public string $recoveryCode = '';
+
+    public bool $useRecovery = false;
+
+    /**
+     * Redirect to login if no pending 2FA session exists.
+     */
+    public function mount(): void
+    {
+        if (! Session::get('two_factor_user_id')) {
+            $this->redirect(route('login'), navigate: true);
+        }
+    }
+
+    /**
+     * Toggle between TOTP code and recovery code mode.
+     */
+    public function toggleRecovery(): void
+    {
+        $this->useRecovery = ! $this->useRecovery;
+        $this->code = '';
+        $this->recoveryCode = '';
+    }
+
+    /**
+     * Verify the two-factor challenge and log the user in.
+     */
+    public function authenticate(): void
+    {
+        $userId = Session::get('two_factor_user_id');
+
+        if (! $userId) {
+            abort(403);
+        }
+
+        $throttleKey = 'two-factor.'.$userId.'|'.request()->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                $this->useRecovery ? 'recoveryCode' : 'code' => __('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => ceil($seconds / 60),
+                ]),
+            ]);
+        }
+
+        $user = User::find($userId);
+
+        if (! $user) {
+            abort(403);
+        }
+
+        if ($this->useRecovery) {
+            $this->verifyRecoveryCode($user, $throttleKey);
+        } else {
+            $this->verifyTotpCode($user, $throttleKey);
+        }
+
+        Auth::loginUsingId($userId);
+        Session::forget('two_factor_user_id');
+        Session::put('two_factor_confirmed', true);
+        Session::regenerate();
+
+        $this->auditPendingPasswordlessLogin($user);
+
+        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+    }
+
+    /**
+     * Audit a passwordless (SSO or magic-link) login once 2FA completes it.
+     *
+     * Both passwordless callbacks stash a session flag before handing a
+     * 2FA-enabled user to this challenge: the SSO callback sets `sso_provider`,
+     * the magic-link callback sets `magic_link_login`. When one is present, fire
+     * the same audit event the non-2FA path records so 2FA logins are audited
+     * identically. Password+2FA logins set neither flag and are unaffected.
+     *
+     * BOTH flags are always cleared at the end regardless of which one audited,
+     * so an abandoned passwordless attempt can never leave a stale flag that
+     * mis-audits a later login.
+     */
+    private function auditPendingPasswordlessLogin(User $user): void
+    {
+        $provider = Session::get('sso_provider');
+
+        if (is_string($provider) && $provider !== '') {
+            event(new AuditableEvent(
+                model: $user,
+                action: 'auth.sso_login',
+                metadata: ['provider' => $provider],
+            ));
+        } elseif (Session::get('magic_link_login') === true) {
+            event(new AuditableEvent(
+                model: $user,
+                action: 'auth.magic_link_login',
+            ));
+        }
+
+        HandlesPasswordlessTwoFactor::clearPasswordlessAuditFlags();
+    }
+
+    /**
+     * Verify a TOTP code against the user's secret.
+     */
+    private function verifyTotpCode(User $user, string $throttleKey): void
+    {
+        try {
+            $secret = (string) $user->getAttribute('two_factor_secret');
+        } catch (\Throwable $exception) {
+            if (! $exception instanceof DecryptException) {
+                throw $exception;
+            }
+
+            $this->handleCorrupt2FA($user);
+        }
+
+        $google2fa = app(Google2FA::class);
+
+        if (! $google2fa->verifyKey($secret, $this->code)) {
+            RateLimiter::hit($throttleKey);
+
+            throw ValidationException::withMessages([
+                'code' => [__('The provided two-factor authentication code was invalid.')],
+            ]);
+        }
+
+        RateLimiter::clear($throttleKey);
+    }
+
+    /**
+     * Verify a recovery code, removing it from the user's list on success.
+     */
+    private function verifyRecoveryCode(User $user, string $throttleKey): void
+    {
+        try {
+            $decodedCodes = json_decode((string) $user->two_factor_recovery_codes, true);
+            $codes = is_array($decodedCodes)
+                ? array_values(array_filter($decodedCodes, is_string(...)))
+                : [];
+        } catch (\Throwable $exception) {
+            if (! $exception instanceof DecryptException) {
+                throw $exception;
+            }
+
+            $this->handleCorrupt2FA($user);
+        }
+
+        $index = null;
+
+        foreach ($codes as $i => $stored) {
+            if (hash_equals($stored, $this->recoveryCode)) {
+                $index = $i;
+                break;
+            }
+        }
+
+        if ($index === null) {
+            RateLimiter::hit($throttleKey);
+
+            throw ValidationException::withMessages([
+                'recoveryCode' => [__('The provided two-factor recovery code was invalid.')],
+            ]);
+        }
+
+        array_splice($codes, (int) $index, 1);
+
+        $user->forceFill([
+            'two_factor_recovery_codes' => json_encode($codes),
+        ])->save();
+
+        RateLimiter::clear($throttleKey);
+    }
+
+    /**
+     * Disable corrupt 2FA data and halt authentication.
+     *
+     * Throws ValidationException to prevent authenticate() from
+     * logging the user in without a valid second factor.
+     *
+     * @throws ValidationException
+     */
+    private function handleCorrupt2FA(User $user): never
+    {
+        logger()->error('Corrupt 2FA data detected, disabling 2FA for user.', ['user_id' => $user->id]);
+
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->saveOrFail();
+
+        Session::forget('two_factor_user_id');
+
+        throw ValidationException::withMessages([
+            $this->useRecovery ? 'recoveryCode' : 'code' => [
+                __('Two-factor authentication has been reset due to a configuration change. Please log in again.'),
+            ],
+        ]);
+    }
+
+    public function render(): View
+    {
+        return view('auth::two-factor-challenge');
+    }
+}

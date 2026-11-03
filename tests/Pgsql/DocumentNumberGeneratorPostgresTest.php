@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
 use App\Domain\Stores\Models\Store;
 use Illuminate\Console\Application;
 use Illuminate\Process\Pool;

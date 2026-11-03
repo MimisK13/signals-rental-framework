@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
 use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stores\Models\Store;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 

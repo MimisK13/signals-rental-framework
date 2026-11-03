@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Enums\MeteringChannel;
 use App\Domain\API\Models\RequestLog;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierCosts\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 final class ProductSupplierCostPolicy

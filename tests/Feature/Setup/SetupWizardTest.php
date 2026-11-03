@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Setup\Actions\CheckInfrastructure;
 use App\Domain\Setup\Presentation\Livewire\Wizard;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
 

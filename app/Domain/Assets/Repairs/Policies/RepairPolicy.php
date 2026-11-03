@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Assets\Repairs\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Stores\Policies\Concerns\ChecksStoreAccess;
-use App\Models\User;
 
 class RepairPolicy
 {

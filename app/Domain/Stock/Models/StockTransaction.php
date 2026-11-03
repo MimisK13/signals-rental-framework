@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Stock\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\Stock\Database\Factories\StockTransactionFactory;
 use App\Domain\Stock\Enums\TransactionType;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

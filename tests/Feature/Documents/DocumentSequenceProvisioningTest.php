@@ -1,20 +1,20 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Documents\Actions\GenerateDocument;
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
 use App\Domain\Invoices\Enums\InvoiceType;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Stores\Actions\CreateStore;
 use App\Domain\Stores\Data\CreateStoreData;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

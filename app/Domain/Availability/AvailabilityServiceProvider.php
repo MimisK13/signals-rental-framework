@@ -50,7 +50,7 @@ use App\Domain\Availability\Shortages\Services\Strategies\PrimaryJobCostApportio
 use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityCostApportionmentStrategy;
 use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Domain\Availability\Shortages\Services\SubHireSupplierCostQuery;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;

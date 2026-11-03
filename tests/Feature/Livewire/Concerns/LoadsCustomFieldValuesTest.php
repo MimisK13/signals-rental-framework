@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Presentation\Livewire\Form;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Livewire\Livewire;
 

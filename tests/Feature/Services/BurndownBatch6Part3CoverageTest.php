@@ -4,6 +4,9 @@
  * P4-CL4b coverage burn-down batch 6 — classes 46–67 (OpportunityTotalsCalculator through ContainerManifestService).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\PriceWeightResolver;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
@@ -17,7 +20,6 @@ use App\Domain\Communications\Services\Drivers\DatabaseDriver;
 use App\Domain\Communications\Services\MergeFieldRenderContext;
 use App\Domain\Documents\Exceptions\DocumentRenderException;
 use App\Domain\Documents\Models\Document;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\DocumentRenderPipeline;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
@@ -35,6 +37,7 @@ use App\Domain\Invoices\Services\InvoiceMarginCalculator;
 use App\Domain\Invoices\Services\PaymentNumberGenerator;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Services\NotificationLinkResolver;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Pricing\Services\OpportunityPricingRecalculator;
@@ -66,9 +69,6 @@ use App\Domain\Warehouse\Containers\Services\ContainerDispatchValidator;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;

@@ -1,15 +1,15 @@
 <?php
 
-use App\Domain\Documents\Actions\UpdateDocumentSequence;
-use App\Domain\Documents\Data\UpdateDocumentSequenceData;
-use App\Domain\Documents\Models\DocumentSequence;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Numbering\Actions\UpdateDocumentSequence;
+use App\Domain\Numbering\Data\UpdateDocumentSequenceData;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use App\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;

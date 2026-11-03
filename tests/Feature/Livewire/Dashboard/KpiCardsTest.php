@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Members\Models\Member;
@@ -11,10 +14,7 @@ use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stores\Models\Store;
 use App\Enums\AssetAssignmentStatus;
 use App\Livewire\Dashboard\KpiCards;
-use App\Models\User;
 use App\Services\Dashboard\DashboardKpiService;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;

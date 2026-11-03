@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Jobs\ExportApiRequestLog;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\Webhooks\Models\InboundWebhookLog;
 use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Domain\Webhooks\Models\WebhookLog;
-use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Crew\Actions\Timesheets\AddCrewTimeEntry;
 use App\Domain\Crew\Actions\Timesheets\ApproveCrewTimesheet;
@@ -19,8 +21,6 @@ use App\Domain\Crew\Enums\CrewTimesheetStatus;
 use App\Domain\Crew\Models\CrewAssignment;
 use App\Domain\Crew\Models\CrewTimesheet;
 use App\Domain\Crew\Settings\CrewSettings;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

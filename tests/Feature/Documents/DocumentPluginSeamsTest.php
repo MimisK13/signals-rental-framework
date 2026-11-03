@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
 use App\Domain\Documents\Contracts\DocumentDataResolver;
 use App\Domain\Documents\Contracts\PdfDriver;
 use App\Domain\Documents\Database\Seeders\DocumentTemplateSeeder;
@@ -18,8 +20,6 @@ use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stores\Models\Store;
 use App\Services\Plugins\PluginRegistrar;
 use App\Services\SchemaBuilder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\Model;
 
 beforeEach(function () {

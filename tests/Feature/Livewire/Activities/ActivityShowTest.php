@@ -2,12 +2,12 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Show;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 

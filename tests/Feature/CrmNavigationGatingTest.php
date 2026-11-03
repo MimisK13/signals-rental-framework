@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);

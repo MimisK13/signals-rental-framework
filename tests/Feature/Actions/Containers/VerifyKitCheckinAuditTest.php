@@ -1,15 +1,15 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Warehouse\Containers\Actions\VerifyKitCheckin;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

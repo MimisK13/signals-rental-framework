@@ -2,14 +2,14 @@
 
 use App\Domain\Activities\Actions\CreateActivity;
 use App\Domain\Activities\Data\CreateActivityData;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
 use App\Domain\Webhooks\Jobs\DeliverWebhook;
 use App\Domain\Webhooks\Models\Webhook;
 use App\Domain\Webhooks\Services\WebhookEventRegistry;
 use App\Domain\Webhooks\Services\WebhookService;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 

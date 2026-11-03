@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Pricing\Actions\CreateSurchargeGroup;
 use App\Domain\Pricing\Data\CreateSurchargeGroupData;
 use App\Domain\Pricing\Models\SurchargeGroup;
 use App\Domain\Pricing\Presentation\Livewire\SurchargeGroupForm;
 use App\Domain\Pricing\Presentation\Livewire\SurchargeGroups;
 use App\Domain\Tax\Models\ProductTaxClass;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

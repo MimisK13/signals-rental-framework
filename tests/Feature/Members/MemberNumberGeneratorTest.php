@@ -1,17 +1,17 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Actions\CreateMember;
 use App\Domain\Members\Data\CreateMemberData;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Services\MemberNumberGenerator;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 describe('MemberNumberGenerator', function () {
     it('formats numbers from document sequences with prefix and padding', function () {

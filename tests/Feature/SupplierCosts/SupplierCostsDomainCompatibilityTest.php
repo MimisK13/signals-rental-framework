@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use App\Domain\Activities\Models\Activity;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Gate;
 
 it('discovers the policy for the canonical model', function (): void {

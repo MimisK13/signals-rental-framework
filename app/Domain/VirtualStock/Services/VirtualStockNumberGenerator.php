@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\VirtualStock\Services;
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentNumberGenerator;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentNumberGenerator;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

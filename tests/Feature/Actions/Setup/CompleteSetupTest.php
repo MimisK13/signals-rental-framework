@@ -11,9 +11,9 @@ use App\Domain\Setup\Enums\FeatureProfile;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 
 pest()->group('env-writing');
+use App\Domain\Administration\Models\User;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Artisan;
 use Spatie\Permission\Models\Permission;

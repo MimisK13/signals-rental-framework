@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomViews\Actions;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\CustomViews\Models\UserViewPreference;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

@@ -4,6 +4,9 @@
  * Coverage burn-up batch 2 — flip one-method-away classes to fully covered.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Availability\Events\AvailabilityChanged;
@@ -59,9 +62,6 @@ use App\Domain\Warehouse\Containers\Actions\DissolveContainer;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Livewire\Concerns\HandlesVerbsStateErrors;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

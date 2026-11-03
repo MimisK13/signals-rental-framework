@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Lists\Database\Seeders\ListOfValuesSeeder;
 use App\Domain\Members\Models\Link;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Presentation\Livewire\LinkForm;
 use App\Domain\Members\Presentation\Livewire\Links;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Members\Models\Membership;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 
 it('returns null for owners (unrestricted access)', function () {
     $user = User::factory()->owner()->create();

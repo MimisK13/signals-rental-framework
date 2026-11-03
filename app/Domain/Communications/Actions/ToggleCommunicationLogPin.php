@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Actions;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Models\CommunicationLog;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 final class ToggleCommunicationLogPin

@@ -5,12 +5,12 @@ use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Calendar\ActivityDetailModal;
 use App\Domain\Activities\Presentation\Livewire\Calendar\ActivityFormModal;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
-use App\Models\User;
 use Carbon\Carbon;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 

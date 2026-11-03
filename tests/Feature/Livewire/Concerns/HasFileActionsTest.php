@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Models\Attachment;
 use App\Domain\Attachments\Presentation\Livewire\MemberFiles;
 use App\Domain\Attachments\Presentation\Livewire\ProductFiles;
 use App\Domain\Members\Models\Member;
 use App\Domain\Products\Models\Product;
-use App\Models\User;
 use App\Services\FileService;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {

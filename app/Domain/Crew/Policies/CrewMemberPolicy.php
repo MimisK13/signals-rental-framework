@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Crew\Models\CrewMember;
-use App\Models\User;
 
 class CrewMemberPolicy
 {

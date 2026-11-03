@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 

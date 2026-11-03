@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\Admin\InviteUser;
-use App\Data\Admin\InviteUserData;
+use App\Domain\Administration\Actions\InviteUser;
+use App\Domain\Administration\Data\InviteUserData;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Enums\MembershipType;
 use App\Domain\Members\Models\Member;
 use App\Domain\Notifications\Notifications\UserInvitedNotification;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;

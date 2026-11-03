@@ -1,11 +1,11 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Models\ApiIdempotencyKey;
 use App\Domain\API\Services\IdempotencyKeyService;
 use App\Domain\Invoices\Enums\InvoiceType;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\UsesPostgres;

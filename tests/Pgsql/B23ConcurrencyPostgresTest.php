@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetLifecycleEvent;
@@ -27,7 +28,6 @@ use App\Domain\VirtualStock\Actions\CreateVirtualStockIntake;
 use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;

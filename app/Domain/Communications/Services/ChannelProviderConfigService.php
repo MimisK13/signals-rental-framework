@@ -8,7 +8,7 @@ use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Models\ChannelProvider;
 use App\Domain\Communications\Services\Drivers\EmailDriver;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 
 /**
  * Loads, masks, and persists channel driver configuration for the settings UI.

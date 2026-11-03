@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Documents\Data\GenerateDocumentData;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\Domain\Documents\Services\DocumentTypeRegistry;
@@ -14,8 +16,6 @@ use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationDataResolver;
 use App\Domain\Stores\Models\Store;
 use App\Domain\Webhooks\Services\WebhookEventRegistry;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);

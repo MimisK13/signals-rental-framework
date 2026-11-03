@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\IssueInvoice;
 use App\Domain\Invoices\Data\CreateDraftInvoiceData;
@@ -7,6 +10,7 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Verbs\Events\CreditNoteIssued;
 use App\Domain\Invoices\Verbs\Events\PaymentRecorded;
 use App\Domain\Members\Models\Member;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Products\Models\Product;
 use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
@@ -55,12 +59,8 @@ use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeCreated;
 use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeReturned;
 use App\Domain\VirtualStock\Verbs\Events\VirtualStockIntakeUpdated;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\User;
-use App\Services\SequenceAllocator;
 use App\Verbs\States\AssetAssignmentState;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Stocktakes\Actions;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Stocktakes\Enums\StocktakeObservationType;
 use App\Domain\Stock\Stocktakes\Models\Stocktake;
@@ -11,7 +12,6 @@ use App\Domain\Stock\Stocktakes\Models\StocktakeLine;
 use App\Domain\Stock\Stocktakes\Models\StocktakeObservation;
 use App\Domain\Stock\Stocktakes\Services\SerializedStocktakeIdentifierResolver;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

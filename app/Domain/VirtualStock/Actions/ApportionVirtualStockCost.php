@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Domain\VirtualStock\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
-use App\Domain\VirtualStock\Data\ApportionVirtualStockCostResult;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;
 use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
+use App\Domain\Numbering\Services\SequenceAllocator;
 use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Projects\Opportunities\Verbs\Events\CostAdded;
 use App\Domain\Projects\Opportunities\Verbs\Events\CostRemoved;
 use App\Domain\Projects\Opportunities\Verbs\Events\CostUpdated;
+use App\Domain\VirtualStock\Data\ApportionVirtualStockCostResult;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 

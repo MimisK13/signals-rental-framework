@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Members\Models\Member;
 use App\Domain\Projects\Actions\AttachOpportunityToProject;
 use App\Domain\Projects\Actions\CreateProject;
@@ -15,7 +16,6 @@ use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityProjectAssigned;
 use App\Domain\Projects\Presentation\Livewire\Index;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;

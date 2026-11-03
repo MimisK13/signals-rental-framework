@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\CustomFields\Models\CustomField;
-use App\Models\AutoNumberSequence;
+use App\Domain\Numbering\Models\AutoNumberSequence;
 use Illuminate\Database\QueryException;
 
 it('creates an auto number sequence', function () {

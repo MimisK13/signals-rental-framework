@@ -4,7 +4,7 @@ use App\Domain\Activities\Enums\ActivityStatus;
 use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Services\Calendar\IcsFeedBuilder;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

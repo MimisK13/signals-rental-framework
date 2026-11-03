@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Stores\Scopes;
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

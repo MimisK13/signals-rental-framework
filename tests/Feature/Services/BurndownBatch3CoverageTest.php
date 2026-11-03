@@ -4,6 +4,9 @@
  * Coverage burn-down batch 3 — remaining service methods not covered by sibling files.
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\RansackFilter;
 use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Services\AvailabilityService;
@@ -24,7 +27,6 @@ use App\Domain\Communications\Services\MergeFieldFilterRegistry;
 use App\Domain\Communications\Services\MergeFieldRenderContext;
 use App\Domain\Communications\Services\MergeFieldRenderer;
 use App\Domain\Communications\Services\SmsSegmentCounter;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Services\DocumentEventDispatcher;
 use App\Domain\Documents\Services\DocumentRenderErrorSanitizer;
 use App\Domain\Documents\Services\Drivers\DompdfDriver;
@@ -40,6 +42,7 @@ use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\MemberNotificationPreferenceCatalog;
 use App\Domain\Notifications\Services\NotificationChannelResolver;
 use App\Domain\Notifications\Services\RecipientResolverRegistry;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Pricing\Models\DiscountCategory;
 use App\Domain\Pricing\Services\DiscountCategoryApplier;
 use App\Domain\Products\Models\Product;
@@ -51,6 +54,7 @@ use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderEventRecorder;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderStatusRegistry;
+use App\Domain\Settings\Services\SettingsService;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stores\Models\Store;
@@ -60,13 +64,9 @@ use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\VirtualStock\Services\VirtualStockAssetRetirer;
 use App\Domain\VirtualStock\Services\VirtualStockIntakeEventRecorder;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\User;
 use App\Services\ColumnRegistryResolver;
-use App\Services\SettingsService;
 use App\Support\Formatter;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;

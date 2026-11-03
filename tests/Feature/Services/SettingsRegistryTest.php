@@ -1,9 +1,9 @@
 <?php
 
-use App\Services\SettingsRegistry;
-use App\Services\SettingsService;
-use App\Settings\EmailSettings;
-use App\Settings\SecuritySettings;
+use App\Domain\Settings\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsService;
+use App\Domain\Settings\Settings\EmailSettings;
+use App\Domain\Settings\Settings\SecuritySettings;
 
 describe('SettingsRegistry', function () {
     it('registers and retrieves a settings definition', function () {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications\Listeners;
 
+use App\Domain\Administration\Models\User;
+use App\Domain\AuditLog\Events\AuditableEvent;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Invoices\Models\Invoice;
@@ -15,8 +17,6 @@ use App\Domain\Notifications\Services\EventNotificationConditionEvaluator;
 use App\Domain\Notifications\Services\EventNotificationMapRegistry;
 use App\Domain\Notifications\Services\InAppNotificationContentBuilder;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Domain\AuditLog\Events\AuditableEvent;
-use App\Models\User;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use Thunk\Verbs\Facades\Verbs;
 

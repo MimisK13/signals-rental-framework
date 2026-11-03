@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Opportunities\Policies;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Opportunities\Models\OpportunityCost;
-use App\Models\User;
 
 /**
  * Opportunity costs are visible to anyone who can view the parent opportunity.

@@ -1,7 +1,8 @@
 <?php
 
-use App\Models\User;
-use Livewire\Volt\Volt;
+use App\Domain\Administration\Models\User;
+use App\Domain\Settings\Presentation\Livewire\Admin\Scheduling;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -16,7 +17,7 @@ it('renders the scheduling settings page', function () {
 });
 
 it('loads scheduling settings with defaults', function () {
-    Volt::test('admin.settings.scheduling')
+    Livewire::test(Scheduling::class)
         ->assertSet('defaultOpportunityDurationDays', 1)
         ->assertSet('defaultBufferBeforeMinutes', 0)
         ->assertSet('defaultBufferAfterMinutes', 0)
@@ -28,7 +29,7 @@ it('loads scheduling settings with defaults', function () {
 });
 
 it('saves scheduling settings', function () {
-    Volt::test('admin.settings.scheduling')
+    Livewire::test(Scheduling::class)
         ->set('defaultOpportunityDurationDays', 7)
         ->set('defaultBufferBeforeMinutes', 30)
         ->set('defaultBufferAfterMinutes', 60)
@@ -52,21 +53,21 @@ it('saves scheduling settings', function () {
 });
 
 it('validates duration range', function () {
-    Volt::test('admin.settings.scheduling')
+    Livewire::test(Scheduling::class)
         ->set('defaultOpportunityDurationDays', 0)
         ->call('save')
         ->assertHasErrors(['defaultOpportunityDurationDays']);
 });
 
 it('validates time format', function () {
-    Volt::test('admin.settings.scheduling')
+    Livewire::test(Scheduling::class)
         ->set('defaultStartTime', 'invalid')
         ->call('save')
         ->assertHasErrors(['defaultStartTime']);
 });
 
 it('validates buffer minutes range', function () {
-    Volt::test('admin.settings.scheduling')
+    Livewire::test(Scheduling::class)
         ->set('defaultBufferBeforeMinutes', -1)
         ->call('save')
         ->assertHasErrors(['defaultBufferBeforeMinutes']);

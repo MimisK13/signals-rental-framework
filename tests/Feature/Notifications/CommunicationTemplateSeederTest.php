@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Database\Seeders\CommunicationTemplateSeeder;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Services\SystemCommunicationTemplates;
@@ -8,9 +11,6 @@ use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Stores\Actions\CreateStore;
 use App\Domain\Stores\Data\CreateStoreData;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(PermissionSeeder::class);

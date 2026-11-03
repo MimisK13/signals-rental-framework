@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Crew\Models;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Attachments\Concerns\HasAttachments;
 use App\Domain\Crew\Database\Factories\CrewMemberQualificationFactory;
 use App\Domain\Crew\Enums\CrewQualificationStatus;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Notifications\Actions\SaveMemberNotificationPreferences;
 use App\Domain\Notifications\Data\SaveMemberNotificationPreferencesData;
 use App\Domain\Notifications\Enums\NotificationAudience;
@@ -7,9 +10,6 @@ use App\Domain\Notifications\Models\NotificationPreference;
 use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Presentation\Livewire\Settings\Preferences;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Livewire;
 

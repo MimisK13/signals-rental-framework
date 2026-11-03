@@ -18,7 +18,7 @@ use App\Domain\Notifications\Enums\NotificationAudience;
 use App\Domain\Notifications\Models\NotificationSetting;
 use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Services\RecipientResolverRegistry;
-use App\Services\SettingsRegistry;
+use App\Domain\Settings\Services\SettingsRegistry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

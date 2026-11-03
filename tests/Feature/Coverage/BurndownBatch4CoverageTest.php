@@ -4,6 +4,9 @@
  * P4-CL4b burndown batch 4 — models, provider, queries, support, verb states (part 1).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Models\ApiIdempotencyKey;
 use App\Domain\API\Models\RequestLog;
 use App\Domain\API\Models\UsageDaily;
@@ -48,10 +51,7 @@ use App\Domain\VirtualStock\Models\VirtualStockCostOverride;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
 use App\Domain\Webhooks\Models\InboundWebhookSource;
 use App\Enums\LineItemTransactionType;
-use App\Models\User;
 use App\Providers\AppServiceProvider;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

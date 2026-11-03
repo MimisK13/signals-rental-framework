@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Auth\ResolveSsoUser;
-use App\Exceptions\Auth\SsoAccessDeniedException;
-use App\Models\OAuthIdentity;
-use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Actions\ResolveSsoUser;
+use App\Domain\Auth\Exceptions\SsoAccessDeniedException;
+use App\Domain\Auth\Models\OAuthIdentity;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Tests\TestCase;
 
-// DatabaseMigrations: the action queries and writes users and oauth identities.
-uses(TestCase::class, DatabaseMigrations::class);
+// RefreshDatabase: the action queries and writes users and oauth identities.
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     $this->resolve = app(ResolveSsoUser::class);

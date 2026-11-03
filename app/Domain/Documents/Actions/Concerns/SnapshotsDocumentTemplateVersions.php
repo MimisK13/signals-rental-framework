@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents\Actions\Concerns;
 
+use App\Domain\Administration\Models\User;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
-use App\Models\User;
 
 trait SnapshotsDocumentTemplateVersions
 {

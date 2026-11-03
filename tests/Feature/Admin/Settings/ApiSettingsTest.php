@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Presentation\Livewire\TokenManagement;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

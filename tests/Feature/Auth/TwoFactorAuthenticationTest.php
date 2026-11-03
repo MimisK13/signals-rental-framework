@@ -1,8 +1,10 @@
 <?php
 
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Presentation\Livewire\Login;
+use App\Domain\Auth\Presentation\Livewire\TwoFactorChallenge;
 use Illuminate\Support\Facades\Session;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use PragmaRX\Google2FA\Google2FA;
 
 beforeEach(function () {
@@ -16,7 +18,7 @@ beforeEach(function () {
 it('logs in normally when 2FA is not enabled', function () {
     $user = User::factory()->create();
 
-    Volt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')
@@ -29,7 +31,7 @@ it('logs in normally when 2FA is not enabled', function () {
 it('redirects to 2FA challenge after password when 2FA is enabled', function () {
     $user = User::factory()->withTwoFactor()->create();
 
-    Volt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login')
@@ -43,7 +45,7 @@ it('redirects to 2FA challenge after password when 2FA is enabled', function () 
 it('stores the user id in session before the challenge', function () {
     $user = User::factory()->withTwoFactor()->create();
 
-    Volt::test('auth.login')
+    Livewire::test(Login::class)
         ->set('email', $user->email)
         ->set('password', 'password')
         ->call('login');
@@ -62,7 +64,7 @@ it('completes login with a valid TOTP code', function () {
 
     $code = app(Google2FA::class)->getCurrentOtp((string) $user->two_factor_secret);
 
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('code', $code)
         ->call('authenticate')
         ->assertHasNoErrors()
@@ -77,7 +79,7 @@ it('rejects an invalid TOTP code', function () {
 
     Session::put('two_factor_user_id', $user->id);
 
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('code', '000000')
         ->call('authenticate')
         ->assertHasErrors(['code']);
@@ -86,7 +88,7 @@ it('rejects an invalid TOTP code', function () {
 });
 
 it('redirects to login when no two_factor_user_id in session', function () {
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->assertRedirect(route('login'));
 
     $this->assertGuest();
@@ -118,7 +120,7 @@ it('completes login with a valid recovery code', function () {
 
     Session::put('two_factor_user_id', $user->id);
 
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('useRecovery', true)
         ->set('recoveryCode', $validCode)
         ->call('authenticate')
@@ -136,7 +138,7 @@ it('removes used recovery code from the list', function () {
 
     Session::put('two_factor_user_id', $user->id);
 
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('useRecovery', true)
         ->set('recoveryCode', $usedCode)
         ->call('authenticate');
@@ -151,7 +153,7 @@ it('rejects an invalid recovery code', function () {
 
     Session::put('two_factor_user_id', $user->id);
 
-    Volt::test('auth.two-factor-challenge')
+    Livewire::test(TwoFactorChallenge::class)
         ->set('useRecovery', true)
         ->set('recoveryCode', 'FAKE-CODE')
         ->call('authenticate')

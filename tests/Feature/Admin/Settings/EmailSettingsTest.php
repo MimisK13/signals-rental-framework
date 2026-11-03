@@ -1,10 +1,11 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Communications\Mail\TemplatedEmail;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
+use App\Domain\Settings\Presentation\Livewire\Admin\Email;
 use Illuminate\Support\Facades\Mail;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -20,7 +21,7 @@ it('renders the email settings page', function () {
 });
 
 it('loads current settings with registry defaults', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->assertSet('mailer', 'log')
         ->assertSet('smtpPort', 587)
         ->assertSet('smtpEncryption', 'tls')
@@ -34,14 +35,14 @@ it('loads stored settings overriding defaults', function () {
         'email.from_address' => 'noreply@example.com',
     ]);
 
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->assertSet('mailer', 'smtp')
         ->assertSet('smtpHost', 'mail.example.com')
         ->assertSet('fromAddress', 'noreply@example.com');
 });
 
 it('saves email settings', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('mailer', 'smtp')
         ->set('smtpHost', 'smtp.example.com')
         ->set('smtpPort', 465)
@@ -62,21 +63,21 @@ it('saves email settings', function () {
 });
 
 it('validates mailer is required', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('mailer', '')
         ->call('save')
         ->assertHasErrors(['mailer']);
 });
 
 it('validates mailer must be a valid option', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('mailer', 'invalid')
         ->call('save')
         ->assertHasErrors(['mailer']);
 });
 
 it('validates from_address must be an email', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('mailer', 'log')
         ->set('fromAddress', 'not-an-email')
         ->call('save')
@@ -86,7 +87,7 @@ it('validates from_address must be an email', function () {
 it('sends a test email', function () {
     Mail::fake();
 
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('testEmailAddress', 'test@example.com')
         ->call('sendTestEmail')
         ->assertHasNoErrors()
@@ -98,14 +99,14 @@ it('sends a test email', function () {
 });
 
 it('validates test email address is required', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('testEmailAddress', '')
         ->call('sendTestEmail')
         ->assertHasErrors(['testEmailAddress']);
 });
 
 it('validates test email address must be an email', function () {
-    Volt::test('admin.settings.email')
+    Livewire::test(Email::class)
         ->set('testEmailAddress', 'not-valid')
         ->call('sendTestEmail')
         ->assertHasErrors(['testEmailAddress']);

@@ -2,9 +2,9 @@
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Activities\Presentation\Livewire\Show;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Models\ActionLog;
 use App\Domain\Members\Models\Member;
-use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {

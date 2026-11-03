@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Products\Models\Product;
 use App\Domain\VirtualStock\Actions\CancelVirtualStockIntake;
 use App\Domain\VirtualStock\Actions\ConfirmVirtualStockIntake;
@@ -11,9 +14,6 @@ use App\Domain\VirtualStock\Actions\UpdateDraftVirtualStockIntake;
 use App\Domain\VirtualStock\Data\CreateVirtualStockIntakeData;
 use App\Domain\VirtualStock\Data\UpdateDraftVirtualStockIntakeData;
 use App\Domain\VirtualStock\Models\VirtualStockIntake;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 

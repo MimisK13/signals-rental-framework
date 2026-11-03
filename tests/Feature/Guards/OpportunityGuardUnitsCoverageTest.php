@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Projects\Opportunities\Guards\Contracts\TransitionRule;
 use App\Domain\Projects\Opportunities\Guards\GuardResult;
 use App\Domain\Projects\Opportunities\Guards\PluginValidatorRegistry;
@@ -9,9 +12,6 @@ use App\Domain\Projects\Opportunities\Guards\Stages\PermissionStage;
 use App\Domain\Projects\Opportunities\Guards\Stages\PluginValidatorStage;
 use App\Domain\Projects\Opportunities\Guards\TransitionContext;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 
 beforeEach(function () {

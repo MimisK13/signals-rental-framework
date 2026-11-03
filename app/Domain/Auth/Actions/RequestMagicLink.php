@@ -1,0 +1,159 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Auth\Actions;
+
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Data\RequestMagicLinkData;
+use App\Domain\Auth\Services\MagicLinkService;
+use App\Domain\Notifications\Notifications\MagicLinkLoginNotification;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+
+/**
+ * Mints and emails a single-use magic-link login token (spec §7).
+ *
+ * Anti-enumeration is the central constraint: this action ALWAYS returns void
+ * and never signals whether the email matched a user. For an eligible, active
+ * user it invalidates any outstanding links, mints a fresh 15-minute token
+ * (only the hash is stored) and queues the login email. For unknown, inactive,
+ * feature-off or SSO-enforced cases it silently does nothing. The mail is queued
+ * so response timing cannot leak existence either.
+ *
+ * Two throttles apply, both returning silently when tripped (so neither leaks
+ * account existence): a per-email+IP cap, and a broader per-IP cap so a single
+ * IP cannot fan requests out across many different addresses. The invalidate +
+ * mint pair runs in a transaction so a mid-operation crash can never leave the
+ * user with all links revoked and no valid replacement.
+ */
+final class RequestMagicLink
+{
+    /**
+     * Number of magic-link requests permitted per email+IP within the window.
+     *
+     * Deliberately NOT bound to `security.max_login_attempts` /
+     * `security.lockout_duration`: those govern password lockout (visible
+     * "too many attempts" error); magic-link throttling has anti-enumeration
+     * semantics — it silently no-ops when tripped so the response never
+     * differs from the eligible-user path.
+     */
+    private const MAX_ATTEMPTS = 3;
+
+    /**
+     * Number of magic-link requests permitted per IP (across all addresses)
+     * within the window. Caps an IP from fanning sends out over many emails.
+     *
+     * Same rationale as {@see self::MAX_ATTEMPTS}: silent-fail semantics, not
+     * tied to the visible login-lockout settings.
+     */
+    private const MAX_IP_ATTEMPTS = 10;
+
+    /**
+     * Throttle window in seconds (15 minutes).
+     *
+     * Same rationale as {@see self::MAX_ATTEMPTS}: silent-fail semantics, not
+     * tied to the visible login-lockout settings.
+     */
+    private const DECAY_SECONDS = 900;
+
+    /**
+     * Token lifetime in minutes.
+     */
+    private const EXPIRY_MINUTES = 15;
+
+    /**
+     * Length of the random plaintext secret embedded in the link.
+     */
+    private const SECRET_LENGTH = 64;
+
+    public function __construct(
+        private readonly MagicLinkService $magicLink,
+    ) {}
+
+    /**
+     * Request a magic-link login email for the given address.
+     *
+     * Never reveals whether the address belongs to an account: returns void in
+     * all cases, including when throttled.
+     */
+    public function __invoke(RequestMagicLinkData $data): void
+    {
+        $email = $data->email;
+        $emailKey = $this->throttleKey($email);
+        $ipKey = $this->ipThrottleKey();
+
+        if (
+            RateLimiter::tooManyAttempts($emailKey, self::MAX_ATTEMPTS)
+            || RateLimiter::tooManyAttempts($ipKey, self::MAX_IP_ATTEMPTS)
+        ) {
+            return;
+        }
+
+        RateLimiter::hit($emailKey, self::DECAY_SECONDS);
+        RateLimiter::hit($ipKey, self::DECAY_SECONDS);
+
+        // Case-insensitive lookup: a user stored as `Foo@example.com` must still
+        // resolve when the request comes in as `foo@example.com`. Without this,
+        // such users hit the silent neutral path and receive no link at all.
+        $user = User::query()
+            ->whereRaw('lower(email) = ?', [Str::lower($email)])
+            ->first();
+
+        if ($user === null || ! $this->magicLink->isEligible($user)) {
+            return;
+        }
+
+        $secret = Str::random(self::SECRET_LENGTH);
+
+        DB::transaction(function () use ($user, $secret): void {
+            $this->invalidateOutstandingTokens($user);
+
+            $user->magicLinkTokens()->create([
+                'token_hash' => hash('sha256', $secret),
+                'expires_at' => now()->addMinutes(self::EXPIRY_MINUTES),
+            ]);
+        });
+
+        $user->notify(new MagicLinkLoginNotification($secret));
+    }
+
+    /**
+     * Invalidate the user's prior unconsumed magic-link tokens.
+     *
+     * A new request supersedes outstanding links so only the latest one works.
+     */
+    private function invalidateOutstandingTokens(User $user): void
+    {
+        $user->magicLinkTokens()
+            ->whereNull('consumed_at')
+            ->update(['consumed_at' => now()]);
+    }
+
+    /**
+     * Build the per-email, per-IP throttle key.
+     *
+     * PREREQUISITE: behind a load balancer / reverse proxy, `request()->ip()`
+     * returns the real client IP only when Laravel's trusted-proxy middleware is
+     * configured (see `bootstrap/app.php` → `trustProxies()` and the SSO/magic-link
+     * setup docs). Without it the proxy's IP is used, collapsing the per-IP throttle
+     * across all clients behind that proxy. This is a deployment-config dependency,
+     * not a code defect.
+     */
+    private function throttleKey(string $email): string
+    {
+        return 'magic-link.request|'.Str::lower($email).'|'.request()->ip();
+    }
+
+    /**
+     * Build the per-IP throttle key (across all addresses).
+     *
+     * Same trusted-proxy prerequisite as {@see self::throttleKey()}: the per-IP cap
+     * is only meaningful when `request()->ip()` resolves the real client IP.
+     */
+    private function ipThrottleKey(): string
+    {
+        return 'magic-link.request.ip|'.request()->ip();
+    }
+}

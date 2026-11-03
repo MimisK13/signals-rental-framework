@@ -1,7 +1,8 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\DocumentSequenceDefaults;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Actions\IssueInvoice;
 use App\Domain\Invoices\Actions\RecordPayment;
@@ -12,12 +13,11 @@ use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Invoices\Services\PaymentNumberGenerator;
 use App\Domain\Invoices\Verbs\Events\PaymentRecorded;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Services\DocumentSequenceDefaults;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Thunk\Verbs\Facades\Verbs;
 use Thunk\Verbs\Models\VerbEvent;
 

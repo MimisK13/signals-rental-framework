@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax;
 
+use App\Domain\Settings\Services\SettingsRegistry;
 use App\Domain\Tax\Console\RevalidateExpiredVatNumbers;
 use App\Domain\Tax\Contracts\TaxResolver;
 use App\Domain\Tax\Contracts\VatNumberValidator;
@@ -33,6 +34,7 @@ use App\Domain\Tax\Services\TaxCalculator;
 use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Domain\Tax\Services\TaxZoneRuleResolver;
 use App\Domain\Tax\Services\ZoneAwareTaxResolver;
+use App\Domain\Tax\Settings\TaxSettings;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -41,6 +43,10 @@ final class TaxServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->afterResolving(SettingsRegistry::class, function (SettingsRegistry $registry): void {
+            $registry->register(new TaxSettings);
+        });
+
         $this->app->singleton(TaxCalculator::class);
         $this->app->scoped(TaxResolutionContextHolder::class);
         $this->app->singleton(TaxZoneRuleResolver::class);

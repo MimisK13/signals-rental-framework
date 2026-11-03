@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\AuditLog\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Administration\Models\User;
 use App\Domain\AuditLog\Database\Factories\ActionLogFactory;
 use App\Domain\Projects\Opportunities\Models\Opportunity;
-use App\Models\User;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

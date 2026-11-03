@@ -4,6 +4,9 @@
  * P4-CL4b coverage burn-down batch 6 — classes 68–90 (PurchaseOrderDataResolver through ZoneAwareTaxResolver).
  */
 
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\API\Services\ApiEndpointCatalogue;
 use App\Domain\API\Services\PriceWeightResolver;
 use App\Domain\API\Services\UsageRecorder;
@@ -17,7 +20,6 @@ use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Services\Drivers\BroadcastDriver;
 use App\Domain\Communications\Services\Drivers\EmailDriver;
 use App\Domain\Communications\Services\NotificationPreviewData;
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Services\BladeExpressionExtractor;
 use App\Domain\Documents\Services\Drivers\BrowsershotDriver;
 use App\Domain\Documents\Services\OpportunityDataResolver;
@@ -43,6 +45,7 @@ use App\Domain\Notifications\Models\NotificationType;
 use App\Domain\Notifications\Notifications\ChannelInfrastructureBroadcastNotification;
 use App\Domain\Notifications\Services\InAppNotificationContentBuilder;
 use App\Domain\Notifications\Services\NotificationSettingsCatalog;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Pricing\Enums\PricingRoundingDirection;
 use App\Domain\Pricing\Models\Surcharge;
 use App\Domain\Products\Models\Product;
@@ -78,10 +81,7 @@ use App\Domain\Warehouse\Containers\Events\BeforeContainerPacked;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerTemplateValidator;
 use App\Enums\DealPriceMode;
-use App\Models\User;
 use App\Services\Plugins\PluginRegistrar;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Dedoc\Scramble\Generator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

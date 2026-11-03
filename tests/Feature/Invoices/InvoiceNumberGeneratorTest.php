@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Services\InvoiceNumberGenerator;
+use App\Domain\Numbering\Models\DocumentSequence;
 use App\Domain\Stores\Models\Store;
 use Carbon\CarbonImmutable;
 

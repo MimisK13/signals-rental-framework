@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Auth\ResolveSsoUser;
-use App\Exceptions\Auth\SsoAccessDeniedException;
-use App\Models\User;
+use App\Domain\Administration\Models\User;
+use App\Domain\Auth\Actions\ResolveSsoUser;
+use App\Domain\Auth\Exceptions\SsoAccessDeniedException;
 use Laravel\Socialite\Two\User as SocialiteUser;
 
 beforeEach(function () {

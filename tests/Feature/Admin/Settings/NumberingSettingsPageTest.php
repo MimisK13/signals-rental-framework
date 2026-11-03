@@ -1,14 +1,15 @@
 <?php
 
-use App\Domain\Documents\Models\DocumentSequence;
-use App\Domain\Documents\Services\EntityNumberSchemeCatalog;
+use App\Domain\Administration\Database\Seeders\PermissionSeeder;
+use App\Domain\Administration\Database\Seeders\RoleSeeder;
+use App\Domain\Administration\Models\User;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Numbering\Models\DocumentSequence;
+use App\Domain\Numbering\Presentation\Livewire\Admin\Numbering;
+use App\Domain\Numbering\Services\EntityNumberSchemeCatalog;
 use App\Domain\Stores\Models\Store;
-use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -23,7 +24,7 @@ beforeEach(function () {
 function numberingAdminUser(): User
 {
     $user = User::factory()->admin()->create();
-    $user->givePermissionTo(['numbering.view', 'numbering.edit', 'document_templates.edit']);
+    $user->givePermissionTo(['numbering.view', 'numbering.edit']);
 
     return $user;
 }
@@ -52,7 +53,7 @@ it('renders all eight entity types grouped by store and global', function () {
 it('shows default previews when sequence rows are missing', function () {
     $this->actingAs(numberingAdminUser());
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->assertSet('defaultStoreId', $this->store->id);
 
     $this->get(route('admin.settings.numbering'))
@@ -77,7 +78,7 @@ it('persists edits and updates the list preview after save', function () {
         'is_entity_number' => true,
     ]);
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->call('openEdit', $this->store->id, 'invoice_standard')
         ->set('formPrefix', 'IN-CX-')
         ->set('formSuffix', '')
@@ -101,7 +102,7 @@ it('persists edits and updates the list preview after save', function () {
         ->and($sequence->next_number)->toBe(1001)
         ->and($sequence->include_year)->toBeFalse();
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->assertSee('IN-CX-000001001');
 
     CarbonImmutable::setTestNow();
@@ -115,7 +116,7 @@ it('provisions a missing sequence row on first save', function () {
         ->where('document_type', 'member')
         ->exists())->toBeFalse();
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->call('openEdit', $this->store->id, 'member')
         ->set('formPrefix', 'MEM-CX-')
         ->set('formNextNumber', 42)
@@ -145,7 +146,7 @@ it('rejects padding greater than twelve digits', function () {
         'is_entity_number' => true,
     ]);
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->call('openEdit', $this->store->id, 'credit_note')
         ->set('formPadding', 13)
         ->call('saveSequence')
@@ -163,7 +164,7 @@ it('rejects a next number that does not fit the padding', function () {
         'is_entity_number' => true,
     ]);
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->call('openEdit', $this->store->id, 'purchase_order')
         ->set('formNextNumber', 10000)
         ->set('formPadding', 4)
@@ -193,7 +194,7 @@ it('surfaces backwards-set collision errors on the form', function () {
         'number' => 'INV-2026-0050',
     ]);
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->call('openEdit', $this->store->id, 'invoice_standard')
         ->set('formNextNumber', 50)
         ->call('saveSequence')
@@ -232,7 +233,7 @@ it('shows the numbering nav item for users with numbering view permission', func
 
 it('forbids save when the user can view but not edit numbering schemes', function () {
     $viewer = User::factory()->admin()->create();
-    $viewer->givePermissionTo(['numbering.view', 'document_templates.edit']);
+    $viewer->givePermissionTo('numbering.view');
 
     DocumentSequence::factory()->create([
         'store_id' => $this->store->id,
@@ -240,8 +241,8 @@ it('forbids save when the user can view but not edit numbering schemes', functio
         'is_entity_number' => true,
     ]);
 
-    Volt::actingAs($viewer)
-        ->test('admin.settings.numbering')
+    Livewire::actingAs($viewer)
+        ->test(Numbering::class)
         ->call('openEdit', $this->store->id, 'opportunity')
         ->set('formPrefix', 'OPP-')
         ->call('saveSequence')
@@ -259,7 +260,7 @@ it('grants operations manager view but not edit permissions for numbering', func
 it('updates live preview as form fields change', function () {
     $this->actingAs(numberingAdminUser());
 
-    Volt::test('admin.settings.numbering')
+    Livewire::test(Numbering::class)
         ->call('openEdit', $this->store->id, 'invoice_standard')
         ->set('formPrefix', 'IN-CX-')
         ->set('formSuffix', '')
