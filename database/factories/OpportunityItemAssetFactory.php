@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Domain\Stock\Database\Factories\StockLevelFactory;
 use App\Enums\AssetAssignmentStatus;
 use App\Models\OpportunityItemAsset;
 use App\Services\SequenceAllocator;

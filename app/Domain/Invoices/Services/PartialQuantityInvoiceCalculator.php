@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Services;
 
+use App\Domain\Availability\Shortages\Services\MoneyApportionment;
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
 use App\Domain\Invoices\Data\FrozenInvoiceTaxRowData;
 use App\Models\OpportunityItem;
-use App\Services\Shortages\MoneyApportionment;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use LogicException;

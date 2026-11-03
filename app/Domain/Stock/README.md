@@ -1,5 +1,5 @@
 # Stock
 
-Owns stock placement, quantities, adjustments, immutable transactions, and reversals per Product and Store.
+Owns stock placement, quantities, adjustments, immutable transactions, reversals, and physical stocktake workflows per Product and Store.
 
-Products, assets, stores, availability, containers, opportunities, and stocktakes remain collaborating domains.
+Products, assets, stores, availability, containers, and opportunities remain collaborating contexts.

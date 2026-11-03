@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
 use App\Domain\Documents\Presentation\Tables\DocumentTemplateColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\CreditNoteColumnRegistry;
 use App\Domain\Invoices\Presentation\Tables\InvoiceColumnRegistry;
@@ -23,7 +24,6 @@ use App\Views\OpportunityVersionColumnRegistry;
 use App\Views\ProductColumnRegistry;
 use App\Views\ProductGroupColumnRegistry;
 use App\Views\SerialisedComponentColumnRegistry;
-use App\Views\ShortageResolutionColumnRegistry;
 use App\Views\VirtualStockIntakeColumnRegistry;
 use Illuminate\Validation\ValidationException;
 

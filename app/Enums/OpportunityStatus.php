@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Domain\Availability\Enums\DemandPhase;
 use ValueError;
 
 /**

@@ -2,11 +2,11 @@
 
 namespace App\Guards\Opportunities\Rules;
 
+use App\Domain\Availability\Shortages\Services\ShortageAutoResolver;
+use App\Domain\Availability\Shortages\Services\ShortageConfirmationGate;
 use App\Guards\Opportunities\Contracts\TransitionRule;
 use App\Guards\Opportunities\GuardResult;
 use App\Guards\Opportunities\TransitionContext;
-use App\Services\Shortages\ShortageAutoResolver;
-use App\Services\Shortages\ShortageConfirmationGate;
 
 /**
  * The first concrete config-driven business rule (opportunity-lifecycle.md §12.2;
@@ -20,7 +20,7 @@ use App\Services\Shortages\ShortageConfirmationGate;
  *
  *   1. run auto-resolution first (no-op unless the store enables it) so the gate
  *      sees only the RESIDUAL shortage;
- *   2. enforce the store {@see App\Enums\ShortagePolicy} (relaxed by the actor's
+ *   2. enforce the store {@see App\Domain\Availability\Shortages\Enums\ShortagePolicy} (relaxed by the actor's
  *      `shortages.ignore` permission): Block → throws a 422; Warn → records an
  *      acknowledgement and proceeds; Allow → proceeds silently.
  *

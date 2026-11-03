@@ -4,13 +4,13 @@ namespace App\Actions\VirtualStock;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\VirtualStock\ApportionVirtualStockCostResult;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;
+use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
 use App\Enums\OpportunityCostType;
 use App\Models\OpportunityCost;
-use App\Models\ShortageResolution;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;
-use App\Services\Shortages\CostApportionmentContextBuilder;
-use App\Services\Shortages\CostApportionmentRegistry;
 use App\Verbs\Events\Opportunities\CostAdded;
 use App\Verbs\Events\Opportunities\CostRemoved;
 use App\Verbs\Events\Opportunities\CostUpdated;

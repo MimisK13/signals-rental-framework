@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Concerns;
 
 use App\Actions\Opportunities\ChangeOpportunityStatus;
@@ -34,7 +36,7 @@ use Thunk\Verbs\Exceptions\EventNotValid;
  * (availableActions / statusOptions) and the transition wire-methods so they are identical
  * everywhere instead of living only on the Show component.
  *
- * The using Volt component must declare a `public Opportunity $opportunity` property
+ * The using Livewire component must declare a `public Opportunity $opportunity` property
  * and include the partials/opportunity-action-modals partial in its view. The
  * permitted state-transition actions are computed exactly the way the API's
  * `available_actions` endpoint does (OpportunityController::availableActions /
@@ -98,11 +100,11 @@ trait HasOpportunityActions
 
         $errorBefore = session()->has('error');
 
-        match ($key) {
-            'convert_to_quotation' => $this->convertToQuotation(),
-            'convert_to_order' => $this->convertToOrder(),
-            default => null,
-        };
+        if ($key === 'convert_to_quotation') {
+            $this->convertToQuotation();
+        } else {
+            $this->convertToOrder();
+        }
 
         if (! $errorBefore && ! session()->has('error')) {
             $this->dispatch('toast', type: 'success', message: $copy['success']);
@@ -216,8 +218,7 @@ trait HasOpportunityActions
             'revert_to_draft' => $this->revertToDraft(),
             'clone' => $this->cloneOpportunity(),
             'delete' => $this->archive(),
-            'unlock_locks' => $this->unlockRates(),
-            default => null,
+            default => $this->unlockRates(),
         };
 
         if ($key === 'clone' && ! $errorBefore && ! session()->has('error')) {

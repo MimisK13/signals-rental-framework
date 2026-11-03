@@ -4,10 +4,10 @@ namespace App\Services\Notifications\RecipientResolvers;
 
 use App\Contracts\Notifications\RecipientResolver;
 use App\Data\Notifications\NotificationContextData;
+use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\ShortageWaitlistMonitor;
 use Illuminate\Support\Collection;
 
 /**

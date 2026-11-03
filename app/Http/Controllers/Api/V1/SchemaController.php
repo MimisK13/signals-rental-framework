@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Attachments\Models\Attachment;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\CustomViews\Models\CustomView;
@@ -29,7 +30,6 @@ use App\Models\OpportunityVersion;
 use App\Models\Phone;
 use App\Models\Product;
 use App\Models\ProductGroup;
-use App\Models\ShortageResolution;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Webhook;

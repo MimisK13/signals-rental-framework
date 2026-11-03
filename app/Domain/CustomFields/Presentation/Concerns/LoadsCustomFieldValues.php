@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\CustomFields\Presentation\Concerns;
 
+use App\Domain\CustomFields\Models\CustomFieldValue;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-/** @phpstan-ignore trait.unused (used by Volt components in Blade files) */
 trait LoadsCustomFieldValues
 {
     /**
@@ -19,7 +20,18 @@ trait LoadsCustomFieldValues
     {
         $values = [];
         $model->load('customFieldValues.customField');
-        foreach ($model->customFieldValues as $cfv) {
+
+        $customFieldValues = $model->getRelation('customFieldValues');
+
+        if (! $customFieldValues instanceof Collection) {
+            return $values;
+        }
+
+        foreach ($customFieldValues as $cfv) {
+            if (! $cfv instanceof CustomFieldValue) {
+                continue;
+            }
+
             if ($cfv->customField === null) {
                 Log::warning('Orphaned custom field value: definition not found', [
                     'custom_field_value_id' => $cfv->id,

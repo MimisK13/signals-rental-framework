@@ -6,9 +6,9 @@ use App\Actions\Opportunities\Concerns\RebuildsAvailabilitySnapshots;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\BulkReturnData;
 use App\Data\Opportunities\OpportunityItemData;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Models\OpportunityItem;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\Availability\ProductStoreCapacityLock;
 use App\Verbs\Events\Opportunities\BulkQuantityReturned;
 use Illuminate\Support\Facades\Gate;
 

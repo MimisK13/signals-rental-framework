@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Concerns;
 
+use App\Domain\Availability\Models\Demand;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
@@ -9,7 +10,6 @@ use App\Domain\Stock\Models\StockLevel;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;

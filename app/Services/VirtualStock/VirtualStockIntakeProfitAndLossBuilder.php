@@ -2,11 +2,11 @@
 
 namespace App\Services\VirtualStock;
 
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
-use App\Models\ShortageResolution;
 use App\Models\VirtualStockIntake;
-use App\Services\Shortages\CostApportionmentRegistry;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 

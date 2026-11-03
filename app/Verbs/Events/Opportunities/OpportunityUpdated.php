@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Models\Opportunity;
-use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityState;

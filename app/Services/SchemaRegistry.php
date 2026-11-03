@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\HasSchema;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
+use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Domain\Documents\Services\DocumentResolverRegistry;
 use App\ValueObjects\FieldDefinition;
 use Illuminate\Support\Facades\Cache;
@@ -126,11 +129,16 @@ class SchemaRegistry
             ->forModule($moduleName)
             ->active()
             ->get();
+        $customFieldValidator = $customFields->isEmpty() ? null : app(CustomFieldValidator::class);
 
         foreach ($customFields as $customField) {
             /** @var CustomFieldType $customFieldType */
             $customFieldType = $customField->field_type;
             $fieldType = $this->mapCustomFieldType($customFieldType);
+            $validationRules = $customFieldValidator?->rules(
+                $moduleName,
+                [$customField->name => null],
+            )[$customField->name] ?? [];
 
             $fields[$customField->name] = new FieldDefinition(
                 name: $customField->name,
@@ -143,7 +151,7 @@ class SchemaRegistry
                 searchable: (bool) $customField->is_searchable,
                 label: $customField->display_name,
                 description: $customField->description,
-                rules: $customField->validation_rules ?? [],
+                rules: $validationRules,
                 required: (bool) $customField->is_required,
             );
         }

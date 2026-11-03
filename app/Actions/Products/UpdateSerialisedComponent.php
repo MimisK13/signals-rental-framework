@@ -4,11 +4,11 @@ namespace App\Actions\Products;
 
 use App\Data\Products\SerialisedComponentData;
 use App\Data\Products\UpdateSerialisedComponentData;
+use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Events\AuditableEvent;
 use App\Models\SerialisedComponent;
 use App\Services\Api\WebhookService;
-use App\Services\Availability\ContainerDemandResolver;
 use Illuminate\Support\Facades\Gate;
 
 /**

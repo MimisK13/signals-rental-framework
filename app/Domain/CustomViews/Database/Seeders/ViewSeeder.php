@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\CustomViews\Database\Seeders;
 
 use App\Domain\Activities\Presentation\Columns\ActivityColumnRegistry;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Enums\OpportunityState;
-use App\Enums\ShortageResolutionStatus;
 use App\Views\MemberColumnRegistry;
 use App\Views\OpportunityColumnRegistry;
 use App\Views\ProductColumnRegistry;
 use App\Views\ProductGroupColumnRegistry;
-use App\Views\ShortageResolutionColumnRegistry;
 use Illuminate\Database\Seeder;
 
 final class ViewSeeder extends Seeder

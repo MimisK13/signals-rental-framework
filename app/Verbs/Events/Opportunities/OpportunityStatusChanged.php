@@ -2,7 +2,7 @@
 
 namespace App\Verbs\Events\Opportunities;
 
-use App\Enums\DemandPhase;
+use App\Domain\Availability\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
 use App\Verbs\Events\Opportunities\Concerns\GuardsOpportunityLifecycle;

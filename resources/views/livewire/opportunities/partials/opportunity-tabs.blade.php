@@ -20,7 +20,7 @@
         ? (isset($shortageCount) ? $shortageCount : null)
         : 0;
     if ($activeTab !== 'overview' && $allocationTabsVisible && \Illuminate\Support\Facades\Gate::allows('shortages.view')) {
-        $shortageTabCount = app(\App\Services\Shortages\ShortageDetector::class)
+        $shortageTabCount = app(\App\Domain\Availability\Shortages\Services\ShortageDetector::class)
             ->forOpportunity($opportunity)
             ->unresolved()
             ->count();

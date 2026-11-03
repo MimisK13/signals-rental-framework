@@ -3,8 +3,8 @@
 namespace App\Actions\Opportunities;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Models\OpportunityItemAsset;
-use App\Services\Availability\ProductStoreCapacityLock;
 use App\Verbs\Events\Opportunities\AssetDeallocated;
 use Illuminate\Support\Facades\Gate;
 

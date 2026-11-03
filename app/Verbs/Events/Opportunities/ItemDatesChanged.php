@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Availability\Shortages\Services\VirtualStockCostApportionmentRecalculator;
 use App\Models\OpportunityItem;
-use App\Services\Shortages\VirtualStockCostApportionmentRecalculator;
 use App\Verbs\Events\Opportunities\Concerns\PricesOpportunityItems;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityItemState;

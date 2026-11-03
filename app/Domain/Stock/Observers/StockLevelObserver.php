@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Observers;
 
-use App\Domain\Repairs\Models\Repair;
+use App\Domain\Assets\Repairs\Models\Repair;
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Services\RecalculationPipeline;
+use App\Domain\Availability\Services\RepairDemandResolver;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityEventType;
-use App\Jobs\RecalculateAvailabilityJob;
-use App\Models\AvailabilityEvent;
 use App\Models\Product;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\Availability\RepairDemandResolver;
 use Illuminate\Support\Facades\DB;
 
 /**

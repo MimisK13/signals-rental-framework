@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Domain\CustomFields\Concerns\HasCustomFields;
 use App\Domain\Documents\Models\Document;
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Domain\Stocktakes\Models\Stocktake;
+use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Domain\Tax\Models\TaxZone;
-use App\Enums\ShortageDispatchPolicy;
-use App\Enums\ShortagePolicy;
 use App\Services\SchemaBuilder;
 use Database\Factories\StoreFactory;
 use Illuminate\Database\Eloquent\Builder;

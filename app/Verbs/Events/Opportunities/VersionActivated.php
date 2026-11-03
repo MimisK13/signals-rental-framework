@@ -2,11 +2,11 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Enums\OpportunityState as StateAxis;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityVersion;
-use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityState;

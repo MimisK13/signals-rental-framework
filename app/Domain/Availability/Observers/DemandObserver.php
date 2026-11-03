@@ -1,0 +1,118 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Availability\Observers;
+
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\RecalculationPipeline;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Thunk\Verbs\Facades\Verbs;
+
+/**
+ * Keeps availability snapshots consistent when demands change.
+ *
+ * M3-4 wiring is **asynchronous/debounced**: every demand create/update/delete
+ * appends a lifecycle event (`demand_created` / `demand_updated` /
+ * `demand_released`) and then enqueues a {@see RecalculateAvailabilityJob} for
+ * the affected product/store. The job — not the observer — runs the
+ * {@see RecalculationPipeline} over the rolling
+ * horizon, on a dedicated queue, coalescing a burst of changes for the
+ * same product/store into a single recompute.
+ *
+ * Because the job recomputes the *whole* rolling horizon for the product/store
+ * (reading the current demand state when it runs), the observer no longer needs
+ * to compute a per-change blast window — a period move is covered automatically.
+ *
+ * **Replay-safety.** Demand sync is wrapped in `Verbs::unlessReplaying()`
+ * upstream, so no demand rows are written during a `Verbs::replay()` and this
+ * observer never fires there. As belt-and-suspenders the dispatch path also
+ * short-circuits when Verbs is replaying, so even a direct demand write during
+ * replay would not enqueue a recompute.
+ *
+ * The job writes only snapshots and availability events — never demands — so
+ * there is no observer recursion.
+ */
+class DemandObserver
+{
+    public function created(Demand $demand): void
+    {
+        $this->log($demand, AvailabilityEventType::DemandCreated);
+        $this->dispatchRecalculation($demand);
+    }
+
+    public function updated(Demand $demand): void
+    {
+        // A demand that has just become inactive (released) is logged as such;
+        // otherwise the change is a plain update.
+        $becameInactive = $demand->wasChanged('is_active') && ! $demand->is_active;
+
+        $this->log(
+            $demand,
+            $becameInactive ? AvailabilityEventType::DemandReleased : AvailabilityEventType::DemandUpdated,
+        );
+
+        $this->dispatchRecalculation($demand);
+    }
+
+    public function deleted(Demand $demand): void
+    {
+        $this->log($demand, AvailabilityEventType::DemandReleased);
+        $this->dispatchRecalculation($demand);
+    }
+
+    /**
+     * Enqueue a debounced availability recompute for the demand's product/store.
+     * Skipped during a Verbs replay so rebuilding the event store never fans out
+     * recomputes or broadcasts.
+     *
+     * The dispatch is deferred until the surrounding transaction commits. Verbs
+     * wraps each `fire()`/`commit()` cycle in a `DB::transaction`, and the
+     * {@see RecalculateAvailabilityJob} is `ShouldBeUnique` — acquiring its lock
+     * INSERTs into `cache_locks`, which on PostgreSQL fails on conflict and poisons
+     * the open Verbs transaction (`25P02 current transaction is aborted`), breaking
+     * every subsequent statement. `DB::afterCommit` runs the dispatch only once the
+     * transaction has committed (so the lock query runs outside it); when there is
+     * NO open transaction it fires the callback immediately, so the normal
+     * synchronous-flow async recompute still happens.
+     */
+    private function dispatchRecalculation(Demand $demand): void
+    {
+        if (Verbs::isReplaying()) {
+            return;
+        }
+
+        $productId = (int) $demand->product_id;
+        $storeId = (int) $demand->store_id;
+
+        DB::afterCommit(static function () use ($productId, $storeId): void {
+            RecalculateAvailabilityJob::dispatch($productId, $storeId);
+        });
+    }
+
+    /**
+     * Append an availability event describing the demand change.
+     */
+    private function log(Demand $demand, AvailabilityEventType $type): void
+    {
+        AvailabilityEvent::query()->create([
+            'event_type' => $type,
+            'product_id' => $demand->product_id,
+            'store_id' => $demand->store_id,
+            'demand_id' => $demand->id,
+            'source_type' => $demand->source_type,
+            'source_id' => $demand->source_id,
+            'payload' => [
+                'quantity' => $demand->quantity,
+                'phase' => $demand->phase->value,
+                'is_active' => $demand->is_active,
+                'starts_at' => Carbon::parse($demand->starts_at)->toIso8601String(),
+                'ends_at' => Carbon::parse($demand->ends_at)->toIso8601String(),
+            ],
+        ]);
+    }
+}

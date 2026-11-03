@@ -3,7 +3,7 @@
 namespace App\Settings;
 
 use App\Services\SettingsService;
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 abstract class SettingsDefinition

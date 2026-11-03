@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\Opportunities\Concerns;
 
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Models\OpportunityItem;
-use App\Services\Availability\OpportunityItemDemandResolver;
 use App\Services\Opportunities\OpportunityTotalsCalculator;
 use App\Verbs\States\OpportunityItemState;
 use Thunk\Verbs\Event;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Stock\Actions;
 
 use App\Domain\Assets\Models\Asset;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\CustomFields\Services\CustomFieldValidator;
 use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Data\StockLevelData;
@@ -16,7 +17,6 @@ use App\Domain\Stock\Models\StockTransaction;
 use App\Events\AuditableEvent;
 use App\Models\Product;
 use App\Services\Api\WebhookService;
-use App\Services\Availability\ProductStoreCapacityLock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

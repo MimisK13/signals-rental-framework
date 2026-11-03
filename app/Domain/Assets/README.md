@@ -1,5 +1,5 @@
 # Assets
 
-Owns serialized equipment identity, lifecycle, expenses, usage, inspections, compliance, and asset-level intelligence.
+Owns serialized equipment identity, lifecycle, expenses, usage, inspections, repairs, compliance, and asset-level intelligence.
 
-Products, stock, opportunities, repairs, availability, activities, and documents remain collaborating domains.
+Products, stock, opportunities, availability, activities, supplier bills, and documents remain collaborating domains.

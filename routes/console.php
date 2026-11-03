@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Availability\Jobs\PruneAvailabilityData;
+use App\Domain\Availability\Jobs\VerifySnapshotIntegrity;
+use App\Domain\Availability\Shortages\Jobs\ExpireWaitlistMonitors;
 use App\Jobs\ExpirePutAsides;
-use App\Jobs\ExpireWaitlistMonitors;
-use App\Jobs\PruneAvailabilityData;
-use App\Jobs\VerifySnapshotIntegrity;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;

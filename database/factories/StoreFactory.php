@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\ShortageDispatchPolicy;
-use App\Enums\ShortagePolicy;
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Enums\ContainerDissolveReason;
 use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Services\Availability\ContainerDemandResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 

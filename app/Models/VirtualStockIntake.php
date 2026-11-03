@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\Stock\Models\StockLevel;

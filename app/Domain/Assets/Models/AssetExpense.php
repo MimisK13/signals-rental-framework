@@ -6,7 +6,7 @@ namespace App\Domain\Assets\Models;
 
 use App\Domain\Assets\Database\Factories\AssetExpenseFactory;
 use App\Domain\Assets\Enums\AssetExpenseType;
-use App\Domain\Repairs\Models\Repair;
+use App\Domain\Assets\Repairs\Models\Repair;
 use App\Models\Member;
 use App\Models\Traits\FormatsMoney;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

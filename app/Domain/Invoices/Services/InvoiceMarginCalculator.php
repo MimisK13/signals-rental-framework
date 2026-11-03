@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Invoices\Services;
 
+use App\Domain\Availability\Shortages\Services\SubHireCostCalculator;
+use App\Domain\Availability\Shortages\Services\SubHireSupplierCostQuery;
 use App\Domain\Invoices\Data\InvoiceLineMarginResult;
 use App\Domain\Invoices\Data\InvoiceMarginResult;
 use App\Domain\Invoices\Models\Invoice;
@@ -14,8 +16,6 @@ use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Services\Pricing\QuantityMinorArithmetic;
 use App\Services\Pricing\RoundingStrategy;
-use App\Services\Shortages\SubHireCostCalculator;
-use App\Services\Shortages\SubHireSupplierCostQuery;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;

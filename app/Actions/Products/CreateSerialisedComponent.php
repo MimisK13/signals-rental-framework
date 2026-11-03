@@ -4,11 +4,11 @@ namespace App\Actions\Products;
 
 use App\Data\Products\CreateSerialisedComponentData;
 use App\Data\Products\SerialisedComponentData;
+use App\Domain\Availability\Services\KitCompositionGuard;
 use App\Events\AuditableEvent;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Services\Api\WebhookService;
-use App\Services\Availability\KitCompositionGuard;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;

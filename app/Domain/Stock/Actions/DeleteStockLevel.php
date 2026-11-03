@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Actions;
 
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
 use App\Services\Api\WebhookService;
-use App\Services\Availability\ProductStoreCapacityLock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

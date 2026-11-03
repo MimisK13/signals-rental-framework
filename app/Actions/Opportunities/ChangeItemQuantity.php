@@ -5,8 +5,8 @@ namespace App\Actions\Opportunities;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\ChangeItemQuantityData;
 use App\Data\Opportunities\OpportunityData;
+use App\Domain\Availability\Shortages\Services\ItemShortageProbe;
 use App\Models\OpportunityItem;
-use App\Services\Shortages\ItemShortageProbe;
 use App\Verbs\Events\Opportunities\ItemQuantityChanged;
 use Illuminate\Support\Facades\Gate;
 

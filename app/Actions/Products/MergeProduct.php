@@ -4,12 +4,12 @@ namespace App\Actions\Products;
 
 use App\Data\Products\MergeProductData;
 use App\Data\Products\ProductData;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Stock\Models\StockLevel;
 use App\Events\AuditableEvent;
 use App\Models\Accessory;
 use App\Models\Product;
 use App\Services\Api\WebhookService;
-use App\Services\Availability\ProductStoreCapacityLock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

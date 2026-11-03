@@ -4,12 +4,12 @@ namespace App\Listeners;
 
 use App\Actions\Notifications\DispatchNotification;
 use App\Data\Notifications\DispatchNotificationData;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Invoices\Models\Invoice;
 use App\Events\AuditableEvent;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
-use App\Models\ShortageResolution;
-use App\Models\ShortageWaitlistMonitor;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Notifications\DomainEventNotification;

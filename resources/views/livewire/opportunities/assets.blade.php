@@ -54,12 +54,12 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Domain\Repairs\Models\Repair;
+use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Domain\Warehouse\Containers\Services\RepackOnReturnEligibility;
-use App\ValueObjects\DispatchGateResult;
+use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
@@ -99,7 +99,7 @@ use Thunk\Verbs\Exceptions\EventNotValid;
  * chain (no hardcoded named-status switch); the event guards remain the source of
  * truth (a 422 is caught + flashed).
  *
- * The dispatch path routes through the {@see App\Services\Shortages\DispatchShortageGate}
+ * The dispatch path routes through the {@see App\Domain\Availability\Shortages\Services\DispatchShortageGate}
  * inside the action: a Block store policy throws a 422 (surfaced as the gate reason),
  * a WarnPartial policy proceeds and the action's `gateResult` exposes the held-item
  * metadata, which this component flashes after the dispatch.
@@ -1595,6 +1595,8 @@ new #[Layout('components.layouts.app')] class extends Component
         $this->opportunity->loadMissing([
             'items' => fn ($q) => $q->orderBy('path')->orderBy('id'),
             'items.assets' => fn ($q) => $q->with(['stockLevel.asset', 'container'])->orderBy('id'),
+            'items.assets.stockLevel.asset',
+            'items.assets.container',
         ]);
         $containers = $this->opportunityContainers();
 

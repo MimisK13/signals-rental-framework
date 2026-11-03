@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Services;
 
+use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Quotations\Enums\QuotationItemType;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

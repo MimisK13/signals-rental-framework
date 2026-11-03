@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Opportunities;
 
-use App\Data\Availability\OpportunityItemAvailabilityData;
 use App\Data\Opportunities\OpportunityItemReadContext;
 use App\Data\Opportunities\PreparedProductInputs;
 use App\Data\Opportunities\PreparedStandardDemandInputs;
 use App\Data\Opportunities\PreparedStockInputs;
+use App\Domain\Availability\Data\OpportunityItemAvailabilityData;
+use App\Domain\Availability\Services\AvailabilityService;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Services\AvailabilityService;
 use App\Support\Formatter;
 use Illuminate\Support\Collection;
 
@@ -158,6 +160,10 @@ class OpportunityLineItemsTreeBuilder
      * @param  array<int, OpportunityItemAvailabilityData>  $availability
      * @param  array<int, bool>  $duplicateIds
      * @param  array<int, int>|null  $availableByItem
+     * @param  array<string, string>  $moneyDisplays
+     * @param  array<string, int>  $chargeableDays
+     * @param  array<int, string>  $productUrls
+     * @param  array<int, string>  $availabilityUrls
      * @return array<string, mixed>
      */
     private function rowToArray(
@@ -189,7 +195,7 @@ class OpportunityLineItemsTreeBuilder
             ? [
                 'label' => $this->availabilityLabel($avail, $showShortageIndicators),
                 'status' => $this->availabilityStatus($avail, $showShortageIndicators),
-                'has_shortage' => $avail?->has_shortage ?? false,
+                'has_shortage' => $this->hasShortage($avail),
             ]
             : $this->availabilityStateForQuantity(
                 $item,
@@ -372,6 +378,11 @@ class OpportunityLineItemsTreeBuilder
         return $avail->available_for_item > 0 ? 'available' : 'reserved';
     }
 
+    private function hasShortage(?OpportunityItemAvailabilityData $availability): bool
+    {
+        return $availability !== null && $availability->has_shortage;
+    }
+
     /**
      * @return array{label: string|null, status: string|null, has_shortage: bool}
      */
@@ -400,8 +411,8 @@ class OpportunityLineItemsTreeBuilder
         }
 
         return [
-            'label' => $availableQuantity > 0 ? 'Available' : 'Reserved',
-            'status' => $availableQuantity > 0 ? 'available' : 'reserved',
+            'label' => 'Available',
+            'status' => 'available',
             'has_shortage' => false,
         ];
     }
@@ -438,6 +449,7 @@ class OpportunityLineItemsTreeBuilder
      * Per-line charge hover breakdown (CRMS-style). Rental amount is the pre-discount
      * gross for the chargeable window; surcharge reflects persisted line surcharges.
      *
+     * @param  array<string, string>  $moneyDisplays
      * @return array<string, string>|null
      */
     private function chargeBreakdownFor(

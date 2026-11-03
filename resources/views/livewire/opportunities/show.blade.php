@@ -46,7 +46,7 @@ new #[Layout('components.layouts.app')] class extends Component
     /**
      * Live availability refresh requires the Reverb/Echo client bundle to be
      * configured (not yet wired in resources/js/app.js); the server-side broadcast
-     * (App\Events\Availability\OpportunityAvailabilityChanged, broadcastAs
+     * (App\Domain\Availability\Events\OpportunityAvailabilityChanged, broadcastAs
      * `availability.changed` on `availability.opportunity.{id}`) and the channel
      * auth (routes/channels.php) already exist. Until the client Echo instance is
      * registered this listener is inert but correct — the dynamic `{opportunity.id}`

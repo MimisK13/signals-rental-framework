@@ -5,12 +5,12 @@ namespace App\Actions\Opportunities;
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\BulkDispatchData;
 use App\Data\Opportunities\OpportunityItemData;
-use App\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Services\DispatchShortageGate;
+use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
 use App\Models\OpportunityItem;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\Availability\ProductStoreCapacityLock;
-use App\Services\Shortages\DispatchShortageGate;
-use App\ValueObjects\DispatchGateResult;
 use App\Verbs\Events\Opportunities\BulkQuantityDispatched;
 use Illuminate\Support\Facades\Gate;
 

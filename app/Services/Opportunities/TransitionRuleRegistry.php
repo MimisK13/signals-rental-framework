@@ -9,7 +9,7 @@ use App\Guards\Opportunities\TransitionContext;
  * Plugin-extensible registry of opportunity transition business rules
  * (opportunity-lifecycle.md §12.2 "Business rule guards").
  *
- * Follows the same shape as {@see App\Services\DemandSourceRegistry} and the other
+ * Follows the same shape as {@see App\Domain\Availability\Services\DemandSourceRegistry} and the other
  * Signals registries: core registers the built-in rules (the shortage
  * confirmation gate, the FX/tax-lock enforcement) in the service provider; plugins
  * register their own through the same interface. The guard pipeline's business-

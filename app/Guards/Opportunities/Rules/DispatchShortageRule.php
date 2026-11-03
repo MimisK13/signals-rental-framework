@@ -2,11 +2,11 @@
 
 namespace App\Guards\Opportunities\Rules;
 
-use App\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Services\DispatchShortageGate;
 use App\Guards\Opportunities\Contracts\TransitionRule;
 use App\Guards\Opportunities\GuardResult;
 use App\Guards\Opportunities\TransitionContext;
-use App\Services\Shortages\DispatchShortageGate;
 
 /**
  * Surfaces the dispatch shortage policy in the `available_actions` precheck

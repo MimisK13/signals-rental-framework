@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierBills\Models;
 
+use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
-use App\Domain\Repairs\Models\Repair;
 use App\Domain\SupplierBills\Database\Factories\SupplierBillItemFactory;
 use App\Models\Product;
 use App\Models\VirtualStockIntake;

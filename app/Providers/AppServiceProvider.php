@@ -1,10 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
-use App\Contracts\Availability\AvailabilityDataPresence;
-use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Contracts\Availability\AvailabilityStrategyContract;
 use App\Guards\Opportunities\Contracts\ApprovalGate;
 use App\Guards\Opportunities\PluginValidatorRegistry;
 use App\Guards\Opportunities\Rules\DispatchShortageRule;
@@ -19,21 +18,7 @@ use App\Services\Api\CoreAbilityDefinitions;
 use App\Services\Api\PriceWeightResolver;
 use App\Services\Api\UsageRecorder;
 use App\Services\Api\WebhookEventRegistry;
-use App\Services\Availability\ContainerDemandResolver;
-use App\Services\Availability\DatabaseAvailabilityDataPresence;
-use App\Services\Availability\InspectionHoldDemandResolver;
-use App\Services\Availability\KitAvailabilityCalculator;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\Availability\PassThroughAvailabilityStrategy;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\Availability\RepairDemandResolver;
-use App\Services\Availability\SettingsAvailabilityResolutionProvider;
-use App\Services\Availability\SlotCalculator;
-use App\Services\Availability\VirtualStockDemandResolver;
-use App\Services\AvailabilityService;
 use App\Services\ColumnRegistryResolver;
-use App\Services\DemandSourceDefinition;
-use App\Services\DemandSourceRegistry;
 use App\Services\DocsService;
 use App\Services\NotificationRegistry;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
@@ -71,25 +56,6 @@ use App\Services\Pricing\Predicates\TagNamesPredicate;
 use App\Services\Pricing\Predicates\TransactionTypesPredicate;
 use App\Services\Pricing\QuantityContextResolver;
 use App\Services\SchemaRegistry;
-use App\Services\Shortages\CostApportionmentRegistry;
-use App\Services\Shortages\NullCostApportionmentStrategy;
-use App\Services\Shortages\PipelineShortageEmitter;
-use App\Services\Shortages\Resolvers\DateShiftResolver;
-use App\Services\Shortages\Resolvers\PartialFulfilmentResolver;
-use App\Services\Shortages\Resolvers\QuoteReallocationResolver;
-use App\Services\Shortages\Resolvers\SubHireResolver;
-use App\Services\Shortages\Resolvers\SubstitutionResolver;
-use App\Services\Shortages\Resolvers\WaitlistResolver;
-use App\Services\Shortages\Resolvers\WarehouseTransferResolver;
-use App\Services\Shortages\ShortageDetector;
-use App\Services\Shortages\ShortageResolverDefinition;
-use App\Services\Shortages\ShortageResolverRegistry;
-use App\Services\Shortages\Strategies\EvenSplitCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
-use App\Services\Shortages\SubHireSupplierCostQuery;
 use App\Support\Formatter;
 use App\Support\NumberingAccess;
 use App\Support\Timezone;
@@ -127,35 +93,6 @@ class AppServiceProvider extends ServiceProvider
         // Request-scoped suppression flag for batch auto-promotion (scoped so it is
         // Octane-safe — reset between requests).
         $this->app->scoped(AutoPromotionContext::class);
-
-        // Availability seams — tenant-ignorant OSS defaults. The commercial Cloud
-        // package rebinds these to tenant-/hosting-aware implementations.
-        $this->app->bind(AvailabilityDataPresence::class, DatabaseAvailabilityDataPresence::class);
-        $this->app->bind(AvailabilityResolutionProvider::class, SettingsAvailabilityResolutionProvider::class);
-
-        // Availability strategy hook seam — the OSS default is a pass-through
-        // no-op bracketing the recalculation per-slot calculation (steps 3 & 5).
-        // A plugin rebinds this to add buffer stock, sub-hire augmentation, etc.
-        $this->app->bind(AvailabilityStrategyContract::class, PassThroughAvailabilityStrategy::class);
-
-        // Availability engine read/recalc services. The SlotCalculator reads the
-        // resolution live through its provider, so a singleton is safe.
-        $this->app->singleton(SlotCalculator::class);
-        $this->app->singleton(PipelineShortageEmitter::class);
-        // Scoped (not singleton): the pipeline memoises store timezones on the
-        // instance, so under Octane it must be reset each request/job rather than
-        // persisting a stale timezone for the worker's lifetime.
-        $this->app->scoped(RecalculationPipeline::class);
-        $this->app->scoped(ShortageDetector::class);
-        $this->app->scoped(AvailabilityService::class);
-
-        // The kit calculator reads component availability back through the
-        // AvailabilityService. Resolve the service lazily (closure) so the
-        // singleton never captures a request-bound dependency in its constructor
-        // (Octane-safe) and so tests can rebind the service to a mock.
-        $this->app->singleton(KitAvailabilityCalculator::class, fn ($app): KitAvailabilityCalculator => new KitAvailabilityCalculator(
-            fn (): AvailabilityService => $app->make(AvailabilityService::class),
-        ));
 
         $this->app->singleton(PermissionRegistry::class, function (): PermissionRegistry {
             $registry = new PermissionRegistry;
@@ -210,56 +147,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ApiEndpointCatalogue::class);
         $this->app->singleton(UsageRecorder::class);
 
-        $this->app->singleton(DemandSourceRegistry::class, function (): DemandSourceRegistry {
-            $registry = new DemandSourceRegistry;
-
-            $registry->register(new DemandSourceDefinition(
-                type: 'opportunity_item',
-                displayName: 'Bookings',
-                resolverClass: OpportunityItemDemandResolver::class,
-                colour: '#3B82F6',
-                icon: 'calendar',
-            ));
-
-            // Container reservations: serialised items held indefinitely inside a
-            // kit/hybrid-fixed container, removing them from individual availability
-            // (serialised-containers.md §"Kit Mode — Contents Removed from
-            // Availability"). Created on pack, voided on unpack.
-            $registry->register(new DemandSourceDefinition(
-                type: 'container',
-                displayName: 'Containers',
-                resolverClass: ContainerDemandResolver::class,
-                colour: '#0EA5E9',
-                icon: 'cube',
-            ));
-
-            $registry->register(new DemandSourceDefinition(
-                type: 'virtual_stock_intake',
-                displayName: 'Virtual Stock',
-                resolverClass: VirtualStockDemandResolver::class,
-                colour: '#8B5CF6',
-                icon: 'arrow-down-circle',
-            ));
-
-            $registry->register(new DemandSourceDefinition(
-                type: 'repair',
-                displayName: 'Repairs',
-                resolverClass: RepairDemandResolver::class,
-                colour: '#F59E0B',
-                icon: 'wrench',
-            ));
-
-            $registry->register(new DemandSourceDefinition(
-                type: 'inspection_hold',
-                displayName: 'Return inspection holds',
-                resolverClass: InspectionHoldDemandResolver::class,
-                colour: '#64748B',
-                icon: 'clipboard-check',
-            ));
-
-            return $registry;
-        });
-
         $this->app->singleton(DiscountCriteriaPredicateRegistry::class, function (): DiscountCriteriaPredicateRegistry {
             $registry = new DiscountCriteriaPredicateRegistry;
 
@@ -286,45 +173,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(OpportunityPricingCalculateDecorator::class);
         $this->app->singleton(DealPriceProportionalDistributor::class);
         $this->app->singleton(OpportunityPricingRecalculator::class);
-
-        // Built-in resolvers memoise read-only facts on their instances. Keep
-        // those instances request/job scoped so one detection pass shares the
-        // lookup without retaining state across Octane requests or jobs.
-        $this->app->scoped(QuoteReallocationResolver::class);
-        $this->app->scoped(SubstitutionResolver::class);
-        $this->app->scoped(WarehouseTransferResolver::class);
-        $this->app->scoped(SubHireSupplierCostQuery::class);
-
-        // Shortage resolvers — core registers the built-in non-PO resolvers;
-        // plugins register their own (and the sub-hire/external-sourcing
-        // resolvers land in Phase 4) through the same interface.
-        $this->app->singleton(ShortageResolverRegistry::class, function (): ShortageResolverRegistry {
-            $registry = new ShortageResolverRegistry;
-
-            $registry->register(new ShortageResolverDefinition('reallocate', QuoteReallocationResolver::class));
-            $registry->register(new ShortageResolverDefinition('substitute', SubstitutionResolver::class));
-            $registry->register(new ShortageResolverDefinition('transfer', WarehouseTransferResolver::class));
-            $registry->register(new ShortageResolverDefinition('date_shift', DateShiftResolver::class));
-            $registry->register(new ShortageResolverDefinition('partial', PartialFulfilmentResolver::class));
-            $registry->register(new ShortageResolverDefinition('waitlist', WaitlistResolver::class));
-            $registry->register(new ShortageResolverDefinition('subhire', SubHireResolver::class));
-
-            return $registry;
-        });
-
-        // Cost apportionment strategies for virtual stock / sub-hire intakes.
-        $this->app->singleton(CostApportionmentRegistry::class, function (): CostApportionmentRegistry {
-            $registry = new CostApportionmentRegistry;
-
-            $registry->register(new NullCostApportionmentStrategy);
-            $registry->register(app(PrimaryJobCostApportionmentStrategy::class));
-            $registry->register(app(EvenSplitCostApportionmentStrategy::class));
-            $registry->register(app(ProportionalQuantityCostApportionmentStrategy::class));
-            $registry->register(app(ProportionalQuantityDurationCostApportionmentStrategy::class));
-            $registry->register(app(ManualCostApportionmentStrategy::class));
-
-            return $registry;
-        });
 
         $this->registerOpportunityGuardPipeline();
     }

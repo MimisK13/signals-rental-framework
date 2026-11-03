@@ -3,8 +3,8 @@
 namespace App\Services\Investment;
 
 use App\Data\ProductShortageSummary;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Enums\InvestmentIntelligenceCompleteness;
-use App\Models\AvailabilityDailySummary;
 use App\Models\Product;
 use App\Models\Store;
 use Carbon\CarbonImmutable;

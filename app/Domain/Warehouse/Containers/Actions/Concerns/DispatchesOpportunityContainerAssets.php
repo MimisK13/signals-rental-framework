@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Warehouse\Containers\Actions\Concerns;
 
 use App\Actions\Opportunities\Concerns\FormatsOpportunityDates;
+use App\Domain\Availability\Shortages\Services\DispatchShortageGate;
+use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
 use App\Domain\Warehouse\Containers\Data\ContainerDispatchAmendmentData;
 use App\Domain\Warehouse\Containers\Data\ContainerDispatchProductVerdictData;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
@@ -21,8 +23,6 @@ use App\Models\Product;
 use App\Services\Opportunities\ItemTreeService;
 use App\Services\Opportunities\OpportunityAutoGroupResolver;
 use App\Services\SequenceAllocator;
-use App\Services\Shortages\DispatchShortageGate;
-use App\ValueObjects\DispatchGateResult;
 use App\Verbs\Events\Opportunities\AssetAllocated;
 use App\Verbs\Events\Opportunities\AssetContainerSet;
 use App\Verbs\Events\Opportunities\AssetDispatched;

@@ -2,9 +2,9 @@
 
 namespace App\Services\VirtualStock;
 
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\DemandPhase;
-use App\Models\Demand;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 

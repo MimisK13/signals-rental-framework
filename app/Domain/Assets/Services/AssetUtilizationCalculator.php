@@ -9,7 +9,7 @@ use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetLifecycleEvent;
 use App\Domain\Assets\Models\AssetUsage;
-use App\Domain\Repairs\Models\Repair;
+use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\UtilizationCompleteness;
 use App\Support\Intervals\TimeInterval;

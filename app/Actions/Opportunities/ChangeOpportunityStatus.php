@@ -4,13 +4,13 @@ namespace App\Actions\Opportunities;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityData;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Enums\OpportunityStatus;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\Availability\ProductStoreCapacityLock;
 use App\Verbs\Events\Opportunities\OpportunityStatusChanged;
 use Illuminate\Support\Facades\Gate;
 

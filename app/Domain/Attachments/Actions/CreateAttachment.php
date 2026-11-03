@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Attachments\Actions;
 
 use App\Domain\Assets\Models\AssetInspection;
+use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Attachments\Data\AttachmentData;
 use App\Domain\Attachments\Data\CreateAttachmentData;
-use App\Domain\Repairs\Models\Repair;
 use App\Models\Member;
 use App\Services\FileService;
 use Illuminate\Database\Eloquent\Model;

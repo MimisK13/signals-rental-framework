@@ -233,7 +233,7 @@
     <div x-show="tab === 'maintenance'" x-cloak class="px-6 py-4 max-md:px-5 max-sm:px-3">
         <x-signals.panel title="Repairs">
             <div class="mb-4 flex justify-end">
-                @can('create', \App\Domain\Repairs\Models\Repair::class)
+                @can('create', \App\Domain\Assets\Repairs\Models\Repair::class)
                     <a href="{{ route('repairs.create', ['asset_id' => $asset->id]) }}" wire:navigate.hover class="s-btn s-btn-sm s-btn-primary">Report repair</a>
                 @endcan
             </div>

@@ -5,7 +5,7 @@ namespace App\Data\Opportunities;
 use App\Data\Concerns\EntityReferenceData;
 use App\Data\Concerns\FormatsTimestamps;
 use App\Data\Members\AddressData;
-use App\Enums\DemandPhase;
+use App\Domain\Availability\Enums\DemandPhase;
 use App\Enums\OpportunityState;
 use App\Enums\ReleasePoint;
 use App\Models\Member;

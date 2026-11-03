@@ -108,7 +108,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('products/{product}/investment', 'products.investment')->name('products.investment');
     Volt::route('products/{product}/utilization', 'products.utilization')->name('products.utilization');
     Volt::route('products/{product}/inspections', 'products.inspections')->name('products.inspections');
-    Volt::route('products/{product}/availability', 'products.availability')->name('products.availability');
     Volt::route('products/{product}/edit', 'products.form')->name('products.edit');
     Volt::route('products/{product}/stock', 'products.stock')->name('products.stock');
     Volt::route('products/{product}/accessories', 'products.accessories')->name('products.accessories');
@@ -163,7 +162,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('opportunities/{opportunity}/costs', 'opportunities.costs')->name('opportunities.costs')->withTrashed();
     Volt::route('opportunities/{opportunity}/invoices', 'opportunities.invoices')->name('opportunities.invoices')->withTrashed();
     Volt::route('opportunities/{opportunity}/participants', 'opportunities.participants')->name('opportunities.participants')->withTrashed();
-    Volt::route('opportunities/{opportunity}/shortages', 'opportunities.shortages')->name('opportunities.shortages')->withTrashed();
     Volt::route('opportunities/{opportunity}/versions', 'opportunities.versions')->name('opportunities.versions')->withTrashed();
     Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
     Volt::route('opportunities/{opportunity}/documents', 'opportunities.documents')->name('opportunities.documents')->withTrashed();
@@ -171,20 +169,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Route::delete('opportunities/{opportunity}/items/{item}', [OpportunityLineItemController::class, 'destroy'])
         ->name('opportunities.items.destroy')
         ->withTrashed();
-
-    // Availability
-    //
-    // The standalone Equipment Availability calendar/gantt page (M8-4b). The Volt
-    // component calls AvailabilityService directly (the same service layer the
-    // API uses) and gates on availability.view; the Job Planning nav link points
-    // here.
-    Volt::route('availability', 'availability.index')->name('availability.index');
-
-    // Per-product availability / bookings grid (Current RMS "Product Bookings").
-    // Summary rows, opportunity demand bars, then serialised asset rows.
-    Volt::route('availability/bookings/{product}/{from}/{days}', 'availability.bookings')
-        ->name('availability.bookings')
-        ->where(['from' => '[0-9]{4}-[0-9]{2}-[0-9]{2}', 'days' => '[0-9]+']);
 
     // Job Planner
     //

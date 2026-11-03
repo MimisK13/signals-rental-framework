@@ -2,9 +2,9 @@
 
 namespace App\Verbs\Events\VirtualStock;
 
-use App\Models\Demand;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\VirtualStockDemandResolver;
 use App\Models\VirtualStockIntake;
-use App\Services\Availability\VirtualStockDemandResolver;
 use App\Services\VirtualStock\VirtualStockAssetProvisioner;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\States\VirtualStockIntakeState;

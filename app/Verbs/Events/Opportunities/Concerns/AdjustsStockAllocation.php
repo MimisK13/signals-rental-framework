@@ -2,10 +2,10 @@
 
 namespace App\Verbs\Events\Opportunities\Concerns;
 
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\OpportunityItem;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\AvailabilityService;
 use Brick\Math\BigDecimal;
 use Thunk\Verbs\Event;
 use Thunk\Verbs\Facades\Verbs;

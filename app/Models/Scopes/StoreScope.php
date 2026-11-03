@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Scopes;
 
 use App\Models\User;
@@ -9,12 +11,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Context;
 
-class StoreScope implements Scope
+/** @implements Scope<Model> */
+final class StoreScope implements Scope
 {
     private const CONTEXT_KEY = 'store-scope-disabled';
 
     /**
-     * @param  Builder<Model>  $builder
+     * @param  Builder<covariant Model>  $builder
      */
     public function apply(Builder $builder, Model $model): void
     {

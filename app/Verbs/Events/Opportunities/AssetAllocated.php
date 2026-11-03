@@ -3,14 +3,14 @@
 namespace App\Verbs\Events\Opportunities;
 
 use App\Actions\Opportunities\AllocateAsset;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\AvailabilityService;
 use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\Verbs\Events\Opportunities\Concerns\AdjustsStockAllocation;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;

@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\VirtualStock;
 
+use App\Domain\Availability\Services\VirtualStockDemandResolver;
 use App\Models\VirtualStockIntake;
-use App\Services\Availability\VirtualStockDemandResolver;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use App\Verbs\States\VirtualStockIntakeState;
 use Carbon\CarbonImmutable;

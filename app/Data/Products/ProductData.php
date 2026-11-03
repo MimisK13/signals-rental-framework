@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Products;
 
 use App\Data\Concerns\EntityReferenceData;
@@ -7,6 +9,7 @@ use App\Data\Concerns\FormatsTimestamps;
 use App\Data\Concerns\StripsCostFields;
 use App\Domain\Rates\Data\ProductRateData;
 use App\Domain\Rates\Models\ProductRate;
+use App\Domain\Stock\Data\StockLevelData;
 use App\Domain\Stock\Enums\AllowedStockType;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;

@@ -4,6 +4,7 @@ namespace App\Services\Opportunities;
 
 use App\Data\Opportunities\ProductSearchAccessoryData;
 use App\Data\Opportunities\ProductSearchResultData;
+use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Currency\Services\CurrencyService;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
@@ -13,7 +14,6 @@ use App\Domain\Rates\ValueObjects\CalculationContext;
 use App\Models\Accessory;
 use App\Models\Product;
 use App\Services\Api\RansackFilter;
-use App\Services\AvailabilityService;
 use App\Services\FileService;
 use Brick\Money\Currency;
 use Brick\Money\Money;

@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Assets\Repairs\Actions;
+
+use App\Domain\Assets\Repairs\Models\Repair;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
+use App\Events\AuditableEvent;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+
+class UpdateRepair
+{
+    /** @param array<string, mixed> $attributes */
+    public function __invoke(Repair $repair, array $attributes): Repair
+    {
+        Gate::authorize('update', $repair);
+
+        return DB::transaction(function () use ($repair, $attributes): Repair {
+            $repair->refresh();
+            app(ProductStoreCapacityLock::class)->acquire((int) $repair->product_id, (int) ($attributes['store_id'] ?? $repair->store_id));
+
+            $repair->fill($attributes)->save();
+            event(new AuditableEvent($repair->refresh(), 'repair.updated'));
+
+            return $repair;
+        });
+    }
+}

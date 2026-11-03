@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-use App\Services\Availability\KitAvailabilityCalculator;
+use App\Domain\Availability\Services\KitAvailabilityCalculator;
 
 /**
  * How a kit component is sourced when the kit is dispatched.

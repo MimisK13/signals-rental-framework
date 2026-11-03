@@ -2,11 +2,11 @@
 
 namespace App\Actions\Opportunities\Concerns;
 
+use App\Domain\Availability\Jobs\RebuildSnapshotsJob;
+use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Observers\DemandObserver;
 use App\Jobs\DetectOverdueDemands;
-use App\Jobs\RebuildSnapshotsJob;
-use App\Jobs\RecalculateAvailabilityJob;
 use App\Models\OpportunityItem;
-use App\Observers\DemandObserver;
 
 /**
  * Wires the on-demand snapshot maintenance rebuild into the dispatch/return flow.

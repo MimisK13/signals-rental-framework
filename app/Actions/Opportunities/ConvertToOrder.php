@@ -4,15 +4,15 @@ namespace App\Actions\Opportunities;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Data\Opportunities\OpportunityData;
-use App\Enums\ShortagePolicy;
+use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
+use App\Domain\Availability\Shortages\Services\ShortageAutoResolver;
+use App\Domain\Availability\Shortages\Services\ShortageConfirmationGate;
 use App\Enums\VersionStatus;
 use App\Guards\Opportunities\GuardPipeline;
 use App\Guards\Opportunities\Rules\ShortageConfirmationRule;
 use App\Guards\Opportunities\TransitionContext;
 use App\Models\Opportunity;
 use App\Models\OpportunityVersion;
-use App\Services\Shortages\ShortageAutoResolver;
-use App\Services\Shortages\ShortageConfirmationGate;
 use App\Verbs\Events\Opportunities\OpportunityConvertedToOrder;
 use App\Verbs\Events\Opportunities\VersionSuperseded;
 

@@ -29,7 +29,7 @@ use Thunk\Verbs\Event;
  *  - it must not be closed/terminal.
  *
  * Demand effect: a Draft carries no confirmed demand (Draft/Open maps to
- * {@see App\Enums\DemandPhase::Draft}, inactive). Reverting therefore stands the
+ * {@see App\Domain\Availability\Enums\DemandPhase::Draft}, inactive). Reverting therefore stands the
  * line demands DOWN, which {@see ResyncsOpportunityDemands} performs by
  * re-deriving the line demands from the now-draft status. Replay-safe — the
  * audit dedups on the event id and the resync is idempotent.

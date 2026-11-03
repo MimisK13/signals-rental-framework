@@ -1,0 +1,1367 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Availability\Services;
+
+use App\Data\Opportunities\PreparedProductInputs;
+use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Data\Opportunities\PreparedStockInputs;
+use App\Domain\Availability\Data\AvailabilityData;
+use App\Domain\Availability\Data\AvailabilityRangeData;
+use App\Domain\Availability\Data\AvailabilitySlotData;
+use App\Domain\Availability\Data\CalendarDayData;
+use App\Domain\Availability\Data\CalendarProductData;
+use App\Domain\Availability\Data\GanttData;
+use App\Domain\Availability\Data\GanttDemandBarData;
+use App\Domain\Availability\Data\GanttShortageData;
+use App\Domain\Availability\Data\OpportunityItemAvailabilityData;
+use App\Domain\Availability\Data\StoreShortageData;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
+use App\Domain\Stock\Models\StockLevel;
+use App\Models\Opportunity;
+use App\Models\OpportunityItem;
+use App\Models\Product;
+use App\Models\Store;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
+
+/**
+ * The read interface for the availability engine. Implements the two-tier read
+ * strategy from the design:
+ *
+ *  1. **Point queries** ({@see getAvailability()}, {@see checkAvailability()})
+ *     compute on-the-fly from the `demands` table — zero snapshot dependency.
+ *  2. **Range/grid queries** ({@see getAvailabilityRange()}) read from
+ *     pre-calculated `availability_snapshots`, surfacing `calculated_at` so
+ *     consumers know how fresh the data is.
+ *
+ * Resolve via the container so the slot calculator's resolution provider can be
+ * rebound (e.g. by the Cloud package).
+ */
+class AvailabilityService
+{
+    /** @var array<int, string|null> */
+    private array $storeTimezones = [];
+
+    /** @var array<int, Product|null> */
+    private array $products = [];
+
+    public function __construct(
+        private readonly SlotCalculator $slotCalculator,
+        private readonly RecalculationPipeline $pipeline,
+        private readonly OpportunityItemDemandResolver $opportunityItemResolver,
+    ) {}
+
+    /**
+     * Point availability for a product/store on a given date — computed live
+     * from demands. The date is aligned to its resolution slot; demand
+     * overlapping that slot reduces availability.
+     */
+    public function getAvailability(int $productId, int $storeId, Carbon $date): AvailabilityData
+    {
+        $product = $this->findProduct($productId);
+
+        if ($product === null) {
+            return AvailabilityData::make($productId, $storeId, $date, 0, 0, []);
+        }
+
+        $timezone = $this->storeTimezone($storeId);
+        $slotStart = $this->slotCalculator->alignToSlot($date, $timezone);
+        $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
+
+        // Composed products (catalogue kits AND serialised-permanent / hybrid
+        // container kits) are composed read-time — surface the kit calculator's
+        // reading as a point. Catalogue kits have no stock of their own; container
+        // kits compose from the housing's serialised availability.
+        if ($this->isComposedProduct($product)) {
+            $range = $this->getKitAvailability($productId, $storeId, $slotStart, $slotEnd);
+            $available = $range->min_available ?? 0;
+
+            return AvailabilityData::make($productId, $storeId, $slotStart, $available, 0, []);
+        }
+
+        $totalStock = $this->pipeline->totalStock($product, $storeId);
+
+        [$demanded, $breakdown] = $this->sumDemand($productId, $storeId, $slotStart, $slotEnd);
+
+        return AvailabilityData::make($productId, $storeId, $slotStart, $totalStock, $demanded, $breakdown);
+    }
+
+    /**
+     * Range availability for a product/store, read from snapshots. Slots are
+     * returned in chronological order; `calculated_at` reflects the oldest
+     * snapshot in the range (null when none exist yet).
+     */
+    public function getAvailabilityRange(int $productId, int $storeId, Carbon $from, Carbon $to): AvailabilityRangeData
+    {
+        // Composed products (catalogue kits AND serialised-permanent / hybrid
+        // container kits) are composed read-time. Route them to the kit calculator
+        // so the read "just works" rather than returning an empty slot set.
+        //
+        // NOTE: a container kit product STILL has real housing snapshot rows — the
+        // kit calculator reads those via {@see rawSnapshotRange()} (which bypasses
+        // this routing), so there is no recursion.
+        if ($this->isComposedProductId($productId)) {
+            return $this->getKitAvailability($productId, $storeId, $from, $to);
+        }
+
+        return $this->rawSnapshotRange($productId, $storeId, $from, $to);
+    }
+
+    /**
+     * The raw snapshot range read for a product — NEVER routed through the kit
+     * calculator. This is the housing-availability read the
+     * {@see KitAvailabilityCalculator} uses for container kits, so it must not
+     * recurse back into composed-product routing.
+     */
+    public function rawSnapshotRange(int $productId, int $storeId, Carbon $from, Carbon $to): AvailabilityRangeData
+    {
+        /** @var Collection<int, AvailabilitySnapshot> $snapshots */
+        $snapshots = AvailabilitySnapshot::query()
+            ->forProductStore($productId, $storeId)
+            ->inWindow($from, $to)
+            ->orderBy('slot_start')
+            ->get();
+
+        $slots = $snapshots
+            ->map(static fn (AvailabilitySnapshot $snapshot): AvailabilitySlotData => AvailabilitySlotData::fromModel($snapshot))
+            ->values()
+            ->all();
+
+        $calculatedAt = $snapshots
+            ->map(static fn (AvailabilitySnapshot $snapshot): CarbonInterface => $snapshot->calculated_at)
+            ->min();
+
+        return AvailabilityRangeData::make($productId, $storeId, $from, $to, $slots, $calculatedAt);
+    }
+
+    /**
+     * Range availability for a single product across several stores, read from
+     * snapshots and keyed by store id.
+     *
+     * Each store's window is materialised via {@see getAvailabilityRange()} (the
+     * snapshot read path). When `$storeIds` is empty the default-query stores are
+     * used ({@see Store::scopeInDefaultQueries()}) so virtual/secondary stores
+     * flagged out of default queries are excluded unless requested explicitly.
+     * The result preserves the resolved store order.
+     *
+     * @param  list<int>  $storeIds  explicit stores; empty = all default-query stores
+     * @return SupportCollection<int, AvailabilityRangeData> keyed by store id
+     */
+    public function getAvailabilityAcrossStores(
+        int $productId,
+        array $storeIds,
+        Carbon $from,
+        Carbon $to,
+    ): SupportCollection {
+        $resolvedStoreIds = $storeIds !== []
+            ? array_values(array_unique(array_map('intval', $storeIds)))
+            : Store::query()
+                ->inDefaultQueries()
+                ->orderBy('id')
+                ->pluck('id')
+                ->map(static fn ($id): int => (int) $id)
+                ->all();
+
+        /** @var SupportCollection<int, AvailabilityRangeData> $byStore */
+        $byStore = new SupportCollection;
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $byStore->put($storeId, $this->getAvailabilityRange($productId, $storeId, $from, $to));
+        }
+
+        return $byStore;
+    }
+
+    /**
+     * The availability picture for every product-backed line item on an
+     * opportunity — the per-line read surface for the quote/order screen.
+     *
+     * For each line that references a product, the line's resolved
+     * product/store/window/quantity (date-source-aware, honouring a line's
+     * `dispatch_store_id` override) is taken from the
+     * {@see OpportunityItemDemandResolver}, and the units free for that line are
+     * computed live via {@see availableForItem()} — the worst slot over the line's
+     * window with the line's OWN demand excluded. Lines that reference no product
+     * (services, ad-hoc lines) are skipped: they place no demand on stock.
+     *
+     * Returns an empty collection for an unknown opportunity. Computed live from
+     * `demands` (no snapshot dependency), so it always reflects the current state.
+     *
+     * @param  Collection<int, OpportunityItem>|null  $preparedItems
+     * @param  array<int, array{product_id: int|null, store_id: int|null, from: Carbon, to: Carbon, quantity: int, claim_quantity: int}>  $preparedContexts
+     * @return SupportCollection<int, OpportunityItemAvailabilityData>
+     */
+    public function getOpportunityContext(
+        int $opportunityId,
+        ?Collection $preparedItems = null,
+        array $preparedContexts = [],
+        ?PreparedProductInputs $preparedProducts = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): SupportCollection {
+        if ($preparedItems !== null) {
+            if ($preparedProducts === null || $preparedStock === null || $preparedDemand === null || count($preparedContexts) !== $preparedItems->count()) {
+                throw new \LogicException('Complete prepared line-item inputs are required for the prepared availability path.');
+            }
+
+            $requests = [];
+            $requestItems = [];
+
+            foreach ($preparedItems as $item) {
+                $context = $preparedContexts[$item->id] ?? null;
+
+                if ($context === null) {
+                    throw new \LogicException("Prepared context for OpportunityItem {$item->id} is missing.");
+                }
+
+                if ($context['product_id'] === null || $context['store_id'] === null) {
+                    continue;
+                }
+
+                $requests[] = [
+                    'product_id' => $context['product_id'],
+                    'store_id' => $context['store_id'],
+                    'from' => $context['from'],
+                    'to' => $context['to'],
+                    'exclude_source_type' => $this->opportunityItemResolver->sourceType(),
+                    'exclude_source_id' => $item->id,
+                ];
+                $requestItems[] = [$item, $context];
+            }
+
+            $available = $this->availableForItems(
+                $requests,
+                products: $preparedProducts,
+                preparedStock: $preparedStock,
+                preparedDemand: $preparedDemand,
+            );
+            $context = new SupportCollection;
+
+            foreach ($requestItems as $index => [$item, $itemContext]) {
+                $context->push(OpportunityItemAvailabilityData::make(
+                    opportunityItemId: (int) $item->id,
+                    productId: $itemContext['product_id'],
+                    storeId: $itemContext['store_id'],
+                    requestedQuantity: $itemContext['quantity'],
+                    availableForItem: $available[$index] ?? 0,
+                    from: $itemContext['from'],
+                    to: $itemContext['to'],
+                ));
+            }
+
+            return $context;
+        }
+
+        $opportunity = Opportunity::query()->with('items')->find($opportunityId);
+
+        if ($opportunity === null) {
+            return new SupportCollection;
+        }
+
+        /** @var SupportCollection<int, OpportunityItemAvailabilityData> $context */
+        $context = new SupportCollection;
+
+        $opportunity->items->each(function (OpportunityItem $item) use ($opportunity, $context): void {
+            // Bind the parent so the resolver reads the live opportunity (store,
+            // dates, status) without an extra query per line.
+            $item->setRelation('opportunity', $opportunity);
+
+            $resolved = $this->opportunityItemResolver->resolveContext($item);
+
+            // No product or no store — the line claims nothing against stock.
+            if ($resolved['product_id'] === null || $resolved['store_id'] === null) {
+                return;
+            }
+
+            $available = $this->availableForItem(
+                $resolved['product_id'],
+                $resolved['store_id'],
+                $resolved['from'],
+                $resolved['to'],
+                $this->opportunityItemResolver->sourceType(),
+                (int) $item->id,
+            );
+
+            $context->push(OpportunityItemAvailabilityData::make(
+                opportunityItemId: (int) $item->id,
+                productId: $resolved['product_id'],
+                storeId: $resolved['store_id'],
+                requestedQuantity: $resolved['quantity'],
+                availableForItem: $available,
+                from: $resolved['from'],
+                to: $resolved['to'],
+            ));
+        });
+
+        return $context;
+    }
+
+    /**
+     * Whether at least `$quantity` units are available for the entire
+     * `[$from, $to)` window. Computed live from demands across every slot the
+     * window touches — true only if the worst slot still has the quantity.
+     */
+    public function checkAvailability(int $productId, int $storeId, Carbon $from, Carbon $to, int $quantity): bool
+    {
+        $product = $this->findProduct($productId);
+
+        if ($product === null) {
+            return false;
+        }
+
+        // Clamp an open-ended / sentinel-dated window to the rolling snapshot
+        // horizon before generating slots — an indefinite demand otherwise spans
+        // tens of thousands of slots and trips the SlotCalculator safety cap. The
+        // demand set is fetched (and overlap-tested) against the ORIGINAL window so
+        // an indefinite demand is still seen across the whole clamped horizon.
+        [$slotFrom, $slotTo] = $this->clampToHorizon($from, $to);
+
+        $timezone = $this->storeTimezone($storeId);
+        $totalStock = $this->pipeline->totalStock($product, $storeId);
+
+        /** @var Collection<int, Demand> $demands */
+        $demands = Demand::query()
+            ->where('product_id', $productId)
+            ->where('store_id', $storeId)
+            ->active()
+            ->overlapping($from, $to)
+            ->get();
+
+        foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
+            $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
+            [$demanded] = $this->sumDemandIn($demands, $slotStart, $slotEnd);
+
+            if ($totalStock - $demanded < $quantity) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * The serialised stock-level "assets" of a product at a store that are free
+     * for the entire `[$from, $to)` window — i.e. no active demand claims that
+     * specific asset over a window overlapping the request.
+     *
+     * Each serialised stock level is one physical unit; an asset is free iff no
+     * active `demands` row carries its `asset_id` with an overlapping period. The
+     * overlap reuses {@see Demand::scopeOverlapping()} (the native `tstzrange &&`
+     * path on PostgreSQL — backed by `idx_demands_asset_period` and the
+     * `excl_demands_asset_period` exclusion constraint — and the degraded scalar
+     * path on SQLite).
+     *
+     * Bulk products have no discrete assets, so an empty collection is returned
+     * for them — callers wanting bulk availability use the quantity-based reads
+     * ({@see getAvailability()} / {@see checkAvailability()}).
+     *
+     * @return Collection<int, StockLevel>
+     */
+    public function getAvailableAssets(int $productId, int $storeId, Carbon $from, Carbon $to): Collection
+    {
+        /** @var Collection<int, StockLevel> $assets */
+        $assets = $this->availableAssetsQuery($productId, $storeId, $from, $to)->get();
+
+        return $assets;
+    }
+
+    /**
+     * The paginated free serialised assets of a product at a store for the
+     * `[$from, $to)` window — the {@see getAvailableAssets()} query paginated at
+     * the database level (real `LengthAwarePaginator`, not a sliced collection),
+     * so the API exposes genuine total/per_page/page metadata.
+     *
+     * @return LengthAwarePaginator<int, StockLevel>
+     */
+    public function paginateAvailableAssets(
+        int $productId,
+        int $storeId,
+        Carbon $from,
+        Carbon $to,
+        int $perPage = 50,
+        int $page = 1,
+    ): LengthAwarePaginator {
+        return $this->availableAssetsQuery($productId, $storeId, $from, $to)
+            ->paginate(perPage: $perPage, page: $page);
+    }
+
+    /**
+     * The shared query for free serialised assets over `[$from, $to)`.
+     *
+     * A serialised stock level is free iff no active demand claims its `asset_id`
+     * over an overlapping period. The conflict subquery reuses the driver-aware
+     * {@see Demand::scopeOverlapping()} (native `tstzrange &&` on Postgres, scalar
+     * on SQLite). Bulk products have no discrete assets, so the query naturally
+     * yields nothing for them.
+     *
+     * @return EloquentBuilder<StockLevel>
+     */
+    private function availableAssetsQuery(int $productId, int $storeId, Carbon $from, Carbon $to): EloquentBuilder
+    {
+        // Correlated active-demand subquery: an asset is excluded when any active
+        // demand claims it over a period overlapping the request.
+        $conflicting = Demand::query()
+            ->whereColumn('demands.asset_id', 'stock_levels.id')
+            ->active()
+            ->overlapping($from, $to)
+            ->where('quantity', '>', 0);
+
+        return StockLevel::query()
+            ->forProduct($productId)
+            ->forStore($storeId)
+            ->operationalSerializedSupply()
+            ->where(function (EloquentBuilder $query) use ($from, $to): void {
+                $query->where('is_virtual', false)
+                    ->orWhere(function (EloquentBuilder $virtual) use ($from, $to): void {
+                        $virtual->where('is_virtual', true)
+                            ->where(function (EloquentBuilder $status): void {
+                                $status->whereNull('virtual_asset_status')
+                                    ->orWhere('virtual_asset_status', '!=', 'retired');
+                            })
+                            ->where(function (EloquentBuilder $window) use ($from, $to): void {
+                                $window->where(function (EloquentBuilder $starts) use ($to): void {
+                                    $starts->whereNull('starts_at')
+                                        ->orWhere('starts_at', '<=', $to);
+                                })->where(function (EloquentBuilder $ends) use ($from): void {
+                                    $ends->whereNull('ends_at')
+                                        ->orWhere('ends_at', '>', $from);
+                                });
+                            });
+                    });
+            })
+            ->whereNotExists($conflicting->getQuery())
+            ->orderBy('id');
+    }
+
+    /**
+     * Whether a kit's FIXED (container-bound) component is satisfiable for the
+     * `[$from, $to)` window — used by the {@see KitAvailabilityCalculator} to gate
+     * serialised-permanent / hybrid kit availability.
+     *
+     * A fixed component is held in the kit by its `source_type = 'container'`
+     * demand(s). It is "satisfied" when:
+     *  - at least `$requiredQuantity` units are held by ACTIVE container demands
+     *    overlapping the window (the component is physically present in the kit),
+     *    AND
+     *  - it carries no OTHER active (non-container) demand overlapping the window
+     *    (no individual booking conflict — serialised-containers.md §"Conflict
+     *    Handling").
+     *
+     * Returns false the moment either condition fails, so the calculator clamps
+     * the kit's availability to zero for the window.
+     */
+    public function fixedComponentSatisfied(
+        int $componentProductId,
+        int $storeId,
+        Carbon $from,
+        Carbon $to,
+        int $requiredQuantity,
+    ): bool {
+        /** @var Collection<int, Demand> $demands */
+        $demands = Demand::query()
+            ->where('product_id', $componentProductId)
+            ->where('store_id', $storeId)
+            ->active()
+            ->overlapping($from, $to)
+            ->get();
+
+        $containerHeld = 0;
+        $hasConflict = false;
+
+        foreach ($demands as $demand) {
+            if ($demand->source_type === 'container') {
+                $containerHeld += max(0, $demand->quantity);
+
+                continue;
+            }
+
+            // Any non-container active demand on a fixed component is a conflict —
+            // the component is booked away from the kit for this window.
+            $hasConflict = true;
+        }
+
+        return ! $hasConflict && $containerHeld >= max(1, $requiredQuantity);
+    }
+
+    /**
+     * Whether a specific serialised asset (stock level) is free for the entire
+     * `[$from, $to)` window: true when no active demand claims it over an
+     * overlapping period. Returns false if the stock level does not exist.
+     */
+    public function checkAssetAvailable(int $stockLevelId, Carbon $from, Carbon $to): bool
+    {
+        $stockLevel = StockLevel::query()->whereKey($stockLevelId)->first();
+
+        if ($stockLevel === null) {
+            return false;
+        }
+
+        if (! $stockLevel->is_virtual && $stockLevel->isSerialised() && ! $stockLevel->isOperationalSerializedSupply()) {
+            return false;
+        }
+
+        if ($stockLevel->is_virtual && ! $this->virtualAssetAvailableForWindow($stockLevel, $from, $to)) {
+            return false;
+        }
+
+        return ! Demand::query()
+            ->where('asset_id', $stockLevelId)
+            ->active()
+            ->overlapping($from, $to)
+            ->where('quantity', '>', 0)
+            ->exists();
+    }
+
+    /**
+     * Whether a virtual serialised asset's intake window covers the request.
+     */
+    private function virtualAssetAvailableForWindow(StockLevel $stockLevel, Carbon $from, Carbon $to): bool
+    {
+        if ($stockLevel->virtual_asset_status === 'retired') {
+            return false;
+        }
+
+        if ($stockLevel->starts_at !== null && $stockLevel->starts_at->gt($to)) {
+            return false;
+        }
+
+        if ($stockLevel->ends_at !== null && $stockLevel->ends_at->lte($from)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * The quantity of a product free for an opportunity line item over its whole
+     * `[$from, $to)` window — the worst (most-constrained) slot — while excluding
+     * that line item's OWN active demand so it is never counted short against its
+     * own booking.
+     *
+     * This is the figure the shortage detector compares the line's requested
+     * quantity against (shortage-resolution-sub-hires.md §2.1). Bulk and
+     * serialised both reduce to "units free for others to claim, plus the units
+     * this item itself already holds" — i.e. how many units this item could
+     * fulfil. Computed live from demands, mirroring {@see checkAvailability()}.
+     *
+     * @param  string  $excludeSourceType  demand source_type to exclude (e.g. `opportunity_item`)
+     * @param  int  $excludeSourceId  demand source_id to exclude (the line item id)
+     */
+    public function availableForItem(
+        int $productId,
+        int $storeId,
+        Carbon $from,
+        Carbon $to,
+        string $excludeSourceType,
+        int $excludeSourceId,
+    ): int {
+        $results = $this->availableForItems([[
+            'product_id' => $productId,
+            'store_id' => $storeId,
+            'from' => $from,
+            'to' => $to,
+            'exclude_source_type' => $excludeSourceType,
+            'exclude_source_id' => $excludeSourceId,
+        ]]);
+
+        return $results[0] ?? 0;
+    }
+
+    /**
+     * Compute live availability for several line items while sharing the
+     * product/store/window reads for identical contexts. The exclusion remains
+     * line-specific, so each result still excludes only its own demand.
+     *
+     * @param  list<array{
+     *     product_id: int,
+     *     store_id: int,
+     *     from: Carbon,
+     *     to: Carbon,
+     *     exclude_source_type: string,
+     *     exclude_source_id: int
+     * }>  $requests
+     * @return array<int, int>
+     */
+    public function availableForItems(
+        array $requests,
+        ?StockReadContext $stockContext = null,
+        ?DemandReadContext $demandContext = null,
+        ?PreparedProductInputs $products = null,
+        ?PreparedStockInputs $preparedStock = null,
+        ?PreparedStandardDemandInputs $preparedDemand = null,
+    ): array {
+        $results = [];
+        $groups = [];
+        $stockGroups = [];
+
+        foreach ($requests as $index => $request) {
+            $from = $request['from'];
+            $to = $request['to'];
+
+            if ($from->greaterThan($to)) {
+                [$from, $to] = [$to, $from];
+            }
+
+            $requests[$index]['from'] = $from;
+            $requests[$index]['to'] = $to;
+
+            $stockKey = implode('|', [
+                $request['product_id'],
+                $request['store_id'],
+            ]);
+            $stockGroups[$stockKey][] = $index;
+
+            $key = implode('|', [
+                $request['product_id'],
+                $request['store_id'],
+                $from->getTimestamp(),
+                $to->getTimestamp(),
+            ]);
+            $groups[$key][] = $index;
+        }
+
+        $stockByKey = [];
+        $productsByStockKey = [];
+
+        // Stock is keyed by product/store and is intentionally evaluated outside
+        // booking-window grouping. Demand remains window-specific below.
+        foreach ($stockGroups as $stockKey => $indexes) {
+            $first = $requests[$indexes[0]];
+            $product = $products?->required((int) $first['product_id']) ?? $this->findProduct($first['product_id']);
+
+            if ($product === null) {
+                continue;
+            }
+
+            $productsByStockKey[$stockKey] = $product;
+            $stockByKey[$stockKey] = $preparedStock?->required(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+            ) ?? $stockContext?->resolve(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+                fn (): int => $this->pipeline->totalStock($product, $first['store_id']),
+            ) ?? $this->pipeline->totalStock($product, $first['store_id']);
+        }
+
+        foreach ($groups as $indexes) {
+            $first = $requests[$indexes[0]];
+            $stockKey = implode('|', [
+                $first['product_id'],
+                $first['store_id'],
+            ]);
+            $product = $productsByStockKey[$stockKey] ?? null;
+
+            if ($product === null) {
+                foreach ($indexes as $index) {
+                    $results[$index] = 0;
+                }
+
+                continue;
+            }
+
+            [$slotFrom, $slotTo] = $this->clampToHorizon($first['from'], $first['to']);
+            $timezone = $this->storeTimezone($first['store_id']);
+            $totalStock = $stockByKey[$stockKey];
+
+            /** @var Collection<int, Demand> $demands */
+            $loadDemands = fn (): Collection => Demand::query()
+                ->where('product_id', $first['product_id'])
+                ->where('store_id', $first['store_id'])
+                ->active()
+                ->overlapping($first['from'], $first['to'])
+                ->get();
+            $demands = $preparedDemand?->required(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+                $first['from'],
+                $first['to'],
+            ) ?? $demandContext?->resolve(
+                (int) $first['product_id'],
+                (int) $first['store_id'],
+                $first['from'],
+                $first['to'],
+                $loadDemands,
+            ) ?? $loadDemands();
+
+            $requestIndexesByExclusion = [];
+
+            foreach ($indexes as $index) {
+                $request = $requests[$index];
+                $exclusionKey = $this->demandSourceKey(
+                    $request['exclude_source_type'],
+                    $request['exclude_source_id'],
+                );
+                $requestIndexesByExclusion[$exclusionKey][] = $index;
+                $results[$index] = null;
+            }
+
+            $demandsByExclusion = $demands->groupBy(
+                fn (Demand $demand): string => $this->demandSourceKey($demand->source_type, (int) $demand->source_id),
+            );
+
+            foreach ($this->slotCalculator->generateSlots($slotFrom, $slotTo, $timezone) as $slotStart) {
+                $slotEnd = $this->slotCalculator->advance($slotStart, $timezone);
+                [$totalDemanded] = $this->sumDemandIn($demands, $slotStart, $slotEnd);
+
+                foreach ($requestIndexesByExclusion as $exclusionKey => $requestIndexes) {
+                    $excludedDemands = $demandsByExclusion->get($exclusionKey);
+                    $excludedDemanded = 0;
+
+                    if ($excludedDemands !== null) {
+                        [$excludedDemanded] = $this->sumDemandIn($excludedDemands, $slotStart, $slotEnd);
+                    }
+
+                    $available = $totalStock - ($totalDemanded - $excludedDemanded);
+
+                    foreach ($requestIndexes as $index) {
+                        $results[$index] = $results[$index] === null
+                            ? $available
+                            : min($results[$index], $available);
+                    }
+                }
+            }
+
+            foreach ($indexes as $index) {
+                $results[$index] ??= $totalStock;
+            }
+        }
+
+        return $results;
+    }
+
+    private function demandSourceKey(string $sourceType, int $sourceId): string
+    {
+        return $sourceType."\0".$sourceId;
+    }
+
+    /**
+     * The store-wide shortage sweep for the calendar shortage panel/widget: every
+     * product/day in `[$from, $to]` at the store whose availability dipped below
+     * zero, read from the pre-calculated {@see AvailabilityDailySummary} read
+     * model (the same grid the calendar reads).
+     *
+     * Trivially derived from the daily summaries' `has_shortage` flag — the
+     * pipeline already maintains one summary row per product/store/day with the
+     * day's worst (`min_available`) availability — so this is a cheap indexed read
+     * (`idx_daily_summaries_shortage`) rather than a live demand recompute. The
+     * granular, per-line contributing-demand detail (and the resolution workflow)
+     * is served by the opportunity-scoped {@see ShortageDetector}
+     * path; this is the aggregate "what is short, and when" view.
+     *
+     * Results are product-name eager-loaded and ordered by date then product so a
+     * panel can group them chronologically. When `$storeId` is zero/negative the
+     * sweep spans every default-query store.
+     *
+     * @return SupportCollection<int, StoreShortageData>
+     */
+    public function getShortages(int $storeId, Carbon $from, Carbon $to): SupportCollection
+    {
+        $query = AvailabilityDailySummary::query()
+            ->with('product:id,name')
+            ->shortage()
+            ->inDateRange($from, $to)
+            ->orderBy('date')
+            ->orderBy('product_id');
+
+        if ($storeId > 0) {
+            $query->where('store_id', $storeId);
+        } else {
+            $defaultStoreIds = Store::query()
+                ->inDefaultQueries()
+                ->pluck('id')
+                ->all();
+
+            $query->whereIn('store_id', $defaultStoreIds);
+        }
+
+        /** @var SupportCollection<int, StoreShortageData> $shortages */
+        $shortages = $query
+            ->get()
+            ->map(static fn (AvailabilityDailySummary $summary): StoreShortageData => StoreShortageData::fromModel($summary))
+            ->values();
+
+        return $shortages;
+    }
+
+    /**
+     * The multi-product calendar grid for a store over `[$from, $to]`, read from
+     * the pre-calculated {@see AvailabilityDailySummary} read model — the hot path
+     * for the M8 availability calendar.
+     *
+     * Returns one entry per product (name eager-loaded), each carrying an ordered
+     * list of day cells with the day's worst (`min_available`) availability and a
+     * `has_shortage` flag. The worst availability is the conservative figure a
+     * calendar cell shows ("can I still take this product that day?").
+     *
+     * `$productIds` optionally narrows the grid to specific products; empty means
+     * every product that has summary rows at the store in the window (so the grid
+     * naturally excludes products with no availability footprint). Kit/composed
+     * products hold no summary rows (their availability is read-time) and so do
+     * not appear — calendar consumers read kit availability via the per-product
+     * range endpoint.
+     *
+     * @param  list<int>  $productIds  specific products, or empty for all at the store
+     * @return SupportCollection<int, CalendarProductData>
+     */
+    public function getCalendar(int $storeId, Carbon $from, Carbon $to, array $productIds = []): SupportCollection
+    {
+        $query = AvailabilityDailySummary::query()
+            ->with('product:id,name')
+            ->where('store_id', $storeId)
+            ->inDateRange($from, $to)
+            ->orderBy('product_id')
+            ->orderBy('date');
+
+        if ($productIds !== []) {
+            $normalised = array_values(array_unique(array_map('intval', $productIds)));
+            $query->whereIn('product_id', $normalised);
+        }
+
+        /** @var SupportCollection<int, CalendarProductData> $calendar */
+        $calendar = $query
+            ->get()
+            ->groupBy('product_id')
+            ->map(static fn ($summaries, $productId): CalendarProductData => CalendarProductData::fromSummaries(
+                (int) $productId,
+                $summaries->first()?->product?->name,
+                $summaries->values()->all(),
+            ))
+            ->values();
+
+        return $calendar;
+    }
+
+    /**
+     * Calendar grid for several stores with per-day availability summed company-wide.
+     *
+     * When `$storeIds` is empty, {@see Store::scopeInDefaultQueries()} stores are
+     * used. Availability, shortage flags, and pending check-in counts are aggregated
+     * per product per day across the resolved stores.
+     *
+     * @param  list<int>  $storeIds
+     * @param  list<int>  $productIds
+     * @return SupportCollection<int, CalendarProductData>
+     */
+    public function getCalendarForStores(array $storeIds, Carbon $from, Carbon $to, array $productIds = []): SupportCollection
+    {
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+
+        if ($resolvedStoreIds === []) {
+            return collect();
+        }
+
+        /** @var array<int, array<string, array{available: int, has_shortage: bool, pending_checkin: int}>> $byProductDay */
+        $byProductDay = [];
+        $productNames = [];
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $calendar = $this->getCalendar($storeId, $from, $to, $productIds);
+
+            foreach ($calendar as $productRow) {
+                $productId = $productRow->product_id;
+                $productNames[$productId] = $productRow->product_name;
+
+                foreach ($productRow->days as $day) {
+                    if (! isset($byProductDay[$productId][$day->date])) {
+                        $byProductDay[$productId][$day->date] = [
+                            'available' => 0,
+                            'has_shortage' => false,
+                            'pending_checkin' => 0,
+                        ];
+                    }
+
+                    $byProductDay[$productId][$day->date]['available'] += $day->available;
+                    $byProductDay[$productId][$day->date]['has_shortage'] = $byProductDay[$productId][$day->date]['has_shortage'] || $day->has_shortage;
+                    $byProductDay[$productId][$day->date]['pending_checkin'] += $day->pending_checkin;
+                }
+            }
+        }
+
+        /** @var SupportCollection<int, CalendarProductData> $result */
+        $result = collect($byProductDay)
+            ->map(function (array $days, int $productId) use ($productNames): CalendarProductData {
+                ksort($days);
+
+                $dayRows = [];
+                foreach ($days as $date => $aggregated) {
+                    $dayRows[] = new CalendarDayData(
+                        date: $date,
+                        available: $aggregated['available'],
+                        has_shortage: $aggregated['has_shortage'] || $aggregated['available'] < 0,
+                        pending_checkin: $aggregated['pending_checkin'],
+                    );
+                }
+
+                return new CalendarProductData(
+                    product_id: $productId,
+                    product_name: $productNames[$productId] ?? null,
+                    days: $dayRows,
+                );
+            })
+            ->values();
+
+        return $result;
+    }
+
+    /**
+     * Total sellable stock summed across several stores, keyed by product id.
+     *
+     * @param  list<int>  $productIds
+     * @param  list<int>  $storeIds  explicit stores; empty = default-query stores
+     * @return array<int, int>
+     */
+    public function productTotalStockForStores(array $productIds, array $storeIds): array
+    {
+        $normalised = array_values(array_unique(array_map(intval(...), $productIds)));
+
+        if ($normalised === []) {
+            return [];
+        }
+
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+        $totals = array_fill_keys($normalised, 0);
+
+        foreach ($resolvedStoreIds as $storeId) {
+            foreach ($this->productTotalStock($normalised, $storeId) as $productId => $stock) {
+                $totals[$productId] = ($totals[$productId] ?? 0) + $stock;
+            }
+        }
+
+        return $totals;
+    }
+
+    /**
+     * @param  list<int>  $storeIds
+     * @return list<int>
+     */
+    private function resolveDefaultQueryStoreIds(array $storeIds): array
+    {
+        if ($storeIds !== []) {
+            return array_values(array_unique(array_map(intval(...), $storeIds)));
+        }
+
+        return Store::query()
+            ->inDefaultQueries()
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+    }
+
+    /**
+     * The total sellable stock for several products at a store, keyed by product
+     * id — the batched basis the product-group availability grid uses to derive
+     * "held" per cell ({@see getCalendar()} returns availability, not held).
+     *
+     * Held on a day = total stock − available, so the grid needs each product's
+     * total stock exactly once for the whole window rather than recomputing it per
+     * cell. The figure is store-scoped and window-independent (stock totals do not
+     * vary by date), so one call covers every day column.
+     *
+     * Composed/kit products hold no plain stock rows of their own and never appear
+     * in the daily-summary grid, so they are naturally absent here too.
+     *
+     * @param  list<int>  $productIds
+     * @return array<int, int> product id => total stock
+     */
+    public function productTotalStock(array $productIds, int $storeId): array
+    {
+        $normalised = array_values(array_unique(array_map('intval', $productIds)));
+
+        if ($normalised === []) {
+            return [];
+        }
+
+        /** @var Collection<int, Product> $products */
+        $products = Product::query()->whereIn('id', $normalised)->get();
+
+        $totals = [];
+
+        foreach ($products as $product) {
+            $totals[(int) $product->id] = $this->pipeline->totalStock($product, $storeId);
+        }
+
+        return $totals;
+    }
+
+    /**
+     * The Gantt read model for one product at a store over `[$from, $to]`:
+     * the individual demand bars (decomposed into prep / on-hire / turnaround
+     * zones) and the shortage windows, read directly from the authoritative
+     * `demands` table rather than snapshots (availability-engine.md §"Gantt Chart
+     * View").
+     *
+     * Each demand carries its three zone boundaries (`period_start` →
+     * `buffer_before_end` = prep, `starts_at` → `ends_at` = on-hire,
+     * `buffer_after_start` → `period_end` = turnaround), its registered source
+     * colour (from the {@see DemandSourceRegistry}), and a human source name. The
+     * shortage windows are derived from the daily summaries' `has_shortage` flag
+     * over the window, with `in_buffer_zone` set when the shortage day falls
+     * wholly within prep/turnaround buffers and outside every demand's on-hire
+     * period — the industry-feedback signal that the conflict may be resolvable by
+     * adjusting prep timing without moving dates.
+     *
+     * Only ACTIVE demands overlapping the window are returned; `$assetIds`
+     * optionally narrows to specific serialised assets. The window is honoured
+     * via the driver-aware overlap scope (native `tstzrange &&` on Postgres).
+     *
+     * @param  list<int>  $assetIds  specific serialised assets, or empty for all
+     */
+    public function getGantt(int $productId, int $storeId, Carbon $from, Carbon $to, array $assetIds = []): GanttData
+    {
+        $product = $this->findProduct($productId);
+
+        $totalStock = $product === null ? 0 : $this->pipeline->totalStock($product, $storeId);
+
+        $query = Demand::query()
+            ->where('product_id', $productId)
+            ->where('store_id', $storeId)
+            ->active()
+            ->overlapping($from, $to)
+            ->with('asset:id,serial_number,asset_number')
+            ->orderBy('asset_id')
+            ->orderBy('starts_at');
+
+        if ($assetIds !== []) {
+            $normalised = array_values(array_unique(array_map('intval', $assetIds)));
+            $query->whereIn('asset_id', $normalised);
+        }
+
+        /** @var Collection<int, Demand> $demands */
+        $demands = $query->get();
+
+        $registry = app(DemandSourceRegistry::class);
+
+        // Bulk-fetch the parent opportunities for opportunity_item demands once
+        // (keyed by id) so resolveSourceName() reads from the map instead of
+        // firing one query per bar.
+        $opportunities = $this->opportunitiesForDemands($demands);
+
+        $bars = $demands
+            ->map(fn (Demand $demand): GanttDemandBarData => GanttDemandBarData::fromDemand(
+                $demand,
+                $registry->has($demand->source_type) ? $registry->get($demand->source_type)->colour : null,
+                $this->resolveSourceName($demand, $registry, $opportunities),
+            ))
+            ->values()
+            ->all();
+
+        // Shortage windows from the daily summaries over the requested span. A
+        // shortage that falls wholly outside every demand bar's on-hire period is
+        // flagged `in_buffer_zone` (it sits in prep/turnaround — physically in the
+        // building — so it may be resolvable without moving dates).
+        $shortages = AvailabilityDailySummary::query()
+            ->forProductStore($productId, $storeId)
+            ->shortage()
+            ->inDateRange($from, $to)
+            ->orderBy('date')
+            ->get()
+            ->map(function (AvailabilityDailySummary $summary) use ($demands): GanttShortageData {
+                $day = $summary->date->copy();
+
+                return GanttShortageData::make(
+                    $day,
+                    $summary->min_available,
+                    $this->shortageDayInBufferZone($day, $demands),
+                );
+            })
+            ->values()
+            ->all();
+
+        return GanttData::make($productId, $storeId, $from, $to, $totalStock, $bars, $shortages);
+    }
+
+    /**
+     * Gantt read model aggregated across several stores for one product.
+     *
+     * When `$storeIds` is empty, {@see Store::scopeInDefaultQueries()} stores are
+     * used. Demand bars are merged; shortages per day take the worst severity.
+     *
+     * @param  list<int>  $storeIds
+     * @param  list<int>  $assetIds
+     */
+    public function getGanttForStores(int $productId, array $storeIds, Carbon $from, Carbon $to, array $assetIds = []): GanttData
+    {
+        $resolvedStoreIds = $this->resolveDefaultQueryStoreIds($storeIds);
+
+        if ($resolvedStoreIds === []) {
+            return GanttData::make($productId, 0, $from, $to, 0, [], []);
+        }
+
+        $allBars = [];
+        $totalStock = 0;
+        /** @var array<string, array{severity: int, in_buffer_zone: bool}> $shortagesByDay */
+        $shortagesByDay = [];
+
+        foreach ($resolvedStoreIds as $storeId) {
+            $gantt = $this->getGantt($productId, $storeId, $from, $to, $assetIds);
+            $totalStock += $gantt->total_stock;
+            $allBars = array_merge($allBars, $gantt->demands);
+
+            foreach ($gantt->shortages as $shortage) {
+                $day = $shortage->from;
+
+                if (! isset($shortagesByDay[$day])) {
+                    $shortagesByDay[$day] = ['severity' => 0, 'in_buffer_zone' => true];
+                }
+
+                $shortagesByDay[$day]['severity'] = max($shortagesByDay[$day]['severity'], $shortage->severity);
+                $shortagesByDay[$day]['in_buffer_zone'] = $shortagesByDay[$day]['in_buffer_zone'] && $shortage->in_buffer_zone;
+            }
+        }
+
+        ksort($shortagesByDay);
+
+        $shortages = [];
+        foreach ($shortagesByDay as $day => $data) {
+            if ($data['severity'] === 0) {
+                continue;
+            }
+
+            $shortages[] = GanttShortageData::make(
+                Carbon::parse($day),
+                -$data['severity'],
+                $data['in_buffer_zone'],
+            );
+        }
+
+        return GanttData::make($productId, $resolvedStoreIds[0], $from, $to, $totalStock, $allBars, $shortages);
+    }
+
+    /**
+     * Bulk-fetch the parent opportunities referenced by `opportunity_item`
+     * demands (via `metadata.opportunity_id`), keyed by id, so the Gantt bar
+     * mapping resolves source names without an N+1 lookup per bar.
+     *
+     * @param  Collection<int, Demand>  $demands
+     * @return SupportCollection<int, Opportunity>
+     */
+    private function opportunitiesForDemands(Collection $demands): SupportCollection
+    {
+        $opportunityIds = $demands
+            ->filter(static fn (Demand $demand): bool => $demand->source_type === 'opportunity_item')
+            ->map(static fn (Demand $demand): ?int => isset($demand->metadata['opportunity_id'])
+                ? (int) $demand->metadata['opportunity_id']
+                : null)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($opportunityIds === []) {
+            return new SupportCollection;
+        }
+
+        /** @var SupportCollection<int, Opportunity> $opportunities */
+        $opportunities = Opportunity::query()
+            ->whereKey($opportunityIds)
+            ->get()
+            ->keyBy('id');
+
+        return $opportunities;
+    }
+
+    /**
+     * A human-readable name for a demand's source entity, for the Gantt bar
+     * tooltip/click target. Opportunity-item demands resolve to the parent
+     * opportunity's subject/number (read from the pre-fetched map); other sources
+     * fall back to a "{display name} #{id}" label from the registry, or the raw
+     * type when the source is unregistered.
+     *
+     * @param  SupportCollection<int, Opportunity>  $opportunities  pre-fetched parents keyed by id
+     */
+    private function resolveSourceName(
+        Demand $demand,
+        DemandSourceRegistry $registry,
+        SupportCollection $opportunities,
+    ): ?string {
+        if ($demand->source_type === 'opportunity_item') {
+            $opportunityId = $demand->metadata['opportunity_id'] ?? null;
+
+            if ($opportunityId !== null) {
+                $opportunity = $opportunities->get((int) $opportunityId);
+
+                if ($opportunity !== null) {
+                    return $opportunity->subject ?? $opportunity->number;
+                }
+            }
+        }
+
+        if ($registry->has($demand->source_type)) {
+            return $registry->get($demand->source_type)->displayName.' #'.$demand->source_id;
+        }
+
+        return $demand->source_type.' #'.$demand->source_id;
+    }
+
+    /**
+     * Whether a shortage day falls wholly within prep/turnaround buffer zones —
+     * i.e. it does NOT overlap any demand's on-hire (`starts_at`..`ends_at`)
+     * period. When true, the shorted units are physically in the building (in prep
+     * or turnaround) and the conflict may be resolvable by adjusting prep timing
+     * rather than moving dates.
+     *
+     * @param  Collection<int, Demand>  $demands
+     */
+    private function shortageDayInBufferZone(CarbonInterface $day, Collection $demands): bool
+    {
+        $dayStart = $day->copy()->startOfDay();
+        $dayEnd = $day->copy()->endOfDay();
+
+        foreach ($demands as $demand) {
+            // The on-hire period (un-buffered) overlapping the shortage day means
+            // the conflict is in the active hire, not a buffer.
+            if ($demand->starts_at->lessThanOrEqualTo($dayEnd) && $demand->ends_at->greaterThanOrEqualTo($dayStart)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Composed availability for a catalogue (pool) kit, delegated to the
+     * {@see KitAvailabilityCalculator}: per slot, MIN(floor(component_available /
+     * component_qty)) across all pool components, reading component availability
+     * from the snapshot range read and recursing for nested kits (depth-limited).
+     *
+     * Kits hold no snapshot rows and generate no demand of their own — this is the
+     * only read path that produces a kit's availability.
+     */
+    public function getKitAvailability(int $productId, int $storeId, Carbon $from, Carbon $to): AvailabilityRangeData
+    {
+        return app(KitAvailabilityCalculator::class)->calculate($productId, $storeId, $from, $to);
+    }
+
+    /**
+     * Whether a product is composed read-time and must be routed to the kit
+     * calculator — either a catalogue kit (`is_kit`) or a serialised-permanent /
+     * hybrid container kit (`container_availability_mode` of kit/hybrid).
+     *
+     * Transport-mode containers are NOT composed: their contents stay individually
+     * available and the housing is read as a plain serialised product.
+     */
+    private function isComposedProduct(Product $product): bool
+    {
+        if ($product->is_kit) {
+            return true;
+        }
+
+        return $product->container_availability_mode?->isBookableKit() ?? false;
+    }
+
+    /**
+     * {@see isComposedProduct()} by id.
+     */
+    private function isComposedProductId(int $productId): bool
+    {
+        $product = $this->findProduct($productId);
+
+        return $product !== null && $this->isComposedProduct($product);
+    }
+
+    /**
+     * Sum active demand overlapping `[slotStart, slotEnd)` for a product/store,
+     * with a per-source breakdown.
+     *
+     * @return array{0: int, 1: array<string, int>}
+     */
+    private function sumDemand(int $productId, int $storeId, Carbon $slotStart, Carbon $slotEnd): array
+    {
+        /** @var Collection<int, Demand> $demands */
+        $demands = Demand::query()
+            ->where('product_id', $productId)
+            ->where('store_id', $storeId)
+            ->active()
+            ->overlapping($slotStart, $slotEnd)
+            ->get();
+
+        return $this->sumDemandIn($demands, $slotStart, $slotEnd);
+    }
+
+    /**
+     * Sum the demand in a pre-fetched collection overlapping a slot, delegating
+     * to the pipeline's shared per-slot summer so the live reads and the snapshot
+     * build use one identical definition (buffered-bounds overlap +
+     * partial-return netting + per-source breakdown).
+     *
+     * @param  Collection<int, Demand>  $demands
+     * @return array{0: int, 1: array<string, int>}
+     */
+    private function sumDemandIn(Collection $demands, Carbon $slotStart, Carbon $slotEnd): array
+    {
+        return $this->pipeline->sumDemandForSlot($demands, $slotStart, $slotEnd);
+    }
+
+    /**
+     * Clamp a live-read window to the rolling snapshot horizon before slot
+     * generation, delegating to the pipeline so the read and write paths share
+     * one horizon definition.
+     *
+     * An open-ended (sentinel-dated) demand window spans tens of thousands of
+     * slots; left unclamped it trips the {@see SlotCalculator} safety cap. Slot
+     * loops here only enumerate calendar slots — the competing demand set is
+     * fetched against the caller's ORIGINAL window, so an indefinite demand is
+     * still seen across every clamped slot and the worst-slot answer is unchanged.
+     *
+     * When the request lies entirely outside the horizon the clamp collapses
+     * (`from >= to`); callers fall back to slotting the single `from` slot, which
+     * the {@see SlotCalculator} handles, so the read never throws and never emits
+     * an empty slot set.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function clampToHorizon(Carbon $from, Carbon $to): array
+    {
+        [$clampedFrom, $clampedTo] = $this->pipeline->clampToHorizon($from, $to);
+
+        // A fully out-of-horizon window collapses to from >= to; keep the original
+        // `from` so the slot loop still evaluates the slot containing it rather
+        // than producing nothing.
+        if (! $clampedFrom->lessThan($clampedTo)) {
+            return [$from->copy(), $from->copy()];
+        }
+
+        return [$clampedFrom, $clampedTo];
+    }
+
+    /**
+     * The IANA timezone for a store, delegating to the pipeline so the read and
+     * write paths share one (memoised) definition and avoid re-querying
+     * `stores.timezone` on every point read.
+     */
+    private function storeTimezone(int $storeId): ?string
+    {
+        if (array_key_exists($storeId, $this->storeTimezones)) {
+            return $this->storeTimezones[$storeId];
+        }
+
+        return $this->storeTimezones[$storeId] = $this->pipeline->storeTimezone($storeId);
+    }
+
+    /**
+     * Find a product once per scoped AvailabilityService instance.
+     *
+     * The query intentionally remains the original Eloquent lookup so global
+     * scopes and soft-delete behavior are unchanged. This is request/job scoped
+     * state only; it is not a persistent cache.
+     */
+    private function findProduct(int $productId): ?Product
+    {
+        if (array_key_exists($productId, $this->products)) {
+            return $this->products[$productId];
+        }
+
+        return $this->products[$productId] = Product::query()->find($productId);
+    }
+}

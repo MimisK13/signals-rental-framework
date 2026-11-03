@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Warehouse\Containers\Actions;
 
 use App\Concerns\LocksModelsForMutation;
+use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Data\ContainerItemData;
 use App\Domain\Warehouse\Containers\Data\TransferContainerItemData;
@@ -16,7 +17,6 @@ use App\Domain\Warehouse\Containers\Events\ContainerItemTransferred;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
 use App\Domain\Warehouse\Containers\Services\ContainerEventRecorder;
-use App\Services\Availability\ContainerDemandResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
