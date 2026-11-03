@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\DemandPhase;
-use App\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;

@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Services\ShortageCrossOpportunityScanner;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
+use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Shortages\ShortageCrossOpportunityScanner;
-use App\Services\Shortages\ShortageDetector;
-use App\ValueObjects\ShortageCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

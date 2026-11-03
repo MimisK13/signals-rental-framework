@@ -4,7 +4,7 @@ use App\Actions\Opportunities\ChangeItemQuantity;
 use App\Actions\Opportunities\ExpandOpportunityCombination;
 use App\Actions\Opportunities\RemoveOpportunityItem;
 use App\Data\Opportunities\ChangeItemQuantityData;
-use App\Models\Demand;
+use App\Domain\Availability\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Services\Availability\VirtualStockDemandResolver;
-use App\Services\DemandSourceRegistry;
+use App\Domain\Availability\Services\DemandSourceRegistry;
+use App\Domain\Availability\Services\VirtualStockDemandResolver;
 
 it('registers the virtual stock demand resolver', function () {
     $registry = app(DemandSourceRegistry::class);

@@ -2,19 +2,19 @@
 
 use App\Actions\Opportunities\AddOpportunityItem;
 use App\Actions\Opportunities\CreateOpportunity;
-use App\Contracts\Availability\AvailabilityResolutionProvider;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
+use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Shortages\ShortageDetector;
-use App\ValueObjects\Shortage;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

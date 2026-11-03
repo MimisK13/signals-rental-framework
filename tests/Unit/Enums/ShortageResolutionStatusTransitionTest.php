@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 
 describe('ShortageResolutionStatus §8.3 transition matrix', function () {
     it('permits the documented forward transitions', function (ShortageResolutionStatus $from, ShortageResolutionStatus $to) {

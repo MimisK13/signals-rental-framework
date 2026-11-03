@@ -1,18 +1,18 @@
 <?php
 
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Events\AvailabilityChanged;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Enums\WaitlistMonitorStatus;
+use App\Domain\Availability\Shortages\Listeners\DetectOrderShortages;
+use App\Domain\Availability\Shortages\Listeners\MatchWaitlistMonitors;
+use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityEventType;
-use App\Enums\DemandPhase;
-use App\Enums\WaitlistMonitorStatus;
-use App\Events\Availability\AvailabilityChanged;
-use App\Listeners\Availability\DetectOrderShortages;
-use App\Listeners\Availability\MatchWaitlistMonitors;
-use App\Models\AvailabilityEvent;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\ShortageWaitlistMonitor;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 use Thunk\Verbs\Lifecycle\Broker;

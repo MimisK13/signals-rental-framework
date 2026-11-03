@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\AvailabilityEventType;
-use App\Models\AvailabilityEvent;
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Shortages\Services\PipelineShortageEmitter;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Shortages\PipelineShortageEmitter;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

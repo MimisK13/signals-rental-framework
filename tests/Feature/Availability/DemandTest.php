@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\DemandPhase;
-use App\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
 use Carbon\CarbonInterface;

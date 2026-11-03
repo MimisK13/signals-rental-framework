@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Services\AvailabilityService;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

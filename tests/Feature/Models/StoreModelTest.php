@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
 use App\Models\Store;
 
 it('has fillable attributes', function () {

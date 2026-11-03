@@ -1,11 +1,11 @@
 <?php
 
-use App\Enums\AvailabilityEventType;
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
 use App\Models\ActionLog;
-use App\Models\AvailabilityDailySummary;
-use App\Models\AvailabilityEvent;
-use App\Models\AvailabilitySnapshot;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\Store;

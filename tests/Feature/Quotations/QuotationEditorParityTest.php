@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Availability\Models\Demand;
 use App\Domain\Quotations\Actions\AddQuotationItem;
 use App\Domain\Quotations\Actions\ClearQuotationDealPrice;
 use App\Domain\Quotations\Actions\CreateQuotation;
@@ -20,7 +21,6 @@ use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Services\QuotationEditorReadModel;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Accessory;
-use App\Models\Demand;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\SerialisedComponent;

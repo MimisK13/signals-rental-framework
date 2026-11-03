@@ -7,7 +7,7 @@ use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
-use App\Domain\Stocktakes\Models\Stocktake;
+use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Models\ActionLog;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

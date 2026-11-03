@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Shortages\IntakeOverlapDays;
+use App\Domain\Availability\Shortages\Services\IntakeOverlapDays;
 use Illuminate\Support\Carbon;
 
 it('counts half-open overlap days between intake and opportunity windows', function () {

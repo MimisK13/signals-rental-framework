@@ -1,9 +1,9 @@
 <?php
 
-use App\Contracts\DemandResolverContract;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\DemandSourceDefinition;
-use App\Services\DemandSourceRegistry;
+use App\Domain\Availability\Contracts\DemandResolverContract;
+use App\Domain\Availability\Services\DemandSourceDefinition;
+use App\Domain\Availability\Services\DemandSourceRegistry;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 
 it('registers the core opportunity_item source by default', function () {
     $registry = app(DemandSourceRegistry::class);

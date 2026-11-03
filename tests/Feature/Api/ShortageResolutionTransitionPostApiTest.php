@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\ShortageResolutionStatus;
-use App\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Services\ShortageEventRecorder;
 use App\Models\User;
-use App\Services\Shortages\ShortageEventRecorder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\JsonResponse;

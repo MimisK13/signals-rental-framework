@@ -1,13 +1,13 @@
 <?php
 
-use App\Events\Availability\AvailabilityChanged;
-use App\Events\Availability\OpportunityAvailabilityChanged;
-use App\Jobs\RebuildSnapshotsJob;
-use App\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Events\AvailabilityChanged;
+use App\Domain\Availability\Events\OpportunityAvailabilityChanged;
+use App\Domain\Availability\Jobs\RebuildSnapshotsJob;
+use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Services\RecalculationPipeline;
+use App\Domain\Availability\Services\RecalculationResult;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Services\Api\WebhookService;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\Availability\RecalculationResult;
-use App\Services\Shortages\ShortageDetector;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;

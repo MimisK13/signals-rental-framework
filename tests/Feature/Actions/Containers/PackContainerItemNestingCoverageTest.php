@@ -1,6 +1,7 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
 use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
@@ -8,7 +9,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Enums\AvailabilityResolution;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

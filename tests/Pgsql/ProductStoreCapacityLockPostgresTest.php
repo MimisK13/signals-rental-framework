@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Availability\ProductStoreCapacityLock;
+use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesPostgres;
 

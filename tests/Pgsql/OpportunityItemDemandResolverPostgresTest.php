@@ -1,18 +1,18 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\OpportunityItemDemandResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\UsesPostgres;

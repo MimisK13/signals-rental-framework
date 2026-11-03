@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\DemandPhase;
+use App\Domain\Availability\Enums\DemandPhase;
 use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Enums\ReleasePoint;

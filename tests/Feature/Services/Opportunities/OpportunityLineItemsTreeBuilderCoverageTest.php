@@ -6,12 +6,14 @@ use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Availability\Services\AvailabilityService;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
+use App\Support\Formatter;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
@@ -56,8 +58,8 @@ it('labels unknown group kinds without a prefix', function () {
     ]);
 
     $builder = new OpportunityLineItemsTreeBuilder(
-        app(\App\Support\Formatter::class),
-        app(\App\Services\AvailabilityService::class),
+        app(Formatter::class),
+        app(AvailabilityService::class),
         $treeService,
     );
 

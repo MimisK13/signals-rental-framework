@@ -1,17 +1,17 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
-use App\Models\AvailabilityDailySummary;
-use App\Models\AvailabilitySnapshot;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\Store;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

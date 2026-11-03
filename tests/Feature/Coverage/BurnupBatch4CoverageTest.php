@@ -5,6 +5,11 @@
  */
 
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
+use App\Domain\Availability\Shortages\Services\MoneyApportionment;
+use App\Domain\Availability\Shortages\Services\ShortageCrossOpportunityScanner;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
+use App\Domain\Availability\Shortages\ValueObjects\Shortage;
+use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Communications\Services\CommunicationPreferences;
 use App\Domain\Documents\Exceptions\DocumentRenderException;
 use App\Domain\Documents\Models\DocumentSequence;
@@ -39,13 +44,8 @@ use App\Services\Pricing\OpportunitySurchargeApplicator;
 use App\Services\Pricing\Predicates\QuantityMaxPredicate;
 use App\Services\Pricing\Predicates\TagNamesPredicate;
 use App\Services\Pricing\Predicates\TransactionTypesPredicate;
-use App\Services\Shortages\MoneyApportionment;
-use App\Services\Shortages\ShortageCrossOpportunityScanner;
-use App\Services\Shortages\ShortageDetector;
 use App\Services\VirtualStock\VirtualAssetStatusRegistry;
 use App\ValueObjects\Pricing\DiscountCriteriaContext;
-use App\ValueObjects\Shortage;
-use App\ValueObjects\ShortageCollection;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

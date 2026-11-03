@@ -2,11 +2,11 @@
 
 use App\Actions\Products\CreateSerialisedComponent;
 use App\Data\Products\CreateSerialisedComponentData;
+use App\Domain\Availability\Services\KitAvailabilityCalculator;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Availability\KitAvailabilityCalculator;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

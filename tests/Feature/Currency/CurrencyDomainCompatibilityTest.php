@@ -7,7 +7,7 @@ use App\Domain\Crew\Models\CrewMember;
 use App\Domain\Currency\Models\Currency;
 use App\Domain\Currency\Models\ExchangeRate;
 use App\Domain\Currency\Services\CurrencyService;
-use App\Domain\Stocktakes\Models\Stocktake;
+use App\Domain\Stock\Stocktakes\Models\Stocktake;
 use App\Models\ActionLog;
 use App\Models\User;
 use Illuminate\Support\Carbon;

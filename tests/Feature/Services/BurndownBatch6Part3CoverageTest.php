@@ -4,6 +4,9 @@
  * P4-CL4b coverage burn-down batch 6 — classes 46–67 (OpportunityTotalsCalculator through ContainerManifestService).
  */
 
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Communications\Data\ChannelSendData;
 use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Models\CommunicationLog;
@@ -48,15 +51,12 @@ use App\Enums\DealPriceMode;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityCostType;
 use App\Enums\PricingRoundingDirection;
-use App\Models\Demand;
 use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
 use App\Models\Product;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
 use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\User;

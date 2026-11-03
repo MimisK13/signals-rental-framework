@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\AvailabilityEventType;
-use App\Enums\DemandPhase;
-use App\Jobs\RecalculateAvailabilityJob;
-use App\Models\AvailabilityEvent;
-use App\Models\Demand;
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Carbon;

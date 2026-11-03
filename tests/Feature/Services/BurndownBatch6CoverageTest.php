@@ -4,6 +4,12 @@
  * P4-CL4b coverage burn-down batch 6 — first 30 service classes (cheapest-first slice).
  */
 
+use App\Domain\Availability\Services\KitCompositionGuard;
+use App\Domain\Availability\Services\RecalculationPipeline;
+use App\Domain\Availability\Shortages\Services\CostApportionmentContext;
+use App\Domain\Availability\Shortages\Services\Strategies\ManualCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Data\ChannelSendData;
@@ -53,8 +59,6 @@ use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Services\Api\IdempotencyKeyService;
 use App\Services\Api\WebhookEventRegistry;
-use App\Services\Availability\KitCompositionGuard;
-use App\Services\Availability\RecalculationPipeline;
 use App\Services\Dashboard\DashboardKpiService;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
 use App\Services\Notifications\EventNotificationMapRegistry;
@@ -63,10 +67,6 @@ use App\Services\Pricing\DiscountCriteriaPredicateRegistry;
 use App\Services\Pricing\DiscountRuleEvaluator;
 use App\Services\Pricing\OpportunitySurchargeApplicator;
 use App\Services\Pricing\QuantityMinorArithmetic;
-use App\Services\Shortages\CostApportionmentContext;
-use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Services\VirtualStock\VirtualStockStatusRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

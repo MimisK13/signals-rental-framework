@@ -1,15 +1,15 @@
 <?php
 
 use App\Domain\Assets\Models\Asset;
-use App\Domain\Repairs\Models\Repair;
+use App\Domain\Assets\Repairs\Models\Repair;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\DemandPhase;
-use App\Models\AvailabilitySnapshot;
-use App\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\UsesPostgres;
 

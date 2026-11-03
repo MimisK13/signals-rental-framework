@@ -1,10 +1,10 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityStrategyContract;
+use App\Domain\Availability\Contracts\AvailabilityStrategyContract;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

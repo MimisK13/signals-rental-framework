@@ -1,18 +1,18 @@
 <?php
 
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\Store;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 

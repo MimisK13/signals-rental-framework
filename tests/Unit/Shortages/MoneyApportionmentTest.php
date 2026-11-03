@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Shortages\MoneyApportionment;
+use App\Domain\Availability\Shortages\Services\MoneyApportionment;
 
 it('apportions remainder pennies to the largest fractional parts with ascending tie-break', function () {
     $result = (new MoneyApportionment)->apportion([

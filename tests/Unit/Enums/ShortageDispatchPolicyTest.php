@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
 
 it('defaults to warn_partial (the non-blocking, visible posture)', function () {
     expect(ShortageDispatchPolicy::default())->toBe(ShortageDispatchPolicy::WarnPartial);

@@ -1,19 +1,19 @@
 <?php
 
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
+use App\Domain\Availability\Shortages\Services\CostApportionmentContext;
+use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;
+use App\Domain\Availability\Shortages\Services\Strategies\EvenSplitCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\Services\Strategies\ManualCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\Services\Strategies\PrimaryJobCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
 use App\Models\User;
 use App\Models\VirtualStockCostOverride;
 use App\Models\VirtualStockIntake;
-use App\Services\Shortages\CostApportionmentContext;
-use App\Services\Shortages\CostApportionmentContextBuilder;
-use App\Services\Shortages\Strategies\EvenSplitCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ManualCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\PrimaryJobCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ProportionalQuantityCostApportionmentStrategy;
-use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;

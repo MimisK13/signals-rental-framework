@@ -1,21 +1,21 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Jobs\PruneAvailabilityData;
+use App\Domain\Availability\Jobs\RebuildSnapshotsJob;
+use App\Domain\Availability\Jobs\VerifySnapshotIntegrity;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityEventType;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
 use App\Jobs\ExpirePutAsides;
-use App\Jobs\PruneAvailabilityData;
-use App\Jobs\RebuildSnapshotsJob;
-use App\Jobs\VerifySnapshotIntegrity;
-use App\Models\AvailabilityDailySummary;
-use App\Models\AvailabilityEvent;
-use App\Models\AvailabilitySnapshot;
-use App\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;

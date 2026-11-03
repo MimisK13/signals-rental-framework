@@ -3,11 +3,11 @@
 use App\Data\Opportunities\PreparedProductInputs;
 use App\Data\Opportunities\PreparedStandardDemandInputs;
 use App\Data\Opportunities\PreparedStockInputs;
-use App\Models\Demand;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\OwnedCapacityReader;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Services\Availability\OwnedCapacityReader;
-use App\Services\Availability\RecalculationPipeline;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

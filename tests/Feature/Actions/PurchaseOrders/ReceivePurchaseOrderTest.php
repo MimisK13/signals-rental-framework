@@ -1,6 +1,13 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Services\Resolvers\SubHireResolver;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
+use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\ReceivePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\SendPurchaseOrder;
@@ -20,9 +27,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
-use App\Enums\AvailabilityResolution;
-use App\Enums\ShortageResolutionStatus;
-use App\Models\Demand;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
@@ -31,10 +35,6 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
-use App\Services\AvailabilityService;
-use App\Services\Shortages\Resolvers\SubHireResolver;
-use App\Services\Shortages\ShortageDetector;
-use App\ValueObjects\Shortage;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

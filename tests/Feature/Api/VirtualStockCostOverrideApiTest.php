@@ -1,11 +1,11 @@
 <?php
 
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Models\MemberStore;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
 use App\Models\User;
 use App\Models\VirtualStockCostOverride;
 use Database\Seeders\PermissionSeeder;

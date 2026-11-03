@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Demand;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\DatabaseAvailabilityDataPresence;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\DatabaseAvailabilityDataPresence;
 use Illuminate\Support\Facades\Schema;
 
 it('returns false when the demands table does not exist (pre-availability-engine schema)', function () {

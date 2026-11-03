@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\AvailabilityDailySummary;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\Store;

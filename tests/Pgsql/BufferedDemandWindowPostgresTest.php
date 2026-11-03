@@ -1,21 +1,21 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Jobs\RecalculateAvailabilityJob;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
 use App\Enums\OpportunityStatus;
-use App\Jobs\RecalculateAvailabilityJob;
-use App\Models\AvailabilityDailySummary;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\UsesPostgres;

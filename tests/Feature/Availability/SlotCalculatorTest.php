@@ -1,8 +1,8 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Enums\AvailabilityResolution;
-use App\Services\Availability\SlotCalculator;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Services\SlotCalculator;
 use Illuminate\Support\Carbon;
 
 /**

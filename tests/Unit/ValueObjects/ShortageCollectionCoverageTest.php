@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Availability\Shortages\ValueObjects\Shortage;
+use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Stock\Enums\StockMethod;
-use App\ValueObjects\Shortage;
-use App\ValueObjects\ShortageCollection;
 use Illuminate\Support\Carbon;
 
 function shortage(int $itemId, int $requested, int $available, int $resolved = 0): Shortage

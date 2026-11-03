@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\DemandPhase;
+use App\Domain\Availability\Enums\DemandPhase;
 
 it('backs each phase with the expected string value', function () {
     expect(DemandPhase::Draft->value)->toBe('draft')

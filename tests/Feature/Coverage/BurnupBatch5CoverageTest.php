@@ -4,6 +4,14 @@
  * Coverage burn-up batch 5 — services, policies, and support classes.
  */
 
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
+use App\Domain\Availability\Shortages\Services\CostApportionmentContext;
+use App\Domain\Availability\Shortages\Services\Resolvers\SubHireResolver;
+use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
+use App\Domain\Availability\Shortages\ValueObjects\ResolutionOption;
+use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Policies\CommunicationTemplatePolicy;
 use App\Domain\Communications\Services\CustomerCommunicationAttachmentResolver;
@@ -21,7 +29,6 @@ use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\NotificationAudience;
-use App\Enums\ShortageResolutionType;
 use App\Models\MemberStore;
 use App\Models\NotificationSetting;
 use App\Models\NotificationType;
@@ -29,18 +36,11 @@ use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\Product;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use App\Services\Notifications\NotificationSettingsCatalog;
-use App\Services\Shortages\CostApportionmentContext;
-use App\Services\Shortages\Resolvers\SubHireResolver;
-use App\Services\Shortages\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
 use App\Services\VirtualStock\VirtualStockIntakeProfitAndLossBuilder;
-use App\ValueObjects\ResolutionOption;
-use App\ValueObjects\Shortage;
 use Database\Seeders\NotificationTypeSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

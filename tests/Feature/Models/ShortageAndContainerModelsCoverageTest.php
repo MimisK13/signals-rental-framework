@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
+use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Models\ShortageAcknowledgement;
-use App\Models\ShortageWaitlistMonitor;
 use App\Models\Store;
 use App\Models\User;
 

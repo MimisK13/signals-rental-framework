@@ -1,13 +1,13 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityDataPresence;
-use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Enums\AvailabilityResolution;
+use App\Domain\Availability\Contracts\AvailabilityDataPresence;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Services\SettingsAvailabilityResolutionProvider;
+use App\Domain\Availability\Settings\AvailabilitySettings;
 use App\Models\User;
-use App\Services\Availability\SettingsAvailabilityResolutionProvider;
 use App\Services\SettingsRegistry;
 use App\Services\SettingsService;
-use App\Settings\AvailabilitySettings;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Validation\ValidationException;

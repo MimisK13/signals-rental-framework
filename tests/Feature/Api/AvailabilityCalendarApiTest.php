@@ -1,10 +1,10 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
-use App\Models\AvailabilityDailySummary;
-use App\Models\Demand;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\Product;
 use App\Models\Store;

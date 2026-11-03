@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\OpportunityItemDemandResolver;
+use App\Domain\Availability\Settings\AvailabilitySettings;
 use App\Enums\OpportunityStatus;
 use App\Enums\ReleasePoint;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\OpportunityItemDemandResolver;
-use App\Settings\AvailabilitySettings;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 

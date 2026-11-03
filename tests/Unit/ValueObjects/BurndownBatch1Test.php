@@ -1,12 +1,12 @@
 <?php
 
+use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
+use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
+use App\Domain\Availability\Shortages\ValueObjects\Shortage;
+use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
+use App\Domain\Availability\Shortages\ValueObjects\ShortageGroup;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Enums\ShortageDispatchPolicy;
 use App\Models\OpportunityItem;
-use App\ValueObjects\DispatchGateResult;
-use App\ValueObjects\Shortage;
-use App\ValueObjects\ShortageCollection;
-use App\ValueObjects\ShortageGroup;
 use Illuminate\Support\Carbon;
 
 describe('ShortageGroup::isCrossOpportunity', function () {

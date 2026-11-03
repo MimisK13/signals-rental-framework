@@ -2,9 +2,9 @@
 
 use App\Actions\Opportunities\CreateOpportunity;
 use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Availability\Models\Demand;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;

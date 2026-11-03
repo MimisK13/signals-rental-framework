@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\DemandPhase;
-use App\Models\Demand;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\QueryException;

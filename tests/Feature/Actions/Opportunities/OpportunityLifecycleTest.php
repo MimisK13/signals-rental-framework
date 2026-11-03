@@ -10,7 +10,7 @@ use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\Opportunities\OpportunityData;
 use App\Data\Opportunities\UpdateOpportunityData;
-use App\Enums\DemandPhase;
+use App\Domain\Availability\Enums\DemandPhase;
 use App\Enums\LineItemTransactionType;
 use App\Enums\MembershipType;
 use App\Enums\OpportunityState;

@@ -1,15 +1,15 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\KitAvailabilityCalculator;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
-use App\Models\AvailabilitySnapshot;
-use App\Models\Demand;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\Store;
-use App\Services\Availability\KitAvailabilityCalculator;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

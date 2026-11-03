@@ -1,9 +1,9 @@
 <?php
 
 use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Enums\ChargePeriod;
-use App\Enums\ShortageResolutionType;
 
 describe('AssetCondition::label', function () {
     it('labels every condition', function () {

@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\DemandPhase;
-use App\Models\Demand;
-use App\Services\Availability\RecalculationPipeline;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

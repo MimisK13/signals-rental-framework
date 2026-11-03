@@ -3,10 +3,10 @@
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Actions\VirtualStock\SetVirtualStockCostOverride;
 use App\Data\VirtualStock\SetVirtualStockCostOverrideData;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
 use Database\Seeders\PermissionSeeder;

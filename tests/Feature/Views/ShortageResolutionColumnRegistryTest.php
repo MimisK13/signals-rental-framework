@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
 use App\Views\Column;
-use App\Views\ShortageResolutionColumnRegistry;
 
 /**
  * R-D master M17 — ShortageResolutionColumnRegistry must expose

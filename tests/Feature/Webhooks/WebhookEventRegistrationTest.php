@@ -74,7 +74,7 @@ function dispatchedWebhookEvents(): array
     // The action literal is supplied either positionally to recordAudit(
     // $opportunity, 'event.name', …) inside the Verbs events, or as the named
     // `action: 'event.name'` argument to `new AuditableEvent(…)` (e.g. the
-    // shortage resolution/waitlist records in App\Services\Shortages).
+    // shortage resolution/waitlist records in App\Domain\Availability\Shortages\Services).
     foreach ([app_path('Verbs'), app_path('Services')] as $dir) {
         foreach (File::allFiles($dir) as $file) {
             if ($file->getExtension() !== 'php') {

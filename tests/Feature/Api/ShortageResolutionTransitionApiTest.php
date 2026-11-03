@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ShortageResolutionStatus;
-use App\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

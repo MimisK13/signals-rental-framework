@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Availability\Models\AvailabilityDailySummary;
+use App\Domain\Availability\Models\Demand;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\AvailabilityDailySummary;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;

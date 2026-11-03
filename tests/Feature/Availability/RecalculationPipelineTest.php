@@ -1,17 +1,17 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityEventType;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\AvailabilityEvent;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Services\AvailabilityService;
+use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityEventType;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
-use App\Models\AvailabilityEvent;
-use App\Models\AvailabilitySnapshot;
-use App\Models\Demand;
 use App\Models\Product;
 use App\Models\Store;
-use App\Services\Availability\RecalculationPipeline;
-use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 

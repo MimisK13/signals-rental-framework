@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandDateSource;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandDateSource;
+use App\Domain\Availability\Settings\AvailabilitySettings;
 use App\Settings\ActionLogSettings;
 use App\Settings\ApiSettings;
-use App\Settings\AvailabilitySettings;
 use App\Settings\EmailSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;

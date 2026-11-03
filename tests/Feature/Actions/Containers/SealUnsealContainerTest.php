@@ -1,6 +1,7 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\PackContainerItem;
 use App\Domain\Warehouse\Containers\Actions\SealContainer;
@@ -15,7 +16,6 @@ use App\Domain\Warehouse\Containers\Events\ContainerSealed;
 use App\Domain\Warehouse\Containers\Events\ContainerUnsealed;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Models\ContainerItem;
-use App\Enums\AvailabilityResolution;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
 use App\Models\Product;

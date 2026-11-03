@@ -4,6 +4,10 @@
  * P4-CL4b coverage burn-down batch 6 — classes 68–90 (PurchaseOrderDataResolver through ZoneAwareTaxResolver).
  */
 
+use App\Domain\Availability\Services\VirtualStockDemandResolver;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
+use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Communications\Data\ChannelSendData;
 use App\Domain\Communications\Data\TestChannelProviderData;
 use App\Domain\Communications\Services\Drivers\BroadcastDriver;
@@ -62,9 +66,6 @@ use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
 use App\Models\Product;
-use App\Models\ShortageResolution;
-use App\Models\ShortageResolutionItem;
-use App\Models\ShortageWaitlistMonitor;
 use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\User;
@@ -73,7 +74,6 @@ use App\Notifications\ChannelInfrastructureBroadcastNotification;
 use App\Services\Api\ApiEndpointCatalogue;
 use App\Services\Api\PriceWeightResolver;
 use App\Services\Api\UsageRecorder;
-use App\Services\Availability\VirtualStockDemandResolver;
 use App\Services\Members\MemberNumberGenerator;
 use App\Services\Notifications\InAppNotificationContentBuilder;
 use App\Services\Notifications\NotificationSettingsCatalog;

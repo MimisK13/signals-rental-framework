@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Availability\Models\Demand;
 use App\Domain\Quotations\Actions\AcceptQuotationVersion;
 use App\Domain\Quotations\Actions\AddQuotationItem;
 use App\Domain\Quotations\Actions\CreateQuotation;
@@ -30,7 +31,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Models\Demand;
 use App\Models\Member;
 use App\Models\Product;
 use App\Models\Store;

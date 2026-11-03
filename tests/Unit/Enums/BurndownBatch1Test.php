@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Availability\Enums\DemandDateSource;
+use App\Domain\Availability\Shortages\Enums\WaitlistMonitorStatus;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
 use App\Domain\Tax\Enums\TaxBuyerType;
@@ -10,10 +12,8 @@ use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
 use App\Domain\Warehouse\Containers\Enums\ContainerUnsealReason;
 use App\Enums\BillingCommunicationKind;
 use App\Enums\DealPriceMode;
-use App\Enums\DemandDateSource;
 use App\Enums\KitComponentBinding;
 use App\Enums\OpportunityCostType;
-use App\Enums\WaitlistMonitorStatus;
 
 describe('ContainerAvailabilityMode::holdsContentsIndefinitely', function () {
     it('is true only for kit mode', function () {

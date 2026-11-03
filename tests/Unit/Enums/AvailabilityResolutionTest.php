@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\AvailabilityResolution;
 
 describe('AvailabilityResolution slot helpers', function () {
     it('reports the slot length in minutes per resolution', function () {

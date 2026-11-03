@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Availability\Services\KitCompositionGuard;
 use App\Enums\KitComponentBinding;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
-use App\Services\Availability\KitCompositionGuard;
 use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {

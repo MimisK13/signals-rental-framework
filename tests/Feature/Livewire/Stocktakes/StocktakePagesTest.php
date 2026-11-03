@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Stock\Models\StockLevel;
-use App\Domain\Stocktakes\Actions\StartStocktake;
-use App\Domain\Stocktakes\Enums\StocktakeStatus;
-use App\Domain\Stocktakes\Models\Stocktake;
-use App\Domain\Stocktakes\Presentation\Livewire\Form;
-use App\Domain\Stocktakes\Presentation\Livewire\Show;
+use App\Domain\Stock\Stocktakes\Actions\StartStocktake;
+use App\Domain\Stock\Stocktakes\Enums\StocktakeStatus;
+use App\Domain\Stock\Stocktakes\Models\Stocktake;
+use App\Domain\Stock\Stocktakes\Presentation\Livewire\Form;
+use App\Domain\Stock\Stocktakes\Presentation\Livewire\Show;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

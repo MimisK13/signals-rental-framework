@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Shortages\ApplyShortageResolution;
-use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Data\Shortages\ApplyResolutionData;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Enums\DemandPhase;
+use App\Domain\Availability\Models\Demand;
+use App\Domain\Availability\Shortages\Actions\ApplyShortageResolution;
+use App\Domain\Availability\Shortages\Data\ApplyResolutionData;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Services\Resolvers\PartialFulfilmentResolver;
+use App\Domain\Availability\Shortages\Services\Resolvers\WaitlistResolver;
+use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\AvailabilityResolution;
-use App\Enums\DemandPhase;
-use App\Enums\ShortageResolutionStatus;
-use App\Models\Demand;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Shortages\Resolvers\PartialFulfilmentResolver;
-use App\Services\Shortages\Resolvers\WaitlistResolver;
-use App\Services\Shortages\ShortageDetector;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;

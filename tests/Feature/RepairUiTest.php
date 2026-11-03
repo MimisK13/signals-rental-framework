@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Repairs\Models\Repair;
+use App\Domain\Assets\Repairs\Models\Repair;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;

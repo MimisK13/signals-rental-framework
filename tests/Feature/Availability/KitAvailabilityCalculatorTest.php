@@ -1,12 +1,12 @@
 <?php
 
-use App\Contracts\Availability\AvailabilityResolutionProvider;
-use App\Enums\AvailabilityResolution;
-use App\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
+use App\Domain\Availability\Enums\AvailabilityResolution;
+use App\Domain\Availability\Models\AvailabilitySnapshot;
+use App\Domain\Availability\Services\KitAvailabilityCalculator;
 use App\Models\Product;
 use App\Models\SerialisedComponent;
 use App\Models\Store;
-use App\Services\Availability\KitAvailabilityCalculator;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {

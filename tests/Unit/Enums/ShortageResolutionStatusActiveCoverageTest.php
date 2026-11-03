@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ShortageResolutionStatus;
+use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 
 describe('ShortageResolutionStatus::isActive', function () {
     it('treats every status except Cancelled and Failed as active', function () {

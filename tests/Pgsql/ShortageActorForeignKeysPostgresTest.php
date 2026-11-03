@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\ShortageAcknowledgement;
-use App\Models\ShortageResolution;
+use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
+use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
