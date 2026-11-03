@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Data;
 
 use App\Domain\Projects\Models\Project;
+use App\Domain\Quotations\Data\QuotationData;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Lazy;
 
 final class ProjectData extends Data
 {
@@ -19,6 +21,9 @@ final class ProjectData extends Data
         public ?string $starts_at,
         public ?string $ends_at,
         public int $opportunities_count = 0,
+        public int $quotations_count = 0,
+        /** @var Lazy|list<QuotationData> */
+        public Lazy|array $quotations = [],
     ) {}
 
     public static function fromModel(Project $project): self
@@ -33,6 +38,14 @@ final class ProjectData extends Data
             starts_at: $project->starts_at?->toIso8601String(),
             ends_at: $project->ends_at?->toIso8601String(),
             opportunities_count: (int) ($project->opportunities_count ?? $project->opportunities()->count()),
+            quotations_count: (int) ($project->quotations_count ?? $project->quotations()->count()),
+            quotations: Lazy::whenLoaded(
+                'quotations',
+                $project,
+                fn (): array => $project->quotations->map(
+                    fn ($quotation): QuotationData => QuotationData::fromModel($quotation),
+                )->values()->all(),
+            ),
         );
     }
 }

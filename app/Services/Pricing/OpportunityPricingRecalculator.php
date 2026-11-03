@@ -2,15 +2,15 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
+use App\Domain\Projects\Opportunities\Verbs\Events\DiscountReset;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemDealPriceDiscountSet;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemDiscountSet;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemPriceOverridden;
+use App\Domain\Projects\Opportunities\Verbs\Events\PricingRecalculated;
 use App\Enums\DealPriceMode;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
-use App\Verbs\Events\Opportunities\DiscountReset;
-use App\Verbs\Events\Opportunities\ItemDealPriceDiscountSet;
-use App\Verbs\Events\Opportunities\ItemDiscountSet;
-use App\Verbs\Events\Opportunities\ItemPriceOverridden;
-use App\Verbs\Events\Opportunities\PricingRecalculated;
 
 /**
  * Orchestrates opportunity repricing with optional reset toggles and active deal

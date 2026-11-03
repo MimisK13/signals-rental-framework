@@ -14,7 +14,6 @@ use App\Settings\FinanceSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
 use App\Settings\NotificationSettings;
-use App\Settings\OpportunitySettings;
 use App\Settings\PricingSettings;
 use App\Settings\SchedulingSettings;
 use App\Settings\SecuritySettings;
@@ -40,7 +39,6 @@ class SettingsServiceProvider extends ServiceProvider
             $registry->register(new IntegrationSettings);
             $registry->register(new InvoiceSettings);
             $registry->register(new NotificationSettings);
-            $registry->register(new OpportunitySettings);
             $registry->register(new PricingSettings);
             $registry->register(new SchedulingSettings);
             $registry->register(new SecuritySettings);

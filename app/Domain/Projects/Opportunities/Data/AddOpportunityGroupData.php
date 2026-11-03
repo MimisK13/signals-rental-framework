@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Projects\Opportunities\Data;
+
+use Spatie\LaravelData\Data;
+
+/**
+ * Input DTO for adding a structural group row to an opportunity's line-item tree.
+ *
+ * A group is a pure container — it carries no catalogue reference, no price, and
+ * no demand. `parent_path` nests the group beneath an existing group; null adds
+ * it at the top level. The {@see App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup}
+ * action allocates the concrete path within this scope via
+ * {@see App\Domain\Projects\Opportunities\Services\ItemTreeService}.
+ */
+class AddOpportunityGroupData extends Data
+{
+    public function __construct(
+        public string $name,
+        public string $quantity = '1',
+        /**
+         * The existing group path under which to nest this group (e.g. '0001').
+         * Null adds the group at the top level.
+         */
+        public ?string $parent_path = null,
+        /**
+         * Internal: the quote version scope the new group belongs to. When null the
+         * action resolves it from the opportunity's active version.
+         */
+        public ?int $version_id = null,
+        /** @var array<string, mixed>|null */
+        public ?array $custom_fields = null,
+    ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'quantity' => ['sometimes', 'numeric', 'min:0'],
+            'parent_path' => ['sometimes', 'nullable', 'string'],
+            'custom_fields' => ['sometimes', 'nullable', 'array'],
+        ];
+    }
+}

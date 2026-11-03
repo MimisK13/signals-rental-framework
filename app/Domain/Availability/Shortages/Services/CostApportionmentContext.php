@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 

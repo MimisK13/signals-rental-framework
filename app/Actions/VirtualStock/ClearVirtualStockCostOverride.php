@@ -3,7 +3,7 @@
 namespace App\Actions\VirtualStock;
 
 use App\Data\VirtualStock\ApportionVirtualStockCostResult;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\VirtualStockCostOverride;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Facades\Gate;

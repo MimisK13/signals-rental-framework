@@ -21,7 +21,7 @@ use App\Domain\Invoices\Services\InvoiceStatusRegistry;
 use App\Domain\Invoices\Services\InvoiceTotalsCalculator;
 use App\Domain\Invoices\Services\OpportunityInvoiceSnapshotter;
 use App\Domain\Invoices\Verbs\Events\InvoiceGenerated;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Services\SequenceAllocator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;

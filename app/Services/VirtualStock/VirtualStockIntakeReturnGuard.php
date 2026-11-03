@@ -3,10 +3,10 @@
 namespace App\Services\VirtualStock;
 
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\VirtualStockIntake;
 use Brick\Math\BigDecimal;
 

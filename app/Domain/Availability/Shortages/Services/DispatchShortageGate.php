@@ -8,8 +8,8 @@ use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
 use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\Store;
 use Illuminate\Validation\ValidationException;
 
@@ -63,7 +63,7 @@ class DispatchShortageGate
      * {@see ShortageConfirmationGate::evaluate()}.
      *
      * Powers the `available_actions` dispatch precheck (via
-     * {@see App\Guards\Opportunities\Rules\DispatchShortageRule}): it reports
+     * {@see App\Domain\Projects\Opportunities\Guards\Rules\DispatchShortageRule}): it reports
      * whether dispatching the order WOULD be blocked by the store's
      * {@see ShortageDispatchPolicy}, without booking anything out. Write-time
      * enforcement stays in {@see enforceForItem()} / {@see enforceForItems()},

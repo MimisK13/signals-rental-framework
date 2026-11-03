@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Services;
 
-use App\Data\Opportunities\PreparedProductInputs;
-use App\Data\Opportunities\PreparedStandardDemandInputs;
-use App\Data\Opportunities\PreparedStockInputs;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Data\PreparedProductInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStockInputs;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 

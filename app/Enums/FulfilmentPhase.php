@@ -2,7 +2,8 @@
 
 namespace App\Enums;
 
-use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PromotesOpportunityStatus;
 
 /**
  * The aggregate fulfilment position of an Order, derived from the projected state

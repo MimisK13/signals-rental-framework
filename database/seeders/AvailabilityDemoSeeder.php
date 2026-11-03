@@ -2,21 +2,21 @@
 
 namespace Database\Seeders;
 
-use App\Actions\Opportunities\AllocateAsset;
-use App\Data\Opportunities\AllocateAssetData;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
+use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
+use App\Domain\Projects\Opportunities\Data\AllocateAssetData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\OpportunityStatus;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;

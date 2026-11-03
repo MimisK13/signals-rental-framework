@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Communications\Services;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\NotificationType;
-use App\Models\Opportunity;
 
 /**
  * Builds preview merge-field payloads for communication template editor.

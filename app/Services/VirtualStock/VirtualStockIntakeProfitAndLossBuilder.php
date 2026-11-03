@@ -4,8 +4,8 @@ namespace App\Services\VirtualStock;
 
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
-use App\Models\OpportunityCost;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\VirtualStockIntake;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

@@ -1,0 +1,1 @@
+{{ $item->quotations_count }}

@@ -17,10 +17,6 @@ use App\Models\User;
 use App\Support\CostVisibility;
 use App\Views\ColumnRegistry;
 use App\Views\MemberColumnRegistry;
-use App\Views\OpportunityColumnRegistry;
-use App\Views\OpportunityCostColumnRegistry;
-use App\Views\OpportunityItemColumnRegistry;
-use App\Views\OpportunityVersionColumnRegistry;
 use App\Views\VirtualStockIntakeColumnRegistry;
 use Illuminate\Validation\ValidationException;
 
@@ -40,10 +36,6 @@ class ColumnRegistryResolver
         'activities' => ActivityColumnRegistry::class,
         'rate_definitions' => RateDefinitionColumnRegistry::class,
         'product_rates' => ProductRateColumnRegistry::class,
-        'opportunities' => OpportunityColumnRegistry::class,
-        'opportunity_items' => OpportunityItemColumnRegistry::class,
-        'opportunity_costs' => OpportunityCostColumnRegistry::class,
-        'opportunity_versions' => OpportunityVersionColumnRegistry::class,
         'containers' => ContainerColumnRegistry::class,
         'shortage_resolutions' => ShortageResolutionColumnRegistry::class,
         'invoices' => InvoiceColumnRegistry::class,

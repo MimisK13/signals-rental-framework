@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
-use App\Data\Opportunities\PreparedProductInputs;
-use App\Data\Opportunities\PreparedStandardDemandInputs;
-use App\Data\Opportunities\PreparedStockInputs;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\DemandReadContext;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
@@ -17,11 +14,14 @@ use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Data\PreparedProductInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStockInputs;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Enums\OpportunityState;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;

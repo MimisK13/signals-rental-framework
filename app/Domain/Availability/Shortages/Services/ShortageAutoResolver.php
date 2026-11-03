@@ -7,8 +7,8 @@ namespace App\Domain\Availability\Shortages\Services;
 use App\Domain\Availability\Shortages\Contracts\ShortageResolverContract;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionOption;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 
 /**
  * Synchronous auto-resolution loop (shortage-resolution-sub-hires.md §7.5).

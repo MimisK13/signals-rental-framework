@@ -6,7 +6,7 @@ namespace App\Domain\Availability\Shortages\Database\Factories;
 
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

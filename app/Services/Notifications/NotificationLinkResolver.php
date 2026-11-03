@@ -2,8 +2,8 @@
 
 namespace App\Services\Notifications;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Member;
-use App\Models\Opportunity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotification;
 

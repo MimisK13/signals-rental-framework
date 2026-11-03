@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Shortages\Services;
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeItemDates;
 use App\Domain\Availability\Enums\AvailabilityEventType;
 use App\Domain\Availability\Models\AvailabilityEvent;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeItemDates;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\OpportunityItem;
 use Illuminate\Support\Carbon;
 use Thunk\Verbs\Facades\Verbs;
 

@@ -6,10 +6,10 @@ namespace App\Domain\Availability\Shortages\Console;
 
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
-use App\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Events\AuditableEvent;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Symfony\Component\Console\Attribute\AsCommand;

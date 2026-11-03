@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Projects\Opportunities\Actions;
+
+use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Projects\Opportunities\Data\OpportunityVersionData;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Verbs\Events\VersionAccepted;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Gate;
+
+/**
+ * Marks a quote version as Accepted by the customer (opportunity-lifecycle.md
+ * §8.6), recording WHO accepted it (`acceptedBy`, a member) on the event stream.
+ * An accepted version takes priority at quote → order conversion (§8.8).
+ */
+class AcceptVersion
+{
+    use CommitsVerbsEvents;
+
+    public function __invoke(OpportunityVersion $version, ?int $acceptedBy = null): OpportunityVersionData
+    {
+        Gate::authorize('opportunities.edit');
+
+        $this->commitVerbs(function () use ($version, $acceptedBy): void {
+            VersionAccepted::fire(
+                version_id: $version->state_id,
+                accepted_by: $acceptedBy,
+                accepted_at: CarbonImmutable::now()->toIso8601String(),
+            );
+        });
+
+        return OpportunityVersionData::fromModel($version->refresh());
+    }
+}

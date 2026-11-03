@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Actions;
 
-use App\Actions\Opportunities\Concerns\RebuildsAvailabilitySnapshots;
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\ContainerDemandResolver;
 use App\Domain\Availability\Services\ProductStoreCapacityLock;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\Concerns\RebuildsAvailabilitySnapshots;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Projects\Opportunities\Verbs\Events\AssetReturned;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Data\ContainerItemData;
 use App\Domain\Warehouse\Containers\Data\PackContainerItemData;
@@ -26,8 +28,6 @@ use App\Domain\Warehouse\Containers\Services\ContainerEventRecorder;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Domain\Warehouse\Containers\Services\ContainerSubHireNotice;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\OpportunityItemAsset;
-use App\Verbs\Events\Opportunities\AssetReturned;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;

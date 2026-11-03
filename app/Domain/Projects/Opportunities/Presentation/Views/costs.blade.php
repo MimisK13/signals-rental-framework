@@ -1,0 +1,63 @@
+
+<section class="w-full">
+    @include('project-opportunities::partials.opportunity-header', ['opportunity' => $opportunity, 'subpage' => 'Costs', 'showActions' => true, 'canChangeStatus' => $canChangeStatus])
+    @include('project-opportunities::partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'costs'])
+
+    @php
+        $formatter = app(\App\Support\Formatter::class);
+    @endphp
+
+    <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
+        @if($opportunity->costs->isNotEmpty())
+            <x-signals.table-wrap>
+                <table class="s-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Cost Type</th>
+                            <th>Transaction Type</th>
+                            @costs
+                                <th class="text-right">Amount</th>
+                            @endcosts
+                            <th class="text-right">Qty</th>
+                            <th>Optional</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($opportunity->costs as $cost)
+                            <tr wire:key="cost-{{ $cost->id }}">
+                                <td>
+                                    {{ $cost->description }}
+                                    @if($cost->virtual_stock_intake_id && auth()->user()?->can('costs.view'))
+                                        <a href="{{ route('virtual-stock.show', $cost->virtual_stock_intake_id) }}" wire:navigate.hover class="block text-xs text-[var(--link)] hover:underline">
+                                            Intake {{ $cost->virtualStockIntake?->number ?? $cost->virtual_stock_intake_id }}
+                                        </a>
+                                    @endif
+                                </td>
+                                <td>{{ $cost->cost_type->label() }}</td>
+                                <td>{{ $cost->transaction_type->label() }}</td>
+                                @costs
+                                    <td class="text-right" style="font-family: var(--font-mono);">{{ $formatter->money($cost->amount ?? 0) }}</td>
+                                @endcosts
+                                <td class="text-right" style="font-family: var(--font-mono);">{{ rtrim(rtrim(number_format((float) $cost->quantity, 2), '0'), '.') }}</td>
+                                <td>
+                                    @if($cost->is_optional)
+                                        <span class="s-badge s-badge-amber">Optional</span>
+                                    @else
+                                        <span class="text-[var(--text-muted)]">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </x-signals.table-wrap>
+        @else
+            <x-dense::empty-state
+                title="No costs"
+                description="This opportunity has no additional costs recorded."
+            />
+        @endif
+    </div>
+    @include('project-opportunities::partials.opportunity-action-modals')
+</section>

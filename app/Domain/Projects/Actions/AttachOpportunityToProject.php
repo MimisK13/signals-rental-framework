@@ -6,8 +6,8 @@ namespace App\Domain\Projects\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
 use App\Domain\Projects\Models\Project;
-use App\Models\Opportunity;
-use App\Verbs\Events\Opportunities\OpportunityProjectAssigned;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Verbs\Events\OpportunityProjectAssigned;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

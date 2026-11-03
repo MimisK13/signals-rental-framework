@@ -6,6 +6,7 @@ use App\Domain\Documents\Presentation\Http\Controllers\Web\PublicDocumentControl
 use App\Domain\Documents\Presentation\Http\Controllers\Web\SignedDocumentDownloadController;
 use App\Domain\Documents\Presentation\Livewire\Editor;
 use App\Domain\Documents\Presentation\Livewire\Index;
+use App\Domain\Documents\Presentation\Livewire\OpportunityDocuments;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function (): void {
@@ -18,6 +19,12 @@ Route::middleware('web')->group(function (): void {
         ->middleware('signed')
         ->whereNumber('documentId')
         ->name('documents.signed-download');
+
+    Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-timeout'])->group(function (): void {
+        Route::livewire('opportunities/{opportunity}/documents', OpportunityDocuments::class)
+            ->withTrashed()
+            ->name('opportunities.documents');
+    });
 
     Route::middleware(['signals.setup-complete', 'auth', '2fa', 'admin', 'signals.session-timeout'])->group(function (): void {
         Route::livewire('admin/document-templates', Index::class)->name('admin.document-templates.index');

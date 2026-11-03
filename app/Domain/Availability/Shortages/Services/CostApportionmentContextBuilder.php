@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Shortages\Services;
 
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Carbon;
 

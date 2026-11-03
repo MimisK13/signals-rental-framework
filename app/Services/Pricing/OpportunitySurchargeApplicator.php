@@ -3,9 +3,9 @@
 namespace App\Services\Pricing;
 
 use App\Domain\Products\Models\Product;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemSurcharge;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemSurcharge;
 use App\Models\Surcharge;
 use App\ValueObjects\Pricing\EvaluatedSurcharge;
 use Illuminate\Support\Collection;

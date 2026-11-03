@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Actions;
 
-use App\Actions\Opportunities\Concerns\RebuildsAvailabilitySnapshots;
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Projects\Opportunities\Actions\Concerns\RebuildsAvailabilitySnapshots;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Projects\Opportunities\Services\AutoPromotionContext;
+use App\Domain\Projects\Opportunities\Verbs\Events\AssetReturned;
+use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\PromotesOpportunityStatus;
 use App\Domain\Warehouse\Containers\Data\ContainerData;
 use App\Domain\Warehouse\Containers\Data\KitContainerReturnResultData;
 use App\Domain\Warehouse\Containers\Data\ReturnKitContainerData;
@@ -15,11 +20,6 @@ use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerEventRecorder;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityItemAsset;
-use App\Services\Opportunities\AutoPromotionContext;
-use App\Verbs\Events\Opportunities\AssetReturned;
-use App\Verbs\Events\Opportunities\Concerns\PromotesOpportunityStatus;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

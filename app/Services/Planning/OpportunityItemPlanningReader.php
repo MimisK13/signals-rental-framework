@@ -2,10 +2,6 @@
 
 namespace App\Services\Planning;
 
-use App\Data\Opportunities\OpportunityItemReadContext;
-use App\Data\Opportunities\PreparedProductInputs;
-use App\Data\Opportunities\PreparedStandardDemandInputs;
-use App\Data\Opportunities\PreparedStockInputs;
 use App\Data\Planning\OpportunityItemPlanningData;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
@@ -13,10 +9,14 @@ use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\OwnedCapacityReader;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemReadContext;
+use App\Domain\Projects\Opportunities\Data\PreparedProductInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStockInputs;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;

@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Dashboard;
 
-use App\Enums\OpportunityState;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;

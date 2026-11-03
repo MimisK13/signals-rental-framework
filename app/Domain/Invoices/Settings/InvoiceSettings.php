@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Settings;
 
 use App\Domain\Documents\Models\DocumentSequence;
-use App\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 use App\Settings\SettingsDefinition;
 
 /**

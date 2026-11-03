@@ -6,6 +6,7 @@ use App\Domain\CustomFields\Presentation\Livewire\Form;
 use App\Domain\CustomFields\Presentation\Livewire\GroupForm;
 use App\Domain\CustomFields\Presentation\Livewire\GroupsIndex;
 use App\Domain\CustomFields\Presentation\Livewire\Index;
+use App\Domain\CustomFields\Presentation\Livewire\OpportunityCustomFields;
 use App\Domain\CustomFields\Presentation\Livewire\ProductCustomFields;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,7 @@ Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'admin', 'sig
 
 Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'signals.session-timeout'])->group(function (): void {
     Route::livewire('products/{product}/custom-fields', ProductCustomFields::class)->name('products.custom-fields');
+    Route::livewire('opportunities/{opportunity}/custom-fields', OpportunityCustomFields::class)
+        ->withTrashed()
+        ->name('opportunities.custom-fields');
 });

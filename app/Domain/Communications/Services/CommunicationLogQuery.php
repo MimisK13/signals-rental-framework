@@ -9,7 +9,7 @@ use App\Domain\Documents\Models\Document;
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 

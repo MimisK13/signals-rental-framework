@@ -3,7 +3,6 @@
 namespace App\Settings;
 
 use App\Services\SettingsService;
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 abstract class SettingsDefinition
@@ -23,7 +22,7 @@ abstract class SettingsDefinition
     /**
      * Validation rules for settings in this group.
      *
-     * @return array<string, array<int, string|Rule>>
+     * @return array<string, array<int, mixed>>
      */
     abstract public function rules(): array;
 

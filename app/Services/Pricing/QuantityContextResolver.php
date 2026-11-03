@@ -2,8 +2,8 @@
 
 namespace App\Services\Pricing;
 
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Collection;
 
 /**

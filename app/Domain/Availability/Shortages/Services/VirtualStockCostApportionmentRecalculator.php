@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Shortages\Services;
 
 use App\Actions\VirtualStock\ApportionVirtualStockCost;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemDatesChanged;
 use App\Models\VirtualStockIntake;
-use App\Verbs\Events\Opportunities\ItemDatesChanged;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Thunk\Verbs\Facades\Verbs;

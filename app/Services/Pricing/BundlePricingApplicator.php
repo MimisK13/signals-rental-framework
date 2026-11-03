@@ -3,9 +3,9 @@
 namespace App\Services\Pricing;
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\BundleRule;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\ValueObjects\Pricing\DiscountCriteriaContext;
 use Illuminate\Support\Collection;
 

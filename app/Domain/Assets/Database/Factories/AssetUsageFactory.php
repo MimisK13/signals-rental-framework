@@ -6,7 +6,7 @@ namespace App\Domain\Assets\Database\Factories;
 
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetUsage;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

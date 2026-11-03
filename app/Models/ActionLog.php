@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Services\SchemaBuilder;
 use Database\Factories\ActionLogFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,7 +11,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property array<string, mixed>|null $old_values
+ * @property array<string, mixed>|null $new_values
+ * @property Carbon|null $created_at
+ */
 class ActionLog extends Model implements HasSchema
 {
     /** @use HasFactory<ActionLogFactory> */

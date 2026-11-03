@@ -8,12 +8,12 @@ use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Services\CreditNoteNumberGenerator;
 use App\Domain\Invoices\Services\PaymentNumberGenerator;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityNumberGenerator;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
-use App\Models\Opportunity;
 use App\Models\Scopes\StoreScope;
 use App\Models\Store;
 use App\Services\Members\MemberNumberGenerator;
-use App\Services\Opportunities\OpportunityNumberGenerator;
 use App\Services\VirtualStock\VirtualStockNumberGenerator;
 
 /**

@@ -7,7 +7,7 @@ namespace App\Domain\Invoices\Services;
 use App\Domain\Availability\Shortages\Services\MoneyApportionment;
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
 use App\Domain\Invoices\Data\FrozenInvoiceTaxRowData;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use LogicException;

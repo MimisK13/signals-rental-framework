@@ -2,9 +2,9 @@
 
 namespace App\Services\Planning;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityPresentation;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Services\Opportunities\OpportunityPresentation;
 use App\Support\Formatter;
 use Calendar\Planner\TimelineRowBuilder;
 use Carbon\CarbonInterface;

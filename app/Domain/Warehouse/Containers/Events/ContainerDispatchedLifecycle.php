@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Events;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\Opportunity;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 

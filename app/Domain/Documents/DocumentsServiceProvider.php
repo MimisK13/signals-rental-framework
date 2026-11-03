@@ -14,6 +14,7 @@ use App\Domain\Documents\Policies\DocumentSequencePolicy;
 use App\Domain\Documents\Policies\DocumentTemplatePolicy;
 use App\Domain\Documents\Presentation\Livewire\Editor;
 use App\Domain\Documents\Presentation\Livewire\Index;
+use App\Domain\Documents\Presentation\Livewire\OpportunityDocuments;
 use App\Domain\Documents\Services\CreditNoteDataResolver;
 use App\Domain\Documents\Services\DocumentBrandingResolver;
 use App\Domain\Documents\Services\DocumentEventDispatcher;
@@ -90,5 +91,6 @@ final class DocumentsServiceProvider extends ServiceProvider
 
         Livewire::addComponent(name: 'document-templates.index', class: Index::class);
         Livewire::addComponent(name: 'document-templates.edit', class: Editor::class);
+        Livewire::addComponent(name: 'opportunities.documents', class: OpportunityDocuments::class);
     }
 }

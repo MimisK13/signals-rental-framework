@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Services;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Tax\Enums\TaxPointPolicy;
-use App\Models\Opportunity;
 use DateTimeInterface;
 
 /**

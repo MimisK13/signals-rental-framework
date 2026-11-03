@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Warehouse\Containers\Presentation\Livewire;
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\RepackReturnItem;
 use App\Domain\Warehouse\Containers\Actions\SealContainer;
@@ -13,8 +15,6 @@ use App\Domain\Warehouse\Containers\Enums\ContainerScanMode;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityItemAsset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

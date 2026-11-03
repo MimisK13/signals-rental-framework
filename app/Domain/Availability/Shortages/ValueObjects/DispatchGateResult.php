@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Shortages\ValueObjects;
 
 use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Validation\ValidationException;

@@ -2,12 +2,12 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Verbs\Events\DiscountCategoryApplied;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemDiscountSet;
 use App\Models\DiscountCategory;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Verbs\Events\Opportunities\DiscountCategoryApplied;
-use App\Verbs\Events\Opportunities\ItemDiscountSet;
 use Illuminate\Support\Collection;
 
 /**

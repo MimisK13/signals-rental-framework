@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Web\DocsController;
 use App\Http\Controllers\Web\InboundWebhookController;
-use App\Http\Controllers\Web\OpportunityLineItemController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Middleware\VerifyInboundWebhookSignature;
 use App\Livewire\Members\Addresses;
@@ -114,41 +113,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('virtual-stock', 'virtual-stock.index')->name('virtual-stock.index');
     Volt::route('virtual-stock/create', 'virtual-stock.form')->name('virtual-stock.create');
     Volt::route('virtual-stock/{virtualStockIntake}', 'virtual-stock.show')->name('virtual-stock.show');
-
-    // Opportunities
-    //
-    // Named web routes resolve now so route('opportunities.*') works everywhere
-    // (global search, member sub-pages, future nav). The full Livewire UI lands
-    // in M8 and replaces the placeholder Volt components in place — the route
-    // names are stable. 'create' is registered before the '{opportunity}' show
-    // route so /opportunities/create is never matched as an opportunity id.
-    Volt::route('opportunities', 'opportunities.index')->name('opportunities.index');
-
-    Volt::route('opportunities/create', 'opportunities.form')->name('opportunities.create');
-    // The Show page + all of its sub-tabs/edit resolve the {opportunity} binding
-    // with ->withTrashed() so ARCHIVED (soft-deleted) opportunities remain viewable
-    // (read-only, with a Restore action) rather than 404'ing. Mutating an archived
-    // record is blocked at the action layer; the Show header surfaces an archived
-    // banner + Restore.
-    Volt::route('opportunities/{opportunity}', 'opportunities.show')->name('opportunities.show')->withTrashed();
-    Volt::route('opportunities/{opportunity}/edit', 'opportunities.form')->name('opportunities.edit')->withTrashed();
-    // Show sub-page tabs (M8-2), mirroring the Products tab convention — one Volt
-    // page per tab, each @include-ing the shared header + tabs partials. The Overview
-    // page embeds the line-item editor (no standalone "items" route) and the
-    // "Versions & Timeline" tab folds in the activity timeline (no standalone
-    // "activities" route) — see the show-page restructure. All resolve withTrashed()
-    // so an archived opportunity's tabs remain reachable.
-    Volt::route('opportunities/{opportunity}/assets', 'opportunities.assets')->name('opportunities.assets')->withTrashed();
-    Volt::route('opportunities/{opportunity}/costs', 'opportunities.costs')->name('opportunities.costs')->withTrashed();
-    Volt::route('opportunities/{opportunity}/invoices', 'opportunities.invoices')->name('opportunities.invoices')->withTrashed();
-    Volt::route('opportunities/{opportunity}/participants', 'opportunities.participants')->name('opportunities.participants')->withTrashed();
-    Volt::route('opportunities/{opportunity}/versions', 'opportunities.versions')->name('opportunities.versions')->withTrashed();
-    Volt::route('opportunities/{opportunity}/custom-fields', 'opportunities.custom-fields')->name('opportunities.custom-fields')->withTrashed();
-    Volt::route('opportunities/{opportunity}/documents', 'opportunities.documents')->name('opportunities.documents')->withTrashed();
-
-    Route::delete('opportunities/{opportunity}/items/{item}', [OpportunityLineItemController::class, 'destroy'])
-        ->name('opportunities.items.destroy')
-        ->withTrashed();
 
     // Job Planner
     //

@@ -2,7 +2,7 @@
     @if ($canAccess)
         <h2 class="s-panel-title mb-3">Opportunity Pipeline</h2>
         <x-signals.stat-grid class="mb-8">
-            <a href="{{ route('opportunities.index', ['state' => \App\Enums\OpportunityState::Quotation->value]) }}"
+            <a href="{{ route('opportunities.index', ['state' => \App\Domain\Projects\Opportunities\Enums\OpportunityState::Quotation->value]) }}"
                wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-blue">
@@ -14,7 +14,7 @@
                 </div>
             </a>
 
-            <a href="{{ route('opportunities.index', ['state' => \App\Enums\OpportunityState::Order->value]) }}"
+            <a href="{{ route('opportunities.index', ['state' => \App\Domain\Projects\Opportunities\Enums\OpportunityState::Order->value]) }}"
                wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-green">
@@ -26,7 +26,7 @@
                 </div>
             </a>
 
-            <a href="{{ route('opportunities.index', ['state' => \App\Enums\OpportunityState::Order->value]) }}"
+            <a href="{{ route('opportunities.index', ['state' => \App\Domain\Projects\Opportunities\Enums\OpportunityState::Order->value]) }}"
                wire:navigate.hover
                class="s-stat-card">
                 <div class="s-stat-icon s-stat-icon-violet">

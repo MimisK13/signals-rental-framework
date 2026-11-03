@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Invoices\Services;
 
 use App\Domain\Invoices\Enums\InvoiceType;
-use App\Enums\OpportunityState;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Validation\ValidationException;
 
 /**

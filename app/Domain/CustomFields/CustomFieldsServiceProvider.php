@@ -12,6 +12,7 @@ use App\Domain\CustomFields\Presentation\Livewire\Form;
 use App\Domain\CustomFields\Presentation\Livewire\GroupForm;
 use App\Domain\CustomFields\Presentation\Livewire\GroupsIndex;
 use App\Domain\CustomFields\Presentation\Livewire\Index;
+use App\Domain\CustomFields\Presentation\Livewire\OpportunityCustomFields;
 use App\Domain\CustomFields\Presentation\Livewire\ProductCustomFields;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -32,5 +33,6 @@ final class CustomFieldsServiceProvider extends ServiceProvider
         Livewire::addComponent(name: 'admin.settings.custom-field-groups', class: GroupsIndex::class);
         Livewire::addComponent(name: 'admin.settings.custom-field-group-form', class: GroupForm::class);
         Livewire::addComponent(name: 'products.custom-fields', class: ProductCustomFields::class);
+        Livewire::addComponent(name: 'opportunities.custom-fields', class: OpportunityCustomFields::class);
     }
 }

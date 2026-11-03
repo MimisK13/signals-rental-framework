@@ -6,7 +6,7 @@ namespace App\Domain\Availability\Shortages\Actions;
 
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Support\Facades\Gate;
 
 /**

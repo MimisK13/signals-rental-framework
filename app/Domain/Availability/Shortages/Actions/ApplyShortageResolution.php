@@ -8,7 +8,7 @@ use App\Domain\Availability\Shortages\Data\ApplyResolutionData;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Availability\Shortages\Services\ShortageResolverRegistry;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionResult;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

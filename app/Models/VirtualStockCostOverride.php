@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Database\Factories\VirtualStockCostOverrideFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

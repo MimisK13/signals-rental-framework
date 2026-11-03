@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\VirtualStockCostOverride;
 use App\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Factories\Factory;

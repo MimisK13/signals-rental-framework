@@ -212,7 +212,7 @@
 
         <livewire:components.data-table
             :columns="$columns"
-            :model="\App\Models\Opportunity::class"
+            :model="\App\Domain\Projects\Opportunities\Models\Opportunity::class"
             :searchable="[]"
             :with="['member', 'store']"
             :with-counts="['items']"

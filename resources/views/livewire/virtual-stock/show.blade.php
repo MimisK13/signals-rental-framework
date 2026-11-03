@@ -7,7 +7,7 @@ use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Data\VirtualStock\ReturnVirtualStockIntakeData;
 use App\Livewire\Concerns\HandlesVerbsStateErrors;
-use App\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Models\VirtualStockIntake;
 use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;

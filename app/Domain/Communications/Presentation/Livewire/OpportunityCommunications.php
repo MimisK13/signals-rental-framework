@@ -6,8 +6,8 @@ namespace App\Domain\Communications\Presentation\Livewire;
 
 use App\Domain\Communications\Services\CommunicationLogQuery;
 use App\Domain\Communications\Services\CommunicationLogStatusRegistry;
-use App\Livewire\Concerns\HasOpportunityActions;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Concerns\HasOpportunityActions;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

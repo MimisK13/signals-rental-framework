@@ -6,6 +6,7 @@ use App\Domain\Invoices\Presentation\Livewire\Communications;
 use App\Domain\Invoices\Presentation\Livewire\CreditNotesIndex;
 use App\Domain\Invoices\Presentation\Livewire\Form;
 use App\Domain\Invoices\Presentation\Livewire\Index;
+use App\Domain\Invoices\Presentation\Livewire\OpportunityInvoices;
 use App\Domain\Invoices\Presentation\Livewire\PaymentsIndex;
 use App\Domain\Invoices\Presentation\Livewire\Show;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,9 @@ Route::middleware(['web', 'signals.setup-complete', 'auth', '2fa', 'signals.sess
     Route::livewire('invoices/{invoice}', Show::class)->name('invoices.show');
     Route::livewire('invoices/{invoice}/communications', Communications::class)->name('invoices.communications');
     Route::livewire('invoices/{invoice}/edit', Form::class)->name('invoices.edit');
+    Route::livewire('opportunities/{opportunity}/invoices', OpportunityInvoices::class)
+        ->withTrashed()
+        ->name('opportunities.invoices');
     Route::redirect('finance/credit-notes', '/credit-notes', 301);
     Route::redirect('finance/payments', '/payments', 301);
     Route::livewire('credit-notes', CreditNotesIndex::class)->name('credit-notes.index');

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Events;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Validation\ValidationException;

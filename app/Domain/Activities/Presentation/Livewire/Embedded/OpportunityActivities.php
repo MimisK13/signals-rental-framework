@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Activities\Presentation\Livewire\Embedded;
 
 use App\Domain\Activities\Presentation\Livewire\Concerns\HasActivityActions;
-use App\Livewire\Concerns\HasOpportunityActions;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Concerns\HasOpportunityActions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

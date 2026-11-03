@@ -6,9 +6,9 @@ namespace App\Domain\Projects\Models;
 
 use App\Domain\Projects\Database\Factories\ProjectFactory;
 use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Quotations\Models\Quotation;
 use App\Models\Member;
-use App\Models\Opportunity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,14 +18,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
+ * @property int $id
+ * @property string $name
+ * @property int|null $member_id
+ * @property int|null $venue_id
+ * @property int|null $owned_by
  * @property ProjectStatus $status
  * @property Carbon|null $starts_at
  * @property Carbon|null $ends_at
  *
- * Planning/commercial grouping for related Opportunities.
- *
- * A Project has no Store scope. Each Opportunity remains authoritative for its
- * own Store, operational dates, availability, and financial projection.
+ * Central coordination aggregate for quotations and operational work.
  */
 final class Project extends Model
 {

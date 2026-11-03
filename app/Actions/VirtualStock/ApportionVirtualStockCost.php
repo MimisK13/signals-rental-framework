@@ -7,13 +7,13 @@ use App\Data\VirtualStock\ApportionVirtualStockCostResult;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;
 use App\Domain\Availability\Shortages\Services\CostApportionmentRegistry;
-use App\Enums\OpportunityCostType;
-use App\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Verbs\Events\CostAdded;
+use App\Domain\Projects\Opportunities\Verbs\Events\CostRemoved;
+use App\Domain\Projects\Opportunities\Verbs\Events\CostUpdated;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;
-use App\Verbs\Events\Opportunities\CostAdded;
-use App\Verbs\Events\Opportunities\CostRemoved;
-use App\Verbs\Events\Opportunities\CostUpdated;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 

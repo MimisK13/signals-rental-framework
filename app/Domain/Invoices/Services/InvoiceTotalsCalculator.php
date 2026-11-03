@@ -6,6 +6,7 @@ namespace App\Domain\Invoices\Services;
 
 use App\Domain\Invoices\Data\FrozenInvoiceLineData;
 use App\Domain\Invoices\Data\FrozenInvoiceTaxRowData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
 use App\Domain\Tax\Enums\TaxResultType;
@@ -16,7 +17,6 @@ use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Domain\Tax\ValueObjects\DocumentTaxGroup;
 use App\Domain\Tax\ValueObjects\DocumentTaxLineAllocation;
 use App\Domain\Tax\ValueObjects\DocumentTaxSummary;
-use App\Models\Opportunity;
 use DateTimeInterface;
 use LogicException;
 

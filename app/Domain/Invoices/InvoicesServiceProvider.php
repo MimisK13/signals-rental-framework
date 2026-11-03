@@ -13,6 +13,7 @@ use App\Domain\Invoices\Presentation\Livewire\Communications;
 use App\Domain\Invoices\Presentation\Livewire\CreditNotesIndex;
 use App\Domain\Invoices\Presentation\Livewire\Form;
 use App\Domain\Invoices\Presentation\Livewire\Index;
+use App\Domain\Invoices\Presentation\Livewire\OpportunityInvoices;
 use App\Domain\Invoices\Presentation\Livewire\PaymentsIndex;
 use App\Domain\Invoices\Presentation\Livewire\Show;
 use App\Domain\Invoices\Services\InvoiceStatusRegistry;
@@ -40,6 +41,7 @@ final class InvoicesServiceProvider extends ServiceProvider
         Livewire::addComponent(name: 'invoices.form', class: Form::class);
         Livewire::addComponent(name: 'invoices.show', class: Show::class);
         Livewire::addComponent(name: 'invoices.communications', class: Communications::class);
+        Livewire::addComponent(name: 'opportunities.invoices', class: OpportunityInvoices::class);
         Livewire::addComponent(name: 'credit-notes.index', class: CreditNotesIndex::class);
         Livewire::addComponent(name: 'payments.index', class: PaymentsIndex::class);
     }

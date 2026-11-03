@@ -2,7 +2,7 @@
 
 namespace App\Services\Pricing;
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Closure;
 
 /**

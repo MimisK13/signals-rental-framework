@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.opportunities.partials.opportunity-header', ['opportunity' => $opportunity, 'subpage' => 'Shortages', 'showActions' => true, 'canChangeStatus' => $canChangeStatus])
-    @include('livewire.opportunities.partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'shortages'])
+    @include('project-opportunities::partials.opportunity-header', ['opportunity' => $opportunity, 'subpage' => 'Shortages', 'showActions' => true, 'canChangeStatus' => $canChangeStatus])
+    @include('project-opportunities::partials.opportunity-tabs', ['opportunity' => $opportunity, 'activeTab' => 'shortages'])
 
     @php
         $formatter = app(\App\Support\Formatter::class);
@@ -519,6 +519,6 @@
         </x-slot:footer>
     </x-signals.modal>
 
-    @include('livewire.opportunities.partials.opportunity-action-modals')
+    @include('project-opportunities::partials.opportunity-action-modals')
 </section>
 

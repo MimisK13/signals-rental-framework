@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax\Services;
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Tax\Enums\TaxBuyerType;
 use App\Domain\Tax\Enums\TaxUnresolvedZoneFallback;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\Store;
 
 /**

@@ -9,7 +9,7 @@ use App\Domain\Documents\Data\DocumentPreviewData;
 use App\Domain\Documents\Data\RenderDocumentPreviewData;
 use App\Domain\Documents\Enums\DocumentOutputFormat;
 use App\Domain\Documents\Models\DocumentTemplate;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;

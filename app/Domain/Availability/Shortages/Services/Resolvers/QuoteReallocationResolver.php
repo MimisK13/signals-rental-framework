@@ -11,7 +11,7 @@ use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionOption;
 use App\Domain\Availability\Shortages\ValueObjects\ResolutionResult;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
-use App\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 
 /**
  * Quote reallocation (shortage-resolution-sub-hires.md §4.1).

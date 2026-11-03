@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
 
 return [
 

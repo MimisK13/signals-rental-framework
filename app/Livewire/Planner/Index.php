@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Planner;
 
-use App\Enums\OpportunityState;
-use App\Models\Opportunity;
-use App\Services\Opportunities\OpportunityPresentation;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityPresentation;
 use App\Services\Planning\JobPlannerRowBuilder;
 use App\Services\Planning\PlanningStoreFilter;
 use Illuminate\Database\Eloquent\Builder;

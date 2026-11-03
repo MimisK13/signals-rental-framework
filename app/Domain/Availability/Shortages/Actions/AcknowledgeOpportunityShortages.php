@@ -7,7 +7,7 @@ namespace App\Domain\Availability\Shortages\Actions;
 use App\Domain\Availability\Shortages\Data\AcknowledgeShortageData;
 use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
 use App\Domain\Availability\Shortages\Services\ShortageConfirmationGate;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

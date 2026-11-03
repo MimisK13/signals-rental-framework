@@ -10,7 +10,7 @@ use App\Domain\Crew\Data\Requests\CrewRequestData;
 use App\Domain\Crew\Enums\CrewRequestStatus;
 use App\Domain\Crew\Models\CrewRequest;
 use App\Domain\Crew\Services\CrewAudit;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;

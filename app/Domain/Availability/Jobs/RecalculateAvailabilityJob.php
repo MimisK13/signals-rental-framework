@@ -11,7 +11,7 @@ use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\OpportunityItemDemandResolver;
 use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Services\Api\WebhookService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;

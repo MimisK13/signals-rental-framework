@@ -2,14 +2,14 @@
 
 namespace App\Listeners;
 
-use App\Data\Opportunities\OpportunityData;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Opportunities\Data\OpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
-use App\Models\Opportunity;
 use App\Services\Api\WebhookService;
 use Thunk\Verbs\Facades\Verbs;
 

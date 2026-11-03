@@ -8,8 +8,8 @@ use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Domain\Availability\Shortages\Models\ShortageAcknowledgement;
 use App\Domain\Availability\Shortages\ValueObjects\ConfirmationGateResult;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Events\AuditableEvent;
-use App\Models\Opportunity;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 

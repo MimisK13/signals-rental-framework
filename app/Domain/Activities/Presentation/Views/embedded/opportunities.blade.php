@@ -1,11 +1,11 @@
 <section class="w-full">
-    @include('livewire.opportunities.partials.opportunity-header', [
+    @include('project-opportunities::partials.opportunity-header', [
         'opportunity' => $opportunity,
         'subpage' => 'Activities',
         'showActions' => true,
         'canChangeStatus' => $canChangeStatus,
     ])
-    @include('livewire.opportunities.partials.opportunity-tabs', [
+    @include('project-opportunities::partials.opportunity-tabs', [
         'opportunity' => $opportunity,
         'activeTab' => 'activities',
     ])

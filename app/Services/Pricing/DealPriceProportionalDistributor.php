@@ -3,9 +3,9 @@
 namespace App\Services\Pricing;
 
 use App\Domain\Products\Models\Product;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 

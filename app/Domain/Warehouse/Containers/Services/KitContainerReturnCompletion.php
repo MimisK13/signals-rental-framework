@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Warehouse\Containers\Enums\ContainerCheckinMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\AssetAssignmentStatus;
-use App\Models\OpportunityItemAsset;
 use Illuminate\Support\Carbon;
 
 /**

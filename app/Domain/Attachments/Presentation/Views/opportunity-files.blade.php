@@ -1,11 +1,11 @@
 <section class="w-full">
-    @include('livewire.opportunities.partials.opportunity-header', [
+    @include('project-opportunities::partials.opportunity-header', [
         'opportunity' => $opportunity,
         'subpage' => 'Files',
         'showActions' => true,
         'canChangeStatus' => $canChangeStatus,
     ])
-    @include('livewire.opportunities.partials.opportunity-tabs', [
+    @include('project-opportunities::partials.opportunity-tabs', [
         'opportunity' => $opportunity,
         'activeTab' => 'files',
     ])
@@ -24,6 +24,6 @@
         @include('attachments::file-browser', ['entityLabel' => 'opportunity'])
     </div>
 
-    <livewire:components.file-upload-modal :model-type="\App\Models\Opportunity::class" :model-id="$opportunity->id" />
-    @include('livewire.opportunities.partials.opportunity-action-modals')
+    <livewire:components.file-upload-modal :model-type="\App\Domain\Projects\Opportunities\Models\Opportunity::class" :model-id="$opportunity->id" />
+    @include('project-opportunities::partials.opportunity-action-modals')
 </section>

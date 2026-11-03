@@ -13,7 +13,7 @@ use App\Domain\Availability\Shortages\ValueObjects\ResolutionResult;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageGroup;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

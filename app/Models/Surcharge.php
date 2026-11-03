@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Projects\Opportunities\Models\OpportunityItemSurcharge;
 use App\Domain\Tax\Models\ProductTaxClass;
 use Database\Factories\SurchargeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

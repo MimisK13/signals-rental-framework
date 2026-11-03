@@ -11,10 +11,10 @@ use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Events\AuditableEvent;
 use App\Listeners\DispatchWebhookForAuditableEvent;
 use App\Listeners\LogAction;
-use App\Models\OpportunityItem;
 use App\Services\Api\WebhookService;
 use Thunk\Verbs\Facades\Verbs;
 

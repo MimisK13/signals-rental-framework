@@ -5,9 +5,9 @@ namespace App\Services\Notifications\RecipientResolvers;
 use App\Contracts\Notifications\RecipientResolver;
 use App\Data\Notifications\NotificationContextData;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use Illuminate\Support\Collection;
 
 /**

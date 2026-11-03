@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Communications\Policies;
 
 use App\Domain\Communications\Models\CommunicationLog;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\User;
 use App\Policies\Traits\AuthorizesByPermission;
 use Illuminate\Database\Eloquent\Model;

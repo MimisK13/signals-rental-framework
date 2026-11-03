@@ -2,7 +2,7 @@
 
 namespace App\Services\Pricing;
 
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 
 class OpportunityItemDiscountPercentFilterRegistry
 {

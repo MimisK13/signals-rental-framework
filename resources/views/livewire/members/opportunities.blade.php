@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Member;
-use App\Views\OpportunityColumnRegistry;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityColumnRegistry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -38,14 +38,14 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         return [
             'columns' => [
-                ['key' => 'subject', 'label' => 'Subject', ...$columnMeta('subject'), 'filter_type' => 'text', 'view' => 'livewire.opportunities.partials.column-subject'],
-                ['key' => 'reference', 'label' => 'Reference', ...$columnMeta('reference'), 'filter_type' => 'text', 'view' => 'livewire.opportunities.partials.column-reference'],
-                ['key' => 'state', 'label' => 'State', ...$columnMeta('state'), 'view' => 'livewire.opportunities.partials.column-state'],
-                ['key' => 'status', 'label' => 'Status', ...$columnMeta('status'), 'view' => 'livewire.opportunities.partials.column-status'],
-                ['key' => 'starts_at', 'label' => 'Starts', ...$columnMeta('starts_at'), 'view' => 'livewire.opportunities.partials.column-starts-at'],
-                ['key' => 'ends_at', 'label' => 'Ends', ...$columnMeta('ends_at'), 'view' => 'livewire.opportunities.partials.column-ends-at'],
-                ['key' => 'charge_total', 'label' => 'Charge Total', ...$columnMeta('charge_total'), 'view' => 'livewire.opportunities.partials.column-charge-total'],
-                ['key' => 'created_at', 'label' => 'Created', ...$columnMeta('created_at'), 'view' => 'livewire.opportunities.partials.column-created'],
+                ['key' => 'subject', 'label' => 'Subject', ...$columnMeta('subject'), 'filter_type' => 'text', 'view' => 'project-opportunities::partials.column-subject'],
+                ['key' => 'reference', 'label' => 'Reference', ...$columnMeta('reference'), 'filter_type' => 'text', 'view' => 'project-opportunities::partials.column-reference'],
+                ['key' => 'state', 'label' => 'State', ...$columnMeta('state'), 'view' => 'project-opportunities::partials.column-state'],
+                ['key' => 'status', 'label' => 'Status', ...$columnMeta('status'), 'view' => 'project-opportunities::partials.column-status'],
+                ['key' => 'starts_at', 'label' => 'Starts', ...$columnMeta('starts_at'), 'view' => 'project-opportunities::partials.column-starts-at'],
+                ['key' => 'ends_at', 'label' => 'Ends', ...$columnMeta('ends_at'), 'view' => 'project-opportunities::partials.column-ends-at'],
+                ['key' => 'charge_total', 'label' => 'Charge Total', ...$columnMeta('charge_total'), 'view' => 'project-opportunities::partials.column-charge-total'],
+                ['key' => 'created_at', 'label' => 'Created', ...$columnMeta('created_at'), 'view' => 'project-opportunities::partials.column-created'],
                 ['key' => 'actions', 'type' => 'actions'],
             ],
             'scopes' => [
@@ -62,7 +62,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <livewire:components.data-table
             :columns="$columns"
-            :model="\App\Models\Opportunity::class"
+            :model="\App\Domain\Projects\Opportunities\Models\Opportunity::class"
             :searchable="['subject', 'number', 'reference']"
             :with="['member', 'store']"
             :scopes="$scopes"

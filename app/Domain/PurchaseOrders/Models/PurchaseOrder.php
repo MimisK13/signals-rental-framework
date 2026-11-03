@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\PurchaseOrders\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\PurchaseOrders\Database\Factories\PurchaseOrderFactory;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\Traits\FormatsMoney;
 use App\Models\Traits\HasStoreScoping;

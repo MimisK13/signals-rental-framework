@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Services;
 
-use App\Data\Opportunities\PreparedProductInputs;
-use App\Data\Opportunities\PreparedStandardDemandInputs;
-use App\Data\Opportunities\PreparedStockInputs;
 use App\Domain\Availability\Data\AvailabilityData;
 use App\Domain\Availability\Data\AvailabilityRangeData;
 use App\Domain\Availability\Data\AvailabilitySlotData;
@@ -22,9 +19,12 @@ use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Services\ShortageDetector;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Data\PreparedProductInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStockInputs;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -1184,7 +1184,7 @@ class AvailabilityService
         Demand $demand,
         DemandSourceRegistry $registry,
         SupportCollection $opportunities,
-    ): ?string {
+    ): string {
         if ($demand->source_type === 'opportunity_item') {
             $opportunityId = $demand->metadata['opportunity_id'] ?? null;
 
@@ -1192,7 +1192,7 @@ class AvailabilityService
                 $opportunity = $opportunities->get((int) $opportunityId);
 
                 if ($opportunity !== null) {
-                    return $opportunity->subject ?? $opportunity->number;
+                    return $opportunity->subject;
                 }
             }
         }

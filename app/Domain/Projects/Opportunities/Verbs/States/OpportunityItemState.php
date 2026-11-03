@@ -1,0 +1,176 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Projects\Opportunities\Verbs\States;
+
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Enums\ChargePeriod;
+use App\Enums\LineItemTransactionType;
+use Carbon\CarbonImmutable;
+use Thunk\Verbs\State;
+
+/**
+ * In-memory event-sourced representation of an opportunity line item.
+ *
+ * Verbs folds item events (M3) onto this object via their apply() methods. It
+ * holds only public scalar properties (Verbs serialises public properties only)
+ * and carries no business logic — pricing/quantity rules live in events, the
+ * projection lives in their handle() methods.
+ *
+ * Money (`unit_price`, `total`) is stored as integer minor units (pence/cents/
+ * fils) mirroring the `opportunity_items` columns. Quantities are decimal strings
+ * so bc-math arithmetic stays lossless. `starts_at` / `ends_at` are the effective
+ * dates after override resolution against the parent opportunity.
+ */
+class OpportunityItemState extends State
+{
+    /**
+     * Application-allocated small projection PK (set by the genesis event).
+     * The state's inherent `->id` remains the Verbs snowflake StateId.
+     */
+    public int $opportunity_item_id = 0;
+
+    /** Parent opportunity's small projection id. */
+    public int $opportunity_id = 0;
+
+    /** Quotation version scope (null for orders/legacy). */
+    public ?int $version_id = null;
+
+    /**
+     * Polymorphic catalogue reference — the itemable's integer PK.
+     * Null for group rows (which have no backing catalogue entry).
+     */
+    public ?int $itemable_id = null;
+
+    /**
+     * Polymorphic catalogue reference — the itemable's fully-qualified class
+     * name (e.g. App\Domain\Products\Models\Product). Null for group rows.
+     */
+    public ?string $itemable_type = null;
+
+    /**
+     * Structural role of this row in the unified Current-RMS line-item model
+     * (group / product / accessory / service), stored as the backing role string
+     * for Verbs snapshot-safety. Use {@see itemType()} for the enum.
+     */
+    public string $item_type = OpportunityItemType::Product->value;
+
+    /**
+     * Dot-notation tree position within the opportunity's line-item tree
+     * (e.g. "1.2.1"). Set by ItemPathService and replayed via ItemsRestructured.
+     */
+    public string $path = '';
+
+    /**
+     * Revenue group FK — the OpportunityItem id of the nearest ancestor group
+     * row, or null when this item sits at the root level.
+     */
+    public ?int $revenue_group_id = null;
+
+    /** Display name of the line (catalogue name snapshot or ad-hoc label). */
+    public ?string $name = null;
+
+    public ?string $description = null;
+
+    /** Requested quantity as a decimal string (lossless bc-math). */
+    public string $quantity = '0';
+
+    /** Explicit owned-capacity reservation; null preserves legacy semantics. */
+    public ?string $reserved_quantity = null;
+
+    /** Price per unit per charge period, in integer minor units. */
+    public int $unit_price = 0;
+
+    /**
+     * Operator-supplied manual unit-price override in integer minor units; when
+     * non-null it ALWAYS wins over the resolved rate. Null = derive from the rate
+     * engine (or 0 when no rate matches).
+     */
+    public ?int $manual_unit_price = null;
+
+    /** Unit of charge the unit_price is quoted against. */
+    public int $charge_period = ChargePeriod::Day->value;
+
+    /** Calculated line total in integer minor units (net, tax-exclusive). */
+    public int $total = 0;
+
+    /** Resolved tax rate for this line as a decimal-string percentage. */
+    public ?string $tax_rate = null;
+
+    /** Line discount as a decimal-string percentage (null = none). */
+    public ?string $discount_percent = null;
+
+    /** True when the operator manually set the discount (blocks category re-apply). */
+    public bool $is_discount_manual = false;
+
+    /** Additional deal-price-derived discount percentage (decimal string). */
+    public ?string $deal_price_discount_percent = null;
+
+    /** Group-level deal price target in minor units (group rows only). */
+    public ?int $deal_price = null;
+
+    /** Scoped charge total before group deal pricing (group rows only). */
+    public ?int $deal_price_original_total = null;
+
+    /** Commercial nature of the line (rental/sale/service/sub-rental). */
+    public int $transaction_type = LineItemTransactionType::Rental->value;
+
+    /** Effective hire window (after per-item override resolution). */
+    public ?CarbonImmutable $starts_at = null;
+
+    public ?CarbonImmutable $ends_at = null;
+
+    /** Optional capacity-period override; null inherits from the Opportunity. */
+    public ?CarbonImmutable $planning_starts_at = null;
+
+    public ?CarbonImmutable $planning_ends_at = null;
+
+    /** Quantity physically dispatched, as a decimal string. */
+    public string $dispatched_quantity = '0';
+
+    /** Quantity returned/checked in, as a decimal string. */
+    public string $returned_quantity = '0';
+
+    /** Display ordering within the parent opportunity. */
+    public int $sort_order = 0;
+
+    /** Optional lines are excluded from the opportunity's charge totals. */
+    public bool $is_optional = false;
+
+    /** Per-line currency snapshot (inherits the opportunity currency). */
+    public ?string $currency_code = null;
+
+    /**
+     * Inline RMS line-item custom-field map (distinct from the entity EAV
+     * system).
+     *
+     * @var array<string, mixed>|null
+     */
+    public ?array $custom_fields = null;
+
+    public ?string $notes = null;
+
+    /**
+     * True once the line has been removed; the projection row is hard-deleted in
+     * the same event handler, so this flag mostly guards in-memory replays.
+     */
+    public bool $is_removed = false;
+
+    public ?CarbonImmutable $last_event_at = null;
+
+    public function chargePeriod(): ChargePeriod
+    {
+        return ChargePeriod::from($this->charge_period);
+    }
+
+    public function transactionType(): LineItemTransactionType
+    {
+        return LineItemTransactionType::from($this->transaction_type);
+    }
+
+    public function itemType(): OpportunityItemType
+    {
+        return OpportunityItemType::from($this->item_type);
+    }
+}

@@ -188,6 +188,7 @@ final class Index extends Component
             ['key' => 'starts_at', 'label' => 'Dates', 'sortable' => true, 'view' => 'projects::partials.column-dates'],
             ['key' => 'owner_name', 'label' => 'Owner', 'view' => 'projects::partials.column-owner'],
             ['key' => 'opportunities_count', 'label' => 'Jobs', 'sortable' => true, 'view' => 'projects::partials.column-opportunities-count'],
+            ['key' => 'quotations_count', 'label' => 'Quotations', 'sortable' => true, 'view' => 'projects::partials.column-quotations-count'],
             ['key' => 'actions', 'type' => 'actions'],
         ];
     }

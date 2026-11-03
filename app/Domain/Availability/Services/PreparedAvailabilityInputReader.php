@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Services;
 
-use App\Data\Opportunities\OpportunityItemReadContext;
-use App\Data\Opportunities\PreparedStandardDemandInputs;
-use App\Data\Opportunities\PreparedStockInputs;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemReadContext;
+use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStockInputs;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
 use Illuminate\Database\Eloquent\Builder;

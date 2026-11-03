@@ -3,7 +3,7 @@
 namespace App\Data\Casts;
 
 use App\Domain\Currency\Services\CurrencyService;
-use App\Services\Opportunities\OpportunityItemChargeBounds;
+use App\Domain\Projects\Opportunities\Services\OpportunityItemChargeBounds;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\MoneyMismatchException;

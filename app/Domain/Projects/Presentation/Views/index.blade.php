@@ -15,7 +15,7 @@
         :class="{ 'pr-[360px] max-md:pr-0': projectPanelOpen }">
         <div class="min-w-0 flex-1 px-6 pb-6 max-md:px-5 max-sm:px-3">
             <livewire:components.data-table :columns="$columns" :model="\App\Domain\Projects\Models\Project::class" :searchable="['name']" :with="['customer', 'venue', 'owner']"
-                :with-counts="['opportunities']" :scopes="$scopes" default-sort="-starts_at" empty-message="No projects found."
+                :with-counts="['opportunities', 'quotations']" :scopes="$scopes" default-sort="-starts_at" empty-message="No projects found."
                 actions-view="projects::partials.row-actions" :key="'projects-table-' . $archiveFilter" />
         </div>
 

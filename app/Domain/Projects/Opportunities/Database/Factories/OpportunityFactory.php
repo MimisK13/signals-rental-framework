@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Projects\Opportunities\Database\Factories;
+
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Models\Member;
+use App\Services\SequenceAllocator;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Opportunity>
+ */
+class OpportunityFactory extends Factory
+{
+    protected $model = Opportunity::class;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            // The PK is application-assigned ($incrementing = false), so allocate
+            // one from the same ascending sequence the action uses.
+            'id' => app(SequenceAllocator::class)->next('opportunities'),
+            // Factory rows bypass the event stream, so synthesise a unique
+            // snowflake-shaped state id to satisfy the unique link column.
+            'state_id' => snowflake_id(),
+            // The opportunity customer must be an Organisation member (B7). Lazily
+            // create one by default so factory rows are valid customers; callers
+            // override member_id (including with null) as needed.
+            'member_id' => Member::factory()->organisation(),
+            'subject' => fake()->unique()->words(3, true),
+            'state' => OpportunityState::Draft->value,
+            'status' => OpportunityState::Draft->defaultStatus()->statusValue(),
+            'reference' => fake()->optional()->bothify('REF-####'),
+            'starts_at' => fake()->dateTimeBetween('+1 week', '+2 weeks'),
+            'ends_at' => fake()->dateTimeBetween('+3 weeks', '+4 weeks'),
+        ];
+    }
+
+    public function quotation(): static
+    {
+        return $this->state(fn (): array => [
+            'state' => OpportunityState::Quotation->value,
+            'status' => OpportunityState::Quotation->defaultStatus()->statusValue(),
+        ]);
+    }
+
+    public function order(): static
+    {
+        return $this->state(fn (): array => [
+            'state' => OpportunityState::Order->value,
+            'status' => OpportunityState::Order->defaultStatus()->statusValue(),
+        ]);
+    }
+
+    public function reserved(): static
+    {
+        return $this->state(fn (): array => [
+            'state' => OpportunityState::Quotation->value,
+            'status' => OpportunityStatus::QuotationReserved->statusValue(),
+        ]);
+    }
+
+    /**
+     * Flag the opportunity as carrying an unresolved shortage (the denormalised
+     * column maintained by the availability recalc path).
+     */
+    public function withShortage(): static
+    {
+        return $this->state(fn (): array => ['has_shortage' => true]);
+    }
+}

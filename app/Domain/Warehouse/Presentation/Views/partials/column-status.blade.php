@@ -1,9 +1,9 @@
 @php
     $status = $item->statusEnum();
     $badgeClass = match ($status) {
-        \App\Enums\OpportunityStatus::OrderActive => 's-badge-amber',
-        \App\Enums\OpportunityStatus::OrderDispatched => 's-badge-blue',
-        \App\Enums\OpportunityStatus::OrderOnHire => 's-badge-violet',
+        \App\Domain\Projects\Opportunities\Enums\OpportunityStatus::OrderActive => 's-badge-amber',
+        \App\Domain\Projects\Opportunities\Enums\OpportunityStatus::OrderDispatched => 's-badge-blue',
+        \App\Domain\Projects\Opportunities\Enums\OpportunityStatus::OrderOnHire => 's-badge-violet',
         default => 's-badge-green',
     };
 @endphp

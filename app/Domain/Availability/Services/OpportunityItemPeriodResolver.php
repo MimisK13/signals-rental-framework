@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Services;
 
 use App\Domain\Availability\Models\Demand;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Carbon;
 
 /** Resolves explicit planning periods while preserving legacy Demand behavior. */

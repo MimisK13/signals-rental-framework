@@ -7,9 +7,13 @@
                 'archived' => 'zinc',
                 default => 'amber',
             }" :label="$project->status->label()" />
-            <span>{{ $opportunities->count() }} jobs</span>
         </x-slot:meta>
         <x-slot:actions>
+            @can('create', \App\Domain\Quotations\Models\Quotation::class)
+                <x-dense::button :href="route('projects.quotations.create', $project)" variant="accent" size="sm" wire:navigate.hover>
+                    New Quotation
+                </x-dense::button>
+            @endcan
             @can('update', $project)
                 <x-dense::button :href="route('projects.edit', $project)" variant="secondary" size="sm" wire:navigate.hover>
                     Edit
@@ -18,97 +22,61 @@
         </x-slot:actions>
     </x-dense::page-header>
 
-    <div class="grid gap-4 px-6 pb-6 max-md:px-5 max-sm:px-3 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <x-dense::table-card title="Jobs / Rentals" :count="$opportunities->count()">
-            @if ($opportunities->isEmpty())
-                <x-dense::empty-state title="No jobs assigned"
-                    description="Attach an existing Opportunity without changing its Store or operational dates." />
-            @else
-                <div class="overflow-x-auto">
-                    <table class="s-table w-full">
-                        <thead>
-                            <tr>
-                                <th>Job</th>
-                                <th>Customer</th>
-                                <th>Store</th>
-                                <th>Dates</th>
-                                <th class="text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($opportunities as $opportunity)
-                                <tr wire:key="project-opportunity-{{ $opportunity->id }}">
-                                    <td>
-                                        <a href="{{ route('opportunities.show', $opportunity) }}" wire:navigate.hover
-                                            class="font-medium hover:underline">
-                                            {{ $opportunity->subject }}
-                                        </a>
-                                    </td>
-                                    <td>{{ $opportunity->member?->name ?? '—' }}</td>
-                                    <td>{{ $opportunity->store?->name ?? '—' }}</td>
-                                    <td>{{ $opportunity->starts_at?->format('d M Y') ?? '—' }}</td>
-                                    <td class="text-right">
-                                        <x-dense::button type="button" variant="ghost" size="sm"
-                                            wire:click="detach({{ $opportunity->id }})"
-                                            wire:confirm="Detach this Opportunity from the Project?">Detach</x-dense::button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </x-dense::table-card>
+    <div class="space-y-4 px-6 pb-6 max-md:px-5 max-sm:px-3">
+        <x-dense::card title="Project overview">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div><div class="text-xs text-[var(--text-muted)]">Customer</div><div class="font-medium">{{ $project->customer?->name ?? '—' }}</div></div>
+                <div><div class="text-xs text-[var(--text-muted)]">Venue</div><div class="font-medium">{{ $project->venue?->name ?? '—' }}</div></div>
+                <div><div class="text-xs text-[var(--text-muted)]">Owner</div><div class="font-medium">{{ $project->owner?->name ?? '—' }}</div></div>
+                <div><div class="text-xs text-[var(--text-muted)]">Dates</div><div class="font-medium">{{ $project->starts_at?->format('d M Y') ?? '—' }}@if($project->ends_at) – {{ $project->ends_at->format('d M Y') }}@endif</div></div>
+            </div>
+        </x-dense::card>
 
-        <div class="space-y-4">
-            <x-dense::card title="Attach job">
-                <form wire:submit="attach" class="space-y-3">
-                    <x-dense::field label="Unassigned Opportunity" for="project-attach-opportunity" :error="$errors->first('selectedOpportunityId')"
-                        error-id="project-attach-opportunity-error">
-                        <x-dense::select id="project-attach-opportunity" wire:model="selectedOpportunityId"
-                            :invalid="$errors->has('selectedOpportunityId')" :aria-describedby="$errors->has('selectedOpportunityId')
-                                ? 'project-attach-opportunity-error'
-                                : null">
-                            <option value="">Select an opportunity</option>
-                            @forelse($unassignedOpportunities as $opportunity)
-                                <option value="{{ $opportunity->id }}">{{ $opportunity->subject }}</option>
-                            @empty
-                            @endforelse
-                        </x-dense::select>
-                    </x-dense::field>
-                    <x-dense::button type="submit" variant="primary" size="sm" wire:loading.attr="disabled"
-                        wire:target="attach">Attach</x-dense::button>
-                </form>
-            </x-dense::card>
+        <div class="grid gap-4 xl:grid-cols-2">
+            <x-dense::table-card title="Jobs / Rentals" :count="$opportunities->count()">
+                @if ($opportunities->isEmpty())
+                    <x-dense::empty-state title="No operational jobs" description="Operational work will appear here after planning." />
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="s-table w-full">
+                            <thead><tr><th>Job</th><th>Store</th><th>Dates</th></tr></thead>
+                            <tbody>
+                                @foreach ($opportunities as $opportunity)
+                                    <tr wire:key="project-opportunity-{{ $opportunity->id }}">
+                                        <td><a href="{{ route('opportunities.show', $opportunity) }}" wire:navigate.hover class="font-medium hover:underline">{{ $opportunity->subject }}</a></td>
+                                        <td>{{ $opportunity->store?->name ?? '—' }}</td>
+                                        <td>{{ $opportunity->starts_at?->format('d M Y') ?? '—' }}@if($opportunity->ends_at) – {{ $opportunity->ends_at->format('d M Y') }}@endif</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </x-dense::table-card>
 
-            <x-dense::card title="Move job">
-                <form wire:submit="move" class="space-y-3">
-                    <x-dense::field label="Opportunity" for="project-move-opportunity" :error="$errors->first('moveOpportunityId')"
-                        error-id="project-move-opportunity-error">
-                        <x-dense::select id="project-move-opportunity" wire:model="moveOpportunityId" :invalid="$errors->has('moveOpportunityId')"
-                            :aria-describedby="$errors->has('moveOpportunityId') ? 'project-move-opportunity-error' : null">
-                            <option value="">Select an opportunity</option>
-                            @forelse($opportunities as $opportunity)
-                                <option value="{{ $opportunity->id }}">{{ $opportunity->subject }}</option>
-                            @empty
-                            @endforelse
-                        </x-dense::select>
-                    </x-dense::field>
-                    <x-dense::field label="Destination Project" for="project-move-destination" :error="$errors->first('moveDestinationId')"
-                        error-id="project-move-destination-error">
-                        <x-dense::select id="project-move-destination" wire:model="moveDestinationId" :invalid="$errors->has('moveDestinationId')"
-                            :aria-describedby="$errors->has('moveDestinationId') ? 'project-move-destination-error' : null">
-                            <option value="">Select a project</option>
-                            @forelse($otherProjects as $otherProject)
-                                <option value="{{ $otherProject->id }}">{{ $otherProject->name }}</option>
-                            @empty
-                            @endforelse
-                        </x-dense::select>
-                    </x-dense::field>
-                    <x-dense::button type="submit" variant="secondary" size="sm" wire:loading.attr="disabled"
-                        wire:target="move">Move</x-dense::button>
-                </form>
-            </x-dense::card>
+            <x-dense::table-card title="Quotations" :count="$quotations->count()">
+                @if ($quotations->isEmpty())
+                    <x-dense::empty-state title="No quotations yet" description="Create a commercial offer for this Project." />
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="s-table w-full">
+                            <thead><tr><th>Quotation</th><th>Status</th><th class="text-right">Total</th></tr></thead>
+                            <tbody>
+                                @foreach ($quotations as $quotation)
+                                    <tr wire:key="project-quotation-{{ $quotation->id }}">
+                                        <td>
+                                            <a href="{{ route('quotations.edit', $quotation) }}" wire:navigate.hover class="font-medium hover:underline">{{ $quotation->number }} · {{ $quotation->subject }}</a>
+                                            @if ($quotation->accepted_version_id !== null)<span class="ml-1 text-xs text-green-600">Accepted</span>@endif
+                                        </td>
+                                        <td><x-dense::status variant="outline" :color="match ($quotation->status->value) { 'accepted' => 'green', 'sent' => 'blue', 'declined', 'cancelled', 'expired' => 'zinc', default => 'amber' }" :label="$quotation->status->label()" /></td>
+                                        <td class="text-right">{{ $quotation->formatMoneyCost('charge_total') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </x-dense::table-card>
         </div>
     </div>
 </section>

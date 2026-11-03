@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\Opportunities\ProductSearchService;
+use App\Domain\Projects\Opportunities\Services\ProductSearchService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
