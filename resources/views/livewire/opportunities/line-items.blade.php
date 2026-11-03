@@ -43,7 +43,7 @@ use App\Enums\DealPriceMode;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Services\Opportunities\LineItemTreeReconciler;
 use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;

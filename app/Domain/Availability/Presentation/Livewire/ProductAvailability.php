@@ -6,7 +6,7 @@ namespace App\Domain\Availability\Presentation\Livewire;
 
 use App\Domain\Availability\Data\ProductAvailabilitySummary;
 use App\Domain\Availability\Services\ProductAvailabilitySummaryReader;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

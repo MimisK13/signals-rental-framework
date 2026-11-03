@@ -1,9 +1,9 @@
 <section class="w-full">
-    @include('livewire.products.partials.product-header', [
+    @include('products::partials.product-header', [
         'product' => $product,
         'subpage' => $isEditing ? 'Edit Rate' : 'Assign Rate',
     ])
-    @include('livewire.products.partials.product-tabs', ['product' => $product, 'activeTab' => 'rates'])
+    @include('products::partials.product-tabs', ['product' => $product, 'activeTab' => 'rates'])
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <form wire:submit="save" class="max-w-2xl space-y-8">

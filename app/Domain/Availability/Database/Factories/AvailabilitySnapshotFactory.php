@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Availability\Database\Factories;
 
 use App\Domain\Availability\Models\AvailabilitySnapshot;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;

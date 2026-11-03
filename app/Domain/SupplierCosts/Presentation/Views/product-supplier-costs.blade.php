@@ -1,9 +1,9 @@
 <section class="w-full">
-    @include('livewire.products.partials.product-header', [
+    @include('products::partials.product-header', [
         'product' => $product,
         'subpage' => 'Supplier Costs',
     ])
-    @include('livewire.products.partials.product-tabs', [
+    @include('products::partials.product-tabs', [
         'product' => $product,
         'activeTab' => 'supplier-costs',
     ])

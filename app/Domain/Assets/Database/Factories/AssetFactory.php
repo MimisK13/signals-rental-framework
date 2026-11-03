@@ -6,7 +6,7 @@ namespace App\Domain\Assets\Database\Factories;
 
 use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Asset> */

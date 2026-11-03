@@ -7,7 +7,7 @@ namespace App\Domain\Availability\Data;
 use App\Data\Concerns\FormatsTimestamps;
 use App\Domain\Availability\Models\AvailabilityDailySummary;
 use App\Domain\Availability\Services\AvailabilityService;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use Spatie\LaravelData\Data;
 
 /**

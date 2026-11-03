@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Components;
 
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Models\Member;
-use App\Models\Product;
-use App\Models\ProductGroup;
 use App\Models\User;
 use App\Services\FileService;
 use Illuminate\Contracts\View\View;

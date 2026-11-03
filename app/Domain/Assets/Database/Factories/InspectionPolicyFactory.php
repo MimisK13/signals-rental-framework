@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Assets\Database\Factories;
 
 use App\Domain\Assets\Models\InspectionPolicy;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

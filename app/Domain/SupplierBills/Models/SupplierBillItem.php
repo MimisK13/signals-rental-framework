@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\SupplierBills\Models;
 
 use App\Domain\Assets\Repairs\Models\Repair;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierBills\Database\Factories\SupplierBillItemFactory;
-use App\Models\Product;
 use App\Models\VirtualStockIntake;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

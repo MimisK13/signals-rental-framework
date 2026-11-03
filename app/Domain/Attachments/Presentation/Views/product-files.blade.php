@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.products.partials.product-header', ['product' => $product, 'subpage' => 'Files'])
-    @include('livewire.products.partials.product-tabs', ['product' => $product, 'activeTab' => 'files'])
+    @include('products::partials.product-header', ['product' => $product, 'subpage' => 'Files'])
+    @include('products::partials.product-tabs', ['product' => $product, 'activeTab' => 'files'])
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="mb-4 flex items-center justify-between">
@@ -16,5 +16,5 @@
         @include('attachments::file-browser', ['entityLabel' => 'product'])
     </div>
 
-    <livewire:components.file-upload-modal :model-type="\App\Models\Product::class" :model-id="$product->id" />
+    <livewire:components.file-upload-modal :model-type="\App\Domain\Products\Models\Product::class" :model-id="$product->id" />
 </section>

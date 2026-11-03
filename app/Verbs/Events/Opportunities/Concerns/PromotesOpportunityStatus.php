@@ -2,6 +2,7 @@
 
 namespace App\Verbs\Events\Opportunities\Concerns;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\FulfilmentPhase;
@@ -9,7 +10,6 @@ use App\Enums\OpportunityState;
 use App\Enums\OpportunityStatus;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Services\Opportunities\AutoPromotionContext;
 use App\Verbs\Events\Opportunities\OpportunityStatusPromoted;
 use Brick\Math\BigDecimal;

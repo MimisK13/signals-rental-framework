@@ -28,7 +28,7 @@ final class RatesServiceProvider extends ServiceProvider
         // Auditable events persisted these model identifiers before extraction.
         foreach ([
             'App\\Models\\RateDefinition' => RateDefinition::class,
-            'App\\Models\\ProductRate' => ProductRate::class,
+            'App\\Domain\\Products\\Models\\ProductRate' => ProductRate::class,
         ] as $legacy => $canonical) {
             if (! class_exists($legacy, false)) {
                 class_alias($canonical, $legacy);
@@ -53,7 +53,7 @@ final class RatesServiceProvider extends ServiceProvider
     {
         Relation::morphMap([
             'App\\Models\\RateDefinition' => RateDefinition::class,
-            'App\\Models\\ProductRate' => ProductRate::class,
+            'App\\Domain\\Products\\Models\\ProductRate' => ProductRate::class,
         ]);
 
         $this->loadViewsFrom(__DIR__.'/Presentation/Views', 'rates');

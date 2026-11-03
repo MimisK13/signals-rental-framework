@@ -10,8 +10,8 @@ use App\Domain\Assets\Enums\InspectionStatus;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Models\AssetInspection;
 use App\Domain\Assets\Models\InspectionPolicy;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\Product;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 

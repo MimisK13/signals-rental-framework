@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\SupplierCosts\Presentation\Livewire;
 
 use App\Domain\Currency\Models\Currency;
+use App\Domain\Products\Models\Product;
 use App\Domain\SupplierCosts\Actions\CreateSupplierCost;
 use App\Domain\SupplierCosts\Actions\DeleteSupplierCost;
 use App\Domain\SupplierCosts\Actions\SetPreferredSupplier;
@@ -15,7 +16,6 @@ use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\SupplierCosts\Rules\EnsureSupplierCostCurrencyIsValid;
 use App\Enums\MembershipType;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;

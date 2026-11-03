@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.products.partials.product-header', ['product' => $product, 'subpage' => 'Rates'])
-    @include('livewire.products.partials.product-tabs', ['product' => $product, 'activeTab' => 'rates'])
+    @include('products::partials.product-header', ['product' => $product, 'subpage' => 'Rates'])
+    @include('products::partials.product-tabs', ['product' => $product, 'activeTab' => 'rates'])
 
     <div class="flex-1 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="mb-4 flex items-center justify-between">

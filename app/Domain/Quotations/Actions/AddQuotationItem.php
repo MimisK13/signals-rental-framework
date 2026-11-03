@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Data\AddQuotationItemData;
 use App\Domain\Quotations\Data\QuotationItemData;
 use App\Domain\Quotations\Enums\QuotationItemType;
@@ -18,7 +19,6 @@ use App\Domain\Quotations\Services\QuotationLinePriceCalculator;
 use App\Domain\Quotations\Verbs\Events\QuotationItemAdded;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Models\Product;
 use App\Services\SequenceAllocator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

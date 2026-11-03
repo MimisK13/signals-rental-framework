@@ -3,10 +3,10 @@
 namespace App\Services\Investment;
 
 use App\Data\InvestmentComponentCompleteness;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Enums\InvestmentIntelligenceCompleteness;
 use App\Enums\UtilizationCompleteness;
-use App\Models\Product;
 use App\Services\Assets\ProductFinancialsCalculator;
 use App\Services\Assets\ProductUtilizationCalculator;
 use App\Services\Products\ProductExternalRentalCostCalculator;

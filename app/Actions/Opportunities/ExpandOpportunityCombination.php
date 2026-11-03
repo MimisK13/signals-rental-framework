@@ -5,10 +5,10 @@ namespace App\Actions\Opportunities;
 use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\AddOpportunityItemData;
 use App\Data\Opportunities\OpportunityData;
-use App\Enums\KitComponentBinding;
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\Product;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

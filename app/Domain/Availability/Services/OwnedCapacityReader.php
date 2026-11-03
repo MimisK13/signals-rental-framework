@@ -8,8 +8,8 @@ use App\Data\Opportunities\PreparedProductInputs;
 use App\Data\Opportunities\PreparedStandardDemandInputs;
 use App\Data\Opportunities\PreparedStockInputs;
 use App\Domain\Availability\Models\Demand;
+use App\Domain\Products\Models\Product;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 

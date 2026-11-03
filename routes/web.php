@@ -100,26 +100,6 @@ Route::middleware(['signals.setup-complete', 'auth', '2fa', 'signals.session-tim
     Volt::route('members/{member}/information', 'members.information')->name('members.information');
     Volt::route('members/{member}/member-contacts', 'members.member-contacts')->name('members.contacts');
 
-    // Products
-    Volt::route('products', 'products.index')->name('products.index');
-    Volt::route('products/create', 'products.form')->name('products.create');
-    Volt::route('products/{product}', 'products.show')->name('products.show');
-    Volt::route('products/{product}/financials', 'products.financials')->name('products.financials');
-    Volt::route('products/{product}/investment', 'products.investment')->name('products.investment');
-    Volt::route('products/{product}/utilization', 'products.utilization')->name('products.utilization');
-    Volt::route('products/{product}/inspections', 'products.inspections')->name('products.inspections');
-    Volt::route('products/{product}/edit', 'products.form')->name('products.edit');
-    Volt::route('products/{product}/stock', 'products.stock')->name('products.stock');
-    Volt::route('products/{product}/accessories', 'products.accessories')->name('products.accessories');
-    Volt::route('products/{product}/container-config', 'products.container-config')->name('products.container-config');
-    Volt::route('products/{product}/custom-fields', 'products.custom-fields')->name('products.custom-fields');
-
-    // Product Groups
-    Volt::route('product-groups', 'product-groups.index')->name('product-groups.index');
-    // Legacy full-page routes remain as compatibility redirects; create/edit now use the index panels.
-    Route::redirect('product-groups/create', '/product-groups')->name('product-groups.create');
-    Route::get('product-groups/{productGroup}/edit', fn () => redirect()->route('product-groups.index'))->name('product-groups.edit');
-
     // Stock Levels
 
     // Physical serialized asset detail and financial history.

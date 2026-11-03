@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Services;
 
+use App\Domain\Products\Models\Accessory;
+use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Models\Quotation;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
-use App\Models\Accessory;
-use App\Models\Product;
 use App\Services\FileService;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Collection;

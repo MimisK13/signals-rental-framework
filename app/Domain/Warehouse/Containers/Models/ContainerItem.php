@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Models;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Database\Factories\ContainerItemFactory;
 use App\Domain\Warehouse\Containers\Enums\ContainerItemUnpackReason;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

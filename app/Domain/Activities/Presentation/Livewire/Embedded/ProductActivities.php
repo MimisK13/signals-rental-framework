@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Activities\Presentation\Livewire\Embedded;
 
 use App\Domain\Activities\Presentation\Livewire\Concerns\HasActivityActions;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;

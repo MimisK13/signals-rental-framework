@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Models;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Database\Factories\QuotationItemFactory;
 use App\Domain\Quotations\Enums\QuotationItemType;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Models\Product;
 use App\Models\RevenueGroup;
 use App\Models\Traits\FormatsMoney;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

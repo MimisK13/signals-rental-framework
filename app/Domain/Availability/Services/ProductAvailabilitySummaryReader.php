@@ -7,7 +7,7 @@ namespace App\Domain\Availability\Services;
 use App\Domain\Availability\Data\GanttDemandBarData;
 use App\Domain\Availability\Data\ProductAvailabilityDemandEntry;
 use App\Domain\Availability\Data\ProductAvailabilitySummary;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

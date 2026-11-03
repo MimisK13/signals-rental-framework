@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Actions;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Actions\CreateStockLevel;
 use App\Domain\Stock\Data\CreateStockLevelData;
 use App\Domain\Stock\Enums\StockMethod;
@@ -12,7 +13,6 @@ use App\Domain\Warehouse\Containers\Data\ContainerData;
 use App\Domain\Warehouse\Containers\Data\CreateContainerData;
 use App\Domain\Warehouse\Containers\Data\CreateDurableContainerData;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

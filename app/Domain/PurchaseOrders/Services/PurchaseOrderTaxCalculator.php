@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Services;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
@@ -12,7 +13,6 @@ use App\Domain\Tax\Services\TaxResolutionContext;
 use App\Domain\Tax\Services\TaxResolutionContextHolder;
 use App\Domain\Tax\ValueObjects\DocumentTaxSummary;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;

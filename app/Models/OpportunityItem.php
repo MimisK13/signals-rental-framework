@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\HasSchema;
 use App\Domain\Assets\Models\AssetUsage;
+use App\Domain\Products\Models\Product;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;

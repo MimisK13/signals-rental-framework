@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Rates\Presentation\Livewire;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Actions\DeleteProductRate;
-use App\Models\Product;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

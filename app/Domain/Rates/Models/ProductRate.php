@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Rates\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Database\Factories\ProductRateFactory;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Observers\ProductRateObserver;
 use App\Models\PriceCategory;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\Traits\FormatsMoney;
 use App\Services\SchemaBuilder;

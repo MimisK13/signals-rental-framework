@@ -4,8 +4,8 @@ namespace App\Services\Investment;
 
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\InvoiceItem;
+use App\Domain\Products\Models\Product;
 use App\Enums\LineItemTransactionType;
-use App\Models\Product;
 use Carbon\CarbonImmutable;
 
 final class ProductWindowedRevenueReader

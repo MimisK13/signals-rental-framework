@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AccessoryController;
 use App\Http\Controllers\Api\V1\ActionLogController;
 use App\Http\Controllers\Api\V1\BundleRuleController;
 use App\Http\Controllers\Api\V1\CountryController;
@@ -19,13 +18,9 @@ use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\OpportunityVersionController;
 use App\Http\Controllers\Api\V1\PriceCategoryController;
-use App\Http\Controllers\Api\V1\ProductContainerTemplateController;
-use App\Http\Controllers\Api\V1\ProductController;
-use App\Http\Controllers\Api\V1\ProductGroupController;
 use App\Http\Controllers\Api\V1\RequestLogController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SchemaController;
-use App\Http\Controllers\Api\V1\SerialisedComponentController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SurchargeController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
@@ -118,23 +113,6 @@ Route::prefix('v1')->middleware([ForceJsonResponse::class, 'throttle:api', 'auth
     Route::apiResource('surcharge_groups', SurchargeGroupController::class)->names('api.v1.surcharge_groups');
     Route::apiResource('surcharges', SurchargeController::class)->names('api.v1.surcharges');
     Route::apiResource('price_categories', PriceCategoryController::class)->names('api.v1.price_categories');
-
-    // Products
-    Route::apiResource('products', ProductController::class)->names('api.v1.products');
-    Route::post('products/{product}/merge', [ProductController::class, 'merge'])->name('api.v1.products.merge');
-    Route::apiResource('products.accessories', AccessoryController::class)->only(['index', 'store', 'update', 'destroy'])->names('api.v1.products.accessories');
-    // Kit composition (serialised_components — the product's bill-of-materials)
-    Route::apiResource('products.components', SerialisedComponentController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->parameters(['components' => 'component'])
-        ->names('api.v1.products.components');
-    Route::get('products/{product}/container_template', [ProductContainerTemplateController::class, 'show'])
-        ->name('api.v1.products.container_template.show');
-    Route::put('products/{product}/container_template', [ProductContainerTemplateController::class, 'update'])
-        ->name('api.v1.products.container_template.update');
-
-    // Product Groups
-    Route::apiResource('product_groups', ProductGroupController::class)->names('api.v1.product_groups');
 
     // Stock Levels
 

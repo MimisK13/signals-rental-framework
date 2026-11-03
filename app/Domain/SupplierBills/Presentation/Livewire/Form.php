@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierBills\Presentation\Livewire;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierBills\Actions\CreateSupplierBill;
@@ -11,7 +12,6 @@ use App\Domain\SupplierBills\Actions\UpdateDraftSupplierBill;
 use App\Domain\SupplierBills\Models\SupplierBill;
 use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\VirtualStockIntake;
 use Illuminate\Contracts\View\View;

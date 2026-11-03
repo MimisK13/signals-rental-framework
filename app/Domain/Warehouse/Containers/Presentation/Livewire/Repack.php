@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Presentation\Livewire;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Actions\RepackReturnItem;
 use App\Domain\Warehouse\Containers\Actions\SealContainer;
@@ -14,7 +15,6 @@ use App\Domain\Warehouse\Containers\Services\ContainerManifestService;
 use App\Enums\AssetAssignmentStatus;
 use App\Models\Opportunity;
 use App\Models\OpportunityItemAsset;
-use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;

@@ -2,11 +2,11 @@
 
 namespace App\Verbs\Events\Opportunities;
 
+use App\Domain\Products\Models\Product;
 use App\Enums\LineItemTransactionType;
 use App\Enums\OpportunityItemType;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
-use App\Models\Product;
 use App\Verbs\Events\Opportunities\Concerns\PricesOpportunityItems;
 use App\Verbs\Events\Opportunities\Concerns\RecordsOpportunityAudit;
 use App\Verbs\States\OpportunityItemState;

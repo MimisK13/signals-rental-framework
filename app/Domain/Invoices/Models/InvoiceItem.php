@@ -6,10 +6,10 @@ namespace App\Domain\Invoices\Models;
 
 use App\Contracts\HasSchema;
 use App\Domain\Invoices\Database\Factories\InvoiceItemFactory;
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Traits\FormatsMoney;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

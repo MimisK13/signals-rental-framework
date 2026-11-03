@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Availability\Services;
 
-use App\Enums\KitComponentBinding;
-use App\Models\SerialisedComponent;
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\SerialisedComponent;
 use Illuminate\Validation\ValidationException;
 
 /**

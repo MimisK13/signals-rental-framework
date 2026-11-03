@@ -2,6 +2,7 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Enums\LineItemTransactionType;
@@ -9,7 +10,6 @@ use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
 use App\Models\OpportunitySurchargeGroup;
-use App\Models\Product;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;
 use App\ValueObjects\Pricing\DiscountCriteriaContext;

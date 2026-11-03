@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.products.partials.product-header', ['product' => $product, 'subpage' => 'Availability'])
-    @include('livewire.products.partials.product-tabs', ['product' => $product, 'activeTab' => 'availability'])
+    @include('products::partials.product-header', ['product' => $product, 'subpage' => 'Availability'])
+    @include('products::partials.product-tabs', ['product' => $product, 'activeTab' => 'availability'])
 
     <div class="space-y-6 px-6 py-4 max-md:px-5 max-sm:px-3">
         <div class="s-panel">

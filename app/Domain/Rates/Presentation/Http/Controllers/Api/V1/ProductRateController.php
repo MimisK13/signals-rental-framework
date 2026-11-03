@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rates\Presentation\Http\Controllers\Api\V1;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Actions\CreateProductRate;
 use App\Domain\Rates\Actions\DeleteProductRate;
 use App\Domain\Rates\Actions\UpdateProductRate;
@@ -16,7 +17,6 @@ use App\Domain\Rates\Presentation\Http\Requests\CreateProductRateRequest;
 use App\Domain\Rates\Services\RateEngine\ProductRateOverlapChecker;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Traits\FiltersQueries;
-use App\Models\Product;
 use Dedoc\Scramble\Attributes\Response as ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

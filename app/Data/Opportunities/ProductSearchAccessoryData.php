@@ -2,7 +2,7 @@
 
 namespace App\Data\Opportunities;
 
-use App\Models\Accessory;
+use App\Domain\Products\Models\Accessory;
 use Spatie\LaravelData\Data;
 
 /**

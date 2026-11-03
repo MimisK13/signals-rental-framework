@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\SupplierCosts\Actions;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\SupplierCosts\Actions\Concerns\ValidatesSupplierCostUniqueness;
 use App\Domain\SupplierCosts\Data\ProductSupplierCostData;
 use App\Domain\SupplierCosts\Data\UpdateSupplierCostData;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Domain\SupplierCosts\Rules\EnsureSupplierCostCurrencyIsValid;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 

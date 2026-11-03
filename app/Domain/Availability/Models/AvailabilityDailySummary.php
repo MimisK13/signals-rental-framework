@@ -6,7 +6,7 @@ namespace App\Domain\Availability\Models;
 
 use App\Domain\Availability\Database\Factories\AvailabilityDailySummaryFactory;
 use App\Domain\Availability\Services\RecalculationPipeline;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

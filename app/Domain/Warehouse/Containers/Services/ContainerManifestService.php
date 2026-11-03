@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\Product;
 use App\Domain\Warehouse\Containers\Data\ContainerComplianceData;
 use App\Domain\Warehouse\Containers\Data\ContainerComplianceSlotData;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Models\Container;
-use App\Enums\KitComponentBinding;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

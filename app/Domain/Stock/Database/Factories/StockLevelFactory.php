@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Stock\Database\Factories;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

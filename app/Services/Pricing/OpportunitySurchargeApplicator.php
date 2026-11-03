@@ -2,10 +2,10 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Products\Models\Product;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemSurcharge;
-use App\Models\Product;
 use App\Models\Surcharge;
 use App\ValueObjects\Pricing\EvaluatedSurcharge;
 use Illuminate\Support\Collection;

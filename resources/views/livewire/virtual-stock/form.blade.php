@@ -2,7 +2,7 @@
 
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use App\Models\VirtualStockIntake;
 use Illuminate\Support\Facades\Gate;

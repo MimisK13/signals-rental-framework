@@ -43,7 +43,7 @@ class OpportunityItemState extends State
 
     /**
      * Polymorphic catalogue reference — the itemable's fully-qualified class
-     * name (e.g. App\Models\Product). Null for group rows.
+     * name (e.g. App\Domain\Products\Models\Product). Null for group rows.
      */
     public ?string $itemable_type = null;
 

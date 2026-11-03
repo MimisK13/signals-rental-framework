@@ -7,9 +7,9 @@ namespace App\Domain\Availability\Shortages\Services;
 use App\Domain\Availability\Services\DemandReadContext;
 use App\Domain\Availability\Services\StockReadContext;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
+use App\Domain\Products\Models\Product;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 
 /**
  * Collects shortages on peer opportunities at the same store for batch sub-hire.

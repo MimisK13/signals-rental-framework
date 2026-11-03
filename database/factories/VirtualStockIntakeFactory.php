@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use App\Models\VirtualStockIntake;
 use App\Services\SequenceAllocator;

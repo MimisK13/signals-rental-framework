@@ -7,7 +7,7 @@ namespace App\Domain\Availability\Shortages\Database\Factories;
 use App\Domain\Availability\Shortages\Enums\WaitlistMonitorStatus;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

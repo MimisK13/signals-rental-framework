@@ -12,6 +12,7 @@ use App\Domain\CustomViews\CustomViewsServiceProvider;
 use App\Domain\Documents\DocumentsServiceProvider;
 use App\Domain\Invoices\InvoicesServiceProvider;
 use App\Domain\Lists\ListsServiceProvider;
+use App\Domain\Products\ProductsServiceProvider;
 use App\Domain\Projects\ProjectsServiceProvider;
 use App\Domain\PurchaseOrders\PurchaseOrdersServiceProvider;
 use App\Domain\Quotations\QuotationsServiceProvider;
@@ -43,6 +44,7 @@ return [
     ListsServiceProvider::class,
     InvoicesServiceProvider::class,
     ProjectsServiceProvider::class,
+    ProductsServiceProvider::class,
     PurchaseOrdersServiceProvider::class,
     QuotationsServiceProvider::class,
     RatesServiceProvider::class,

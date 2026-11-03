@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Actions\Concerns;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderSupplierCostResolver;
-use App\Models\Product;
 use App\Services\SequenceAllocator;
 use Illuminate\Validation\ValidationException;
 

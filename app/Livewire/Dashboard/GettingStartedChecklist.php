@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Domain\Products\Models\Product;
 use App\Models\Opportunity;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Contracts\View\View;

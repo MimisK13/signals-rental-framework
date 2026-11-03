@@ -53,7 +53,7 @@ use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;

@@ -7,7 +7,7 @@ namespace App\Domain\Assets\Repairs\Database\Factories;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Repairs\Enums\RepairStatus;
 use App\Domain\Assets\Repairs\Models\Repair;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;

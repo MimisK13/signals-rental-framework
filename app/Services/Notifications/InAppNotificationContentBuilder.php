@@ -5,10 +5,10 @@ namespace App\Services\Notifications;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageWaitlistMonitor;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Products\Models\Product;
 use App\Events\AuditableEvent;
 use App\Models\NotificationType;
 use App\Models\Opportunity;
-use App\Models\Product;
 use App\Models\VirtualStockIntake;
 
 /**

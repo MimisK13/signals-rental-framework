@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
-use App\Enums\KitComponentBinding;
-use App\Models\Product;
 use Illuminate\Validation\ValidationException;
 
 /**

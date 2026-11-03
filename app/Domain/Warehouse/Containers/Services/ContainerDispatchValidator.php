@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Warehouse\Containers\Services;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Warehouse\Containers\Data\ContainerDispatchAmendmentData;
 use App\Domain\Warehouse\Containers\Data\ContainerDispatchProductVerdictData;
 use App\Domain\Warehouse\Containers\Enums\ContainerDispatchVerdict;
@@ -11,7 +12,6 @@ use App\Domain\Warehouse\Containers\Models\Container;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityItemAsset;
-use App\Models\Product;
 use App\Models\User;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;

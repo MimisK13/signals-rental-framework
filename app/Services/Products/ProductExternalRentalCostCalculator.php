@@ -2,9 +2,9 @@
 
 namespace App\Services\Products;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierBills\Enums\SupplierBillStatus;
-use App\Models\Product;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 

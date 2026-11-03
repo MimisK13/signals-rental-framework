@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\PurchaseOrders\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Database\Factories\PurchaseOrderItemFactory;
 use App\Domain\SupplierBills\Models\SupplierBillItem;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
-use App\Models\Product;
 use App\Models\Traits\FormatsMoney;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

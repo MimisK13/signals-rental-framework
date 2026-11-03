@@ -1,6 +1,6 @@
 <section class="w-full">
-    @include('livewire.products.partials.product-header', ['product' => $product])
-    @include('livewire.products.partials.product-tabs', [
+    @include('products::partials.product-header', ['product' => $product])
+    @include('products::partials.product-tabs', [
         'product' => $product,
         'activeTab' => 'activities',
     ])

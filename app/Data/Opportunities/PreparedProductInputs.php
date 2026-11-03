@@ -2,7 +2,7 @@
 
 namespace App\Data\Opportunities;
 
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use Illuminate\Support\Collection;
 use LogicException;
 

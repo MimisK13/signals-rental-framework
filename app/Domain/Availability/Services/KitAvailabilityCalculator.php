@@ -6,10 +6,10 @@ namespace App\Domain\Availability\Services;
 
 use App\Domain\Availability\Data\AvailabilityRangeData;
 use App\Domain\Availability\Data\AvailabilitySlotData;
+use App\Domain\Products\Enums\KitComponentBinding;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\SerialisedComponent;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
-use App\Enums\KitComponentBinding;
-use App\Models\Product;
-use App\Models\SerialisedComponent;
 use Closure;
 use Illuminate\Support\Carbon;
 use RuntimeException;

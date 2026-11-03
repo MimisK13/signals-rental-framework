@@ -2,8 +2,8 @@
 
 namespace App\Verbs\Events\VirtualStock;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\Product;
 use App\Models\VirtualStockIntake;
 use App\Services\VirtualStock\VirtualStockAssetProvisioner;
 use App\Verbs\States\VirtualStockIntakeState;

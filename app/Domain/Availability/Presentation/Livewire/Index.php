@@ -6,9 +6,9 @@ namespace App\Domain\Availability\Presentation\Livewire;
 
 use App\Domain\Availability\Data\CalendarProductData;
 use App\Domain\Availability\Services\AvailabilityService;
-use App\Enums\ProductType;
-use App\Models\Product;
-use App\Models\ProductGroup;
+use App\Domain\Products\Enums\ProductType;
+use App\Domain\Products\Models\Product;
+use App\Domain\Products\Models\ProductGroup;
 use App\Services\Planning\PlanningStoreFilter;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;

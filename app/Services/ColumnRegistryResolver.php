@@ -21,9 +21,6 @@ use App\Views\OpportunityColumnRegistry;
 use App\Views\OpportunityCostColumnRegistry;
 use App\Views\OpportunityItemColumnRegistry;
 use App\Views\OpportunityVersionColumnRegistry;
-use App\Views\ProductColumnRegistry;
-use App\Views\ProductGroupColumnRegistry;
-use App\Views\SerialisedComponentColumnRegistry;
 use App\Views\VirtualStockIntakeColumnRegistry;
 use Illuminate\Validation\ValidationException;
 
@@ -39,8 +36,6 @@ class ColumnRegistryResolver
     /** @var array<string, class-string<ColumnRegistry>> */
     private array $map = [
         'members' => MemberColumnRegistry::class,
-        'products' => ProductColumnRegistry::class,
-        'product_groups' => ProductGroupColumnRegistry::class,
         'stock_levels' => StockLevelColumnRegistry::class,
         'activities' => ActivityColumnRegistry::class,
         'rate_definitions' => RateDefinitionColumnRegistry::class,
@@ -50,7 +45,6 @@ class ColumnRegistryResolver
         'opportunity_costs' => OpportunityCostColumnRegistry::class,
         'opportunity_versions' => OpportunityVersionColumnRegistry::class,
         'containers' => ContainerColumnRegistry::class,
-        'serialised_components' => SerialisedComponentColumnRegistry::class,
         'shortage_resolutions' => ShortageResolutionColumnRegistry::class,
         'invoices' => InvoiceColumnRegistry::class,
         'credit_notes' => CreditNoteColumnRegistry::class,

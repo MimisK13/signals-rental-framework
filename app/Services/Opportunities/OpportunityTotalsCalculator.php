@@ -3,6 +3,7 @@
 namespace App\Services\Opportunities;
 
 use App\Domain\Currency\Services\CurrencyService;
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Services\RateEngine\RateCalculator;
 use App\Domain\Rates\Services\RateEngine\RateResolver;
@@ -22,7 +23,6 @@ use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
 use App\Models\OpportunityVersion;
-use App\Models\Product;
 use App\Services\Pricing\BundlePricingApplicator;
 use App\Services\Pricing\DiscountSourceRegistry;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;

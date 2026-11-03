@@ -2,6 +2,7 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Enums\DiscountRuleScope;
 use App\Enums\LineItemTransactionType;
@@ -9,7 +10,6 @@ use App\Enums\OpportunityItemType;
 use App\Models\DiscountRule;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\ValueObjects\Pricing\DiscountCriteriaContext;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;

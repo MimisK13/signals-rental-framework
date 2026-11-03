@@ -6,7 +6,7 @@ namespace App\Domain\Availability\Database\Factories;
 
 use App\Domain\Availability\Enums\AvailabilityEventType;
 use App\Domain\Availability\Models\AvailabilityEvent;
-use App\Models\Product;
+use App\Domain\Products\Models\Product;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

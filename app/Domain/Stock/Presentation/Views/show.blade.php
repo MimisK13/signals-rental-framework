@@ -23,21 +23,21 @@
             @if($stockLevel->product)
                 @php
                     $typeBadgeClass = match($stockLevel->product->product_type) {
-                        \App\Enums\ProductType::Rental => 's-badge-blue',
-                        \App\Enums\ProductType::Sale => 's-badge-green',
-                        \App\Enums\ProductType::Service => 's-badge-amber',
-                        \App\Enums\ProductType::LossAndDamage => 's-badge-red',
+                        \App\Domain\Products\Enums\ProductType::Rental => 's-badge-blue',
+                        \App\Domain\Products\Enums\ProductType::Sale => 's-badge-green',
+                        \App\Domain\Products\Enums\ProductType::Service => 's-badge-amber',
+                        \App\Domain\Products\Enums\ProductType::LossAndDamage => 's-badge-red',
                         default => 's-badge-zinc',
                     };
                 @endphp
                 <span class="s-badge {{ $typeBadgeClass }}">
-                    @if($stockLevel->product->product_type === \App\Enums\ProductType::Rental)
+                    @if($stockLevel->product->product_type === \App\Domain\Products\Enums\ProductType::Rental)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                    @elseif($stockLevel->product->product_type === \App\Enums\ProductType::Sale)
+                    @elseif($stockLevel->product->product_type === \App\Domain\Products\Enums\ProductType::Sale)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                    @elseif($stockLevel->product->product_type === \App\Enums\ProductType::Service)
+                    @elseif($stockLevel->product->product_type === \App\Domain\Products\Enums\ProductType::Service)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                    @elseif($stockLevel->product->product_type === \App\Enums\ProductType::LossAndDamage)
+                    @elseif($stockLevel->product->product_type === \App\Domain\Products\Enums\ProductType::LossAndDamage)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     @endif
                     {{ $stockLevel->product->product_type->label() }}

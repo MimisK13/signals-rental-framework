@@ -6,10 +6,10 @@ use App\Actions\Opportunities\AddOpportunityGroup;
 use App\Actions\Opportunities\RestructureOpportunityItems;
 use App\Data\Opportunities\AddOpportunityGroupData;
 use App\Data\Opportunities\RestructureOpportunityItemsData;
+use App\Domain\Products\Models\Product;
 use App\Enums\OpportunityItemType;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 

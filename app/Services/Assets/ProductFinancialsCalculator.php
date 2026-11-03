@@ -6,8 +6,8 @@ use App\Domain\Assets\Enums\AssetOwnershipType;
 use App\Domain\Assets\Models\Asset;
 use App\Domain\Assets\Services\AssetFinancialsCalculator;
 use App\Domain\Assets\Services\AssetFinancialsResult;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockCategory;
-use App\Models\Product;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 

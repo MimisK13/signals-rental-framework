@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\PurchaseOrders\Presentation\Livewire;
 
+use App\Domain\Products\Models\Product;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\UpdateDraftPurchaseOrder;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
@@ -11,7 +12,6 @@ use App\Domain\PurchaseOrders\Data\UpdateDraftPurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Enums\MembershipType;
 use App\Models\Member;
-use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Gate;

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Warehouse\Containers\Models;
 
 use App\Contracts\HasSchema;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Database\Factories\ContainerFactory;
 use App\Domain\Warehouse\Containers\Enums\ContainerAvailabilityMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerScanMode;
 use App\Domain\Warehouse\Containers\Enums\ContainerStatus;
-use App\Models\Product;
 use App\Models\Store;
 use App\Services\SchemaBuilder;
 use Illuminate\Database\Eloquent\Builder;

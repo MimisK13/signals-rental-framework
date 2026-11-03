@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Assets\Models;
 
 use App\Domain\Assets\Database\Factories\InspectionPolicyFactory;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

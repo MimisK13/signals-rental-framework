@@ -11,10 +11,10 @@ use App\Domain\Activities\Enums\TimeStatus;
 use App\Domain\Activities\Models\Activity;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
+use App\Domain\Products\Models\Product;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Member;
 use App\Models\Opportunity;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

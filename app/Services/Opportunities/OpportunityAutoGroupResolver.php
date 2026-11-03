@@ -2,9 +2,9 @@
 
 namespace App\Services\Opportunities;
 
+use App\Domain\Products\Models\Product;
 use App\Enums\LineItemTransactionType;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 
 /**
  * Resolves the revenue-group classification + display label for an opportunity

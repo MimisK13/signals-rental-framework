@@ -8,6 +8,7 @@ use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Stock\Policies\StockLevelPolicy;
 use App\Domain\Stock\Presentation\Livewire\Form;
 use App\Domain\Stock\Presentation\Livewire\Index;
+use App\Domain\Stock\Presentation\Livewire\ProductStock;
 use App\Domain\Stock\Presentation\Livewire\Show;
 use App\Domain\Stock\Stocktakes\Presentation\Livewire\Form as StocktakeForm;
 use App\Domain\Stock\Stocktakes\Presentation\Livewire\Index as StocktakesIndex;
@@ -32,6 +33,7 @@ final class StockServiceProvider extends ServiceProvider
         Livewire::addComponent(name: 'stock-levels.index', class: Index::class);
         Livewire::addComponent(name: 'stock-levels.form', class: Form::class);
         Livewire::addComponent(name: 'stock-levels.show', class: Show::class);
+        Livewire::addComponent(name: 'products.stock', class: ProductStock::class);
         Livewire::addComponent(name: 'stocktakes.index', class: StocktakesIndex::class);
         Livewire::addComponent(name: 'stocktakes.form', class: StocktakeForm::class);
         Livewire::addComponent(name: 'stocktakes.show', class: StocktakeShow::class);

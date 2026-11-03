@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Quotations\Actions;
 
 use App\Concerns\CommitsVerbsEvents;
+use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Data\QuotationItemData;
 use App\Domain\Quotations\Data\UpdateQuotationItemData;
 use App\Domain\Quotations\Models\Quotation;
@@ -14,7 +15,6 @@ use App\Domain\Quotations\Services\QuotationAggregateTotals;
 use App\Domain\Quotations\Services\QuotationEditingGuard;
 use App\Domain\Quotations\Services\QuotationLinePriceCalculator;
 use App\Domain\Quotations\Verbs\Events\QuotationItemUpdated;
-use App\Models\Product;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;

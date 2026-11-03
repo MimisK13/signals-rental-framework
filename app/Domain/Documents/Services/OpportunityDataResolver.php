@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Documents\Services;
 
 use App\Domain\Documents\Contracts\DocumentDataResolver;
+use App\Domain\Products\Models\Product;
 use App\Domain\Tax\Data\DocumentTaxLineInput;
 use App\Domain\Tax\Data\DocumentTaxRequest;
 use App\Domain\Tax\Models\ProductTaxClass;
@@ -20,7 +21,6 @@ use App\Models\Member;
 use App\Models\Opportunity;
 use App\Models\OpportunityCost;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\Models\Store;
 use App\Services\FieldBuilder;
 use App\Services\Pricing\QuantityMinorArithmetic;

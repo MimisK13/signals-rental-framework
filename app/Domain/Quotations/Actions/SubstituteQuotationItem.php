@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Quotations\Actions;
 
+use App\Domain\Products\Enums\ProductType;
+use App\Domain\Products\Models\Product;
 use App\Domain\Quotations\Data\AddQuotationItemData;
 use App\Domain\Quotations\Enums\QuotationItemType;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Enums\LineItemTransactionType;
-use App\Enums\ProductType;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
 final readonly class SubstituteQuotationItem

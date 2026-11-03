@@ -2,10 +2,10 @@
 
 namespace App\Services\Pricing;
 
+use App\Domain\Products\Models\Product;
 use App\Models\BundleRule;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
-use App\Models\Product;
 use App\ValueObjects\Pricing\DiscountCriteriaContext;
 use Illuminate\Support\Collection;
 
