@@ -4,5 +4,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| ** | .ai/rules/test-execution.md |
 | app/Domain/*/Database/Migrations/** | .ai/rules/database-migrations.md |
 | database/migrations/** | .ai/rules/migrations.md |
