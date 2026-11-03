@@ -5,7 +5,7 @@ The application uses top-level `app/Domain/*` directories for bounded contexts, 
 ## Consequences
 
 - `Warehouse` owns Containers, packing, dispatch, returns, repacking, manifests, and warehouse presentation.
-- `Stocktakes` will become a module of `Stock`.
-- `Repairs` will become a module of `Assets`.
-- `Availability` will own Demand, Shortages, recalculation, and resolution; equipment Planner remains presentation unless it gains independent business rules.
+- `Stocktakes` is a module of `Stock`.
+- `Repairs` is a module of `Assets`.
+- `Availability` owns Demand, Shortages, recalculation, and resolution; equipment Planner remains presentation unless it gains independent business rules.
 - Projects and Quotations, Stock and Assets, Invoices and Documents, Purchase Orders and Supplier Bills, Rates and Supplier Costs remain separate contexts because their business lifecycles and ownership differ.
