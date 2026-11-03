@@ -53,7 +53,7 @@ the suite is re-greened at the end rather than at each step.
 ### 4.1 `opportunity_items` (the single line-item table)
 
 **Rename (resolve the `item_type` collision):**
-- `item_type` → **`itemable_type`** (the polymorphic morph to the catalogue entity, currently `App\Models\Product`)
+- `item_type` → **`itemable_type`** (the polymorphic morph to the catalogue entity, currently `App\Domain\Products\Models\Product`)
 - `item_id` → **`itemable_id`**
 
 **Add:**
