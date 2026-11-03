@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityParticipant;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityParticipantData;
-use App\Data\Opportunities\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityParticipant;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityParticipantData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Address;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

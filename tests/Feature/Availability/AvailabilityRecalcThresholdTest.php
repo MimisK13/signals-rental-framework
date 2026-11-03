@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Opportunities\Concerns\RebuildsAvailabilitySnapshots;
 use App\Domain\Availability\Jobs\RebuildSnapshotsJob;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\Concerns\RebuildsAvailabilitySnapshots;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Schema;
 

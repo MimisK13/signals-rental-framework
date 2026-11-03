@@ -1,9 +1,9 @@
 <?php
 
-use App\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Events\AuditableEvent;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Services\Notifications\EventNotificationConditionEvaluator;
 use App\Services\Notifications\EventNotificationMapRegistry;
 

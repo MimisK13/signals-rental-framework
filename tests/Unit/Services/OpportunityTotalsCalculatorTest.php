@@ -1,22 +1,22 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityCost;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityVersion;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

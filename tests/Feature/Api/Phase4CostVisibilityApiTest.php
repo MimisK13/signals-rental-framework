@@ -2,13 +2,14 @@
 
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Presentation\Livewire\Show;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Costs;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
-use App\Models\OpportunityCost;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
@@ -264,7 +265,7 @@ describe('Phase 4 cost visibility', function () {
             'amount' => 5000,
         ]);
 
-        Volt::test('opportunities.costs', ['opportunity' => $opportunity])
+        Livewire::test(Costs::class, ['opportunity' => $opportunity])
             ->assertSee('Unique Van Hire Cost')
             ->assertDontSee('Amount')
             ->assertDontSee(app(Formatter::class)->money(5000));

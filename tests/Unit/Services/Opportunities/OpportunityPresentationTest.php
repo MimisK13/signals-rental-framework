@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
-use App\Services\Opportunities\OpportunityPresentation;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityPresentation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;

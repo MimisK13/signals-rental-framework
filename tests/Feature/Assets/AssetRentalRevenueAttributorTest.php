@@ -9,8 +9,8 @@ use App\Domain\Invoices\Models\CreditNoteItem;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceItem;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Enums\LineItemTransactionType;
-use App\Models\OpportunityItem;
 use Illuminate\Support\Carbon;
 
 /**

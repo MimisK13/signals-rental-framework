@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
 use App\Domain\Tax\Enums\TaxPointPolicy;
 use App\Models\Member;
 use App\Models\Store;

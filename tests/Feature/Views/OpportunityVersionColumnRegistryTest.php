@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityVersionColumnRegistry;
 use App\Services\SchemaBuilder;
 use App\Views\Column;
-use App\Views\OpportunityVersionColumnRegistry;
 
 /**
  * R-D master M15 — OpportunityVersion::defineSchema + ColumnRegistry must expose

@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 
 it('exposes surcharge totals on line item editor rows', function () {
     $opportunity = Opportunity::factory()->create(['currency_code' => 'GBP']);

@@ -1,17 +1,18 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\CreateVersion;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\CreateVersionData;
-use App\Enums\VersionStatus;
-use App\Enums\VersionType;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\CreateVersion;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\CreateVersionData;
+use App\Domain\Projects\Opportunities\Enums\VersionStatus;
+use App\Domain\Projects\Opportunities\Enums\VersionType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Versions;
 use App\Models\ActionLog;
-use App\Models\Opportunity;
-use App\Models\OpportunityVersion;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -19,7 +20,7 @@ use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -103,7 +104,7 @@ it('renders the versions tab for a user with opportunities.view', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->assertOk()
         ->assertSee('Quote Versions');
 });
@@ -125,7 +126,7 @@ it('renders the version tree alongside the read-only lifecycle event timeline', 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->assertOk()
         ->assertSee('Quote Versions')   // LEFT version panel still renders.
         ->assertSee('Timeline')          // RIGHT lifecycle panel header.
@@ -142,7 +143,7 @@ it('shows the lifecycle timeline strictly read-only — no add-activity affordan
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->assertOk()
         ->assertSee('Timeline')
         ->assertDontSee('New Activity');
@@ -155,7 +156,7 @@ it('renders the timeline empty state when the opportunity has no audit history',
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Timeline')
         ->assertSee('No history yet')
@@ -169,7 +170,7 @@ it('forbids the versions tab for a user without opportunities.view', function ()
     $viewer->givePermissionTo('opportunities.access');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(Versions::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('shows the empty state when the opportunity has no versions', function () {
@@ -177,7 +178,7 @@ it('shows the empty state when the opportunity has no versions', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity])
         ->assertSee('No versions yet');
 });
 
@@ -188,7 +189,7 @@ it('renders the version tree marking revisions, alternatives and the active vers
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->assertSeeHtml('version-'.$revision->id)
         ->assertSeeHtml('version-'.$alternative->id)
         ->assertSee('Revision')
@@ -204,7 +205,7 @@ it('creates a revision via the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity])
         ->set('createType', VersionType::Revision->value)
         ->set('createLabel', 'First revision')
         ->call('createVersion');
@@ -221,7 +222,7 @@ it('creates an alternative via the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->set('createType', VersionType::Alternative->value)
         ->set('createLabel', 'Alternative A')
         ->call('createVersion');
@@ -243,7 +244,7 @@ it('switches the active version via the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->call('activate', $first->id);
 
     expect($opportunity->refresh()->active_version_id)->toBe($first->id);
@@ -255,7 +256,7 @@ it('renames a version label via the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->call('promptRename', $version->id)
         ->set('labelDraft', 'New name')
         ->call('submitRename');
@@ -269,7 +270,7 @@ it('accepts a version via the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->call('accept', $version->id);
 
     expect($version->refresh()->status)->toBe(VersionStatus::Accepted);
@@ -281,7 +282,7 @@ it('declines a version with a reason via the tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->call('promptDecline', $version->id)
         ->set('declineReason', 'Customer chose another supplier')
         ->call('submitDecline');
@@ -311,7 +312,7 @@ it('renders the diff between two selected versions', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->set('diffFromId', $first->id)
         ->set('diffToId', $second->id)
         ->assertSee('Net')
@@ -326,7 +327,7 @@ it('only offers legal lifecycle actions for a draft, sole, active version', func
 
     // A draft version may be sent / accepted / declined / renamed, but the sole,
     // active version is never offered Make active or Delete (both illegal here).
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->assertSee('Send')
         ->assertSee('Accept')
         ->assertSee('Decline')
@@ -344,7 +345,7 @@ it('offers Make active and Delete only for a non-active version', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()])
+    Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()])
         ->assertSee('Make active')
         ->assertSee('Delete');
 });
@@ -357,7 +358,7 @@ it('does not offer mutating actions to a read-only viewer', function () {
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    $component = Volt::test('opportunities.versions', ['opportunity' => $opportunity->refresh()]);
+    $component = Livewire::test(Versions::class, ['opportunity' => $opportunity->refresh()]);
     $component->assertOk();
     $component->assertSet('canEdit', false);
     $component->assertDontSee('New revision');

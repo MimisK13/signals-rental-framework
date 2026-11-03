@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
 
 it('exposes the RMS line-item roles including text', function () {
     expect(OpportunityItemType::Group->value)->toBe('group')

@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Livewire\Dashboard\OpportunityPipeline;
-use App\Models\Opportunity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

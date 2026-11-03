@@ -1,11 +1,14 @@
 <?php
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Form;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Index;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -31,7 +34,7 @@ it('resolves route() for a show url without erroring', function () {
 it('renders the gated index placeholder for an authorised user', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertOk()
         ->assertSee('Opportunities');
 });
@@ -44,7 +47,7 @@ it('renders the show page for an authorised user', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Demo Opportunity')
         ->assertSee('Charge Total');
@@ -53,7 +56,7 @@ it('renders the show page for an authorised user', function () {
 it('renders the create form for an authorised user', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->assertOk()
         ->assertSee('New Opportunity')
         ->assertSee('Create Opportunity');
@@ -63,7 +66,7 @@ it('forbids the index placeholder for a user without opportunities.access', func
     $viewer = User::factory()->create();
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.index')->assertForbidden();
+    Livewire::test(Index::class)->assertForbidden();
 });
 
 it('forbids the show placeholder for a user without opportunities.view', function () {
@@ -72,7 +75,7 @@ it('forbids the show placeholder for a user without opportunities.view', functio
     $viewer = User::factory()->create();
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(Show::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('shows an archived (soft-deleted) opportunity instead of 404ing', function () {
@@ -102,7 +105,7 @@ it('keeps an archived opportunity read-only — no transition actions, only Rest
 
     // While archived the transition actions + status picker are suppressed; the
     // only mutating affordance is Restore (gated on opportunities.delete).
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->assertOk()
         ->assertViewHas('isArchived', true)
         ->assertViewHas('canRestore', true)

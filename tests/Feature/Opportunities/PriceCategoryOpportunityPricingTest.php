@@ -1,10 +1,11 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Rates\Enums\BasePeriod;
 use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
@@ -12,7 +13,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Enums\LineItemTransactionType;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\PriceCategory;
 use App\Models\Store;
 use App\Models\User;

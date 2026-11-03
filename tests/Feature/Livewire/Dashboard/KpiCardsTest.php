@@ -2,14 +2,14 @@
 
 use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\OpportunityStatus;
 use App\Livewire\Dashboard\KpiCards;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Dashboard\DashboardKpiService;

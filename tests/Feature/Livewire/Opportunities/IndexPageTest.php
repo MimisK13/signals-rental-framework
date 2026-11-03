@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Enums\OpportunityState;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Index;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,7 +79,7 @@ it('lists opportunities by subject', function () {
     Opportunity::factory()->create(['subject' => 'Festival Hire']);
     Opportunity::factory()->create(['subject' => 'Wedding Package']);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSee('Festival Hire')
         ->assertSee('Wedding Package');
 });
@@ -88,20 +88,20 @@ it('filters by document-type state', function () {
     Opportunity::factory()->quotation()->create(['subject' => 'A Quote Subject']);
     Opportunity::factory()->order()->create(['subject' => 'An Order Subject']);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->set('stateFilter', (string) OpportunityState::Quotation->value)
         ->assertSee('A Quote Subject')
         ->assertDontSee('An Order Subject');
 });
 
 it('ignores an invalid state in setStateFilter', function () {
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('setStateFilter', '999')
         ->assertSet('stateFilter', '');
 });
 
 it('ignores an invalid archive filter', function () {
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('setArchiveFilter', 'invalid_filter')
         ->assertSet('archiveFilter', 'active');
 });
@@ -110,7 +110,7 @@ it('reflects state counts for created opportunities', function () {
     Opportunity::factory()->quotation()->count(2)->create();
     Opportunity::factory()->order()->create();
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSet('totalCount', 3)
         ->assertSet('stateFilter', '');
 });
@@ -118,7 +118,7 @@ it('reflects state counts for created opportunities', function () {
 it('switches the archive filter and refreshes counts', function () {
     Opportunity::factory()->quotation()->create();
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSet('archiveFilter', 'active')
         ->assertSet('totalCount', 1)
         ->call('setArchiveFilter', 'archived')
@@ -134,19 +134,19 @@ it('wires the searchable columns on the nested data table', function () {
     // so we assert the searchable prop is passed through rather than querying.
     Opportunity::factory()->create(['subject' => 'Searchable Subject']);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSee('Searchable Subject');
 });
 
 it('shows the empty state when no opportunities exist', function () {
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSee('No opportunities found.');
 });
 
 it('archives a single opportunity through the event action', function () {
     $opportunity = makeIndexOpportunity($this->owner, $this->store->id);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('archiveOpportunity', $opportunity->id);
 
     expect(Opportunity::withTrashed()->find($opportunity->id)->trashed())->toBeTrue();
@@ -155,7 +155,7 @@ it('archives a single opportunity through the event action', function () {
 it('restores a single opportunity through the event action', function () {
     $opportunity = makeIndexOpportunity($this->owner, $this->store->id);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('archiveOpportunity', $opportunity->id)
         ->call('restoreOpportunity', $opportunity->id);
 
@@ -166,12 +166,12 @@ it('restores a single opportunity through the event action', function () {
 it('bulk archives then bulk restores opportunities', function () {
     $opportunity = makeIndexOpportunity($this->owner, $this->store->id);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('archiveSelected', [$opportunity->id]);
 
     expect(Opportunity::onlyTrashed()->find($opportunity->id))->not->toBeNull();
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('restoreSelected', [$opportunity->id]);
 
     expect(Opportunity::find($opportunity->id)->trashed())->toBeFalse();
@@ -181,7 +181,7 @@ it('filters to shortage opportunities when the shortage toggle is on', function 
     Opportunity::factory()->withShortage()->create(['subject' => 'Shortage Job']);
     Opportunity::factory()->create(['subject' => 'Healthy Job']);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSee('Shortage Job')
         ->assertSee('Healthy Job')
         ->call('toggleShortageFilter')
@@ -194,7 +194,7 @@ it('toggles the shortage filter off again', function () {
     Opportunity::factory()->withShortage()->create(['subject' => 'Shortage Job']);
     Opportunity::factory()->create(['subject' => 'Healthy Job']);
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('toggleShortageFilter')
         ->assertSet('shortageFilter', true)
         ->call('toggleShortageFilter')
@@ -207,7 +207,7 @@ it('counts shortage opportunities for the chip regardless of the toggle', functi
     Opportunity::factory()->withShortage()->count(2)->create();
     Opportunity::factory()->create();
 
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->assertSet('shortageCount', 2)
         ->call('toggleShortageFilter')
         // The toggle narrows the listing but the chip still reports the full count.
@@ -229,7 +229,7 @@ it('hydrates the shortage filter from the has_shortage url param (deep link)', f
 });
 
 it('passes the withShortage scope to the data table when the filter is on', function () {
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('toggleShortageFilter')
         ->assertSet('shortageFilter', true)
         ->assertViewHas('scopes', fn (array $scopes): bool => ($scopes['withShortage'] ?? null) === true);
@@ -245,7 +245,7 @@ it('forbids archiving for a user without opportunities.delete', function () {
     // mount() authorizes opportunities.access (granted), but archiveOpportunity
     // calls DeleteOpportunity, whose Gate::authorize('opportunities.delete')
     // denies — Livewire surfaces that as a 403.
-    Volt::test('opportunities.index')
+    Livewire::test(Index::class)
         ->call('archiveOpportunity', $opportunity->id)
         ->assertForbidden();
 

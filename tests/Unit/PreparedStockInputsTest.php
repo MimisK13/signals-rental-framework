@@ -1,6 +1,6 @@
 <?php
 
-use App\Data\Opportunities\PreparedStockInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStockInputs;
 
 it('keeps product and store stock keys distinct', function (): void {
     $inputs = new PreparedStockInputs([

@@ -1,7 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
 use App\Actions\Stores\CreateStore;
 use App\Data\Stores\CreateStoreData;
 use App\Domain\Documents\Contracts\DocumentRenderer;
@@ -25,6 +23,11 @@ use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
@@ -32,11 +35,8 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
 use Carbon\CarbonImmutable;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

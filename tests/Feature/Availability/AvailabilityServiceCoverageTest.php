@@ -9,8 +9,8 @@ use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

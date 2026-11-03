@@ -1,16 +1,18 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Enums\OpportunityState;
+use App\Domain\Invoices\Presentation\Livewire\OpportunityInvoices;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -27,7 +29,7 @@ beforeEach(function () {
 it('shows invoice action on opportunity show when source state allows', function () {
     $opportunity = giCreateOrderOpportunity();
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertSee('Invoice')
         ->assertSee('Generate Deposit');
 });
@@ -39,7 +41,7 @@ it('disables standard invoice when opportunity is fully invoiced', function () {
 
     expect($opportunity->isFullyQuantityInvoiced())->toBeTrue();
 
-    Volt::test('opportunities.invoices', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityInvoices::class, ['opportunity' => $opportunity])
         ->assertDontSee('wire:click="generateInvoice"', false)
         ->assertSee('Fully invoiced');
 });
@@ -54,7 +56,7 @@ it('hides invoice actions when opportunity state is not allowed', function () {
     );
     $opportunity = Opportunity::query()->findOrFail($created->id);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertDontSee('wire:click="generateInvoice"', false)
         ->assertDontSee('Generate Deposit');
 });

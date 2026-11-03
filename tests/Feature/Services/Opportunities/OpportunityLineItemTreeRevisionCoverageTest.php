@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Services\Opportunities\OpportunityLineItemTreeRevision;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemTreeRevision;
 use Illuminate\Support\Facades\Schema;
 use Thunk\Verbs\Models\VerbStateEvent;
 

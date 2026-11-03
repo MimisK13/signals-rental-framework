@@ -12,6 +12,7 @@ use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
+use App\Domain\Availability\Shortages\Presentation\Livewire\OpportunityShortages;
 use App\Domain\Availability\Shortages\Services\Resolvers\SubHireResolver;
 use App\Domain\Availability\Shortages\Services\ShortageAutoResolver;
 use App\Domain\Availability\Shortages\Services\ShortageBatchGrouper;
@@ -19,13 +20,13 @@ use App\Domain\Availability\Shortages\Services\SubHireSupplierCostQuery;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;
@@ -34,7 +35,7 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config([
@@ -483,7 +484,7 @@ it('renders subhire option cards on the shortages panel', function () {
             'source_id' => 880005,
         ]);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity->fresh()])
         ->assertSee('Sub-hire')
         ->assertSee('Preferred');
 });

@@ -1,13 +1,14 @@
 <?php
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Symfony\Component\Process\Process;
 
 uses(RefreshDatabase::class)->group('opportunities');
@@ -106,7 +107,7 @@ it('boot reconcile degrades to server (no crash) when the cache revision is a co
 it('boot reconcile uses server seed when cache revision is older than the server seed revision', function () {
     $opportunity = deepNestSyncOpportunity();
     $serverTree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $serverRevision = lineItemsEditorInstance($component)->treeRevision();
 
     $decision = runBootReconcileJs([
@@ -126,7 +127,7 @@ it('boot reconcile uses server seed when cache revision is older than the server
 it('boot reconcile uses cache when revision and structure match the server seed', function () {
     $opportunity = deepNestSyncOpportunity();
     $serverTree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $serverRevision = lineItemsEditorInstance($component)->treeRevision();
 
     $decision = runBootReconcileJs([
@@ -146,7 +147,7 @@ it('boot reconcile uses cache when revision and structure match the server seed'
 it('boot reconcile rejects corrupt cache with matching revision but scrambled structure', function () {
     $opportunity = deepNestSyncOpportunity();
     $serverTree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $serverRevision = lineItemsEditorInstance($component)->treeRevision();
 
     $corruptCache = $serverTree;
@@ -177,7 +178,7 @@ it('boot reconcile rejects corrupt cache with matching revision but scrambled st
 it('boot reconcile rejects partial cache rows missing server ids', function () {
     $opportunity = deepNestSyncOpportunity();
     $serverTree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $serverRevision = lineItemsEditorInstance($component)->treeRevision();
 
     $decision = runBootReconcileJs([
@@ -197,7 +198,7 @@ it('boot reconcile rejects partial cache rows missing server ids', function () {
 it('boot reconcile uses server seed after a persisted reorder when cache still holds the pre-edit tree', function () {
     $opportunity = deepNestSyncOpportunity();
     $prePersistTree = app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity);
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $preRevision = $editor->treeRevision();
     $nodes = deepNestLedParBeforeOnSiteNodes($opportunity);

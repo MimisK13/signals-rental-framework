@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Enums\LineItemTransactionType;
 use App\Models\DiscountCategory;
 use App\Models\DiscountRule;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Services\Pricing\DiscountRuleEvaluator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

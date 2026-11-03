@@ -2,23 +2,24 @@
 
 use App\Domain\Documents\Models\DocumentSequence;
 use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Documents\Presentation\Livewire\OpportunityDocuments;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Enums\OpportunityState;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     config(['signals.installed' => true, 'signals.setup_complete' => true]);
@@ -101,7 +102,7 @@ describe('Opportunity documents tab', function () {
 
         $this->actingAs($user);
 
-        Volt::test('opportunities.documents', ['opportunity' => $opportunity])
+        Livewire::test(OpportunityDocuments::class, ['opportunity' => $opportunity])
             ->assertForbidden();
     });
 
@@ -118,7 +119,7 @@ describe('Opportunity documents tab', function () {
 
         $this->actingAs($user);
 
-        Volt::test('opportunities.documents', ['opportunity' => $opportunity])
+        Livewire::test(OpportunityDocuments::class, ['opportunity' => $opportunity])
             ->assertSee('Generate document')
             ->set('selectedTemplateId', $template->id)
             ->call('generateDocument')
@@ -130,7 +131,7 @@ describe('Opportunity documents tab', function () {
 
         $this->actingAs($user);
 
-        Volt::test('opportunities.documents', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(OpportunityDocuments::class, ['opportunity' => $opportunity->fresh()])
             ->assertSee($document->document_number)
             ->assertSee('Download')
             ->call('openShareModal', $document->id)
@@ -157,21 +158,21 @@ describe('Opportunity documents tab', function () {
 
         $this->actingAs($user);
 
-        Volt::test('opportunities.documents', ['opportunity' => $opportunity])
+        Livewire::test(OpportunityDocuments::class, ['opportunity' => $opportunity])
             ->set('selectedTemplateId', $template->id)
             ->call('generateDocument')
             ->assertHasNoErrors();
 
         $document = $opportunity->documents()->firstOrFail();
 
-        Volt::test('opportunities.documents', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(OpportunityDocuments::class, ['opportunity' => $opportunity->fresh()])
             ->call('openShareModal', $document->id)
             ->call('saveShareLink')
             ->assertHasNoErrors();
 
         $document->refresh();
 
-        Volt::test('opportunities.documents', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(OpportunityDocuments::class, ['opportunity' => $opportunity->fresh()])
             ->assertSee('<svg', false)
             ->call('openShareModal', $document->id)
             ->assertSee('<svg', false)

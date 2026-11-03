@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Opportunities\ChangeItemQuantity;
-use App\Actions\Opportunities\ExpandOpportunityCombination;
-use App\Actions\Opportunities\RemoveOpportunityItem;
-use App\Data\Opportunities\ChangeItemQuantityData;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeItemQuantity;
+use App\Domain\Projects\Opportunities\Actions\ExpandOpportunityCombination;
+use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityItem;
+use App\Domain\Projects\Opportunities\Data\ChangeItemQuantityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Planning\OpportunityItemPlanningReader;

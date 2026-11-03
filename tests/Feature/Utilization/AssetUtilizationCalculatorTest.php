@@ -9,7 +9,7 @@ use App\Domain\Assets\Models\AssetUsage;
 use App\Domain\Assets\Repairs\Models\Repair;
 use App\Domain\Assets\Services\AssetUtilizationCalculator;
 use App\Domain\Products\Models\Product;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Carbon\CarbonImmutable;
 
 function utilizationAsset(string $acquiredAt = '2026-01-01 00:00:00'): Asset

@@ -1,12 +1,12 @@
 <?php
 
-use App\Guards\Opportunities\Contracts\TransitionRule;
-use App\Guards\Opportunities\GuardResult;
-use App\Guards\Opportunities\TransitionContext;
-use App\Models\Opportunity;
-use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
-use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
-use App\Services\Opportunities\TransitionRuleRegistry;
+use App\Domain\Projects\Opportunities\Guards\Contracts\TransitionRule;
+use App\Domain\Projects\Opportunities\Guards\GuardResult;
+use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\Hooks\ApprovalChainRegistry;
+use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
+use App\Domain\Projects\Opportunities\Services\TransitionRuleRegistry;
 
 it('registers, looks up and lists approval chains by transition', function () {
     $registry = new ApprovalChainRegistry;

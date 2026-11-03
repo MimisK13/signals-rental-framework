@@ -1,11 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityEventType;
 use App\Domain\Availability\Enums\AvailabilityResolution;
@@ -19,10 +13,16 @@ use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Services\ShortageEventRecorder;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Enums\StockMethod;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\ActionLog;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

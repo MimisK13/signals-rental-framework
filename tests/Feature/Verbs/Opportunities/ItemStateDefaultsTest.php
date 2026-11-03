@@ -1,12 +1,12 @@
 <?php
 
 use App\Domain\Assets\Enums\AssetCondition;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Verbs\States\OpportunityItemState;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Enums\OpportunityItemType;
 use App\Verbs\States\AssetAssignmentState;
-use App\Verbs\States\OpportunityItemState;
 
 /**
  * The item/asset Verbs states are inert scaffolding here — no events mutate them

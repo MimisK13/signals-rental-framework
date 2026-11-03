@@ -1,22 +1,22 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\DispatchBulkQuantity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\BulkDispatchData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
 use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Domain\Availability\Shortages\Services\DispatchShortageGate;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DispatchBulkQuantity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\BulkDispatchData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

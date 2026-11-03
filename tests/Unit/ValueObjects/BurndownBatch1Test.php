@@ -5,8 +5,8 @@ use App\Domain\Availability\Shortages\ValueObjects\DispatchGateResult;
 use App\Domain\Availability\Shortages\ValueObjects\Shortage;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageCollection;
 use App\Domain\Availability\Shortages\ValueObjects\ShortageGroup;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Enums\StockMethod;
-use App\Models\OpportunityItem;
 use Illuminate\Support\Carbon;
 
 describe('ShortageGroup::isCrossOpportunity', function () {

@@ -1,9 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
@@ -11,10 +7,15 @@ use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
+use App\Domain\Availability\Shortages\Presentation\Livewire\OpportunityShortages;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -23,7 +24,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -107,7 +108,7 @@ it('renders the shortages tab for a user with shortages.view', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Detected Shortages')
         ->assertSee('Conversion & Dispatch Checks');
@@ -120,7 +121,7 @@ it('forbids the shortages tab for a user without shortages.view', function () {
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('lists each short line with the detector figures', function () {
@@ -128,7 +129,7 @@ it('lists each short line with the detector figures', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertSee($product->name)
         // Requested 3 / available 1 / short by 2.
         ->assertSee('Short by')
@@ -146,7 +147,7 @@ it('shows the No shortages empty state when the opportunity is serviceable', fun
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertSee('No shortages');
 });
 
@@ -157,7 +158,7 @@ it('enumerates applicable resolver options for a short line', function () {
 
     // Partial fulfilment always applies to a bulk shortfall — its option label
     // should appear among the resolver options.
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertSee('Resolution options');
 });
 
@@ -168,7 +169,7 @@ it('applies a resolver option and persists a resolution', function () {
 
     expect(ShortageResolution::query()->forOpportunity($opportunity->id)->count())->toBe(0);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->call('selectResolution', $item->id, 'partial', 0)
         ->assertDispatched('open-modal', 'apply-resolution')
         ->call('applyResolution');
@@ -193,7 +194,7 @@ it('confirms a pending resolution and updates its status', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->call('confirmResolution', $resolution->id);
 
     expect($resolution->fresh()->status)->toBe(ShortageResolutionStatus::Confirmed);
@@ -219,14 +220,14 @@ it('rejects an illegal transition and leaves the status unchanged', function () 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->call('fulfillResolution', $resolution->id);
 
     // Illegal move rejected — still Confirmed.
     expect($resolution->fresh()->status)->toBe(ShortageResolutionStatus::Confirmed);
 
     // ...and the legal move (Start) does take effect.
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->call('startResolution', $resolution->id);
 
     expect($resolution->fresh()->status)->toBe(ShortageResolutionStatus::InProgress);
@@ -249,7 +250,7 @@ it('cancels a resolution with a reason', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->call('promptReason', $resolution->id, 'cancel')
         ->set('transitionReason', 'Customer dropped the line')
         ->call('submitReasonTransition');
@@ -268,7 +269,7 @@ it('shows the gate pre-check decision driven by the store policy', function () {
     $resolver->givePermissionTo('opportunities.access', 'opportunities.view', 'shortages.view', 'shortages.resolve');
     $this->actingAs($resolver);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertSee('Convert to Order gate')
         ->assertSee('Conversion is blocked');
 });
@@ -278,7 +279,7 @@ it('surfaces the store dispatch policy', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertSee('Dispatch policy');
 });
 
@@ -291,7 +292,7 @@ it('renders the shortages tab read-only for a view-only user (no Apply buttons)'
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view', 'shortages.view');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.shortages', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityShortages::class, ['opportunity' => $opportunity])
         ->assertSet('canResolve', false)
         ->assertSee('Detected Shortages')
         ->assertSee('Resolution options')

@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityItemChargeableDays;
+use App\Domain\Projects\Opportunities\Services\OpportunityItemChargeBounds;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityItemChargeableDays;
-use App\Services\Opportunities\OpportunityItemChargeBounds;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Validation\ValidationException;

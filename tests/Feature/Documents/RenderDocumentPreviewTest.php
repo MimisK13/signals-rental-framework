@@ -3,9 +3,9 @@
 use App\Domain\Documents\Actions\RenderDocumentPreview;
 use App\Domain\Documents\Data\RenderDocumentPreviewData;
 use App\Domain\Documents\Models\DocumentTemplate;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

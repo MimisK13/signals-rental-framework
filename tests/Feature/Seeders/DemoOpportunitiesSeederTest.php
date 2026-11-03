@@ -2,12 +2,12 @@
 
 use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
 use App\Domain\Products\Models\Product;
-use App\Enums\OpportunityItemType;
-use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

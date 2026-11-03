@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\RestructureOpportunityItems;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\RestructureOpportunityItemsData;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\RestructureOpportunityItems;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\RestructureOpportunityItemsData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemAdded;
 use App\Enums\LineItemTransactionType;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use App\Services\SequenceAllocator;
-use App\Verbs\Events\Opportunities\ItemAdded;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;

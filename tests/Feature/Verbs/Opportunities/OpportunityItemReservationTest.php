@@ -1,18 +1,18 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeItemQuantity;
-use App\Actions\Opportunities\ChangeItemReservation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\ChangeItemQuantityData;
-use App\Data\Opportunities\ChangeItemReservationData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeItemQuantity;
+use App\Domain\Projects\Opportunities\Actions\ChangeItemReservation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\ChangeItemQuantityData;
+use App\Domain\Projects\Opportunities\Data\ChangeItemReservationData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Enums\LineItemTransactionType;
-use App\Enums\OpportunityItemType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

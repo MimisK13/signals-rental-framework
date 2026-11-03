@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Events\AuditableEvent;
 use App\Jobs\DeliverWebhook;
 use App\Listeners\DispatchWebhookForAuditableEvent;
-use App\Models\Opportunity;
 use App\Models\User;
 use App\Models\Webhook;
 use Database\Seeders\PermissionSeeder;

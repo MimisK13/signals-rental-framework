@@ -1,6 +1,6 @@
 <?php
 
-use App\Data\Opportunities\PreparedStandardDemandInputs;
+use App\Domain\Projects\Opportunities\Data\PreparedStandardDemandInputs;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 

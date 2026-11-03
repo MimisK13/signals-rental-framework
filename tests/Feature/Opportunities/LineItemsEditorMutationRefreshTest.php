@@ -1,24 +1,25 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityAccessory;
-use App\Actions\Opportunities\AddOpportunityGroup;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityAccessoryData;
-use App\Data\Opportunities\AddOpportunityGroupData;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
-use App\Enums\OpportunityItemType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityAccessory;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityAccessoryData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityGroupData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -53,7 +54,7 @@ it('renameItem persists to the database and dispatches mutation refresh for the 
     $group = $opportunity->fresh(['items'])->items
         ->first(fn ($item): bool => $item->item_type === OpportunityItemType::Group);
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         ->call('renameItem', $group->id, 'Renamed Audio')
         ->assertHasNoErrors()
         ->assertDispatched('line-items-mutation-done', modalId: 'rename-section');
@@ -61,7 +62,7 @@ it('renameItem persists to the database and dispatches mutation refresh for the 
     expect(OpportunityItem::query()->findOrFail($group->id)->name)->toBe('Renamed Audio');
 
     $tree = lineItemsEditorInstance(
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
     )->serverTree()['tree'];
 
     expect(collect($tree)->firstWhere('id', $group->id)['name'])->toBe('Renamed Audio');
@@ -70,7 +71,7 @@ it('renameItem persists to the database and dispatches mutation refresh for the 
 it('createSection dispatches mutation refresh with modal name for Alpine close', function () {
     $opportunity = mutationRefreshOpportunity();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->set('newSectionName', 'Lighting')
         ->call('createSection')
         ->assertHasNoErrors()
@@ -89,7 +90,7 @@ it('saveLineEdits persists field changes and dispatches mutation refresh', funct
 
     $item = $opportunity->fresh(['items'])->items->first();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         ->call('saveLineEdits', $item->id, '12.50', '10', '2026-07-02', '2026-07-08')
         ->assertHasNoErrors()
         ->assertDispatched('line-items-mutation-done', modalId: 'edit-line');
@@ -113,7 +114,7 @@ it('updateField accepts days and shifts the line hire window', function () {
 
     $item = $opportunity->fresh(['items'])->items->first();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         ->call('updateField', $item->id, 'days', 4)
         ->assertHasNoErrors();
 
@@ -141,7 +142,7 @@ it('exposes product_url and charge_breakdown on product-backed tree rows', funct
 
     $row = collect(
         lineItemsEditorInstance(
-            Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+            Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         )->serverTree()['tree']
     )->firstWhere('id', $item->id);
 
@@ -179,7 +180,7 @@ it('exposes product_url on product-backed accessory rows', function () {
 
     $row = collect(
         lineItemsEditorInstance(
-            Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+            Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         )->serverTree()['tree']
     )->firstWhere('id', $accessory->id);
 
@@ -218,13 +219,13 @@ it('mergeDuplicates dispatches mutation refresh and serverTree reflects the coll
 
     $survivor = $lines->first();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         ->call('mergeDuplicates', $survivor->id)
         ->assertHasNoErrors()
         ->assertDispatched('line-items-mutation-done');
 
     $tree = lineItemsEditorInstance(
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
     )->serverTree()['tree'];
 
     $productRows = collect($tree)->where('item_type', 'product')->values();

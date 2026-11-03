@@ -1,18 +1,18 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityGroup;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityGroupData;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Products\Models\Product;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityGroupData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityEditorTreeService;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use App\Support\Formatter;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

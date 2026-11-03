@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\LockOpportunity;
 use App\Domain\Invoices\Actions\CreateDraftInvoice;
 use App\Domain\Invoices\Actions\IssueInvoice;
 use App\Domain\Invoices\Actions\UpdateDraftInvoice;
@@ -9,8 +8,9 @@ use App\Domain\Invoices\Data\CreateDraftInvoiceData;
 use App\Domain\Invoices\Data\UpdateDraftInvoiceData;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Opportunities\Actions\LockOpportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;

@@ -1,13 +1,13 @@
 <?php
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Rates\Enums\BasePeriod;
 use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Enums\LineItemTransactionType;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;

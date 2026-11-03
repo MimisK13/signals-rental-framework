@@ -6,7 +6,7 @@ use App\Domain\Documents\Exceptions\DocumentRenderException;
 use App\Domain\Documents\Models\DocumentTemplate;
 use App\Domain\Documents\Services\DocumentStylesSanitizer;
 use App\Domain\Documents\Services\SystemDocumentTemplates;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Store;
 
 describe('DocumentStylesSanitizer', function () {

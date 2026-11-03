@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\OpportunityItem;
-use App\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use Illuminate\Database\QueryException;
 use Tests\Concerns\UsesPostgres;
 

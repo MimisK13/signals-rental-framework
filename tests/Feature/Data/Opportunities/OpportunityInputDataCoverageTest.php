@@ -1,19 +1,19 @@
 <?php
 
-use App\Data\Opportunities\AddOpportunityCostData;
-use App\Data\Opportunities\ChangeVersionLabelData;
-use App\Data\Opportunities\MergeOpportunityItemsData;
-use App\Data\Opportunities\OpportunityData;
-use App\Data\Opportunities\OpportunityItemAssetData;
-use App\Data\Opportunities\UpdateOpportunityCostData;
-use App\Data\Opportunities\UpdateOpportunityData;
-use App\Data\Opportunities\UpdateOpportunityItemDetailsData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityCostData;
+use App\Domain\Projects\Opportunities\Data\ChangeVersionLabelData;
+use App\Domain\Projects\Opportunities\Data\MergeOpportunityItemsData;
+use App\Domain\Projects\Opportunities\Data\OpportunityData;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityCostData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityItemDetailsData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Enums\AssetAssignmentStatus;
-use App\Enums\OpportunityCostType;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 

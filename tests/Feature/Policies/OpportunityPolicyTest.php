@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Policies\OpportunityPolicy;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
-use App\Policies\OpportunityPolicy;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 

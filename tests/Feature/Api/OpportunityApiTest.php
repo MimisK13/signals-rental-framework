@@ -1,23 +1,23 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomViews\Models\CustomView;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
 use App\Jobs\DeliverWebhook;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Webhook;

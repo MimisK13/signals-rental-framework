@@ -1,19 +1,20 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Enums\OpportunityItemType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -81,7 +82,7 @@ it('exposes free text items in the editor tree with pricing cells and no availab
 it('adds a free text item through the inline editor action', function () {
     $opportunity = textLineOpportunity();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->call('addInlineTextLine')
         ->assertHasNoErrors();
 
@@ -99,7 +100,7 @@ it('adds a free text item through the inline editor action', function () {
 it('still validates modal addTextLine when a name is required', function () {
     $opportunity = textLineOpportunity();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->set('newTextLineName', '   ')
         ->call('addTextLine')
         ->assertHasErrors(['newTextLineName']);

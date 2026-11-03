@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\OpportunityItemType;
-use App\Verbs\States\OpportunityItemState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Verbs\States\OpportunityItemState;
 
 /**
  * Asserts that OpportunityItemState carries the unified Current-RMS field set

@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityVersion;
-use App\Services\Opportunities\ItemTreeService;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Services\ItemTreeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

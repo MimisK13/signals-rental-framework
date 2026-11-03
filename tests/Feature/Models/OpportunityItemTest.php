@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 
 it('belongs to an opportunity', function () {
     $opportunity = Opportunity::factory()->create();

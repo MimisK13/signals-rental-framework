@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\PurchaseOrders\Models\PurchaseOrderItem;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\SupplierCosts\Models\ProductSupplierCost;
@@ -8,8 +10,6 @@ use App\Domain\Tax\Models\TaxZone;
 use App\Domain\Tax\Models\TaxZoneMember;
 use App\Models\InboundWebhookLog;
 use App\Models\InboundWebhookSource;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 
 it('exposes inbound webhook source logs relation', function () {
     $source = InboundWebhookSource::factory()->create();

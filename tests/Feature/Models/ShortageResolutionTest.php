@@ -4,8 +4,8 @@ use App\Domain\Availability\Shortages\Enums\ShortageResolutionStatus;
 use App\Domain\Availability\Shortages\Enums\ShortageResolutionType;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\User;
 
 it('scopes active resolutions to non-terminal statuses', function () {

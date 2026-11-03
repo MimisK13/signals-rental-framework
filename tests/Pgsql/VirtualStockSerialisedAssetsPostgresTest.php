@@ -1,17 +1,9 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\AllocateAsset;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
 use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\AllocateAssetData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
 use App\Domain\Availability\Contracts\AvailabilityResolutionProvider;
 use App\Domain\Availability\Enums\AvailabilityResolution;
@@ -20,9 +12,17 @@ use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Availability\Services\RecalculationPipeline;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\AllocateAssetData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Models\Opportunity;
 use App\Models\Sequence;
 use App\Models\Store;
 use App\Models\User;

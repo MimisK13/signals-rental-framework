@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

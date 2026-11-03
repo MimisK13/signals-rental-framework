@@ -5,15 +5,16 @@ use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Lists\Models\ListName;
 use App\Domain\Lists\Models\ListValue;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Form;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityParticipant;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -42,7 +43,7 @@ beforeEach(function () {
 it('renders the create form for a user with opportunities.create', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->assertOk()
         ->assertSee('New Opportunity')
         ->assertSee('Create Opportunity');
@@ -72,14 +73,14 @@ it('forbids the create form for a user without opportunities.create', function (
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.form')->assertForbidden();
+    Livewire::test(Form::class)->assertForbidden();
 });
 
 it('persists a new opportunity through the CreateOpportunity action and redirects', function () {
     $member = Member::factory()->organisation()->create();
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->set('subject', 'Festival Hire')
         ->set('storeId', $this->store->id)
         ->set('memberId', $member->id)
@@ -101,7 +102,7 @@ it('persists a new opportunity through the CreateOpportunity action and redirect
 it('surfaces a validation error when the subject is empty', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->set('subject', '')
         ->call('save')
         ->assertHasErrors(['subject' => 'required']);
@@ -119,7 +120,7 @@ it('round-trips a custom field value on create', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->set('subject', 'Custom Field Opp')
         ->set('storeId', $this->store->id)
         ->set('customFieldValues.po_reference', 'PO-555')
@@ -147,7 +148,7 @@ it('loads the edit form with the existing header values', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->assertSet('subject', 'Editable Opp')
         ->assertSet('storeId', $this->store->id)
         ->assertSet('reference', 'REF-EDIT')
@@ -169,7 +170,7 @@ it('renders the edit form (200) when an Address Type list with values exists (#7
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Save Changes');
 });
@@ -180,7 +181,7 @@ it('adds a participant from the edit form via AddOpportunityParticipant (#6)', f
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->call('selectParticipantMember', $contact->id)
         ->assertSet('participantMemberId', $contact->id)
         ->set('participantRole', 'Site contact')
@@ -205,7 +206,7 @@ it('removes a participant from the edit form (#6)', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->call('removeParticipant', $participant->id)
         ->assertHasNoErrors();
 
@@ -216,7 +217,7 @@ it('requires a member before adding a participant from the edit form (#6)', func
     $opportunity = Opportunity::factory()->create(['store_id' => $this->store->id]);
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->call('addParticipant')
         ->assertHasErrors('participantMemberId');
 });
@@ -229,7 +230,7 @@ it('updates an existing opportunity through the UpdateOpportunity action', funct
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->set('subject', 'New Subject')
         ->set('reference', 'REF-NEW')
         ->call('save')
@@ -245,7 +246,7 @@ it('updates an existing opportunity through the UpdateOpportunity action', funct
 it('persists the schedule & logistics fields through the form (C-data-1)', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->set('subject', 'Scheduled Hire')
         ->set('storeId', $this->store->id)
         ->set('deliverStartsAt', '2026-07-02 08:00')
@@ -283,7 +284,7 @@ it('hides the prices_include_tax checkbox on the edit form (create-only)', funct
 
     // The editable checkbox label is only present on create; edit shows a
     // read-only badge instead.
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])
+    Livewire::test(Form::class, ['opportunity' => $opportunity])
         ->assertDontSee('Set at creation only.');
 });
 
@@ -294,7 +295,7 @@ it('forbids the edit form for a user without opportunities.edit', function () {
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.form', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(Form::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('selects a member via the autocomplete picker', function () {
@@ -302,7 +303,7 @@ it('selects a member via the autocomplete picker', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->set('memberSearch', 'Acme')
         ->call('selectMember', $member->id)
         ->assertSet('memberId', $member->id)
@@ -314,7 +315,7 @@ it('creates a new address on the member and selects it into the delivery FK', fu
     $member = Member::factory()->organisation()->create(['is_active' => true]);
     $this->actingAs($this->owner);
 
-    $component = Volt::test('opportunities.form')
+    $component = Livewire::test(Form::class)
         ->set('memberId', $member->id)
         ->call('selectMember', $member->id)
         ->call('openAddressModal', 'delivery')
@@ -341,7 +342,7 @@ it('validates the required street when adding a new address', function () {
     $member = Member::factory()->organisation()->create(['is_active' => true]);
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->set('memberId', $member->id)
         ->call('selectMember', $member->id)
         ->call('openAddressModal', 'collection')
@@ -360,7 +361,7 @@ it('drops a stale address selection when the member changes', function () {
     $address = $memberA->addresses()->create(['street' => 'A Road', 'name' => 'A']);
     $this->actingAs($this->owner);
 
-    $component = Volt::test('opportunities.form')
+    $component = Livewire::test(Form::class)
         ->call('selectMember', $memberA->id)
         ->set('deliveryAddressId', $address->id)
         ->assertSet('deliveryAddressId', $address->id);
@@ -377,7 +378,7 @@ it('lists only Organisation members in the member picker (B7)', function () {
 
     $this->actingAs($this->owner);
 
-    $component = Volt::test('opportunities.form')->set('memberSearch', 'Picker');
+    $component = Livewire::test(Form::class)->set('memberSearch', 'Picker');
 
     $ids = collect($component->get('memberOptions'))->pluck('id')->all();
 
@@ -393,7 +394,7 @@ it('refuses to select a non-organisation member through the picker (B7)', functi
 
     // Even if a non-org id is posted, selectMember scopes to organisations, so the
     // selection is silently rejected (memberId stays null).
-    Volt::test('opportunities.form')
+    Livewire::test(Form::class)
         ->call('selectMember', $contact->id)
         ->assertSet('memberId', null)
         ->assertSet('memberSelectedName', '');

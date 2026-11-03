@@ -1,10 +1,10 @@
 <?php
 
-use App\Data\Opportunities\OpportunityItemReadContext;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\PreparedAvailabilityInputReader;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemReadContext;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Store;
 use Illuminate\Support\Carbon;

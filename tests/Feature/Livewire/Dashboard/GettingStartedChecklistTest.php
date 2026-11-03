@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Livewire\Dashboard\GettingStartedChecklist;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Livewire\Livewire;

@@ -7,9 +7,9 @@ use App\Domain\Attachments\Models\Attachment;
 use App\Domain\CustomFields\Models\CustomFieldValue;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Quotations\Models\QuotationItem;
 use App\Models\ActionLog;
-use App\Models\OpportunityItem;
 use Illuminate\Support\Facades\DB;
 
 function productIdentityMigration(string $sequence): object

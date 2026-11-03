@@ -1,8 +1,6 @@
 <?php
 
 use App\Data\Notifications\NotificationSettingData;
-use App\Data\Opportunities\OpportunityData;
-use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Data\Pricing\PriceCategoryData;
 use App\Domain\Communications\Data\CommunicationLogData;
 use App\Domain\Communications\Data\CommunicationTemplateData;
@@ -13,6 +11,10 @@ use App\Domain\Invoices\Data\InvoiceData;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Products\Data\ProductData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Data\OpportunityData;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
 use App\Domain\PurchaseOrders\Data\PurchaseOrderData;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\Rates\Models\ProductRate;
@@ -24,8 +26,6 @@ use App\Domain\Tax\Enums\TaxResultType;
 use App\Domain\Tax\Models\TaxZone;
 use App\Enums\NotificationAudience;
 use App\Models\NotificationType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItemAsset;
 use App\Models\PriceCategory;
 use App\Models\Store;
 

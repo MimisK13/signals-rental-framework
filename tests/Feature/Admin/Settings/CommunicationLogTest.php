@@ -1,9 +1,9 @@
 <?php
 
 use App\Domain\Communications\Models\CommunicationLog;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Member;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

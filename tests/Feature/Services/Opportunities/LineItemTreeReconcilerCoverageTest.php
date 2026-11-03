@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Opportunities\LineItemTreeReconciler;
+use App\Domain\Projects\Opportunities\Services\LineItemTreeReconciler;
 
 it('keeps a pending local row without flagging a conflict when no hard field diverges', function () {
     $reconciler = new LineItemTreeReconciler;

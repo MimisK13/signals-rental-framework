@@ -1,7 +1,7 @@
 <?php
 
 use App\Data\Planning\OpportunityItemPlanningData;
-use App\Services\Opportunities\QuotationEditorTreeProjector;
+use App\Domain\Projects\Opportunities\Services\QuotationEditorTreeProjector;
 use Illuminate\Support\Collection;
 
 it('projects the exact experimental editor contract without changing row order', function (): void {

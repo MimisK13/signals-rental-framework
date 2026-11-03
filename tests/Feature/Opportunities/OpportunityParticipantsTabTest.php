@@ -1,12 +1,13 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Participants;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityParticipant;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +36,7 @@ it('lists the opportunity participants', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->assertSee('Acme Contact')
         ->assertSee('Primary contact');
 });
@@ -45,7 +46,7 @@ it('adds a participant via the member picker', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->set('memberSearch', 'Pickable')
         ->call('selectMember', $member->id)
         ->assertSet('memberId', $member->id)
@@ -64,7 +65,7 @@ it('adds a participant via the member picker', function () {
 it('requires a member before adding', function () {
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->set('role', 'Primary contact')
         ->call('add')
         ->assertHasErrors('memberId');
@@ -77,7 +78,7 @@ it('toggles the mute flag', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->call('toggleMute', $participant->id);
 
     expect($participant->fresh()->mute)->toBeTrue();
@@ -88,7 +89,7 @@ it('updates a participant role inline', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->call('updateRole', $participant->id, 'Secondary contact');
 
     expect($participant->fresh()->role)->toBe('Secondary contact');
@@ -99,7 +100,7 @@ it('removes a participant', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->call('remove', $participant->id);
 
     $this->assertDatabaseMissing('opportunity_participants', ['id' => $participant->id]);
@@ -108,7 +109,7 @@ it('removes a participant', function () {
 it('forbids the page without the view permission', function () {
     $this->actingAs(User::factory()->create());
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->assertForbidden();
 });
 
@@ -120,7 +121,7 @@ it('excludes already-attached members from the picker dropdown', function () {
     $this->actingAs($this->owner);
 
     // The picker dropdown lists only unattached organisation/contact members.
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->set('memberSearch', 'Picker')
         ->assertSee('Picker Free')
         ->assertDontSeeHtml('wire:click="selectMember('.$attached->id.')"');
@@ -132,11 +133,11 @@ it('only offers organisation and contact members in the picker', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->set('memberSearch', 'Eligible')
         ->assertSee('Eligible Contact');
 
-    Volt::test('opportunities.participants', ['opportunity' => $this->opportunity])
+    Livewire::test(Participants::class, ['opportunity' => $this->opportunity])
         ->set('memberSearch', 'Ineligible')
         ->assertDontSeeHtml('wire:click="selectMember('.$venue->id.')"');
 });

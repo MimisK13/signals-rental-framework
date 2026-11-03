@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\OpportunityItemType;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use Illuminate\Support\Facades\Schema;
 
 it('has the unified columns and no section/sort_order columns', function () {

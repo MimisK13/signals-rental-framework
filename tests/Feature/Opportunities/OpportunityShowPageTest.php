@@ -1,27 +1,30 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeOpportunityStatus;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\DeleteOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\CustomFields\Enums\CustomFieldType;
 use App\Domain\CustomFields\Models\CustomField;
 use App\Domain\CustomFields\Models\CustomFieldValue;
-use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityVersion;
+use App\Domain\CustomFields\Presentation\Livewire\OpportunityCustomFields;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DeleteOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -69,7 +72,7 @@ it('renders the show page for an opportunity', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Demo Opportunity');
 });
@@ -82,7 +85,7 @@ it('shows tag_list chips in the page header next to state and status badges', fu
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('vip')
         ->assertSee('rush')
@@ -94,7 +97,7 @@ it('updates the shortage badge from a matching child summary event', function ()
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->dispatch('opportunity-shortage-summary-updated', opportunityId: $opportunity->id, unresolvedCount: 3)
         ->assertSet('shortageCount', 3)
         ->assertSee('(3)');
@@ -105,7 +108,7 @@ it('ignores shortage summary events for another opportunity', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->dispatch('opportunity-shortage-summary-updated', opportunityId: $opportunity->id + 1, unresolvedCount: 3)
         ->assertSet('shortageCount', null);
 });
@@ -116,7 +119,7 @@ it('forbids the show page for a user without opportunities.view', function () {
     $viewer = User::factory()->create();
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(Show::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('surfaces convert_to_quotation as allowed and convert_to_order as not allowed for a draft', function () {
@@ -124,7 +127,7 @@ it('surfaces convert_to_quotation as allowed and convert_to_order as not allowed
 
     $this->actingAs($this->owner);
 
-    $actions = collect(Volt::test('opportunities.show', ['opportunity' => $opportunity])->viewData('availableActions'))
+    $actions = collect(Livewire::test(Show::class, ['opportunity' => $opportunity])->viewData('availableActions'))
         ->keyBy('key');
 
     expect($actions['convert_to_quotation']['allowed'])->toBeTrue()
@@ -137,7 +140,7 @@ it('surfaces convert_to_order as allowed for an open quotation', function () {
 
     $this->actingAs($this->owner);
 
-    $actions = collect(Volt::test('opportunities.show', ['opportunity' => $opportunity])->viewData('availableActions'))
+    $actions = collect(Livewire::test(Show::class, ['opportunity' => $opportunity])->viewData('availableActions'))
         ->keyBy('key');
 
     expect($actions['convert_to_order']['allowed'])->toBeTrue()
@@ -149,7 +152,7 @@ it('labels the rates action Lock price when unlocked and Unlock price when locke
 
     $this->actingAs($this->owner);
 
-    $unlocked = collect(Volt::test('opportunities.show', ['opportunity' => $opportunity])->viewData('availableActions'))
+    $unlocked = collect(Livewire::test(Show::class, ['opportunity' => $opportunity])->viewData('availableActions'))
         ->keyBy('key');
 
     expect($unlocked['unlock_locks']['label'])->toBe('Lock price')
@@ -157,7 +160,7 @@ it('labels the rates action Lock price when unlocked and Unlock price when locke
 
     $opportunity->update(['exchange_rate_locked' => true]);
 
-    $locked = collect(Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])->viewData('availableActions'))
+    $locked = collect(Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])->viewData('availableActions'))
         ->keyBy('key');
 
     expect($locked['unlock_locks']['label'])->toBe('Unlock price')
@@ -169,7 +172,7 @@ it('locks rates via unlockRates when no locks are active', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('unlockRates');
 
     $opportunity->refresh();
@@ -183,7 +186,7 @@ it('renders the convert-to-quotation action button on a draft for an owner', fun
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertSee('Convert to Quotation');
 });
 
@@ -192,7 +195,7 @@ it('opens confirm modals for transition actions except convert flows', function 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSeeHtml("openConvertModal('convert_to_quotation'")
         ->assertSeeHtml('convert-opportunity')
@@ -211,7 +214,7 @@ it('confirms clone via the shared confirm modal', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('openConfirmModal', 'clone')
         ->assertSet('pendingConfirmKey', 'clone')
         ->call('confirmTransition')
@@ -226,7 +229,7 @@ it('confirms lock rates via the shared confirm modal', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('openConfirmModal', 'unlock_locks')
         ->assertSet('pendingConfirmKey', 'unlock_locks')
         ->call('confirmTransition')
@@ -242,7 +245,7 @@ it('converts via the convert modal and shows a success toast', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('openConvertModal', 'convert_to_quotation')
         ->assertSet('pendingConvertKey', 'convert_to_quotation')
         ->call('confirmConvert')
@@ -259,7 +262,7 @@ it('transitions the opportunity when convertToQuotation is called directly', fun
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('convertToQuotation')
         ->assertDispatched('opportunity-lifecycle-changed');
 
@@ -272,7 +275,7 @@ it('surfaces EventNotValid guard messages when a transition is invalid for the c
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('convertToQuotation')
         ->assertSee('Only a draft opportunity can be converted to a quotation.');
 
@@ -284,7 +287,7 @@ it('clones the opportunity when cloneOpportunity is called directly', function (
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('cloneOpportunity')
         ->assertRedirect();
 
@@ -297,7 +300,7 @@ it('reverts to draft when revertToDraft is called directly', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('revertToDraft');
 
     expect($opportunity->fresh()->state)->toBe(OpportunityState::Draft)
@@ -319,7 +322,7 @@ it('reopens a completed order when reopen is called directly', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('reopen');
 
     expect($opportunity->fresh()->statusEnum())->toBe(OpportunityStatus::OrderActive);
@@ -332,7 +335,7 @@ it('gates edit-requiring actions as permission_denied for a view-only user', fun
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    $actions = collect(Volt::test('opportunities.show', ['opportunity' => $opportunity])->viewData('availableActions'))
+    $actions = collect(Livewire::test(Show::class, ['opportunity' => $opportunity])->viewData('availableActions'))
         ->keyBy('key');
 
     // Convert (needs opportunities.edit), clone (needs opportunities.create) and
@@ -356,7 +359,7 @@ it('embeds the line-item editor in the Overview main area', function () {
 
     // The nested editor renders with wire:name="opportunities.line-items"; asserting that
     // marker in the Show page's HTML proves the editor is embedded, not a separate page.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSeeHtml('wire:name="opportunities.line-items"');
 });
@@ -366,7 +369,7 @@ it('shows the compact totals block in the Overview sidebar', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Charge Total')
         ->assertSee('Excl. Tax');
@@ -387,7 +390,7 @@ it('shows the active version number under Number in Key Attributes', function ()
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->assertOk()
         ->assertSee('Version')
         ->assertSee('v3');
@@ -401,7 +404,7 @@ it('omits the Key Attributes version row when the opportunity has no active vers
     // The Key Attributes "Version" data-row is omitted when there is no active
     // version (active_version_id 0). The header title still shows a default "— v1"
     // (#4), so we assert the data-list row label specifically is absent.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->assertOk()
         ->assertDontSeeHtml('s-data-list-label">Version</div>');
 });
@@ -420,7 +423,7 @@ it('shows the active version number in the page header after the subject', funct
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->assertOk()
         ->assertSee('Header Version Opp — v4');
 });
@@ -432,7 +435,7 @@ it('defaults the header version suffix to v1 when the opportunity has no active 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->assertOk()
         ->assertSee('No Header Version — v1');
 });
@@ -444,7 +447,7 @@ it('hides the Assets and Shortages tabs for a draft opportunity', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertDontSee(route('opportunities.assets', $opportunity))
         ->assertDontSee(route('opportunities.shortages', $opportunity));
@@ -457,7 +460,7 @@ it('hides the Assets and Shortages tabs for an open (non-reserved) quotation', f
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertDontSee(route('opportunities.assets', $opportunity))
         ->assertDontSee(route('opportunities.shortages', $opportunity));
@@ -469,7 +472,7 @@ it('shows the Assets and Shortages tabs for a reserved quotation', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee(route('opportunities.assets', $opportunity))
         ->assertSee(route('opportunities.shortages', $opportunity));
@@ -481,7 +484,7 @@ it('shows the Assets and Shortages tabs for an order', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee(route('opportunities.assets', $opportunity))
         ->assertSee(route('opportunities.shortages', $opportunity));
@@ -506,7 +509,7 @@ it('renders a configured custom field on the custom-fields tab', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.custom-fields', ['opportunity' => $opportunity])
+    Livewire::test(OpportunityCustomFields::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('PO Reference');
 });
@@ -517,7 +520,7 @@ it('forbids the custom-fields tab for a user without opportunities.view', functi
     $viewer = User::factory()->create();
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.custom-fields', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(OpportunityCustomFields::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('renders the embedded line-items editor component', function () {
@@ -529,7 +532,7 @@ it('renders the embedded line-items editor component', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('No line items');
 });
@@ -541,7 +544,7 @@ it('transitions a draft to a quotation via the convertToQuotation action', funct
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('convertToQuotation');
 
     $fresh = $opportunity->fresh();
@@ -559,7 +562,7 @@ it('restores an archived opportunity via the restore action on the Show page', f
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('restore');
 
     expect($opportunity->fresh()->trashed())->toBeFalse();
@@ -574,7 +577,7 @@ it('offers only the legal target statuses for the current state in the change_st
 
     // The picker (statusOptions, surfaced via with()) lists every Quotation status
     // except the current Provisional one — and never an Order/Draft status.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->assertViewHas('statusOptions', function (array $options): bool {
             $labels = collect($options)->pluck('label')->all();
 
@@ -593,7 +596,7 @@ it('moves a quotation to a legal status via the change_status picker', function 
     $this->actingAs($this->owner);
 
     // Provisional (0) → Reserved (1) within the Quotation state.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('changeStatus', OpportunityStatus::QuotationReserved->statusValue());
 
     expect($opportunity->fresh()->statusEnum())->toBe(OpportunityStatus::QuotationReserved);
@@ -608,7 +611,7 @@ it('closes the change-status modal on a successful status change', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('changeStatus', OpportunityStatus::QuotationReserved->statusValue())
         ->assertDispatched('close-modal', 'change-status');
 
@@ -624,7 +627,7 @@ it('keeps the change-status modal open when the target status is invalid', funct
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('changeStatus', 9)
         ->assertNotDispatched('close-modal');
 
@@ -640,7 +643,7 @@ it('rejects an illegal change_status target not belonging to the current state',
 
     // A per-state status value of 9 maps to no OpportunityStatus case for the
     // Quotation state (1*100+9), so the picker's enum-derived guard refuses it.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('changeStatus', 9)
         ->assertSee('not valid for the opportunity');
 
@@ -656,7 +659,7 @@ it('refreshes the projection when the line-item editor reports a totals change (
     // The Show component listens for opportunity-totals-updated (dispatched by the
     // nested line-item editor after a qty/rate/discount change) and refreshes its
     // own projection so the sidebar Totals + header stay in sync.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('onTotalsUpdated')
         ->assertOk();
 });
@@ -669,7 +672,7 @@ it('applies an optimistic charge total from the editor without waiting for refre
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('onTotalsUpdated', 7500)
         ->assertSet('opportunity.charge_total', 7500);
 });

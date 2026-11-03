@@ -1,19 +1,21 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeOpportunityStatus;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\SetDealPriceData;
 use App\Domain\Availability\Data\OpportunityItemAvailabilityData;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Products\Models\Product;
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -21,7 +23,7 @@ use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 use function Pest\Laravel\mock;
 
@@ -63,7 +65,7 @@ it('persistTree reorders items in the database when base revision matches', func
         'unit_price' => 500,
     ]));
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $revision = $editor->treeRevision();
 
@@ -98,7 +100,7 @@ it('exposes opportunity charge total via totalsSnapshot for client sync', functi
         'unit_price' => 1500,
     ]));
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
     $snap = lineItemsEditorInstance($component)->totalsSnapshot();
 
     expect($snap['charge_total'])->toBe((int) $opportunity->fresh()->charge_total)
@@ -121,7 +123,7 @@ it('blocks line field edits while a deal price is active', function () {
         'deal_total' => 5000,
     ]));
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
         ->call('updateField', $item->id, 'quantity', '3')
         ->assertHasErrors(['opportunity']);
 });
@@ -135,7 +137,7 @@ it('zero-costs newly added products when a deal price is set', function () {
         'deal_total' => 9999,
     ]));
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
         ->call('addProduct', $product->id, 1);
 
     $line = OpportunityItem::query()
@@ -173,7 +175,7 @@ it('hides shortage tint and labels until the opportunity is order or reserved qu
         ]));
 
     $row = collect(
-        lineItemsEditorInstance(Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]))
+        lineItemsEditorInstance(Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]))
             ->serverTree()['tree']
     )->firstWhere('id', $item->id);
 
@@ -208,19 +210,19 @@ it('shows shortage indicators after change-status moves quotation to reserved', 
         ]));
 
     $beforeReserved = collect(
-        lineItemsEditorInstance(Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]))
+        lineItemsEditorInstance(Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]))
             ->serverTree()['tree']
     )->firstWhere('id', $item->id);
 
     expect($beforeReserved['has_shortage'])->toBeFalse();
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('changeStatus', 1)
         ->assertHasNoErrors()
         ->assertDispatched('opportunity-lifecycle-changed');
 
     $afterReserved = collect(
-        lineItemsEditorInstance(Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]))
+        lineItemsEditorInstance(Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]))
             ->serverTree()['tree']
     )->firstWhere('id', $item->id);
 
@@ -254,7 +256,7 @@ it('pullTree and serverTree agree on shortage visibility after a lifecycle chang
             ),
         ]));
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
 
     (new ChangeOpportunityStatus)(

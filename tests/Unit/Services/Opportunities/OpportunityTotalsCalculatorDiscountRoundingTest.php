@@ -1,14 +1,14 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

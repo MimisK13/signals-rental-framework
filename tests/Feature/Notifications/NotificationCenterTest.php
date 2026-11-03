@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\User;
 use App\Notifications\TestPipelineNotification;
 use Database\Seeders\PermissionSeeder;

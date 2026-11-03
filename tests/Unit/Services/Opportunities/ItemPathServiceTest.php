@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Opportunities\ItemPathService;
+use App\Domain\Projects\Opportunities\Services\ItemPathService;
 
 beforeEach(function () {
     $this->service = new ItemPathService;

@@ -1,14 +1,14 @@
 <?php
 
-use App\Data\Opportunities\ProductSearchResultData;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
+use App\Domain\Projects\Opportunities\Data\ProductSearchResultData;
+use App\Domain\Projects\Opportunities\Services\ProductSearchService;
 use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Domain\Stock\Models\StockLevel;
 use App\Models\Store;
-use App\Services\Opportunities\ProductSearchService;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;

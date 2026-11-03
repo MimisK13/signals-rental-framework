@@ -2,6 +2,7 @@
 
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Quotations\Models\Quotation;
 use App\Models\Member;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -96,4 +97,15 @@ it('enforces project API authentication and token abilities', function (): void 
     $this->withHeader('Authorization', "Bearer {$readOnlyToken}")
         ->postJson('/api/v1/projects', ['name' => 'Forbidden API Project'])
         ->assertForbidden();
+});
+
+it('exposes quotation counts and optionally includes Project quotations', function (): void {
+    $project = Project::factory()->create(['member_id' => Member::factory()->organisation()]);
+    Quotation::factory()->count(2)->forProject($project)->create();
+
+    $this->withHeader('Authorization', "Bearer {$this->token}")
+        ->getJson("/api/v1/projects/{$project->id}?include=quotations")
+        ->assertOk()
+        ->assertJsonPath('project.quotations_count', 2)
+        ->assertJsonCount(2, 'project.quotations');
 });

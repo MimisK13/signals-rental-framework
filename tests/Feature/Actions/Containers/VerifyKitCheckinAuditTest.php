@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Warehouse\Containers\Actions\VerifyKitCheckin;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Events\AuditableEvent;
 use App\Models\ActionLog;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\CarbonImmutable;

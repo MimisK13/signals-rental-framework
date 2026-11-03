@@ -1,10 +1,10 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\DeleteOpportunity;
-use App\Actions\Opportunities\RestoreOpportunity;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DeleteOpportunity;
+use App\Domain\Projects\Opportunities\Actions\RestoreOpportunity;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

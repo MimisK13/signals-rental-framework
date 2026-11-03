@@ -7,10 +7,10 @@ use App\Domain\Assets\Models\AssetUsage;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoiceItem;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Enums\StockCategory;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Models\OpportunityItem;
 use App\Services\Assets\ProductFinancialsCalculator;
 
 /**

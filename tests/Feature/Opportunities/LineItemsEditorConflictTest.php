@@ -1,19 +1,20 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\RenameOpportunityItem;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\RenameOpportunityItemData;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\RenameOpportunityItem;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\RenameOpportunityItemData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Symfony\Component\Process\Process;
 
 uses(RefreshDatabase::class);
@@ -80,7 +81,7 @@ it('applies persistTree despite revision drift when the node set is complete', f
         'unit_price' => 500,
     ]));
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
     $revision = lineItemsEditorInstance($component)->treeRevision();
 
     $first = $opportunity->fresh(['items'])->items->sortBy('path')->first();
@@ -161,7 +162,7 @@ it('pullTree reconciles local pending rows against fresh server truth', function
         'unit_price' => 1000,
     ]));
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
     $item = $opportunity->fresh(['items'])->items->first();
 
     $localRows = [[

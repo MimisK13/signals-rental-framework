@@ -1,18 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\AllocateAsset;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\DispatchAsset;
-use App\Actions\Opportunities\PrepareAsset;
-use App\Actions\Opportunities\ReturnAsset;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\AllocateAssetData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\DispatchAssetData;
-use App\Data\Opportunities\ReturnAssetData;
 use App\Domain\Assets\Enums\AssetCondition;
 use App\Domain\Assets\Enums\AssetLifecycleStatus;
 use App\Domain\Assets\Models\Asset;
@@ -21,14 +8,28 @@ use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Enums\ShortageDispatchPolicy;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DispatchAsset;
+use App\Domain\Projects\Opportunities\Actions\PrepareAsset;
+use App\Domain\Projects\Opportunities\Actions\ReturnAsset;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\AllocateAssetData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\DispatchAssetData;
+use App\Domain\Projects\Opportunities\Data\ReturnAssetData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Assets;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\AssetAssignmentStatus;
 use App\Enums\LineItemTransactionType;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -38,7 +39,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -113,7 +114,7 @@ it('renders the assets tab with the sub-tabs and grouped table', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->assertSet('subTab', 'functions')
         ->assertOk()
         ->assertSee('Functions')
@@ -135,7 +136,7 @@ it('renders opportunity containers in the unified execution workspace', function
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->assertSee('Containers')
         ->assertSee($container->name)
         ->assertSee('Pack');
@@ -147,7 +148,7 @@ it('forbids the assets tab for a user without opportunities.view', function () {
     $stranger = User::factory()->create();
     $this->actingAs($stranger);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('forbids the assets tab for a viewer without access to the Opportunity Store', function () {
@@ -163,7 +164,7 @@ it('forbids the assets tab for a viewer without access to the Opportunity Store'
     ]);
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])->assertForbidden();
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])->assertForbidden();
 });
 
 it('switches the active internal sub-tab without leaving the route', function () {
@@ -171,7 +172,7 @@ it('switches the active internal sub-tab without leaving the route', function ()
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->call('setSubTab', 'allocate')
         ->assertSet('subTab', 'allocate')
         ->call('setSubTab', 'nonsense')
@@ -186,7 +187,7 @@ it('allocates a free serialised asset via the Allocate scan bar', function () {
 
     expect(OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->count())->toBe(0);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->set('subTab', 'allocate')
         ->set('scanAsset', 'SCAN-100')
         ->call('scanAllocate');
@@ -202,7 +203,7 @@ it('chains preparation when "Mark as prepared" is set on the Allocate scan bar',
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->set('subTab', 'allocate')
         ->set('markPrepared', true)
         ->set('scanAsset', 'SCAN-PREP')
@@ -224,7 +225,7 @@ it('prepares, books out and checks in via the scan bars', function () {
     $this->actingAs($this->owner);
 
     // Prepare via the Prepare scan bar.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->set('subTab', 'prepare')
         ->set('scanAsset', 'SCAN-FLOW')
         ->call('scanPrepare');
@@ -232,7 +233,7 @@ it('prepares, books out and checks in via the scan bars', function () {
         ->toBe(AssetAssignmentStatus::Prepared);
 
     // Book out via the Book out scan bar.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->set('subTab', 'book_out')
         ->set('scanAsset', 'SCAN-FLOW')
         ->call('scanBookOut');
@@ -240,7 +241,7 @@ it('prepares, books out and checks in via the scan bars', function () {
         ->toBe(AssetAssignmentStatus::Dispatched);
 
     // Check in via the Check in scan bar.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->set('subTab', 'check_in')
         ->set('scanAsset', 'SCAN-FLOW')
         ->call('scanCheckIn');
@@ -255,7 +256,7 @@ it('executes a serialized scan from the unified workspace', function () {
     Auth::login($this->owner);
     (new AllocateAsset)($item, AllocateAssetData::from(['stock_level_id' => $asset->id]));
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->set('executionMode', 'prepare')
         ->set('scanAsset', 'UNIFIED-SCAN')
         ->call('executeScan');
@@ -274,7 +275,7 @@ it('exposes checked-in assets for explicit return inspection and finalisation', 
     (new DispatchAsset)($assignment, DispatchAssetData::from([]));
     (new ReturnAsset)($assignment->refresh(), ReturnAssetData::from([]));
 
-    $component = Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    $component = Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->assertSee('Awaiting inspection')
         ->call('inspectAsset', $assignment->id)
         ->assertSet('inspectionAssetId', $assignment->id)
@@ -305,7 +306,7 @@ it('hands a damaged asset to repair from the inspection modal', function () {
     (new DispatchAsset)($assignment, DispatchAssetData::from([]));
     (new ReturnAsset)($assignment->refresh(), ReturnAssetData::from([]));
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->call('inspectAsset', $assignment->id)
         ->set('inspectionCondition', AssetCondition::Damaged->value)
         ->assertSee('Send to repair')
@@ -330,7 +331,7 @@ it('executes partial bulk dispatch and return from the unified workspace', funct
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->assertSee('Bulk execution')
         ->assertSee('To dispatch')
         ->set('bulkQuantities.'.$item->id, '6')
@@ -354,7 +355,7 @@ it('shows action-specific remaining work for a partially dispatched bulk line', 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->set('bulkQuantities.'.$item->id, '8')
         ->call('dispatchBulk', $item->id)
         ->set('subTab', 'book_out')
@@ -392,7 +393,7 @@ it('renders serialized and bulk lines together in one execution workspace', func
     ]));
     (new ConvertToOrder)($opportunity->refresh());
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->assertSee($this->product->name)
         ->assertSee('Bulk cable')
         ->assertSee('Bulk execution');
@@ -403,7 +404,7 @@ it('flashes an error when a scan bar cannot resolve the asset number', function 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->set('subTab', 'prepare')
         ->set('scanAsset', 'DOES-NOT-EXIST')
         ->call('scanPrepare')
@@ -417,7 +418,7 @@ it('rejects an ambiguous serialized identifier without allocating either asset',
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->set('subTab', 'allocate')
         ->set('scanAsset', 'DUPLICATE-001')
         ->call('scanAllocate')
@@ -442,7 +443,7 @@ it('marks an outstanding serialized asset missing without fabricating a return',
     (new PrepareAsset)($assignment->refresh());
     (new DispatchAsset)($assignment->refresh(), DispatchAssetData::from([]));
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->call('markMissing', $assignment->id)
         ->assertSee('Missing');
 
@@ -467,7 +468,7 @@ it('confirms and restores lifecycle exceptions without automatically checking th
     (new PrepareAsset)($assignment->refresh());
     (new DispatchAsset)($assignment->refresh(), DispatchAssetData::from([]));
 
-    $component = Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    $component = Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->call('markMissing', $assignment->id)
         ->call('confirmLost', $assignment->id)
         ->call('restoreAsset', $assignment->id);
@@ -489,7 +490,7 @@ it('prepares the selected assets via the Functions Action menu', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->set('selected', [(string) $a->id, (string) $b->id])
         ->set('bulkAction', 'prepare')
         ->call('runBulkAction')
@@ -509,7 +510,7 @@ it('books the selected assets out via the Functions Action menu', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->set('selected', [(string) $assignment->id])
         ->set('bulkAction', 'book_out')
         ->call('runBulkAction');
@@ -527,7 +528,7 @@ it('toggles select-all across every asset row', function () {
 
     $this->actingAs($this->owner);
 
-    $component = Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    $component = Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->call('toggleSelectAll', true);
 
     expect($component->get('selected'))->toContain((string) $a->id, (string) $b->id);
@@ -540,7 +541,7 @@ it('renders the Phase-4 sub-hire / transfer Action options disabled', function (
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->assertSee('Set sub-rent supplier — coming in Phase 5.5')
         ->assertSee('Transfer in — coming in Phase 5.5')
         ->assertSee('Clear transfer — coming in Phase 5.5');
@@ -573,12 +574,12 @@ it('does not offer book out on a quotation (assets allocated but not an order)',
 
     // On a quotation the allocated asset's chevron offers Prepare but withholds the
     // Book out action; the teleported row menu calls $wire.prepare but not dispatchAsset.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->assertSee('$wire.prepare', escape: false)
         ->assertDontSee('$wire.dispatchAsset', escape: false);
 
     // And invoking dispatch directly is rejected — the asset stays Allocated.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->call('dispatchAsset', OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole()->id);
 
     expect(OpportunityItemAsset::query()->where('opportunity_item_id', $item->id)->sole()->status)
@@ -611,7 +612,7 @@ it('blocks book out under a Block store policy with an unresolved shortage (422 
     $this->actingAs($this->owner);
 
     // Both the per-row book-out and the scan-bar book-out are gated.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunityA->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunityA->fresh()])
         ->call('dispatchAsset', $assignmentA->id)
         ->assertSee('Dispatch is blocked', escape: false);
 
@@ -635,7 +636,7 @@ it('renders read-only for a view-only user (no row actions, disabled controls)',
     ]);
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->assertSet('canEdit', false)
         ->assertSee($this->product->name)
         ->assertDontSee('wire:click="prepare', escape: false);
@@ -677,7 +678,7 @@ it('rejects an illegal fulfilment call and leaves the status unchanged', functio
     // An Allocated asset cannot be marked on hire (only a Dispatched one can). The UI
     // never offers the button, but invoking the method must reject the 422 and leave
     // the asset Allocated.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->call('markOnHire', $assignment->id);
 
     expect(OpportunityItemAsset::query()->whereKey($assignment->id)->firstOrFail()->status)
@@ -692,7 +693,7 @@ it('renders the Actions split-button on the assets tab (#1)', function () {
     // The shared Actions split-button (state-transition menu) must render on the
     // tab pages, not just Overview — the tab now `use`s HasOpportunityActions and
     // passes showActions => true to the shared header.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('Actions')
         // An order surfaces the Clone action verdict, computed by the shared trait.
@@ -705,7 +706,7 @@ it('runs a shared Actions transition (clone) from the assets tab (#1)', function
     $this->actingAs($this->owner);
 
     // The shared trait's cloneOpportunity wire method must work on the tab component.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity])
         ->call('cloneOpportunity')
         ->assertRedirect();
 
@@ -723,7 +724,7 @@ it('deallocates a row asset via the per-row action method (#3)', function () {
 
     // The per-row action menu is teleported to <body>; its buttons call $wire.<method>
     // so the actions still fire. The server method itself must remove the assignment.
-    Volt::test('opportunities.assets', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Assets::class, ['opportunity' => $opportunity->fresh()])
         ->call('deallocate', $assignment->id);
 
     expect(OpportunityItemAsset::query()->whereKey($assignment->id)->exists())->toBeFalse();

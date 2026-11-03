@@ -1,20 +1,20 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeItemDates;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Actions\Opportunities\UpdateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\ChangeItemDatesData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\SetDealPriceData;
-use App\Data\Opportunities\UpdateOpportunityData;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeItemDates;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Actions\UpdateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\ChangeItemDatesData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

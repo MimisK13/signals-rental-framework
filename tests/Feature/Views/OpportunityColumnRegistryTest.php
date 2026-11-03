@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityColumnRegistry;
 use App\Services\SchemaBuilder;
 use App\Views\Column;
-use App\Views\OpportunityColumnRegistry;
 
 /**
  * R-A master M14 (schema enum types) + M18 (ColumnRegistry/defineSchema

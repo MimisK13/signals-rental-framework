@@ -1,14 +1,15 @@
 <?php
 
-use App\Actions\Opportunities\RenameOpportunityItem;
-use App\Data\Opportunities\RenameOpportunityItemData;
+use App\Domain\Projects\Opportunities\Actions\RenameOpportunityItem;
+use App\Domain\Projects\Opportunities\Data\RenameOpportunityItemData;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 use Symfony\Component\Process\Process;
 
 uses(RefreshDatabase::class)->group('opportunities');
@@ -24,7 +25,7 @@ beforeEach(function () {
 
 it('persistTree on a deep opp 9 shape succeeds with a valid reorder payload', function () {
     $opportunity = deepNestSyncOpportunity();
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $baseRevision = $editor->treeRevision();
     $nodes = deepNestLedParBeforeOnSiteNodes($opportunity);
@@ -37,7 +38,7 @@ it('persistTree on a deep opp 9 shape succeeds with a valid reorder payload', fu
 
 it('persistTree applies deep reorder despite revision drift from intervening item events', function () {
     $opportunity = deepNestSyncOpportunity();
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $staleRevision = $editor->treeRevision();
     $nodes = deepNestLedParBeforeOnSiteNodes($opportunity);
@@ -94,7 +95,7 @@ it('serializes deep tree rows for IndexedDB without clone errors', function () {
 
 it('pullTree after deep persistTree returns the persisted order when local rows are omitted (post-structural sync)', function () {
     $opportunity = deepNestSyncOpportunity();
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $baseRevision = $editor->treeRevision();
     $nodes = deepNestLedParBeforeOnSiteNodes($opportunity);
@@ -113,7 +114,7 @@ it('pullTree after deep persistTree returns the persisted order when local rows 
 
 it('pullTree after deep persistTree keeps persisted order even with stale revision and optimistic local rows', function () {
     $opportunity = deepNestSyncOpportunity();
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $baseRevision = $editor->treeRevision();
     $nodes = deepNestLedParBeforeOnSiteNodes($opportunity);
@@ -140,7 +141,7 @@ it('pullTree after deep persistTree keeps persisted order even with stale revisi
 
 it('simulates flush without persist: stale pull with optimistic local rows reverts to the old server order', function () {
     $opportunity = deepNestSyncOpportunity();
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $baseRevision = $editor->treeRevision();
     $originalIds = collect(app(OpportunityLineItemsTreeBuilder::class)->tree($opportunity))->pluck('id')->all();

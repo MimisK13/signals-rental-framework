@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Events\AuditableEvent;
 use App\Models\Member;
 use App\Models\NotificationType;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Notifications\InAppNotificationContentBuilder;

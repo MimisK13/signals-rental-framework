@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Opportunities\ActivateVersion;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeOpportunityStatus;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\CreateVersion;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\CreateVersionData;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\ActivateVersion;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\CreateVersion;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\CreateVersionData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Enums\VersionType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\OpportunityStatus;
-use App\Enums\VersionType;
-use App\Models\Opportunity;
-use App\Models\OpportunityVersion;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

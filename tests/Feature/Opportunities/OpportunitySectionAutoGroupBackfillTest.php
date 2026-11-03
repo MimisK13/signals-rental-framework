@@ -1,14 +1,14 @@
 <?php
 
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunitySection;
 use App\Enums\ChargePeriod;
 use App\Enums\LineItemTransactionType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunitySection;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\SequenceAllocator;

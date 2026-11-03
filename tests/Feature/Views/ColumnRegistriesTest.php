@@ -5,16 +5,16 @@ use App\Domain\Availability\Shortages\Views\ShortageResolutionColumnRegistry;
 use App\Domain\Products\Presentation\Columns\ProductColumnRegistry;
 use App\Domain\Products\Presentation\Columns\ProductGroupColumnRegistry;
 use App\Domain\Products\Presentation\Columns\SerialisedComponentColumnRegistry;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityColumnRegistry;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityCostColumnRegistry;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityItemColumnRegistry;
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityVersionColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\ProductRateColumnRegistry;
 use App\Domain\Rates\Presentation\Columns\RateDefinitionColumnRegistry;
 use App\Domain\Stock\Presentation\Tables\StockLevelColumnRegistry;
 use App\Domain\Warehouse\Containers\Presentation\Columns\ContainerColumnRegistry;
 use App\Views\ColumnRegistry;
 use App\Views\MemberColumnRegistry;
-use App\Views\OpportunityColumnRegistry;
-use App\Views\OpportunityCostColumnRegistry;
-use App\Views\OpportunityItemColumnRegistry;
-use App\Views\OpportunityVersionColumnRegistry;
 
 dataset('column registries', [
     'products' => [ProductColumnRegistry::class, 'products', 'name'],

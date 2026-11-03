@@ -4,7 +4,6 @@
  * Coverage burn-up batch 2 (part 2) — services, data, policies, middleware, models.
  */
 
-use App\Data\Opportunities\OpportunityItemAssetData;
 use App\Domain\Communications\Contracts\ChannelDriver;
 use App\Domain\Communications\Data\ChannelConfigFieldData;
 use App\Domain\Communications\Data\ChannelSendData;
@@ -22,24 +21,25 @@ use App\Domain\Invoices\Models\CreditNote;
 use App\Domain\Invoices\Models\CreditNoteTax;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemAssetData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
 use App\Domain\PurchaseOrders\Models\PurchaseOrder;
 use App\Domain\PurchaseOrders\Policies\PurchaseOrderPolicy;
 use App\Domain\PurchaseOrders\Services\PurchaseOrderNumberGenerator;
 use App\Domain\Stock\Models\StockLevel;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Domain\Warehouse\Containers\Services\ContainerBarcodeResolver;
-use App\Enums\OpportunityItemType;
 use App\Http\Middleware\LogApiRequest;
 use App\Models\Member;
 use App\Models\MemberStore;
 use App\Models\NotificationType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Notifications\NotificationLinkResolver;
-use App\Services\Opportunities\OpportunityEditorTreeService;
 use App\Services\Pricing\DiscountRuleEvaluator;
 use App\Services\VirtualStock\VirtualStockNumberGenerator;
 use Database\Seeders\PermissionSeeder;
@@ -367,7 +367,7 @@ it('ValidatesDocumentTemplateStoreAccess aborts for unauthenticated users', func
 
 it('GenerateDocumentData resolvedDocumentableClass accepts Opportunity class suffix aliases', function () {
     expect(GenerateDocumentData::from([
-        'documentable_type' => 'App\\Models\\Opportunity',
+        'documentable_type' => 'App\\Domain\\Projects\\Opportunities\\Models\\Opportunity',
         'documentable_id' => 1,
     ])->resolvedDocumentableClass())->toBe(Opportunity::class);
 });

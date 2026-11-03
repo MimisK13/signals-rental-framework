@@ -4,19 +4,19 @@
  * P4-CL4b burndown batch 4 — Data DTO coverage.
  */
 
-use App\Data\Opportunities\AssignItemToSectionData;
-use App\Data\Opportunities\AssignSectionParentData;
-use App\Data\Opportunities\CreateOpportunitySectionData;
-use App\Data\Opportunities\OpportunitySectionData;
-use App\Data\Opportunities\RenameOpportunitySectionData;
-use App\Data\Opportunities\ReorderOpportunityItemsData;
-use App\Data\Opportunities\ReorderOpportunitySectionsData;
 use App\Data\Pricing\UpdateSurchargeGroupData;
 use App\Domain\Documents\Data\DocumentTemplateVersionData;
 use App\Domain\Documents\Models\DocumentTemplateVersion;
 use App\Domain\Invoices\Data\InvoiceTaxData;
 use App\Domain\Invoices\Models\InvoiceTax;
-use App\Models\OpportunitySection;
+use App\Domain\Projects\Opportunities\Data\AssignItemToSectionData;
+use App\Domain\Projects\Opportunities\Data\AssignSectionParentData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunitySectionData;
+use App\Domain\Projects\Opportunities\Data\OpportunitySectionData;
+use App\Domain\Projects\Opportunities\Data\RenameOpportunitySectionData;
+use App\Domain\Projects\Opportunities\Data\ReorderOpportunityItemsData;
+use App\Domain\Projects\Opportunities\Data\ReorderOpportunitySectionsData;
+use App\Domain\Projects\Opportunities\Models\OpportunitySection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 

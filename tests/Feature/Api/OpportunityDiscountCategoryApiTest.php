@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeOpportunityStatus;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
-use App\Enums\OpportunityStatus;
-use App\Guards\Opportunities\GuardPipeline;
-use App\Guards\Opportunities\TransitionContext;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
+use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\DiscountCategory;
 use App\Models\DiscountRule;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

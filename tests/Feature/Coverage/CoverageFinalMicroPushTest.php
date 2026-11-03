@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Verbs\Events\Concerns\GuardsOpportunityLifecycle;
 use App\Livewire\Components\DataTable;
 use App\Models\Member;
 use App\Models\User;
-use App\Verbs\Events\Opportunities\Concerns\GuardsOpportunityLifecycle;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;

@@ -1,43 +1,43 @@
 <?php
 
-use App\Actions\Opportunities\AcceptVersion;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ClearDealPrice;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\CreateVersion;
-use App\Actions\Opportunities\LockOpportunity;
-use App\Actions\Opportunities\OverrideItemPrice;
-use App\Actions\Opportunities\SendVersion;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Actions\Opportunities\SetItemDiscount;
-use App\Actions\Opportunities\UnlockOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\CreateVersionData;
-use App\Data\Opportunities\OverrideItemPriceData;
-use App\Data\Opportunities\SetDealPriceData;
-use App\Data\Opportunities\SetItemDiscountData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AcceptVersion;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ClearDealPrice;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\CreateVersion;
+use App\Domain\Projects\Opportunities\Actions\LockOpportunity;
+use App\Domain\Projects\Opportunities\Actions\OverrideItemPrice;
+use App\Domain\Projects\Opportunities\Actions\SendVersion;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Actions\SetItemDiscount;
+use App\Domain\Projects\Opportunities\Actions\UnlockOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\CreateVersionData;
+use App\Domain\Projects\Opportunities\Data\OverrideItemPriceData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Data\SetItemDiscountData;
+use App\Domain\Projects\Opportunities\Guards\Contracts\ApprovalGate;
+use App\Domain\Projects\Opportunities\Guards\GuardPipeline;
+use App\Domain\Projects\Opportunities\Guards\PluginValidatorRegistry;
+use App\Domain\Projects\Opportunities\Guards\Stages\AutoApprovalGate;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
+use App\Domain\Projects\Opportunities\Services\Hooks\ApprovalChainRegistry;
+use App\Domain\Projects\Opportunities\Services\Hooks\WorkflowTriggerRegistry;
+use App\Domain\Projects\Opportunities\Services\TransitionRuleRegistry;
 use App\Domain\Tax\Models\OrganisationTaxClass;
 use App\Domain\Tax\Models\ProductTaxClass;
 use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
-use App\Guards\Opportunities\Contracts\ApprovalGate;
-use App\Guards\Opportunities\GuardPipeline;
-use App\Guards\Opportunities\PluginValidatorRegistry;
-use App\Guards\Opportunities\Stages\AutoApprovalGate;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityVersion;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\NotificationRegistry;
-use App\Services\Opportunities\Hooks\ApprovalChainRegistry;
-use App\Services\Opportunities\Hooks\WorkflowTriggerRegistry;
-use App\Services\Opportunities\TransitionRuleRegistry;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -300,7 +300,7 @@ it('rejects setting a deal price on a locked order (deal price and lock price ar
 
     // Deal price and lock price are mutually exclusive: any active lock (incl. the
     // FX/tax lock an order auto-applies on conversion) blocks a deal price — the user
-    // must unlock first. {@see App\Actions\Opportunities\SetDealPrice}.
+    // must unlock first. {@see App\Domain\Projects\Opportunities\Actions\SetDealPrice}.
     expect(fn () => (new SetDealPrice)($opportunity->refresh(), SetDealPriceData::from(['deal_total' => 12345])))
         ->toThrow(ValidationException::class, 'Unlock price before setting a deal price.');
 

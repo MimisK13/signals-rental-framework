@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityCostColumnRegistry;
 use App\Views\Column;
-use App\Views\OpportunityCostColumnRegistry;
 
 describe('OpportunityCostColumnRegistry', function () {
     it('exposes the cost columns with the right metadata', function () {

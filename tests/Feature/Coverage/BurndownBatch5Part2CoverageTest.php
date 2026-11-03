@@ -4,19 +4,9 @@
  * P4-CL4b burndown batch 5 — classes 19–35 (cheapest-first slice).
  */
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\DeleteOpportunity;
-use App\Actions\Opportunities\UpdateOpportunity;
 use App\Actions\Pricing\DeleteSurchargeGroup;
 use App\Actions\Pricing\UpdateSurchargeGroup;
 use App\Actions\VirtualStock\CreateVirtualStockIntake;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\OpportunityData;
-use App\Data\Opportunities\UpdateOpportunityData;
 use App\Data\Pricing\SurchargeGroupData;
 use App\Data\Pricing\UpdateSurchargeGroupData;
 use App\Data\VirtualStock\CreateVirtualStockIntakeData;
@@ -42,6 +32,19 @@ use App\Domain\Invoices\Enums\PaymentMethod;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Invoices\Models\InvoicePayment;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DeleteOpportunity;
+use App\Domain\Projects\Opportunities\Actions\UpdateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\OpportunityData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Http\Controllers\Api\V1\OpportunityController;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Domain\PurchaseOrders\Actions\CreatePurchaseOrder;
 use App\Domain\PurchaseOrders\Actions\UpdateDraftPurchaseOrder;
 use App\Domain\PurchaseOrders\Data\CreatePurchaseOrderData;
@@ -53,13 +56,11 @@ use App\Domain\Warehouse\Containers\Actions\RepackReturnItem;
 use App\Domain\Warehouse\Containers\Models\Container;
 use App\Enums\LineItemTransactionType;
 use App\Enums\PricingRoundingDirection;
-use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\SurchargeGroupController;
 use App\Jobs\ExportApiRequestLog;
 use App\Models\InboundWebhookLog;
 use App\Models\InboundWebhookSource;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\RequestLog;
 use App\Models\Store;
 use App\Models\SurchargeGroup;
@@ -73,7 +74,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -558,7 +559,7 @@ it('HasOpportunityActions restore un-trashes the opportunity from the show page'
     $opportunity = Opportunity::factory()->create();
     (new DeleteOpportunity)($opportunity);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('restore');
 
     expect($opportunity->fresh()->trashed())->toBeFalse();

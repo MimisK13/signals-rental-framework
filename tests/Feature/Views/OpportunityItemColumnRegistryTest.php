@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Presentation\Columns\OpportunityItemColumnRegistry;
 use App\Views\Column;
-use App\Views\OpportunityItemColumnRegistry;
 
 describe('OpportunityItemColumnRegistry', function () {
     it('exposes the line-item columns with the right metadata', function () {

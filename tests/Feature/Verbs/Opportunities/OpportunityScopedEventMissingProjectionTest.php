@@ -1,18 +1,18 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityCost;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityCostData;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Models\Opportunity;
-use App\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityCost;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityCostData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Verbs\Events\CostRemoved;
+use App\Domain\Projects\Opportunities\Verbs\Events\CostUpdated;
+use App\Domain\Projects\Opportunities\Verbs\Events\DealPriceCleared;
+use App\Domain\Projects\Opportunities\Verbs\Events\DealPriceSet;
 use App\Models\User;
-use App\Verbs\Events\Opportunities\CostRemoved;
-use App\Verbs\Events\Opportunities\CostUpdated;
-use App\Verbs\Events\Opportunities\DealPriceCleared;
-use App\Verbs\Events\Opportunities\DealPriceSet;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;

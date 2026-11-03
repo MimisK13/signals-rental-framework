@@ -4,14 +4,14 @@
  * Coverage burn-up batch 1 — additional feature tests (part 2).
  */
 
-use App\Actions\Opportunities\AssignItemToSection;
-use App\Actions\Opportunities\CreateOpportunitySection;
-use App\Actions\Opportunities\ReorderOpportunityItems;
-use App\Data\Opportunities\AssignItemToSectionData;
-use App\Data\Opportunities\CreateOpportunitySectionData;
-use App\Data\Opportunities\ReorderOpportunityItemsData;
-use App\Models\Opportunity;
-use App\Models\OpportunitySection;
+use App\Domain\Projects\Opportunities\Actions\AssignItemToSection;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunitySection;
+use App\Domain\Projects\Opportunities\Actions\ReorderOpportunityItems;
+use App\Domain\Projects\Opportunities\Data\AssignItemToSectionData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunitySectionData;
+use App\Domain\Projects\Opportunities\Data\ReorderOpportunityItemsData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunitySection;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

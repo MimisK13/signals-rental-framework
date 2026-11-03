@@ -1,6 +1,6 @@
 <?php
 
-use App\Contracts\Opportunities\OpportunityLineItemsEditorContract;
+use App\Domain\Projects\Opportunities\Contracts\OpportunityLineItemsEditorContract;
 use Livewire\Component;
 use Livewire\Features\SupportTesting\Testable;
 

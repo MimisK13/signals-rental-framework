@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\MergeOpportunityItems;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\MergeOpportunityItemsData;
-use App\Data\Opportunities\SetDealPriceData;
 use App\Domain\Products\Models\Product;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\MergeOpportunityItems;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\MergeOpportunityItemsData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

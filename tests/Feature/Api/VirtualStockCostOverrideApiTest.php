@@ -3,9 +3,9 @@
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\MemberStore;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\User;
 use App\Models\VirtualStockCostOverride;
 use Database\Seeders\PermissionSeeder;

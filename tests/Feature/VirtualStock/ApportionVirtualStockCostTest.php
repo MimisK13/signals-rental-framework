@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\UpdateOpportunityCost;
 use App\Actions\VirtualStock\ApportionVirtualStockCost;
 use App\Actions\VirtualStock\CancelVirtualStockIntake;
 use App\Actions\VirtualStock\ClearVirtualStockCostOverride;
@@ -8,14 +7,15 @@ use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
 use App\Actions\VirtualStock\ReceiveVirtualStockIntake;
 use App\Actions\VirtualStock\ReturnVirtualStockIntake;
 use App\Actions\VirtualStock\SetVirtualStockCostOverride;
-use App\Data\Opportunities\UpdateOpportunityCostData;
 use App\Data\VirtualStock\SetVirtualStockCostOverrideData;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
-use App\Enums\OpportunityCostType;
-use App\Models\Opportunity;
-use App\Models\OpportunityCost;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\UpdateOpportunityCost;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityCostData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

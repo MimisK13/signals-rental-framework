@@ -7,10 +7,10 @@ use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Services\AvailabilityService;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Stock\Models\StockLevel;
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

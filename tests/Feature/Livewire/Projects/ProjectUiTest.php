@@ -4,6 +4,8 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Presentation\Livewire\Index;
 use App\Domain\Projects\Presentation\Livewire\Show;
+use App\Domain\Quotations\Enums\QuotationStatus;
+use App\Domain\Quotations\Models\Quotation;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -172,7 +174,8 @@ it('loads project panel options only once when the create panel opens', function
 });
 
 it('loads each project show dataset only once per render', function (): void {
-    $project = Project::factory()->create();
+    $project = Project::factory()->create(['member_id' => Member::factory()->organisation()]);
+    Quotation::factory()->forProject($project)->create();
     DB::enableQueryLog();
 
     Livewire::test(Show::class, ['project' => $project]);
@@ -180,7 +183,29 @@ it('loads each project show dataset only once per render', function (): void {
     $queries = collect(DB::getQueryLog())->pluck('query');
 
     expect($queries->filter(fn (string $query): bool => str_contains($query, 'select * from "opportunities" where "opportunities"."project_id" ='))->count())->toBe(1)
-        ->and($queries->filter(fn (string $query): bool => str_contains($query, 'select * from "opportunities" where "project_id" is null'))->count())->toBe(1)
-        ->and($queries->filter(fn (string $query): bool => str_contains($query, 'from "members"'))->count())->toBeLessThanOrEqual(1)
-        ->and($queries->filter(fn (string $query): bool => str_contains($query, 'where "id" !='))->count())->toBe(1);
+        ->and($queries->filter(fn (string $query): bool => str_contains($query, 'select * from "quotations" where "quotations"."project_id" ='))->count())->toBe(1)
+        ->and($queries->filter(fn (string $query): bool => str_contains($query, 'from "members"'))->count())->toBeLessThanOrEqual(1);
+});
+
+it('presents quotations as one part of the Project hub', function (): void {
+    $project = Project::factory()->create([
+        'name' => 'Project-first hub',
+        'member_id' => Member::factory()->organisation(),
+    ]);
+    Quotation::factory()->forProject($project)->create([
+        'number' => 'QUO-PROJECT-1',
+        'subject' => 'Main production offer',
+        'status' => QuotationStatus::Sent,
+        'charge_total' => 125000,
+    ]);
+
+    Livewire::test(Show::class, ['project' => $project])
+        ->assertSee('Quotations')
+        ->assertSee('New Quotation')
+        ->assertSee('QUO-PROJECT-1')
+        ->assertSee('Main production offer')
+        ->assertSee('Sent')
+        ->assertSee('Jobs / Rentals')
+        ->assertDontSee('Attach job')
+        ->assertDontSee('Move job');
 });

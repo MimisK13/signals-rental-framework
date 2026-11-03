@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Opportunities\LineItemTreeReconciler;
+use App\Domain\Projects\Opportunities\Services\LineItemTreeReconciler;
 
 it('detects a stale client revision', function () {
     $reconciler = new LineItemTreeReconciler;

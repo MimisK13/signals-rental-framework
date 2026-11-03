@@ -1,16 +1,18 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ClearDealPrice;
-use App\Actions\Opportunities\ClearSectionDealPrice;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Actions\Opportunities\SetSectionDealPrice;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\SetDealPriceData;
-use App\Data\Opportunities\SetSectionDealPriceData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ClearDealPrice;
+use App\Domain\Projects\Opportunities\Actions\ClearSectionDealPrice;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Actions\SetSectionDealPrice;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Data\SetSectionDealPriceData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Domain\Rates\Enums\BasePeriod;
 use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
@@ -19,8 +21,6 @@ use App\Domain\Rates\Models\RateDefinition;
 use App\Enums\DealPriceMode;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;

@@ -1,20 +1,20 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityGroup;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\LockOpportunity;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Actions\Opportunities\UpdateOpportunityItemDetails;
-use App\Data\Opportunities\AddOpportunityGroupData;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\SetDealPriceData;
-use App\Data\Opportunities\UpdateOpportunityItemDetailsData;
 use App\Domain\Activities\Models\Activity;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\LockOpportunity;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Actions\UpdateOpportunityItemDetails;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityGroupData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityItemDetailsData;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;
@@ -24,14 +24,16 @@ use App\Domain\Activities\Presentation\Livewire\Embedded\OpportunityActivities;
 use App\Domain\Products\Models\Accessory;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\ProductGroup;
-use App\Enums\OpportunityItemType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
+use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemPriceOverridden;
+use App\Domain\Projects\Opportunities\Verbs\Events\ItemRemoved;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityEditorTreeService;
-use App\Verbs\Events\Opportunities\ItemPriceOverridden;
-use App\Verbs\Events\Opportunities\ItemRemoved;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\Collection;
@@ -40,7 +42,6 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 use Thunk\Verbs\Models\VerbEvent;
 
 uses(RefreshDatabase::class);
@@ -191,7 +192,7 @@ describe('access and permissions', function () {
         $this->actingAs($this->owner);
 
         // Quick-add toolbar is only rendered when the component is editable.
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->assertOk()
             ->assertSee('Quick add');
     });
@@ -202,7 +203,7 @@ describe('access and permissions', function () {
         $viewer = User::factory()->create();
         $this->actingAs($viewer);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])->assertForbidden();
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])->assertForbidden();
     });
 
     it('renders read-only (non-editable) for a view-only user', function () {
@@ -214,7 +215,7 @@ describe('access and permissions', function () {
 
         // A view-only user gets the read-only render: no editor toolbar. The embedded
         // editor renders the empty-state body (no page header) for an item-less opp.
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->assertOk()
             ->assertSee('This opportunity has no line items yet.')
             ->assertDontSee('Quick add');
@@ -228,7 +229,7 @@ describe('access and permissions', function () {
         $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
         $this->actingAs($viewer);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertForbidden();
 
@@ -245,7 +246,7 @@ describe('access and permissions', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -257,7 +258,7 @@ describe('access and permissions', function () {
         $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
         $this->actingAs($viewer);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('substituteItem', $item->id, $replacement->id)
             ->assertForbidden();
 
@@ -273,7 +274,7 @@ describe('adding product lines', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 6)
             ->assertHasNoErrors();
 
@@ -303,7 +304,7 @@ describe('adding product lines', function () {
         $this->actingAs($this->owner);
 
         // An unassigned line auto-groups under its product group's label.
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -320,7 +321,7 @@ describe('adding product lines', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Front of House')
             ->call('createSection')
             ->assertHasNoErrors();
@@ -347,7 +348,7 @@ describe('removing lines via Livewire', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 2);
 
         $item = OpportunityItem::query()
@@ -372,7 +373,7 @@ describe('inline field edits and totals', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -395,7 +396,7 @@ describe('inline field edits and totals', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -421,7 +422,7 @@ describe('inline field edits and totals', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -443,7 +444,7 @@ describe('inline field edits and totals', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -465,7 +466,7 @@ describe('inline field edits and totals', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 2);
 
         $item = OpportunityItem::query()
@@ -489,7 +490,7 @@ describe('inline field edits and totals', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -525,7 +526,7 @@ describe('sections (modal create)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             // createSection() reads the bound $newSectionName property (bug #2 fix —
             // it no longer takes the name as a call argument).
@@ -554,7 +555,7 @@ describe('sections (modal create)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Backstage')
             ->call('createSection')
             ->assertHasNoErrors();
@@ -572,7 +573,7 @@ describe('sections (modal create)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Closes Cleanly')
             ->call('createSection')
             ->assertHasNoErrors()
@@ -588,7 +589,7 @@ describe('sections (modal create)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', '   ')
             ->call('createSection')
             ->assertNotDispatched('line-items-mutation-done');
@@ -599,7 +600,7 @@ describe('sections (modal create)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', '   ')
             ->call('createSection')
             ->assertHasNoErrors();
@@ -616,7 +617,7 @@ describe('sections (assignment and grouping)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->set('newSectionName', 'Stage Left')
             ->call('createSection');
@@ -642,7 +643,7 @@ describe('sections (assignment and grouping)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->set('newSectionName', 'Stage')
             ->call('createSection');
@@ -687,7 +688,7 @@ describe('merge duplicates', function () {
         $this->actingAs($this->owner);
 
         // Two separate lines of the SAME product (qty 2 and 3) — duplicates.
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 2)
             ->call('addProduct', $product->id, 3);
 
@@ -723,7 +724,7 @@ describe('merge duplicates', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $a->id, 1)
             ->call('addProduct', $b->id, 1);
 
@@ -759,7 +760,7 @@ describe('merge duplicates', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 2)
             ->call('addProduct', $product->id, 3);
 
@@ -789,7 +790,7 @@ describe('merge duplicates', function () {
 
         $beforeEvents = $eventCount();
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('mergeDuplicates', $survivor->id)
             ->assertHasErrors(['opportunity']);
 
@@ -811,7 +812,7 @@ describe('drag and sort (lines)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $first->id, 1)
             ->call('addProduct', $second->id, 1);
 
@@ -848,7 +849,7 @@ describe('drag and sort (lines)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->set('newSectionName', 'Front of House')
             ->call('createSection');
@@ -879,7 +880,7 @@ describe('drag and sort (lines)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->set('newSectionName', 'Backstage')
             ->call('createSection');
@@ -927,7 +928,7 @@ describe('accessories and charge footer', function () {
 
         // The accessory renders as a display-only sub-row (its name + SKU appear),
         // with quantity = ratio (2) × line qty (3) = 6.
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 3)
             ->assertHasNoErrors()
             ->assertSee('Fixture With Accessory');
@@ -955,7 +956,7 @@ describe('accessories and charge footer', function () {
         $this->actingAs($this->owner);
 
         // The accessory toggle (collapsed by default) + the charge-total footer render.
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors()
             ->assertSee('Hook Clamp')
@@ -971,7 +972,7 @@ describe('optional lines', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -994,7 +995,7 @@ describe('product substitution', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $original->id, 4);
 
         $item = OpportunityItem::query()
@@ -1022,7 +1023,7 @@ describe('product substitution', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -1043,7 +1044,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Parent')
             ->call('createSection');
 
@@ -1071,7 +1072,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'L1')
             ->set('newSectionParent', '')
             ->call('createSection')
@@ -1111,7 +1112,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Bad')
             ->set('newSectionParent', (string) $foreignParent->id)
             ->call('createSection')
@@ -1125,7 +1126,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Alpha')
             ->call('createSection')
             ->set('newSectionName', 'Bravo')
@@ -1150,7 +1151,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Parent')
             ->call('createSection')
             ->set('newSectionName', 'Mover')
@@ -1173,7 +1174,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'Top')
             ->call('createSection');
 
@@ -1200,7 +1201,7 @@ describe('sections (nested depth and drag)', function () {
         $this->actingAs($this->owner);
 
         // Build a 5-deep chain L1 > L2 > L3 > L4 > L5 (MAX_DEPTH=5).
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'L1')
             ->call('createSection');
 
@@ -1234,7 +1235,7 @@ describe('sections (nested depth and drag)', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->set('newSectionName', 'L1')
             ->call('createSection');
 
@@ -1263,7 +1264,7 @@ describe('availability links', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -1280,7 +1281,7 @@ describe('availability links', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->assertSeeHtml('target="_blank"')
             ->assertSeeHtml('rel="noopener"');
     });
@@ -1294,7 +1295,7 @@ describe('toasts', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -1314,7 +1315,7 @@ describe('toasts', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -1335,7 +1336,7 @@ describe('toasts', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1);
 
         $item = OpportunityItem::query()
@@ -1361,7 +1362,7 @@ describe('auto-group sections', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -1388,7 +1389,7 @@ describe('auto-group sections', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $first->id, 1)
             ->call('addProduct', $second->id, 1)
             ->assertHasNoErrors();
@@ -1414,7 +1415,7 @@ describe('auto-group sections', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -1436,7 +1437,7 @@ describe('auto-group sections', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -1455,7 +1456,7 @@ describe('auto-group sections', function () {
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addProduct', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -1489,7 +1490,7 @@ describe('deal price and lock price', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->assertOk()
             ->assertSeeHtml('x-show="priceLocked && canManagePriceLock"')
             ->assertDontSeeHtml('x-show="pricingFrozen && canManagePriceLock"');
@@ -1530,7 +1531,7 @@ describe('deal price and lock price', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
             ->assertOk()
             ->assertSee('Clear the deal price before locking price.');
     });
@@ -1542,7 +1543,7 @@ describe('deal price and lock price', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
             ->call('openConfirmModal', 'unlock_locks')
             ->call('confirmTransition')
             ->assertHasNoErrors()
@@ -1559,7 +1560,7 @@ describe('deal price and lock price', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
             ->dispatch('open-opportunity-lock-price-modal')
             ->assertSet('pendingConfirmKey', 'unlock_locks');
     });
@@ -1584,7 +1585,7 @@ describe('pricing freeze', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->assertSet('fieldsEditable', false)
             ->call('updateField', $item->id, 'quantity', '3')
             ->assertHasErrors(['opportunity']);
@@ -1599,7 +1600,7 @@ describe('pricing freeze', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('addProduct', $product->id, 1);
 
         $line = OpportunityItem::query()
@@ -1629,7 +1630,7 @@ describe('pricing freeze', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('removeItem', $item->id)
             ->assertHasErrors(['opportunity']);
 
@@ -1654,7 +1655,7 @@ describe('pricing freeze', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('removeItem', $item->id)
             ->assertHasErrors(['opportunity']);
 
@@ -1669,7 +1670,7 @@ describe('inline add (text and section)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addInlineTextLine')
             ->call('addInlineSection')
             ->assertHasNoErrors();
@@ -1695,7 +1696,7 @@ describe('inline add (text and section)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addInlineTextLine')
             ->assertHasNoErrors();
 
@@ -1704,7 +1705,7 @@ describe('inline add (text and section)', function () {
             ->where('item_type', OpportunityItemType::Text)
             ->firstOrFail();
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('updateField', $text->id, 'name', '')
             ->assertHasNoErrors();
 
@@ -1716,7 +1717,7 @@ describe('inline add (text and section)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addInlineSection')
             ->assertHasNoErrors();
 
@@ -1725,7 +1726,7 @@ describe('inline add (text and section)', function () {
             ->where('item_type', OpportunityItemType::Group)
             ->firstOrFail();
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('updateField', $group->id, 'name', '   ')
             ->assertHasNoErrors();
 
@@ -1737,7 +1738,7 @@ describe('inline add (text and section)', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addInlineTextLine')
             ->assertHasNoErrors();
 
@@ -1747,7 +1748,7 @@ describe('inline add (text and section)', function () {
             ->firstOrFail();
 
         $editor = lineItemsEditorInstance(
-            Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+            Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         );
 
         $treeIds = collect($editor->serverTree()['tree'])->pluck('id')->all();
@@ -1770,7 +1771,7 @@ describe('description and warehouse notes', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call(
                 'saveLineEdits',
                 $item->id,
@@ -1828,7 +1829,7 @@ describe('description and warehouse notes', function () {
 
         $this->actingAs($this->owner);
 
-        $editor = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $editor = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
 
         // Direct invocation with six args simulates a crafted partial wire call (Livewire
         // `->call()` always pads trailing defaults, which would clobber omitted fields).
@@ -1879,7 +1880,7 @@ describe('description and warehouse notes', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call(
                 'saveLineEdits',
                 $item->id,
@@ -1918,7 +1919,7 @@ describe('removing lines via Livewire (quotation and concurrency)', function () 
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('removeItem', $item->id)
             ->assertHasNoErrors();
 
@@ -1932,7 +1933,7 @@ describe('removing lines via Livewire (quotation and concurrency)', function () 
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('addInlineTextLine')
             ->assertHasNoErrors();
 
@@ -1941,7 +1942,7 @@ describe('removing lines via Livewire (quotation and concurrency)', function () 
             ->latest('id')
             ->firstOrFail();
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
             ->call('removeItem', $text->id)
             ->assertHasNoErrors();
 
@@ -1963,7 +1964,7 @@ describe('removing lines via Livewire (quotation and concurrency)', function () 
 
         $this->actingAs($this->owner);
 
-        $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
 
         $component->call('updateField', $item->id, 'quantity', '3');
         $component->call('removeItem', $item->id)->assertHasNoErrors();
@@ -2087,7 +2088,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
 
         $this->actingAs($this->owner);
 
-        $editor = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $editor = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
         $instance = lineItemsEditorInstance($editor);
 
         $remaining = $seed['first'];
@@ -2102,7 +2103,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
 
         expect(OpportunityItem::query()->whereKey($deleted->id)->exists())->toBeFalse();
 
-        $freshEditor = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $freshEditor = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
         $serverIds = collect(lineItemsEditorInstance($freshEditor)->serverTree()['tree'])->pluck('id')->all();
 
         expect($serverIds)->toContain($remaining->id)
@@ -2132,7 +2133,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
 
         $this->actingAs($this->owner);
 
-        $editor = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $editor = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
         $instance = lineItemsEditorInstance($editor);
 
         $editor->call('persistTree', [
@@ -2142,7 +2143,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
         expect(OpportunityItem::query()->whereKey($ghost->id)->exists())->toBeFalse();
 
         $serverIds = collect(lineItemsEditorInstance(
-            Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+            Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
         )->serverTree()['tree'])->pluck('id')->all();
 
         expect($serverIds)->toBe([$keep->id]);
@@ -2161,7 +2162,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
 
         $this->actingAs($this->owner);
 
-        $editor = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $editor = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
         $instance = lineItemsEditorInstance($editor);
 
         $beforeEvents = VerbEvent::query()
@@ -2196,7 +2197,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
 
         $this->actingAs($this->owner);
 
-        $editor = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()]);
+        $editor = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()]);
         $instance = lineItemsEditorInstance($editor);
 
         $nodes = [
@@ -2210,7 +2211,7 @@ describe('delete persistence (mutation flush and persistTree)', function () {
         expect(OpportunityItem::query()->where('opportunity_id', $opportunity->id)->count())->toBe(3);
 
         $serverIds = collect(lineItemsEditorInstance(
-            Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh()])
+            Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh()])
         )->serverTree()['tree'])->pluck('id')->all();
 
         expect($serverIds)->toBe([
@@ -2495,7 +2496,7 @@ describe('quick-add picker', function () {
 
         $this->actingAs($this->owner);
 
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity])
             ->call('quickAdd', $product->id, 1)
             ->assertHasNoErrors();
 
@@ -2505,7 +2506,7 @@ describe('quick-add picker', function () {
             ->firstOrFail();
 
         $editor = lineItemsEditorInstance(
-            Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+            Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
         );
 
         $treeIds = collect($editor->serverTree()['tree'])->pluck('id')->all();

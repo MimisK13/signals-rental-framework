@@ -1,12 +1,13 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\UpdateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\UpdateOpportunityData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\UpdateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Rates\Enums\BasePeriod;
 use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
@@ -18,7 +19,6 @@ use App\Domain\Tax\Models\TaxRate;
 use App\Domain\Tax\Models\TaxRule;
 use App\Enums\LineItemTransactionType;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

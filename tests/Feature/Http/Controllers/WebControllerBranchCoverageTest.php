@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\User;
 use App\Services\DocsService;
 use Database\Seeders\PermissionSeeder;

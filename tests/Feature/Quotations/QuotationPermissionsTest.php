@@ -47,11 +47,11 @@ it('grants quotation workflow permissions to Sales while preserving read-only ac
 
 arch('Quotations domain is independent from legacy Opportunity classes', function (): void {
     expect('App\Domain\Quotations')->not->toUse([
-        'App\Models\Opportunity',
-        'App\Models\OpportunityVersion',
-        'App\Models\OpportunityItem',
-        'App\Actions\Opportunities',
-        'App\Verbs\Events\Opportunities',
-        'App\Verbs\States\OpportunityState',
+        'App\Domain\Projects\Opportunities\Models\Opportunity',
+        'App\Domain\Projects\Opportunities\Models\OpportunityVersion',
+        'App\Domain\Projects\Opportunities\Models\OpportunityItem',
+        'App\Domain\Projects\Opportunities\Actions',
+        'App\Domain\Projects\Opportunities\Verbs\Events',
+        'App\Domain\Projects\Opportunities\Verbs\States\OpportunityState',
     ]);
 });

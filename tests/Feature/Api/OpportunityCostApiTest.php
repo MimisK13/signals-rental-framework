@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityCost;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityCostData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Enums\OpportunityCostType;
-use App\Models\Opportunity;
-use App\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityCost;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityCostData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityCostType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

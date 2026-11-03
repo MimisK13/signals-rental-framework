@@ -6,8 +6,8 @@ use App\Domain\Availability\Models\AvailabilityEvent;
 use App\Domain\Availability\Models\AvailabilitySnapshot;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\ActionLog;
-use App\Models\Opportunity;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
 

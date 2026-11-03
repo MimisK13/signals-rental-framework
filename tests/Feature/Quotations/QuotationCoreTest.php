@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Domain\Quotations\Actions\CreateQuotation;
 use App\Domain\Quotations\Data\CreateQuotationData;
 use App\Domain\Quotations\Enums\QuotationItemType;
@@ -15,7 +16,6 @@ use App\Domain\Quotations\Models\QuotationItem;
 use App\Domain\Quotations\Models\QuotationVersion;
 use App\Domain\Quotations\Verbs\Events\QuotationCreated;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

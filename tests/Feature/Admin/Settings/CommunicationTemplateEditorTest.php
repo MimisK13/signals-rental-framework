@@ -2,8 +2,8 @@
 
 use App\Domain\Communications\Models\CommunicationTemplate;
 use App\Domain\Communications\Models\CommunicationTemplateVersion;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\NotificationType;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\NotificationTypeSeeder;

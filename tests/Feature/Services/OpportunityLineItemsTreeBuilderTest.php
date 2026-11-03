@@ -1,22 +1,22 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityGroup;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityGroupData;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityGroupData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Services\OpportunityEditorTreeService;
+use App\Domain\Projects\Opportunities\Services\OpportunityLineItemsTreeBuilder;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Enums\OpportunityItemType;
-use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityEditorTreeService;
-use App\Services\Opportunities\OpportunityLineItemsTreeBuilder;
 use App\Services\Planning\OpportunityItemPlanningReader;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

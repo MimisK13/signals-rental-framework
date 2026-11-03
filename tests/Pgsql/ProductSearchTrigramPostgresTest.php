@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Products\Models\Product;
-use App\Services\Opportunities\ProductSearchService;
+use App\Domain\Projects\Opportunities\Services\ProductSearchService;
 use Tests\Concerns\UsesPostgres;
 
 /*

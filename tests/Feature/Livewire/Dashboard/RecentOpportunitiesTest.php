@@ -1,8 +1,8 @@
 <?php
 
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Livewire\Dashboard\RecentOpportunities;
 use App\Models\Member;
-use App\Models\Opportunity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

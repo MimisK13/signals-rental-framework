@@ -1,24 +1,25 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityAccessory;
-use App\Actions\Opportunities\AddOpportunityGroup;
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityAccessoryData;
-use App\Data\Opportunities\AddOpportunityGroupData;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
-use App\Enums\OpportunityItemType;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityAccessory;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityGroup;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityAccessoryData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityGroupData;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityItemType;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -87,7 +88,7 @@ it('persistTree via Volt reorders root items and updates DB paths', function () 
         $seed['second']->id => $seed['second']->path,
     ];
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $revision = $editor->treeRevision();
 
@@ -122,7 +123,7 @@ it('persistTree via Volt nests a product under a group', function () {
     $opportunity = persistTreeOpportunity();
     $seed = seedGroupWithTwoItems($opportunity);
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $revision = $editor->treeRevision();
 
@@ -185,7 +186,7 @@ it('persistTree via Volt includes collapsed accessories in the full node set', f
             && $item->id !== $principal->id)
         ->first();
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $revision = $editor->treeRevision();
 
@@ -209,7 +210,7 @@ it('persistTree via Volt includes collapsed accessories in the full node set', f
 it('createSection persists immediately dispatches tree sync and closes the modal', function () {
     $opportunity = persistTreeOpportunity();
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->set('newSectionName', 'Lighting')
         ->set('newSectionParent', '')
         ->call('createSection')
@@ -226,7 +227,7 @@ it('createSection persists immediately dispatches tree sync and closes the modal
     expect($group)->not->toBeNull();
 
     $tree = lineItemsEditorInstance(
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
     )->serverTree()['tree'];
 
     expect(collect($tree)->pluck('name'))->toContain('Lighting');
@@ -236,7 +237,7 @@ it('keeps persistTree reorder after a mutation refresh and a fresh editor mount'
     $opportunity = persistTreeOpportunity();
     $seed = seedGroupWithTwoItems($opportunity);
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $revision = $editor->treeRevision();
 
@@ -259,7 +260,7 @@ it('keeps persistTree reorder after a mutation refresh and a fresh editor mount'
         ->and($afterFirst)->toBe('0003');
 
     $freshEditor = lineItemsEditorInstance(
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
     );
 
     $serverIds = collect($freshEditor->serverTree()['tree'])->pluck('id')->all();
@@ -275,7 +276,7 @@ it('deleteSection cascade-removes nested lines instead of promoting them', funct
     $opportunity = persistTreeOpportunity();
     $seed = seedGroupWithTwoItems($opportunity);
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])]);
     $editor = lineItemsEditorInstance($component);
     $revision = $editor->treeRevision();
 

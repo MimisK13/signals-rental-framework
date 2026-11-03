@@ -1,30 +1,31 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\AllocateAsset;
-use App\Actions\Opportunities\ChangeOpportunityStatus;
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\DeleteOpportunity;
-use App\Actions\Opportunities\DispatchAsset;
-use App\Actions\Opportunities\SetDealPrice;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\AllocateAssetData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\DispatchAssetData;
-use App\Data\Opportunities\SetDealPriceData;
 use App\Domain\Availability\Enums\DemandPhase;
 use App\Domain\Availability\Models\Demand;
 use App\Domain\Availability\Shortages\Enums\ShortagePolicy;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AllocateAsset;
+use App\Domain\Projects\Opportunities\Actions\ChangeOpportunityStatus;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DeleteOpportunity;
+use App\Domain\Projects\Opportunities\Actions\DispatchAsset;
+use App\Domain\Projects\Opportunities\Actions\SetDealPrice;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\AllocateAssetData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\DispatchAssetData;
+use App\Domain\Projects\Opportunities\Data\SetDealPriceData;
+use App\Domain\Projects\Opportunities\Enums\OpportunityState;
+use App\Domain\Projects\Opportunities\Enums\OpportunityStatus;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemAsset;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\Show;
 use App\Domain\Stock\Models\StockLevel;
 use App\Enums\LineItemTransactionType;
-use App\Enums\OpportunityState;
-use App\Enums\OpportunityStatus;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemAsset;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -33,7 +34,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -105,7 +106,7 @@ it('ignores openConvertModal and openConfirmModal calls with unknown keys', func
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('openConvertModal', 'not_a_real_key')
         ->assertSet('pendingConvertKey', null)
         ->call('openConfirmModal', 'not_a_real_key')
@@ -117,7 +118,7 @@ it('returns early from confirmConvert and confirmTransition when no pending key 
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('confirmConvert')
         ->assertNotDispatched('toast')
         ->call('confirmTransition')
@@ -135,7 +136,7 @@ it('converts to order via the convert modal', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('openConvertModal', 'convert_to_order')
         ->assertSet('pendingConvertKey', 'convert_to_order')
         ->call('confirmConvert')
@@ -150,7 +151,7 @@ it('confirms a conversion exactly once and dispatches the modal close (D2)', fun
 
     $this->actingAs($this->owner);
 
-    $component = Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    $component = Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('openConvertModal', 'convert_to_quotation')
         ->call('confirmConvert')
         // The single confirm path applies the change and tells the modal to close.
@@ -175,7 +176,7 @@ it('confirms reinstate, reopen, revert, and archive transitions via the shared m
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $lost->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $lost->fresh()])
         ->call('openConfirmModal', 'reinstate')
         ->call('confirmTransition')
         ->assertDispatched('toast', type: 'success', message: 'Opportunity reinstated');
@@ -192,7 +193,7 @@ it('confirms reinstate, reopen, revert, and archive transitions via the shared m
     (new ConvertToOrder)($completed->fresh());
     (new ChangeOpportunityStatus)($completed->fresh(), OpportunityStatus::OrderComplete);
 
-    Volt::test('opportunities.show', ['opportunity' => $completed->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $completed->fresh()])
         ->call('openConfirmModal', 'reopen')
         ->call('confirmTransition')
         ->assertDispatched('toast', type: 'success', message: 'Order re-opened');
@@ -208,7 +209,7 @@ it('confirms reinstate, reopen, revert, and archive transitions via the shared m
     ]));
     (new ConvertToOrder)($order->fresh());
 
-    Volt::test('opportunities.show', ['opportunity' => $order->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $order->fresh()])
         ->call('openConfirmModal', 'revert_to_quotation')
         ->call('confirmTransition')
         ->assertDispatched('toast', type: 'success', message: 'Reverted to quotation');
@@ -218,7 +219,7 @@ it('confirms reinstate, reopen, revert, and archive transitions via the shared m
     $quote = covLiveOpportunity($this->owner, $this->store->id, 'Revert draft modal');
     (new ConvertToQuotation)($quote);
 
-    Volt::test('opportunities.show', ['opportunity' => $quote->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $quote->fresh()])
         ->call('openConfirmModal', 'revert_to_draft')
         ->call('confirmTransition')
         ->assertDispatched('toast', type: 'success', message: 'Reverted to draft');
@@ -227,7 +228,7 @@ it('confirms reinstate, reopen, revert, and archive transitions via the shared m
 
     $archiveTarget = covLiveOpportunity($this->owner, $this->store->id, 'Archive modal');
 
-    Volt::test('opportunities.show', ['opportunity' => $archiveTarget])
+    Livewire::test(Show::class, ['opportunity' => $archiveTarget])
         ->call('openConfirmModal', 'delete')
         ->call('confirmTransition')
         ->assertRedirect(route('opportunities.index'));
@@ -242,7 +243,7 @@ it('offers no statusOptions when the opportunity is closed', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->assertViewHas('statusOptions', fn (array $options): bool => $options === []);
 });
 
@@ -254,7 +255,7 @@ it('surfaces deal_price_active and dispatched verdicts in availableActions', fun
     $this->actingAs($this->owner);
 
     $dealActions = collect(
-        Volt::test('opportunities.show', ['opportunity' => $withDeal->fresh()])->viewData('availableActions')
+        Livewire::test(Show::class, ['opportunity' => $withDeal->fresh()])->viewData('availableActions')
     )->keyBy('key');
 
     expect($dealActions['unlock_locks']['allowed'])->toBeFalse()
@@ -281,7 +282,7 @@ it('surfaces deal_price_active and dispatched verdicts in availableActions', fun
     (new DispatchAsset)($row, DispatchAssetData::from([]));
 
     $dispatchActions = collect(
-        Volt::test('opportunities.show', ['opportunity' => $dispatched->fresh()])->viewData('availableActions')
+        Livewire::test(Show::class, ['opportunity' => $dispatched->fresh()])->viewData('availableActions')
     )->keyBy('key');
 
     expect($dispatchActions['revert_to_quotation']['allowed'])->toBeFalse()
@@ -303,7 +304,7 @@ it('unlocks rates when locks are active via unlockRates', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('unlockRates');
 
     $opportunity->refresh();
@@ -322,15 +323,15 @@ it('flashes permission errors for clone, archive, restore, and runTransition fai
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.show', ['opportunity' => $draft])
+    Livewire::test(Show::class, ['opportunity' => $draft])
         ->call('cloneOpportunity')
         ->assertSee('You do not have permission to clone this opportunity.');
 
-    Volt::test('opportunities.show', ['opportunity' => $draft])
+    Livewire::test(Show::class, ['opportunity' => $draft])
         ->call('archive')
         ->assertSee('You do not have permission to archive this opportunity.');
 
-    Volt::test('opportunities.show', ['opportunity' => $archived])
+    Livewire::test(Show::class, ['opportunity' => $archived])
         ->call('restore')
         ->assertSee('You do not have permission to restore this opportunity.');
 });
@@ -346,7 +347,7 @@ it('flashes the first validation error from runTransition', function () {
     $this->actingAs($salesUser);
 
     $flashed = captureFlashedMessages(function () use ($opportunity): void {
-        Volt::test('opportunities.show', ['opportunity' => $opportunity])
+        Livewire::test(Show::class, ['opportunity' => $opportunity])
             ->call('convertToOrder')
             ->assertSee('unresolved shortage');
     });
@@ -361,7 +362,7 @@ it('redirects cloneOpportunity on success', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->call('cloneOpportunity')
         ->assertRedirect();
 
@@ -378,7 +379,7 @@ it('flashes a permission error from runTransition when the actor lacks edit righ
     $this->actingAs($viewer);
 
     $flashed = captureFlashedMessages(function () use ($opportunity): void {
-        Volt::test('opportunities.show', ['opportunity' => $opportunity])
+        Livewire::test(Show::class, ['opportunity' => $opportunity])
             ->call('convertToQuotation');
     });
 
@@ -391,7 +392,7 @@ it('confirmConvert returns early when pending key is unknown', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity])
+    Livewire::test(Show::class, ['opportunity' => $opportunity])
         ->set('pendingConvertKey', 'unknown_convert_key')
         ->call('confirmConvert')
         ->assertNotDispatched('toast');
@@ -403,7 +404,7 @@ it('restore refreshes archived opportunities in place', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('restore');
 
     expect($opportunity->fresh()->trashed())->toBeFalse();
@@ -415,7 +416,7 @@ it('broadcasts lifecycle changes without deal totals for standard opportunities'
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('changeStatus', OpportunityStatus::QuotationReserved->statusValue())
         ->assertDispatched(
             'opportunity-lifecycle-changed',
@@ -441,7 +442,7 @@ it('includes the formatted deal total when broadcasting a lifecycle change for a
 
     // Move to a different status within the quotation state: a runTransition that
     // succeeds, refreshes, and broadcasts the lifecycle change with the deal total.
-    Volt::test('opportunities.show', ['opportunity' => $opportunity->fresh()])
+    Livewire::test(Show::class, ['opportunity' => $opportunity->fresh()])
         ->call('changeStatus', OpportunityStatus::QuotationReserved->statusValue())
         ->assertDispatched(
             'opportunity-lifecycle-changed',

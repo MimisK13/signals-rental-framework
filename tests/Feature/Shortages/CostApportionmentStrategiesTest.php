@@ -9,8 +9,8 @@ use App\Domain\Availability\Shortages\Services\Strategies\ManualCostApportionmen
 use App\Domain\Availability\Shortages\Services\Strategies\PrimaryJobCostApportionmentStrategy;
 use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityCostApportionmentStrategy;
 use App\Domain\Availability\Shortages\Services\Strategies\ProportionalQuantityDurationCostApportionmentStrategy;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\User;
 use App\Models\VirtualStockCostOverride;
 use App\Models\VirtualStockIntake;

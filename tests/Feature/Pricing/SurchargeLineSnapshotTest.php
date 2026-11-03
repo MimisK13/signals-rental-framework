@@ -1,14 +1,17 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\OverrideOpportunityItemSurcharge;
 use App\Actions\Pricing\DeleteSurcharge;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\OpportunityItemSurchargeData;
-use App\Data\Opportunities\OverrideOpportunityItemSurchargeData;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\OverrideOpportunityItemSurcharge;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\OpportunityItemSurchargeData;
+use App\Domain\Projects\Opportunities\Data\OverrideOpportunityItemSurchargeData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItemSurcharge;
 use App\Domain\Rates\Enums\BasePeriod;
 use App\Domain\Rates\Enums\CalculationStrategyType;
 use App\Domain\Rates\Enums\RateTransactionType;
@@ -16,9 +19,6 @@ use App\Domain\Rates\Models\ProductRate;
 use App\Domain\Rates\Models\RateDefinition;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
-use App\Models\OpportunityItemSurcharge;
 use App\Models\Store;
 use App\Models\Surcharge;
 use App\Models\SurchargeGroup;

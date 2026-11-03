@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\ChangeItemDates;
-use App\Actions\Opportunities\CreateOpportunity;
 use App\Actions\VirtualStock\ConfirmVirtualStockIntake;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\ChangeItemDatesData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Availability\Shortages\Models\ShortageResolution;
 use App\Domain\Availability\Shortages\Models\ShortageResolutionItem;
 use App\Domain\Availability\Shortages\Services\CostApportionmentContextBuilder;
 use App\Domain\Availability\Shortages\Services\Strategies\PrimaryJobCostApportionmentStrategy;
-use App\Models\Opportunity;
-use App\Models\OpportunityCost;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\ChangeItemDates;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\ChangeItemDatesData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityCost;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualStockIntake;

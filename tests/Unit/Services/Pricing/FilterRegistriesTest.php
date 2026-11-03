@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Services\Pricing\OpportunityItemDiscountPercentFilterRegistry;
 use App\Services\Pricing\OpportunityItemSurchargeAmountFilterRegistry;
 

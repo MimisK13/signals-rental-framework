@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Data\Opportunities\AddOpportunityItemData;
 use App\Domain\Invoices\Actions\GenerateDepositInvoice;
 use App\Domain\Invoices\Data\GenerateDepositInvoiceData;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Enums\PartialInvoiceTaxPolicy;
 use App\Domain\Invoices\Models\Invoice;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Enums\LineItemTransactionType;
 use App\Enums\PricingRoundingDirection;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Validation\ValidationException;

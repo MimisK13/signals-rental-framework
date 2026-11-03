@@ -1,20 +1,21 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityItem;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Data\Opportunities\AddOpportunityItemData;
-use App\Data\Opportunities\CreateOpportunityData;
 use App\Domain\Products\Models\Product;
 use App\Domain\Products\Models\SerialisedComponent;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityItem;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityItemData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Presentation\Livewire\LineItems;
 use App\Domain\Stock\Models\StockLevel;
-use App\Models\Opportunity;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -38,7 +39,7 @@ it('exposes tree and revision for the frozen seed island', function () {
 
     $this->actingAs($this->owner);
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertDispatched('opportunity-shortage-summary-updated', opportunityId: $opportunity->id, unresolvedCount: 0)
         ->assertSeeHtml('data-lf-seed')
@@ -49,7 +50,7 @@ it('exposes tree and revision for the frozen seed island', function () {
         ->assertSeeHtml('window.__lfEditorConfig')
         ->assertSee('Quick add');
 
-    $component = Volt::test('opportunities.line-items', ['opportunity' => $opportunity]);
+    $component = Livewire::test(LineItems::class, ['opportunity' => $opportunity]);
     $instance = lineItemsEditorInstance($component);
 
     expect($instance->treeRevision())->toBeInt();
@@ -73,7 +74,7 @@ it('keeps a stable x-data attribute after inline add so Alpine is not re-initial
 
     $stableXData = 'x-data="window.signals.lineItemsEditor({ oppId: '.$opportunity->id.' })"';
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->assertSeeHtml($stableXData)
         ->call('addInlineTextLine')
         ->assertHasNoErrors()
@@ -94,7 +95,7 @@ it('renders read-only for view-only users', function () {
     $viewer->givePermissionTo('opportunities.access', 'opportunities.view');
     $this->actingAs($viewer);
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->assertOk()
         ->assertSee('This opportunity has no line items yet.')
         ->assertDontSee('Quick add');
@@ -125,7 +126,7 @@ it('adds a combination through the quotation editor and preserves the item tree'
         'sort_order' => 2,
     ]);
 
-    Volt::test('opportunities.line-items', ['opportunity' => $opportunity])
+    Livewire::test(LineItems::class, ['opportunity' => $opportunity])
         ->call('addCombination', $package->id, 2)
         ->assertHasNoErrors()
         ->assertDispatched('toast', type: 'success', message: 'Combination added');
@@ -164,7 +165,7 @@ it('exposes canonical planning data on physical rows without adding it to groups
     ]));
 
     $rows = lineItemsEditorInstance(
-        Volt::test('opportunities.line-items', ['opportunity' => $opportunity->fresh(['items'])])
+        Livewire::test(LineItems::class, ['opportunity' => $opportunity->fresh(['items'])])
     )->serverTree()['tree'];
     $row = collect($rows)->firstWhere('product_id', $product->id);
 

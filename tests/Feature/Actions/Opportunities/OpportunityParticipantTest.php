@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Opportunities\AddOpportunityParticipant;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\RemoveOpportunityParticipant;
-use App\Actions\Opportunities\UpdateOpportunityParticipant;
-use App\Data\Opportunities\AddOpportunityParticipantData;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\UpdateOpportunityParticipantData;
+use App\Domain\Projects\Opportunities\Actions\AddOpportunityParticipant;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\RemoveOpportunityParticipant;
+use App\Domain\Projects\Opportunities\Actions\UpdateOpportunityParticipant;
+use App\Domain\Projects\Opportunities\Data\AddOpportunityParticipantData;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\UpdateOpportunityParticipantData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityParticipant;
 use App\Events\AuditableEvent;
 use App\Models\ActionLog;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityParticipant;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

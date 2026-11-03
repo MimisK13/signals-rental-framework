@@ -1,7 +1,5 @@
 <?php
 
-use App\Actions\Opportunities\ConvertToOrder;
-use App\Actions\Opportunities\ConvertToQuotation;
 use App\Domain\Invoices\Actions\GenerateInvoiceFromOpportunity;
 use App\Domain\Invoices\Data\GenerateInvoiceFromOpportunityData;
 use App\Domain\Invoices\Models\Invoice;
@@ -10,6 +8,11 @@ use App\Domain\Products\Data\CreateProductData;
 use App\Domain\Products\Database\Seeders\ProductGroupSeeder;
 use App\Domain\Products\Enums\ProductType;
 use App\Domain\Products\Models\Product;
+use App\Domain\Projects\Opportunities\Actions\ConvertToOrder;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Services\OpportunityTotalsCalculator;
 use App\Domain\Tax\Database\Seeders\TaxCategorySeeder;
 use App\Domain\Tax\Database\Seeders\TaxClassSeeder;
 use App\Domain\Tax\Database\Seeders\TaxRateSeeder;
@@ -23,11 +26,8 @@ use App\Domain\Tax\Models\TaxCategory;
 use App\Domain\Tax\Models\TaxZone;
 use App\Enums\PricingRoundingDirection;
 use App\Models\Member;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\Opportunities\OpportunityTotalsCalculator;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;

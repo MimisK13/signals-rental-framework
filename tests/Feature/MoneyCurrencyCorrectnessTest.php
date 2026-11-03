@@ -1,16 +1,16 @@
 <?php
 
-use App\Actions\Opportunities\ConvertToQuotation;
-use App\Actions\Opportunities\CreateOpportunity;
-use App\Actions\Opportunities\CreateVersion;
-use App\Data\Opportunities\CreateOpportunityData;
-use App\Data\Opportunities\CreateVersionData;
-use App\Data\Opportunities\OpportunityVersionData;
 use App\Domain\Currency\Database\Seeders\CurrencySeeder;
 use App\Domain\Currency\Models\ExchangeRate;
+use App\Domain\Projects\Opportunities\Actions\ConvertToQuotation;
+use App\Domain\Projects\Opportunities\Actions\CreateOpportunity;
+use App\Domain\Projects\Opportunities\Actions\CreateVersion;
+use App\Domain\Projects\Opportunities\Data\CreateOpportunityData;
+use App\Domain\Projects\Opportunities\Data\CreateVersionData;
+use App\Domain\Projects\Opportunities\Data\OpportunityVersionData;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityVersion;
 use App\Domain\Tax\ValueObjects\TaxResult;
-use App\Models\Opportunity;
-use App\Models\OpportunityVersion;
 use App\Models\Store;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;

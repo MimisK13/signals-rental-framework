@@ -1,8 +1,8 @@
 <?php
 
 use App\Contracts\Pricing\DiscountSource;
-use App\Models\Opportunity;
-use App\Models\OpportunityItem;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Models\OpportunityItem;
 use App\Services\Pricing\DiscountSourceRegistry;
 use Carbon\CarbonInterface;
 

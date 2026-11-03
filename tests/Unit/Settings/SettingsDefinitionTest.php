@@ -3,12 +3,12 @@
 use App\Domain\Availability\Enums\AvailabilityResolution;
 use App\Domain\Availability\Enums\DemandDateSource;
 use App\Domain\Availability\Settings\AvailabilitySettings;
+use App\Domain\Projects\Opportunities\Settings\OpportunitySettings;
 use App\Settings\ActionLogSettings;
 use App\Settings\ApiSettings;
 use App\Settings\EmailSettings;
 use App\Settings\GeneralPreferencesSettings;
 use App\Settings\IntegrationSettings;
-use App\Settings\OpportunitySettings;
 use App\Settings\PricingSettings;
 use App\Settings\SchedulingSettings;
 use App\Settings\SecuritySettings;

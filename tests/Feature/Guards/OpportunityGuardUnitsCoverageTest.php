@@ -1,14 +1,14 @@
 <?php
 
-use App\Guards\Opportunities\Contracts\TransitionRule;
-use App\Guards\Opportunities\GuardResult;
-use App\Guards\Opportunities\PluginValidatorRegistry;
-use App\Guards\Opportunities\Rules\DispatchShortageRule;
-use App\Guards\Opportunities\Rules\FxTaxLockRule;
-use App\Guards\Opportunities\Stages\PermissionStage;
-use App\Guards\Opportunities\Stages\PluginValidatorStage;
-use App\Guards\Opportunities\TransitionContext;
-use App\Models\Opportunity;
+use App\Domain\Projects\Opportunities\Guards\Contracts\TransitionRule;
+use App\Domain\Projects\Opportunities\Guards\GuardResult;
+use App\Domain\Projects\Opportunities\Guards\PluginValidatorRegistry;
+use App\Domain\Projects\Opportunities\Guards\Rules\DispatchShortageRule;
+use App\Domain\Projects\Opportunities\Guards\Rules\FxTaxLockRule;
+use App\Domain\Projects\Opportunities\Guards\Stages\PermissionStage;
+use App\Domain\Projects\Opportunities\Guards\Stages\PluginValidatorStage;
+use App\Domain\Projects\Opportunities\Guards\TransitionContext;
+use App\Domain\Projects\Opportunities\Models\Opportunity;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
